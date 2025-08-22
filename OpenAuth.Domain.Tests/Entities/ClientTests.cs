@@ -333,6 +333,149 @@ public class ClientTests
         }
     }
 
+    public class AddSecret
+    {
+        [Fact]
+        public void AddSecret_Adds_Secret_To_Client()
+        {
+            var client = new Client("App");
+            var secret = new ClientSecret(new SecretHash("v1$1$abc$xyz"));
+
+            client.AddSecret(secret);
+
+            Assert.Contains(secret, client.Secrets);
+        }
+
+        [Fact]
+        public void AddSecret_Updates_Timestamp()
+        {
+            var client = new Client("App");
+            var secret = new ClientSecret(new SecretHash("v1$1$abc$xyz"));
+            
+            var before = client.UpdatedAt;
+            client.AddSecret(secret);
+
+            Assert.True(client.UpdatedAt > before);
+        }
+
+        [Fact]
+        public void AddSecret_DoesNot_Update_After_Exception()
+        {
+            var client = new Client("App");
+            var secret = new ClientSecret(new SecretHash("v1$1$abc$xyz"));
+            client.AddSecret(secret);
+
+            var before = client.UpdatedAt;
+            Assert.Throws<InvalidOperationException>(() => client.AddSecret(secret));
+            Assert.Equal(client.UpdatedAt, before);           
+        }
+        
+        [Fact]
+        public void AddSecret_Throws_When_Null()
+        {
+            var client = new Client("App");
+            Assert.Throws<ArgumentNullException>(() => client.AddSecret(null!));
+        }
+        
+        [Fact]
+        public void AddSecret_Throws_When_Duplicate_Id()
+        {
+            var client = new Client("App");
+            var secret = new ClientSecret(new SecretHash("v1$1$abc$xyz"));
+
+            client.AddSecret(secret);
+
+            Assert.Throws<InvalidOperationException>(() => client.AddSecret(secret));
+        }
+    }
+
+    public class RemoveSecret
+    {
+        [Fact]
+        public void RemoveSecret_Removes_If_Exists()
+        {
+            var client = new Client("App");
+            var secret = new ClientSecret(new SecretHash("v1$1$abc$xyz"));
+            client.AddSecret(secret);
+
+            client.RemoveSecret(secret.Id);
+
+            Assert.DoesNotContain(secret, client.Secrets);
+        }
+
+        [Fact]
+        public void RemoveSecret_DoesNothing_If_NotFound()
+        {
+            var client = new Client("App");
+            var secret = new ClientSecret(new SecretHash("v1$1$abc$xyz"));
+
+            client.RemoveSecret(secret.Id); // should not throw
+
+            Assert.Empty(client.Secrets);
+        }
+        
+        [Fact]
+        public void RemoveSecret_Updates_Timestamp_If_Exists()
+        {
+            var client = new Client("App");
+            var secret = new ClientSecret(new SecretHash("v1$1$abc$xyz"));
+            client.AddSecret(secret);
+            
+            var before = client.UpdatedAt;
+            client.RemoveSecret(secret.Id);
+
+            Assert.True(client.UpdatedAt > before);
+        }
+        
+        [Fact]
+        public void RemoveSecret_DoesNot_Update_Timestamp_If_NotFound()
+        {
+            var client = new Client("App");
+
+            var before = client.UpdatedAt;
+            client.RemoveSecret(SecretId.New());
+
+            Assert.Equal(client.UpdatedAt, before);
+        }
+    }
+
+    public class GetActiveSecrets
+    {
+        [Fact]
+        public void ActiveSecrets_Only_Returns_NonRevoked_And_NonExpired()
+        {
+            var client = new Client("App");
+            var active = new ClientSecret(new SecretHash("v1$1$abc$xyz"), DateTime.UtcNow.AddMinutes(5));
+            var expired = new ClientSecret(new SecretHash("v1$1$abc$xyz"), DateTime.UtcNow.AddMinutes(-5));
+            var revoked = new ClientSecret(new SecretHash("v1$1$abc$xyz"), DateTime.UtcNow.AddMinutes(5));
+            revoked.Revoke();
+
+            client.AddSecret(active);
+            client.AddSecret(expired);
+            client.AddSecret(revoked);
+
+            var result = client.ActiveSecrets().ToList();
+
+            Assert.Contains(active, result);
+            Assert.DoesNotContain(expired, result);
+            Assert.DoesNotContain(revoked, result);
+        }
+
+        [Fact]
+        public void Revoke_Secret_Changes_ActiveSecrets_Result()
+        {
+            var client = new Client("App");
+            var secret = new ClientSecret(new SecretHash("v1$1$abc$xyz"), DateTime.UtcNow.AddMinutes(5));
+            client.AddSecret(secret);
+
+            Assert.Contains(secret, client.ActiveSecrets());
+
+            secret.Revoke();
+
+            Assert.DoesNotContain(secret, client.ActiveSecrets());
+        } 
+    }
+    
     public class Enabled
     {
         [Fact]

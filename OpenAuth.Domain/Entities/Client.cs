@@ -22,6 +22,8 @@ public class Client
     // Settings
     public TimeSpan TokenLifetime { get; private set; } = TimeSpan.FromMinutes(10);
 
+    public List<ClientSecret> Secrets { get; private set; } = [];
+
     private readonly Dictionary<Audience, HashSet<Scope>> _grants = [];
     
     public IReadOnlyList<Scope> GetAllowedScopes(Audience audience) =>
@@ -138,6 +140,31 @@ public class Client
         TokenLifetime = value;
         Touch();
     }
+
+    public void AddSecret(ClientSecret secret)
+    {
+        ArgumentNullException.ThrowIfNull(secret);
+
+        if (Secrets.Any(x => x.Id == secret.Id))
+            throw new InvalidOperationException("Secret already exists under client.");
+        
+        Secrets.Add(secret);
+        Touch();
+    }
+
+    public void RemoveSecret(SecretId secretId)
+    {
+        var secret = Secrets.FirstOrDefault(x => x.Id == secretId);
+        if (secret is null)
+            return;
+        
+        Secrets.Remove(secret);
+        Touch();
+    }
+
+    public IEnumerable<ClientSecret> ActiveSecrets() =>
+        Secrets.Where(x => x.IsActive())
+            .OrderByDescending(x => x.CreatedAt);
 
     public void Enable()
     {
