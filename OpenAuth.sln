@@ -10,6 +10,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenAuth.Infrastructure", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenAuth.Infrastructure.Tests", "OpenAuth.Infrastructure.Tests\OpenAuth.Infrastructure.Tests.csproj", "{FD1EF56E-8BE0-4B35-84C0-9941D117D30B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenAuth.Application", "OpenAuth.Application\OpenAuth.Application.csproj", "{9B382DBF-F8C1-40AB-9C0C-4FEEB8ED198D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenAuth.Application.Tests", "OpenAuth.Application.Tests\OpenAuth.Application.Tests.csproj", "{36B6191D-8FF4-49E9-98DA-F48BA42DEBE7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -36,5 +40,13 @@ Global
 		{FD1EF56E-8BE0-4B35-84C0-9941D117D30B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FD1EF56E-8BE0-4B35-84C0-9941D117D30B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FD1EF56E-8BE0-4B35-84C0-9941D117D30B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9B382DBF-F8C1-40AB-9C0C-4FEEB8ED198D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9B382DBF-F8C1-40AB-9C0C-4FEEB8ED198D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9B382DBF-F8C1-40AB-9C0C-4FEEB8ED198D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9B382DBF-F8C1-40AB-9C0C-4FEEB8ED198D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{36B6191D-8FF4-49E9-98DA-F48BA42DEBE7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{36B6191D-8FF4-49E9-98DA-F48BA42DEBE7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{36B6191D-8FF4-49E9-98DA-F48BA42DEBE7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{36B6191D-8FF4-49E9-98DA-F48BA42DEBE7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
