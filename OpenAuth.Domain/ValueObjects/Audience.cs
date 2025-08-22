@@ -1,16 +1,16 @@
-namespace OpenAuth.Domain.Clients;
+namespace OpenAuth.Domain.ValueObjects;
 
-public readonly record struct Scope
+public readonly record struct Audience
 {
     public string Value { get; }
-    public const int Min = 3, Max = 24;
+    public const int Min = 3, Max = 16;
     
-    public Scope(string value)
+    public Audience(string value)
     {
         ArgumentNullException.ThrowIfNull(value);
         ArgumentException.ThrowIfNullOrWhiteSpace(value);
-        
-        var normalized = value.ToLowerInvariant().Trim();
+
+        var normalized = value.Trim().ToLowerInvariant();
         Value = normalized.Length switch
         {
             < Min => throw new ArgumentOutOfRangeException(nameof(value), $"Value must be greater than {Min} characters long."),

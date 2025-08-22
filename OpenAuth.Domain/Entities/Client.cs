@@ -1,4 +1,6 @@
-namespace OpenAuth.Domain.Clients;
+using OpenAuth.Domain.ValueObjects;
+
+namespace OpenAuth.Domain.Entities;
 
 public class Client
 {

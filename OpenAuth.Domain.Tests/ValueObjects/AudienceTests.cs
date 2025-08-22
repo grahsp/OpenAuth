@@ -1,6 +1,6 @@
-using OpenAuth.Domain.Clients;
+using OpenAuth.Domain.ValueObjects;
 
-namespace OpenAuth.Domain.Tests.Clients;
+namespace OpenAuth.Domain.Tests.ValueObjects;
 
 public class AudienceTests
 {
