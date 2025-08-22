@@ -1,4 +1,3 @@
-using System.Buffers.Text;
 using System.Globalization;
 using System.Security.Cryptography;
 using OpenAuth.Domain.Abstractions;
@@ -11,11 +10,15 @@ public class Pbkdf2Hasher : ISecretHasher
     private const string Version = "v1";
     private const int SaltSize = 16;
     private const int KeySize = 32;
+    private const char Separator = '$';
+
+    private const int MinIterations = 10_000;
+    private const int DefaultIterations = 100_000;
     private readonly int _iterations;
     
-    public Pbkdf2Hasher(int iterations = 100_000)
+    public Pbkdf2Hasher(int iterations = DefaultIterations)
     {
-        if (iterations < 10_000)
+        if (iterations < MinIterations)
             throw new ArgumentOutOfRangeException(nameof(iterations), "iterations must be greater or equal to 10_000");
         
         _iterations = iterations;
@@ -29,7 +32,7 @@ public class Pbkdf2Hasher : ISecretHasher
         var salt = RandomNumberGenerator.GetBytes(SaltSize);
         var key = DeriveKey(plain, salt, _iterations, KeySize);
 
-        var encoded = string.Join('$',
+        var encoded = string.Join(Separator,
             Version,
             _iterations.ToString(CultureInfo.InvariantCulture),
             Convert.ToBase64String(salt),
@@ -45,7 +48,7 @@ public class Pbkdf2Hasher : ISecretHasher
         if (string.IsNullOrWhiteSpace(plain))
             return false;
 
-        var parts = encoded.Value.Split('$');
+        var parts = encoded.Value.Split(Separator);
         if (parts is not [Version, _, _, _])
             return false;
 
@@ -61,10 +64,10 @@ public class Pbkdf2Hasher : ISecretHasher
         catch { return false; }
 
         var actual = DeriveKey(plain, salt, iterations, expected.Length);
-        return Base64Url.EncodeToString(actual) == Base64Url.EncodeToString(expected);
+        return CryptographicOperations.FixedTimeEquals(actual, expected);
     }
     
-    private byte[] DeriveKey(string input, byte[] salt, int iterations, int length)
+    private static byte[] DeriveKey(string input, byte[] salt, int iterations, int length)
     {
         using var pbkdf2 = new Rfc2898DeriveBytes(input, salt, iterations, HashAlgorithmName.SHA256);
         return pbkdf2.GetBytes(length);
