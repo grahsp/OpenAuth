@@ -1,4 +1,4 @@
-namespace OpenAuth.Domain.Services;
+namespace OpenAuth.Domain.Abstractions;
 
 public interface ISecretGenerator
 {

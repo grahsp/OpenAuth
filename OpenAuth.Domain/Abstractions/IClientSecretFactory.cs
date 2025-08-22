@@ -1,6 +1,6 @@
 using OpenAuth.Domain.Entities;
 
-namespace OpenAuth.Domain.Services;
+namespace OpenAuth.Domain.Abstractions;
 
 public interface IClientSecretFactory
 {

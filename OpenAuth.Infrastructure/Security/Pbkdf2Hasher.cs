@@ -1,7 +1,7 @@
 using System.Buffers.Text;
 using System.Globalization;
 using System.Security.Cryptography;
-using OpenAuth.Domain.Services;
+using OpenAuth.Domain.Abstractions;
 using OpenAuth.Domain.ValueObjects;
 
 namespace OpenAuth.Infrastructure.Security;

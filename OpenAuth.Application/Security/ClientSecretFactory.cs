@@ -1,7 +1,7 @@
+using OpenAuth.Domain.Abstractions;
 using OpenAuth.Domain.Entities;
-using OpenAuth.Domain.Services;
 
-namespace OpenAuth.Infrastructure.Security;
+namespace OpenAuth.Application.Security;
 
 public class ClientSecretFactory : IClientSecretFactory
 {

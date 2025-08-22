@@ -1,4 +1,4 @@
-using OpenAuth.Domain.Services;
+using OpenAuth.Domain.Abstractions;
 using OpenAuth.Infrastructure.Security;
 
 namespace OpenAuth.Infrastructure.Tests.Security;

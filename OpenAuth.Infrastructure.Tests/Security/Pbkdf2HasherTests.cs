@@ -1,4 +1,4 @@
-using OpenAuth.Domain.Services;
+using OpenAuth.Domain.Abstractions;
 using OpenAuth.Domain.ValueObjects;
 using OpenAuth.Infrastructure.Security;
 
