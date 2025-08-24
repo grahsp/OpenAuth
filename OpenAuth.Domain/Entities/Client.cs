@@ -32,7 +32,7 @@ public class Client
             .OrderBy(s => s.Value, StringComparer.Ordinal)
             .ToList() ?? [];
     
-    public IReadOnlyList<Audience> GetAudiences =>
+    public IReadOnlyList<Audience> GetAudiences() =>
         _grants
             .Keys
             .OrderBy(a => a.Value, StringComparer.Ordinal)
@@ -74,18 +74,25 @@ public class Client
     public DateTime UpdatedAt { get; private set; }
 
     
-    public void GrantScopes(Audience audience, params Scope[] scopes)
+    public void GrantScopes(Audience audience, params Scope[] scopes) =>
+        GrantScopes(audience, (IEnumerable<Scope>)scopes);
+
+    public void GrantScopes(Audience audience, IEnumerable<Scope> scopes)
     {
         if (!_grants.TryGetValue(audience, out var grant))
             _grants[audience] = grant = [];
         
         foreach (var scope in scopes)
             grant.Add(scope);
-        
+
         Touch();
     }
 
-    public void RevokeScopes(Audience audience, params Scope[] scopes)
+    
+    public void RevokeScopes(Audience audience, params Scope[] scopes) =>
+        RevokeScopes(audience, (IEnumerable<Scope>)scopes);
+
+    public void RevokeScopes(Audience audience, IEnumerable<Scope> scopes)
     {
         if (!_grants.TryGetValue(audience, out var grant))
             return;
@@ -98,6 +105,7 @@ public class Client
         
         Touch();
     }
+    
 
     public void RemoveAudience(Audience audience)
     {
@@ -158,6 +166,7 @@ public class Client
         if (secret is null)
             return;
         
+        secret.Revoke();
         Secrets.Remove(secret);
         Touch();
     }

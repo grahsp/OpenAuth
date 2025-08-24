@@ -18,7 +18,7 @@ public class ClientTests
         Assert.NotEqual(TimeSpan.Zero, client.TokenLifetime);
 
         Assert.NotEqual(Guid.Empty, client.Id.Value);
-        Assert.Empty(client.GetAudiences);
+        Assert.Empty(client.GetAudiences());
 
         // created/updated should be set near "now"
         Assert.InRange(client.CreatedAt, before, after);
@@ -44,7 +44,7 @@ public class ClientTests
             Assert.Equal(2, scopes.Count);
             Assert.Contains(read, scopes);
             Assert.Contains(write, scopes);
-            Assert.Contains(aud, client.GetAudiences);
+            Assert.Contains(aud, client.GetAudiences());
         }
 
         [Fact]
@@ -93,7 +93,7 @@ public class ClientTests
 
             var scopes = client.GetAllowedScopes(aud);
             Assert.Empty(scopes);
-            Assert.DoesNotContain(aud, client.GetAudiences);
+            Assert.DoesNotContain(aud, client.GetAudiences());
         }
 
         [Fact]
@@ -136,7 +136,7 @@ public class ClientTests
             
             client.RemoveAudience(aud);
             Assert.Empty(client.GetAllowedScopes(aud));
-            Assert.Empty(client.GetAudiences);
+            Assert.Empty(client.GetAudiences());
         }
 
         [Fact]
@@ -210,9 +210,9 @@ public class ClientTests
             var snapshot = original.Grants;
             var restored = new Client("Restored") { Grants = snapshot };
             
-            Assert.Equal(2, restored.GetAudiences.Count);
-            Assert.Contains(api, restored.GetAudiences);
-            Assert.Contains(billing, restored.GetAudiences);
+            Assert.Equal(2, restored.GetAudiences().Count);
+            Assert.Contains(api, restored.GetAudiences());
+            Assert.Contains(billing, restored.GetAudiences());
 
             var apiScopes = restored.GetAllowedScopes(api);
             Assert.Equal(2, apiScopes.Count);
