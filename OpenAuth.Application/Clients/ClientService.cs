@@ -1,0 +1,144 @@
+using OpenAuth.Application.Abstractions;
+using OpenAuth.Application.Common;
+using OpenAuth.Application.Repositories;
+using OpenAuth.Domain.Abstractions;
+using OpenAuth.Domain.Entities;
+using OpenAuth.Domain.ValueObjects;
+
+namespace OpenAuth.Application.Clients;
+
+public class ClientService : IClientService
+{
+    private readonly IClientRepository _repository;
+    private readonly IUnitOfWork _uow;
+    private readonly IClientSecretFactory _secretFactory;
+    
+    public ClientService(IClientRepository repository, IUnitOfWork uow, IClientSecretFactory secretFactory)
+    {
+        _repository = repository;
+        _uow = uow;
+        _secretFactory = secretFactory;
+    }
+    
+    public async Task<Client?> GetByIdAsync(ClientId id, CancellationToken cancellationToken = default) =>
+        await _repository.GetByIdAsync(id, cancellationToken);
+    
+    public async Task<Client?> GetByNameAsync(string name, CancellationToken cancellationToken = default) =>
+        await _repository.GetByNameAsync(name, cancellationToken);
+
+    public async Task<Client> RegisterAsync(string name, CancellationToken cancellationToken = default)
+    {
+        var client = new Client(name);
+        await _repository.AddAsync(client, cancellationToken);
+        await _uow.SaveChangesAsync(cancellationToken);
+
+        return client;
+    }
+    
+    public async Task<Client> RenameAsync(ClientId id, string name, CancellationToken cancellationToken = default)
+    {
+        var client = await _repository.GetByIdAsync(id, cancellationToken)
+                     ?? throw new InvalidOperationException("Client not found.");
+        
+        client.Rename(name);
+        await _uow.SaveChangesAsync(cancellationToken);
+
+        return client;
+    }
+    
+    public async Task<bool> DeleteAsync(ClientId id, CancellationToken cancellationToken = default)
+    {
+        var client = await _repository.GetByIdAsync(id, cancellationToken);
+        if (client is null)
+            return false;
+
+        await _repository.RemoveAsync(client, cancellationToken);
+        await _uow.SaveChangesAsync(cancellationToken);
+
+        return true;
+    }
+    
+    
+    public async Task<Client> EnableAsync(ClientId id, CancellationToken cancellationToken = default)
+    {
+        var client = await _repository.GetByIdAsync(id, cancellationToken)
+                     ?? throw new InvalidOperationException("Client not found.");
+        
+        client.Enable();
+        await _uow.SaveChangesAsync(cancellationToken);
+
+        return client;
+    }
+    
+    public async Task<Client> DisableAsync(ClientId id, CancellationToken cancellationToken = default)
+    {
+        var client = await _repository.GetByIdAsync(id, cancellationToken)
+                     ?? throw new InvalidOperationException("Client not found.");
+        
+        client.Disable();
+        await _uow.SaveChangesAsync(cancellationToken);
+
+        return client;
+    }
+    
+    
+    public async Task<Client> GrantScopesAsync(ClientId id, Audience audience, IEnumerable<Scope> scopes,
+        CancellationToken cancellationToken = default)
+    {
+        var client = await _repository.GetByIdAsync(id, cancellationToken)
+                     ?? throw new InvalidOperationException("Client not found.");
+        
+        client.GrantScopes(audience, scopes);
+        await _uow.SaveChangesAsync(cancellationToken);
+
+        return client;
+    }
+
+    public async Task<Client> RevokeScopesAsync(ClientId id, Audience audience, IEnumerable<Scope> scopes,
+        CancellationToken cancellationToken = default)
+    {
+        var client = await _repository.GetByIdAsync(id, cancellationToken)
+                     ?? throw new InvalidOperationException("Client not found.");
+        
+        client.RevokeScopes(audience, scopes);
+        await _uow.SaveChangesAsync(cancellationToken);
+
+        return client;
+    }
+
+    public async Task<Client> RemoveAudienceAsync(ClientId id, Audience audience, CancellationToken cancellationToken = default)
+    {
+        var client = await _repository.GetByIdAsync(id, cancellationToken)
+                     ?? throw new InvalidOperationException("Client not found.");
+        
+        client.RemoveAudience(audience);
+        await _uow.SaveChangesAsync(cancellationToken);
+
+        return client;
+    }
+
+
+    public async Task<string?> AddSecretAsync(ClientId id, DateTime? expiresAt = null, CancellationToken cancellationToken = default)
+    {
+        var client = await _repository.GetByIdAsync(id, cancellationToken)
+                     ?? throw new InvalidOperationException("Client not found.");
+        
+        var (secret, plain) = _secretFactory.Create();
+        client.AddSecret(secret);
+
+        await _uow.SaveChangesAsync(cancellationToken);
+        return plain;
+    }
+
+    public async Task<bool> RevokeSecretAsync(ClientId clientId, SecretId secretId, CancellationToken cancellationToken = default)
+    {
+        var client = await _repository.GetByIdAsync(clientId, cancellationToken);
+        if (client is null)
+            return false;
+        
+        client.RemoveSecret(secretId);
+        await _uow.SaveChangesAsync(cancellationToken);
+
+        return true;
+    }
+}
