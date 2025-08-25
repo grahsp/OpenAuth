@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Microsoft.IdentityModel.Tokens;
@@ -18,10 +19,13 @@ public class JwtTokenGenerator : IJwtTokenGenerator
         _factory = factory;
     }
 
-    public string GenerateToken(Client client, IEnumerable<Scope> scopes, SigningKey signingKey)
+    public string GenerateToken(Client client, Audience audience, IEnumerable<Scope> scopes, SigningKey signingKey)
     {
         if (!signingKey.IsActive())
             throw new InvalidOperationException("Signing key is expired or revoked.");
+
+        if (!client.GetAudiences().Contains(audience))
+            throw new InvalidOperationException("Audience doesn't exist.");
         
         var signingCredentials = _factory.Create(signingKey);
         var now = DateTime.UtcNow;
@@ -32,13 +36,21 @@ public class JwtTokenGenerator : IJwtTokenGenerator
             new(JwtRegisteredClaimNames.Sub, client.Id.ToString()),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             new(JwtRegisteredClaimNames.Iat, EpochTime.GetIntDate(now).ToString()),
+            new(JwtRegisteredClaimNames.Aud, audience.ToString())
         };
-        
-        foreach (var aud in client.GetAudiences())
-            claims.Add(new Claim(JwtRegisteredClaimNames.Aud, aud.Value));
-        
+
+        var allowedScopes = client.GetAllowedScopes(audience).ToImmutableHashSet();
+        var invalidScopes = new List<string>();
         foreach (var scope in scopes)
-            claims.Add(new Claim("scope", scope.Value));
+        {
+            if (!allowedScopes.Contains(scope))
+                invalidScopes.Add(scope.Value);
+            else
+                claims.Add(new Claim("scope", scope.Value));
+        }
+
+        if (invalidScopes.Count > 0)
+            throw new InvalidOperationException($"Invalid scopes requested: { string.Join(", ", invalidScopes) }.");
 
         var token = new JwtSecurityToken(
             issuer: _issuer,

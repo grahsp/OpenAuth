@@ -5,5 +5,5 @@ namespace OpenAuth.Application.Security.Tokens;
 
 public interface IJwtTokenGenerator
 {
-    string GenerateToken(Client client, IEnumerable<Scope> scopes, SigningKey signingKey);
+    string GenerateToken(Client client, Audience audience, IEnumerable<Scope> scopes, SigningKey signingKey);
 }
