@@ -7,7 +7,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\OpenAuth.Domain\OpenAuth.Domain.csproj" />
+      <ProjectReference Include="..\OpenAuth.Application\OpenAuth.Application.csproj" />
     </ItemGroup>
 
 </Project>
