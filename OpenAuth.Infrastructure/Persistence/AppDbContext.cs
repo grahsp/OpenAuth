@@ -9,6 +9,7 @@ public class AppDbContext : DbContext
 
     public DbSet<Client> Clients { get; set; }
     public DbSet<ClientSecret> ClientSecrets { get; set; }
+    public DbSet<SigningKey> SigningKeys { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

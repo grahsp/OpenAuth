@@ -16,6 +16,10 @@ public class SigningKey
     }
     
     public SigningKeyId KeyId { get; init; }
+    
+    public ClientId ClientId { get; private set; }
+    public Client Client { get; private set; } = null!;
+    
     public SigningAlgorithm Algorithm { get; private init; }
 
     public string PublicKey { get; private init; } = null!;

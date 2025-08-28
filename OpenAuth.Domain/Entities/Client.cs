@@ -23,6 +23,7 @@ public class Client
     public TimeSpan TokenLifetime { get; private set; } = TimeSpan.FromMinutes(10);
 
     public List<ClientSecret> Secrets { get; private set; } = [];
+    public List<SigningKey> SigningKeys { get; private set; } = [];
 
     private readonly Dictionary<Audience, HashSet<Scope>> _grants = [];
     
@@ -157,6 +158,17 @@ public class Client
             throw new InvalidOperationException("Secret already exists under client.");
         
         Secrets.Add(secret);
+        Touch();
+    }
+
+    public void AddSigningKey(SigningKey signingKey)
+    {
+        ArgumentNullException.ThrowIfNull(signingKey);
+
+        if (SigningKeys.Any(x => x.KeyId == signingKey.KeyId))
+            throw new InvalidOperationException("SigningKey already exists under client.");
+        
+        SigningKeys.Add(signingKey);
         Touch();
     }
 
