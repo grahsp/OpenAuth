@@ -4,7 +4,7 @@ namespace OpenAuth.Domain.Entities;
 
 public class ClientSecret
 {
-    public ClientSecret() { }
+    private ClientSecret() { }
 
     public ClientSecret(SecretHash hash, DateTime? expiresAt = null)
     {
@@ -13,6 +13,10 @@ public class ClientSecret
     }
 
     public SecretId Id { get; private init; } = SecretId.New();
+    
+    public ClientId ClientId { get; private set; }
+    public Client Client { get; private set; } = null!;
+    
     public SecretHash Hash { get; private set; }
     public DateTime CreatedAt { get; private set; } = DateTime.UtcNow;
     public DateTime? ExpiresAt { get; private set; }
