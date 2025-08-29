@@ -1,4 +1,5 @@
 using OpenAuth.Domain.Entities;
+using OpenAuth.Domain.Enums;
 using OpenAuth.Domain.ValueObjects;
 
 namespace OpenAuth.Application.Abstractions;
@@ -19,7 +20,11 @@ public interface IClientService
     Task<Client> RevokeScopesAsync(ClientId id, Audience audience, IEnumerable<Scope> scopes, CancellationToken cancellationToken = default);
     Task<Client> RemoveAudienceAsync(ClientId id, Audience audience, CancellationToken cancellationToken = default);
     
-    Task<string?> AddSecretAsync(ClientId id, DateTime? expiresAt = null, CancellationToken cancellationToken = default);
+    Task<string> AddSecretAsync(ClientId id, DateTime? expiresAt = null, CancellationToken cancellationToken = default);
     Task<bool> RevokeSecretAsync(ClientId clientId, SecretId secretId, CancellationToken cancellationToken = default);
     Task<bool> RemoveSecretAsync(ClientId clientId, SecretId secretId, CancellationToken cancellationToken = default);
+    
+    Task<SigningKey> AddSigningKeyAsync(ClientId id, SigningAlgorithm algorithm, DateTime? expiresAt = null, CancellationToken cancellationToken = default);
+    Task<bool> RevokeSigningKeyAsync(ClientId clientId, SigningKeyId keyId, CancellationToken cancellationToken = default);
+    Task<bool> RemoveSigningKeyAsync(ClientId clientId, SigningKeyId keyId, CancellationToken cancellationToken = default);
 }

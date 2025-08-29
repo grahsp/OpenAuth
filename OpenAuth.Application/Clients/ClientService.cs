@@ -1,7 +1,9 @@
 using OpenAuth.Application.Abstractions;
 using OpenAuth.Application.Common;
+using OpenAuth.Application.Security.Keys;
 using OpenAuth.Domain.Abstractions;
 using OpenAuth.Domain.Entities;
+using OpenAuth.Domain.Enums;
 using OpenAuth.Domain.ValueObjects;
 
 namespace OpenAuth.Application.Clients;
@@ -11,12 +13,14 @@ public class ClientService : IClientService
     private readonly IClientRepository _repository;
     private readonly IUnitOfWork _uow;
     private readonly IClientSecretFactory _secretFactory;
+    private readonly ISigningKeyFactory _signingKeyFactory;
     
-    public ClientService(IClientRepository repository, IUnitOfWork uow, IClientSecretFactory secretFactory)
+    public ClientService(IClientRepository repository, IUnitOfWork uow, IClientSecretFactory secretFactory, ISigningKeyFactory signingKeyFactory)
     {
         _repository = repository;
         _uow = uow;
         _secretFactory = secretFactory;
+        _signingKeyFactory = signingKeyFactory;
     }
     
     public async Task<Client?> GetByIdAsync(ClientId id, CancellationToken cancellationToken = default) =>
@@ -117,12 +121,12 @@ public class ClientService : IClientService
     }
 
 
-    public async Task<string?> AddSecretAsync(ClientId id, DateTime? expiresAt = null, CancellationToken cancellationToken = default)
+    public async Task<string> AddSecretAsync(ClientId id, DateTime? expiresAt = null, CancellationToken cancellationToken = default)
     {
         var client = await _repository.GetByIdAsync(id, cancellationToken)
                      ?? throw new InvalidOperationException("Client not found.");
         
-        var (secret, plain) = _secretFactory.Create();
+        var (secret, plain) = _secretFactory.Create(expiresAt);
         client.AddSecret(secret);
 
         await _uow.SaveChangesAsync(cancellationToken);
@@ -148,6 +152,43 @@ public class ClientService : IClientService
             return false;
         
         client.RemoveSecret(secretId);
+        await _uow.SaveChangesAsync(cancellationToken);
+
+        return true;
+    }
+    
+    
+    public async Task<SigningKey> AddSigningKeyAsync(ClientId id, SigningAlgorithm algorithm, DateTime? expiresAt = null, CancellationToken cancellationToken = default)
+    {
+        var client = await _repository.GetByIdAsync(id, cancellationToken)
+                     ?? throw new InvalidOperationException("Client not found.");
+
+        var signingKey = _signingKeyFactory.Create(algorithm, expiresAt);
+        client.AddSigningKey(signingKey);
+
+        await _uow.SaveChangesAsync(cancellationToken);
+        return signingKey;
+    }
+
+    public async Task<bool> RevokeSigningKeyAsync(ClientId clientId, SigningKeyId keyId, CancellationToken cancellationToken = default)
+    {
+        var client = await _repository.GetByIdAsync(clientId, cancellationToken);
+        if (client is null)
+            return false;
+        
+        client.RevokeSigningKey(keyId);
+        await _uow.SaveChangesAsync(cancellationToken);
+        
+        return true;
+    }
+
+    public async Task<bool> RemoveSigningKeyAsync(ClientId clientId, SigningKeyId keyId, CancellationToken cancellationToken = default)
+    {
+        var client = await _repository.GetByIdAsync(clientId, cancellationToken);
+        if (client is null)
+            return false;
+        
+        client.RemoveSigningKey(keyId);
         await _uow.SaveChangesAsync(cancellationToken);
 
         return true;
