@@ -1,9 +1,10 @@
 using Microsoft.EntityFrameworkCore;
+using OpenAuth.Application.Common;
 using OpenAuth.Domain.Entities;
 
 namespace OpenAuth.Infrastructure.Persistence;
 
-public class AppDbContext : DbContext
+public class AppDbContext : DbContext, IUnitOfWork
 {
     public AppDbContext(DbContextOptions options) : base(options) { }
 
