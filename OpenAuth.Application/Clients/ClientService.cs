@@ -1,6 +1,5 @@
 using OpenAuth.Application.Abstractions;
 using OpenAuth.Application.Common;
-using OpenAuth.Application.Repositories;
 using OpenAuth.Domain.Abstractions;
 using OpenAuth.Domain.Entities;
 using OpenAuth.Domain.ValueObjects;
@@ -29,7 +28,7 @@ public class ClientService : IClientService
     public async Task<Client> RegisterAsync(string name, CancellationToken cancellationToken = default)
     {
         var client = new Client(name);
-        await _repository.AddAsync(client, cancellationToken);
+        _repository.Add(client);
         await _uow.SaveChangesAsync(cancellationToken);
 
         return client;
@@ -52,7 +51,7 @@ public class ClientService : IClientService
         if (client is null)
             return false;
 
-        await _repository.RemoveAsync(client, cancellationToken);
+        _repository.Remove(client);
         await _uow.SaveChangesAsync(cancellationToken);
 
         return true;
@@ -131,6 +130,18 @@ public class ClientService : IClientService
     }
 
     public async Task<bool> RevokeSecretAsync(ClientId clientId, SecretId secretId, CancellationToken cancellationToken = default)
+    {
+        var client = await _repository.GetByIdAsync(clientId, cancellationToken);
+        if (client is null)
+            return false;
+        
+        client.RevokeSecret(secretId);
+        await _uow.SaveChangesAsync(cancellationToken);
+        
+        return true;
+    }
+
+    public async Task<bool> RemoveSecretAsync(ClientId clientId, SecretId secretId, CancellationToken cancellationToken = default)
     {
         var client = await _repository.GetByIdAsync(clientId, cancellationToken);
         if (client is null)

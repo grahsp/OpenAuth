@@ -21,4 +21,5 @@ public interface IClientService
     
     Task<string?> AddSecretAsync(ClientId id, DateTime? expiresAt = null, CancellationToken cancellationToken = default);
     Task<bool> RevokeSecretAsync(ClientId clientId, SecretId secretId, CancellationToken cancellationToken = default);
+    Task<bool> RemoveSecretAsync(ClientId clientId, SecretId secretId, CancellationToken cancellationToken = default);
 }

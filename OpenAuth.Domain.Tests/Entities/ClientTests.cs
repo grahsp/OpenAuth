@@ -1,4 +1,5 @@
 ﻿using OpenAuth.Domain.Entities;
+using OpenAuth.Domain.Enums;
 using OpenAuth.Domain.ValueObjects;
 
 namespace OpenAuth.Domain.Tests.Entities;
@@ -389,6 +390,56 @@ public class ClientTests
         }
     }
 
+    public class RevokeSecret
+    {
+        [Fact]
+        public void RevokeSecret_Revokes_If_Exists()
+        {
+            var client = new Client("App");
+            var secret = new ClientSecret(new SecretHash("v1$1$abc$xyz"));
+            client.AddSecret(secret);
+
+            client.RevokeSecret(secret.Id);
+
+            Assert.Contains(secret, client.Secrets);
+            Assert.False(secret.IsActive());
+        }
+
+        [Fact]
+        public void RevokeSecret_DoesNothing_If_NotFound()
+        {
+            var client = new Client("App");
+            var secret = new ClientSecret(new SecretHash("v1$1$abc$xyz"));
+
+            client.RevokeSecret(secret.Id);
+            Assert.Empty(client.Secrets);
+        }
+        
+        [Fact]
+        public void RevokeSecret_Updates_Timestamp_If_Exists()
+        {
+            var client = new Client("App");
+            var secret = new ClientSecret(new SecretHash("v1$1$abc$xyz"));
+            client.AddSecret(secret);
+            
+            var before = client.UpdatedAt;
+            client.RevokeSecret(secret.Id);
+
+            Assert.True(client.UpdatedAt > before);
+        }
+        
+        [Fact]
+        public void RevokeSecret_DoesNot_Update_Timestamp_If_NotFound()
+        {
+            var client = new Client("App");
+
+            var before = client.UpdatedAt;
+            client.RevokeSecret(SecretId.New());
+
+            Assert.Equal(client.UpdatedAt, before);
+        }
+    }
+
     public class RemoveSecret
     {
         [Fact]
@@ -409,7 +460,7 @@ public class ClientTests
             var client = new Client("App");
             var secret = new ClientSecret(new SecretHash("v1$1$abc$xyz"));
 
-            client.RemoveSecret(secret.Id); // should not throw
+            client.RemoveSecret(secret.Id);
 
             Assert.Empty(client.Secrets);
         }
@@ -434,6 +485,161 @@ public class ClientTests
 
             var before = client.UpdatedAt;
             client.RemoveSecret(SecretId.New());
+
+            Assert.Equal(client.UpdatedAt, before);
+        }
+    }
+    
+    public class AddSigningKey
+    {
+        [Fact]
+        public void AddSigningKey_Adds_Secret_To_Client()
+        {
+            var client = new Client("App");
+            var signingKey = SigningKey.CreateSymmetric(SigningAlgorithm.Hmac, "secret-key");
+
+            client.AddSigningKey(signingKey);
+
+            Assert.Contains(signingKey, client.SigningKeys);
+        }
+
+        [Fact]
+        public void AddSigningKey_Updates_Timestamp()
+        {
+            var client = new Client("App");
+            var signingKey = SigningKey.CreateSymmetric(SigningAlgorithm.Hmac, "secret-key");
+            
+            var before = client.UpdatedAt;
+            client.AddSigningKey(signingKey);
+
+            Assert.True(client.UpdatedAt > before);
+        }
+
+        [Fact]
+        public void AddSigningKey_DoesNot_Update_After_Exception()
+        {
+            var client = new Client("App");
+            var signingKey = SigningKey.CreateSymmetric(SigningAlgorithm.Hmac, "secret-key");
+            client.AddSigningKey(signingKey);
+
+            var before = client.UpdatedAt;
+            Assert.Throws<InvalidOperationException>(() => client.AddSigningKey(signingKey));
+            Assert.Equal(client.UpdatedAt, before);           
+        }
+        
+        [Fact]
+        public void AddSigningKey_Throws_When_Null()
+        {
+            var client = new Client("App");
+            Assert.Throws<ArgumentNullException>(() => client.AddSigningKey(null!));
+        }
+        
+        [Fact]
+        public void AddSigningKey_Throws_When_Duplicate_Id()
+        {
+            var client = new Client("App");
+            var signingKey = SigningKey.CreateSymmetric(SigningAlgorithm.Hmac, "secret-key");
+
+            client.AddSigningKey(signingKey);
+
+            Assert.Throws<InvalidOperationException>(() => client.AddSigningKey(signingKey));
+        }
+    }
+    
+    public class RevokeSigningKey
+    {
+        [Fact]
+        public void RevokeSigningKey_Revokes_If_Exists()
+        {
+            var client = new Client("App");
+            var signingKey = SigningKey.CreateSymmetric(SigningAlgorithm.Hmac, "secret-key");
+            client.AddSigningKey(signingKey);
+
+            client.RevokeSigningKey(signingKey.KeyId);
+
+            Assert.Contains(signingKey, client.SigningKeys);
+            Assert.False(signingKey.IsActive());
+        }
+
+        [Fact]
+        public void RevokeSigningKey_DoesNothing_If_NotFound()
+        {
+            var client = new Client("App");
+            var signingKey = SigningKey.CreateSymmetric(SigningAlgorithm.Hmac, "secret-key");
+
+            client.RevokeSigningKey(signingKey.KeyId);
+            Assert.Empty(client.Secrets);
+        }
+        
+        [Fact]
+        public void RevokeSigningKey_Updates_Timestamp_If_Exists()
+        {
+            var client = new Client("App");
+            var signingKey = SigningKey.CreateSymmetric(SigningAlgorithm.Hmac, "secret-key");
+            
+            client.AddSigningKey(signingKey);
+            var before = client.UpdatedAt;
+            client.RevokeSigningKey(signingKey.KeyId);
+
+            Assert.True(client.UpdatedAt > before);
+        }
+        
+        [Fact]
+        public void RevokeSigningKey_DoesNot_Update_Timestamp_If_NotFound()
+        {
+            var client = new Client("App");
+
+            var before = client.UpdatedAt;
+            client.RemoveSigningKey(SigningKeyId.New());
+
+            Assert.Equal(client.UpdatedAt, before);
+        }
+    }
+
+    public class RemoveSigningKey
+    {
+        [Fact]
+        public void RemoveSigningKey_Removes_If_Exists()
+        {
+            var client = new Client("App");
+            var signingKey = SigningKey.CreateSymmetric(SigningAlgorithm.Hmac, "secret-key");
+            client.AddSigningKey(signingKey);
+
+            client.RemoveSigningKey(signingKey.KeyId);
+
+            Assert.DoesNotContain(signingKey, client.SigningKeys);
+        }
+
+        [Fact]
+        public void RemoveSigningKey_DoesNothing_If_NotFound()
+        {
+            var client = new Client("App");
+            var signingKey = SigningKey.CreateSymmetric(SigningAlgorithm.Hmac, "secret-key");
+
+            client.RemoveSigningKey(signingKey.KeyId);
+            Assert.Empty(client.Secrets);
+        }
+        
+        [Fact]
+        public void RemoveSigningKey_Updates_Timestamp_If_Exists()
+        {
+            var client = new Client("App");
+            var signingKey = SigningKey.CreateSymmetric(SigningAlgorithm.Hmac, "secret-key");
+            
+            client.AddSigningKey(signingKey);
+            var before = client.UpdatedAt;
+            client.RemoveSigningKey(signingKey.KeyId);
+
+            Assert.True(client.UpdatedAt > before);
+        }
+        
+        [Fact]
+        public void RemoveSigningKey_DoesNot_Update_Timestamp_If_NotFound()
+        {
+            var client = new Client("App");
+
+            var before = client.UpdatedAt;
+            client.RemoveSigningKey(SigningKeyId.New());
 
             Assert.Equal(client.UpdatedAt, before);
         }
@@ -473,6 +679,43 @@ public class ClientTests
             secret.Revoke();
 
             Assert.DoesNotContain(secret, client.ActiveSecrets());
+        } 
+    }
+    
+    public class GetActiveSigningKeys
+    {
+        [Fact]
+        public void ActiveSigningKeys_Only_Returns_NonRevoked_And_NonExpired()
+        {
+            var client = new Client("App");
+            var active = SigningKey.CreateSymmetric(SigningAlgorithm.Hmac, "secret-key");
+            var expired = SigningKey.CreateSymmetric(SigningAlgorithm.Hmac, "secret-key", DateTime.UtcNow.AddMinutes(-1));
+            var revoked = SigningKey.CreateSymmetric(SigningAlgorithm.Hmac, "secret-key");
+            revoked.Revoke();
+
+            client.AddSigningKey(active);
+            client.AddSigningKey(expired);
+            client.AddSigningKey(revoked);
+
+            var result = client.ActiveSigningKeys().ToList();
+
+            Assert.Contains(active, result);
+            Assert.DoesNotContain(expired, result);
+            Assert.DoesNotContain(revoked, result);
+        }
+
+        [Fact]
+        public void Revoke_SigningKey_Changes_ActiveSecrets_Result()
+        {
+            var client = new Client("App");
+            var signingKey = SigningKey.CreateSymmetric(SigningAlgorithm.Hmac, "secret-key");
+            client.AddSigningKey(signingKey);
+
+            Assert.Contains(signingKey, client.ActiveSigningKeys());
+
+            signingKey.Revoke();
+
+            Assert.DoesNotContain(signingKey, client.ActiveSigningKeys());
         } 
     }
     

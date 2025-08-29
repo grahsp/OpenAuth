@@ -171,6 +171,26 @@ public class Client
         SigningKeys.Add(signingKey);
         Touch();
     }
+    
+    public void RevokeSecret(SecretId secretId)
+    {
+        var secret = Secrets.FirstOrDefault(x => x.Id == secretId);
+        if (secret is null)
+            return;
+        
+        secret.Revoke();
+        Touch();
+    }
+    
+    public void RevokeSigningKey(SigningKeyId keyId)
+    {
+        var signingKey = SigningKeys.FirstOrDefault(x => x.KeyId == keyId);
+        if (signingKey is null)
+            return;
+
+        signingKey.Revoke();
+        Touch();
+    }
 
     public void RemoveSecret(SecretId secretId)
     {
@@ -178,13 +198,26 @@ public class Client
         if (secret is null)
             return;
         
-        secret.Revoke();
         Secrets.Remove(secret);
+        Touch();
+    }
+    
+    public void RemoveSigningKey(SigningKeyId keyId)
+    {
+        var signingKey = SigningKeys.FirstOrDefault(x => x.KeyId == keyId);
+        if (signingKey is null)
+            return;
+
+        SigningKeys.Remove(signingKey);
         Touch();
     }
 
     public IEnumerable<ClientSecret> ActiveSecrets() =>
         Secrets.Where(x => x.IsActive())
+            .OrderByDescending(x => x.CreatedAt);
+
+    public IEnumerable<SigningKey> ActiveSigningKeys() =>
+        SigningKeys.Where(x => x.IsActive())
             .OrderByDescending(x => x.CreatedAt);
 
     public void Enable()
