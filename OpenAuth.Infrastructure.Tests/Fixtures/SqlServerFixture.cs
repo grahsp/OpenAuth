@@ -17,7 +17,7 @@ public class SqlServerFixture : IAsyncLifetime
     private Respawner _respawner = null!;
 
     private string ConnectionString =>
-        $"Server=127.0.0.1,{_port};User Id=sa;Password=Passw0rd!123;TrustServerCertificate=True;Encrypt=False;";
+        $"Server=127.0.0.1,{_port};Database=IntegrationTest;User Id=sa;Password=Passw0rd!123;TrustServerCertificate=True;Encrypt=False;";
 
     public async Task InitializeAsync()
     {
