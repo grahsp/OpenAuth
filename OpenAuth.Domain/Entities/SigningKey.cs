@@ -26,11 +26,9 @@ public class SigningKey
     public string PrivateKey { get; private init; } = null!;
 
     public DateTime CreatedAt { get; private init; }
-    public DateTime? ExpiresAt { get; init; }
+    public DateTime? ExpiresAt { get; private set; }
+    public DateTime? RevokedAt { get; private set; }
     
-    
-    public bool IsActive() => ExpiresAt is null || ExpiresAt > DateTime.UtcNow;
-
     public static SigningKey CreateSymmetric(SigningAlgorithm algorithm, string key, DateTime? expiresAt = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(key);
@@ -53,4 +51,10 @@ public class SigningKey
             PrivateKey = privateKey
         };
     }
+    
+    
+    public bool IsActive() => RevokedAt is null && (ExpiresAt is null || ExpiresAt > DateTime.UtcNow);
+    
+    public void Revoke() =>
+        RevokedAt ??= DateTime.UtcNow;
 }

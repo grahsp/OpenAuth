@@ -44,5 +44,8 @@ public class SigningKeyConfiguration : IEntityTypeConfiguration<SigningKey>
         
         builder.Property(x => x.ExpiresAt)
             .IsRequired(false);
+        
+        builder.Property(x => x.RevokedAt)
+            .IsRequired(false);
     }
 }
