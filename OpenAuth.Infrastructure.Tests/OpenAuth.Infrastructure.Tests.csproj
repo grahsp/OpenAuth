@@ -21,6 +21,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\OpenAuth.Application.Tests\OpenAuth.Application.Tests.csproj" />
       <ProjectReference Include="..\OpenAuth.Domain\OpenAuth.Domain.csproj" />
       <ProjectReference Include="..\OpenAuth.Infrastructure\OpenAuth.Infrastructure.csproj" />
     </ItemGroup>
