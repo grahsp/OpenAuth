@@ -1,6 +1,8 @@
 using OpenAuth.Application.Clients;
+using OpenAuth.Application.Security.Keys;
 using OpenAuth.Application.Tests.Stubs;
 using OpenAuth.Domain.Abstractions;
+using OpenAuth.Domain.Enums;
 using OpenAuth.Domain.ValueObjects;
 
 namespace OpenAuth.Application.Tests.Clients;
@@ -9,9 +11,10 @@ public class ClientServiceTests
 {
     private readonly FakeClientRepository _repo = new();
     private readonly FakeUnitOfWork _uow = new();
-    private readonly IClientSecretFactory _factory = new FakeClientSecretFactory();
+    private readonly IClientSecretFactory _secretFactory = new FakeClientSecretFactory();
+    private readonly ISigningKeyFactory _keyFactory = new FakeSigningKeyFactory();
 
-    private ClientService CreateSut() => new(_repo, _uow, _factory);
+    private ClientService CreateSut() => new(_repo, _uow, _secretFactory, _keyFactory);
 
     private readonly Scope _read = new("read");
     private readonly Scope _write = new("write");
@@ -70,7 +73,7 @@ public class ClientServiceTests
             var service = CreateSut();
             var client = await service.RegisterAsync("client");
 
-            Assert.NotNull(await _repo.GetByIdAsync(client.Id));
+            Assert.NotNull(await service.GetByIdAsync(client.Id));
             Assert.True(_uow.Saved);
         }
 
@@ -103,7 +106,7 @@ public class ClientServiceTests
             var result = await service.DeleteAsync(client.Id);
 
             Assert.True(result);
-            Assert.Null(await _repo.GetByIdAsync(client.Id));
+            Assert.Null(await service.GetByIdAsync(client.Id));
         }
 
         [Fact]
@@ -195,14 +198,14 @@ public class ClientServiceTests
     public class Secrets : ClientServiceTests
     {
         [Fact]
-        public async Task AddSecretAsync_AddsSecret()
+        public async Task AddSecretAsync_PersistsSecretWithProperties()
         {
             var service = CreateSut();
             var client = await service.RegisterAsync("client");
 
             var plain = await service.AddSecretAsync(client.Id);
 
-            var updated = await _repo.GetByIdAsync(client.Id);
+            var updated = await service.GetByIdAsync(client.Id);
             Assert.Single(updated!.Secrets);
             Assert.Equal("plain-secret-1", plain);
         }
@@ -216,7 +219,7 @@ public class ClientServiceTests
         }
 
         [Fact]
-        public async Task RevokeSecretAsync_RevokesSecret()
+        public async Task RevokeSecretAsync_RevokesSecret_WhenClientAndSecretExist()
         {
             var service = CreateSut();
             var client = await service.RegisterAsync("client");
@@ -236,16 +239,111 @@ public class ClientServiceTests
             var result = await service.RevokeSecretAsync(ClientId.New(), SecretId.New());
             Assert.False(result);
         }
+        
+        [Fact]
+        public async Task RemoveSecretAsync_RemovesSecret_WhenClientAndSecretExist()
+        {
+            var service = CreateSut();
+            var client = await service.RegisterAsync("client");
+            
+            await service.AddSecretAsync(client.Id);
+            var secret = client.Secrets.First();
+
+            var result = await service.RemoveSecretAsync(client.Id, secret.Id);
+            var updated = await _repo.GetByIdAsync(client.Id);
+
+            Assert.True(result);
+            Assert.Empty(updated!.Secrets);
+        }
 
         [Fact]
-        public async Task RevokeSecretAsync_ReturnsTrue_EvenIfSecretNotFound()
+        public async Task RemoveSecretAsync_ReturnsFalse_WhenClientNotFound()
+        {
+            var service = CreateSut();
+
+            var result = await service.RemoveSecretAsync(ClientId.New(), SecretId.New());
+            Assert.False(result);
+        }
+    }
+
+    public class SigningKeys : ClientServiceTests
+    {
+        [Fact]
+        public async Task AddSigningKeyAsync_PersistsKeyWithProperties()
+        {
+            var service = CreateSut();
+            var client = await service.RegisterAsync("client");
+            var expiresAt = DateTime.UtcNow.AddDays(30);
+
+            await service.AddSigningKeyAsync(client.Id, SigningAlgorithm.Rsa, expiresAt);
+
+            var updated = await _repo.GetByIdAsync(client.Id);
+            var key = updated!.SigningKeys.Single();
+
+            Assert.Equal(SigningAlgorithm.Rsa, key.Algorithm);
+            Assert.Equal(expiresAt, key.ExpiresAt);
+        }
+
+        [Fact]
+        public async Task AddSigningKeyAsync_Throws_WhenClientNotFound()
+        {
+            var service = CreateSut();
+
+            await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+                await service.AddSigningKeyAsync(new ClientId(Guid.NewGuid()), SigningAlgorithm.Rsa));
+        }
+        
+        [Fact]
+        public async Task RevokeSigningKeyAsync_RevokesKey_WhenClientAndKeyExist()
         {
             var service = CreateSut();
             var client = await service.RegisterAsync("client");
 
-            var result = await service.RevokeSecretAsync(client.Id, SecretId.New());
+            var expiresAt = DateTime.UtcNow.AddDays(30);
+            var key = await service.AddSigningKeyAsync(client.Id, SigningAlgorithm.Rsa, expiresAt);
+
+            var result = await service.RevokeSigningKeyAsync(client.Id, key.KeyId);
+
+            var updated = await _repo.GetByIdAsync(client.Id);
+            var revokedKey = updated!.SigningKeys.Single();
+        
+            Assert.True(result);
+            Assert.False(revokedKey.IsActive());
+            Assert.NotNull(revokedKey.RevokedAt);
+        }
+
+        [Fact]
+        public async Task RevokeSigningKeyAsync_ReturnsFalse_WhenClientDoesNotExist()
+        {
+            var service = CreateSut();
+
+            var result = await service.RevokeSigningKeyAsync(new ClientId(Guid.NewGuid()), SigningKeyId.New());
+
+            Assert.False(result);
+        }
+        
+        [Fact]
+        public async Task RemoveSigningKeyAsync_RemovesKey_WhenClientAndKeyExist()
+        {
+            var service = CreateSut();
+            var client = await service.RegisterAsync("client");
+            var key = await service.AddSigningKeyAsync(client.Id, SigningAlgorithm.Rsa);
+
+            var result = await service.RemoveSigningKeyAsync(client.Id, key.KeyId);
+
+            var updated = await _repo.GetByIdAsync(client.Id);
 
             Assert.True(result);
+            Assert.Empty(updated!.SigningKeys);
+        }
+
+        [Fact]
+        public async Task RemoveSigningKeyAsync_ReturnsFalse_WhenClientDoesNotExist()
+        {
+            var service = CreateSut();
+
+            var result = await service.RemoveSigningKeyAsync(new ClientId(Guid.NewGuid()), SigningKeyId.New());
+            Assert.False(result);
         }
     }
 }
