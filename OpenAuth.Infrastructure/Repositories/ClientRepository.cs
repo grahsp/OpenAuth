@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using OpenAuth.Application.Abstractions;
+using OpenAuth.Application.Clients;
 using OpenAuth.Domain.Entities;
 using OpenAuth.Domain.ValueObjects;
 using OpenAuth.Infrastructure.Persistence;

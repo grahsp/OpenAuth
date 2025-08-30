@@ -1,4 +1,3 @@
-using OpenAuth.Application.Abstractions;
 using OpenAuth.Application.Common;
 using OpenAuth.Application.Security.Keys;
 using OpenAuth.Domain.Entities;

@@ -1,7 +1,7 @@
 using OpenAuth.Domain.Entities;
 using OpenAuth.Domain.ValueObjects;
 
-namespace OpenAuth.Application.Abstractions;
+namespace OpenAuth.Application.Clients;
 
 public interface IClientRepository
 {
