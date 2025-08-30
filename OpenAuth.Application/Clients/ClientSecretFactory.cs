@@ -1,7 +1,7 @@
 using OpenAuth.Domain.Abstractions;
 using OpenAuth.Domain.Entities;
 
-namespace OpenAuth.Application.Security;
+namespace OpenAuth.Application.Clients;
 
 public class ClientSecretFactory : IClientSecretFactory
 {

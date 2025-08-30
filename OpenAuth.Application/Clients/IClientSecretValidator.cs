@@ -1,6 +1,6 @@
 using OpenAuth.Domain.Entities;
 
-namespace OpenAuth.Domain.Abstractions;
+namespace OpenAuth.Application.Clients;
 
 public interface IClientSecretValidator
 {

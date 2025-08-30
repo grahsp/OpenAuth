@@ -1,3 +1,4 @@
+using OpenAuth.Application.Clients;
 using OpenAuth.Application.Security;
 using OpenAuth.Test.Common.Fakes;
 

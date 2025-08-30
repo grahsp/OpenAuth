@@ -1,3 +1,4 @@
+using OpenAuth.Application.Clients;
 using OpenAuth.Domain.Abstractions;
 using OpenAuth.Domain.Entities;
 using OpenAuth.Domain.ValueObjects;

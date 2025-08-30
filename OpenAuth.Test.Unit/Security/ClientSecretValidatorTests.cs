@@ -1,4 +1,5 @@
-﻿using OpenAuth.Application.Security;
+﻿using OpenAuth.Application.Clients;
+using OpenAuth.Application.Security;
 using OpenAuth.Domain.Entities;
 using OpenAuth.Test.Common.Fakes;
 
