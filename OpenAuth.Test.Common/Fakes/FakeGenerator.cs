@@ -1,4 +1,4 @@
-using OpenAuth.Domain.Abstractions;
+using OpenAuth.Application.Security.Secrets;
 
 namespace OpenAuth.Test.Common.Fakes;
 

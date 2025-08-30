@@ -1,8 +1,8 @@
 using System.Buffers.Text;
 using System.Security.Cryptography;
-using OpenAuth.Domain.Abstractions;
+using OpenAuth.Application.Security.Secrets;
 
-namespace OpenAuth.Infrastructure.Security;
+namespace OpenAuth.Infrastructure.Security.Secrets;
 
 public class SecretGenerator : ISecretGenerator
 {

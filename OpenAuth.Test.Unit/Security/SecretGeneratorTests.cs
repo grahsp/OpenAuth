@@ -1,5 +1,6 @@
-using OpenAuth.Domain.Abstractions;
+using OpenAuth.Application.Security.Secrets;
 using OpenAuth.Infrastructure.Security;
+using OpenAuth.Infrastructure.Security.Secrets;
 
 namespace OpenAuth.Test.Unit.Security;
 

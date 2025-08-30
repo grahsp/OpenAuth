@@ -1,7 +1,6 @@
 using System.Collections;
 using OpenAuth.Application.Clients;
 using OpenAuth.Application.Security.Keys;
-using OpenAuth.Domain.Abstractions;
 using OpenAuth.Domain.Enums;
 using OpenAuth.Domain.ValueObjects;
 using OpenAuth.Test.Common.Fakes;

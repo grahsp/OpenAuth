@@ -1,6 +1,6 @@
 using OpenAuth.Domain.ValueObjects;
 
-namespace OpenAuth.Domain.Abstractions;
+namespace OpenAuth.Application.Security.Secrets;
 
 public interface ISecretHasher
 {

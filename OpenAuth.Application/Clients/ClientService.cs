@@ -1,7 +1,6 @@
 using OpenAuth.Application.Abstractions;
 using OpenAuth.Application.Common;
 using OpenAuth.Application.Security.Keys;
-using OpenAuth.Domain.Abstractions;
 using OpenAuth.Domain.Entities;
 using OpenAuth.Domain.Enums;
 using OpenAuth.Domain.ValueObjects;
