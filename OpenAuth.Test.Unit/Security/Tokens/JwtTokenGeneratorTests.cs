@@ -1,9 +1,9 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Cryptography;
-using OpenAuth.Application.Security.Tokens;
 using OpenAuth.Domain.Entities;
 using OpenAuth.Domain.Enums;
 using OpenAuth.Domain.ValueObjects;
+using OpenAuth.Infrastructure.Security.Tokens;
 using OpenAuth.Test.Common.Fakes;
 
 namespace OpenAuth.Test.Unit.Security.Tokens;

@@ -3,10 +3,11 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Microsoft.IdentityModel.Tokens;
 using OpenAuth.Application.Security.Signing;
+using OpenAuth.Application.Security.Tokens;
 using OpenAuth.Domain.Entities;
 using OpenAuth.Domain.ValueObjects;
 
-namespace OpenAuth.Application.Security.Tokens;
+namespace OpenAuth.Infrastructure.Security.Tokens;
 
 public class JwtTokenGenerator : IJwtTokenGenerator
 {
