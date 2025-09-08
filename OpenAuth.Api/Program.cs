@@ -27,7 +27,7 @@ public class Program
         // Database
         builder.Services.AddDbContext<AppDbContext>(opts =>
         {
-            opts.UseSqlServer("");
+            opts.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
         });
 
         // Client Services
