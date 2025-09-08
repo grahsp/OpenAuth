@@ -1,5 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Cryptography;
+using Microsoft.Extensions.Options;
 using OpenAuth.Domain.Entities;
 using OpenAuth.Domain.Enums;
 using OpenAuth.Domain.ValueObjects;
@@ -25,7 +26,7 @@ public class JwtTokenGeneratorTests
 
     private static JwtTokenGenerator CreateSut()
     {
-        return new JwtTokenGenerator("test-issuer", new FakeSigningCredentialsFactory());
+        return new JwtTokenGenerator(Options.Create("test-issuer"), new FakeSigningCredentialsFactory());
     }
 
     [Fact]

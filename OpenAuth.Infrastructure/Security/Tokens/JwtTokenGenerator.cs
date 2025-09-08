@@ -1,6 +1,7 @@
 using System.Collections.Immutable;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using OpenAuth.Application.Security.Signing;
 using OpenAuth.Application.Security.Tokens;
@@ -14,9 +15,9 @@ public class JwtTokenGenerator : IJwtTokenGenerator
     private readonly string _issuer;
     private readonly ISigningCredentialsFactory _factory;
     
-    public JwtTokenGenerator(string issuer, ISigningCredentialsFactory factory)
+    public JwtTokenGenerator(IOptions<string> issuer, ISigningCredentialsFactory factory)
     {
-        _issuer = issuer;
+        _issuer = issuer.Value;
         _factory = factory;
     }
 
