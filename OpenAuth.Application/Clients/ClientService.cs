@@ -1,4 +1,3 @@
-using OpenAuth.Application.Common;
 using OpenAuth.Application.Security.Keys;
 using OpenAuth.Domain.Entities;
 using OpenAuth.Domain.Enums;
@@ -9,14 +8,12 @@ namespace OpenAuth.Application.Clients;
 public class ClientService : IClientService
 {
     private readonly IClientRepository _repository;
-    private readonly IUnitOfWork _uow;
     private readonly IClientSecretFactory _secretFactory;
     private readonly ISigningKeyFactory _signingKeyFactory;
     
-    public ClientService(IClientRepository repository, IUnitOfWork uow, IClientSecretFactory secretFactory, ISigningKeyFactory signingKeyFactory)
+    public ClientService(IClientRepository repository, IClientSecretFactory secretFactory, ISigningKeyFactory signingKeyFactory)
     {
         _repository = repository;
-        _uow = uow;
         _secretFactory = secretFactory;
         _signingKeyFactory = signingKeyFactory;
     }
@@ -31,7 +28,7 @@ public class ClientService : IClientService
     {
         var client = new Client(name);
         _repository.Add(client);
-        await _uow.SaveChangesAsync(cancellationToken);
+        await _repository.SaveChangesAsync(cancellationToken);
 
         return client;
     }
@@ -42,7 +39,7 @@ public class ClientService : IClientService
                      ?? throw new InvalidOperationException("Client not found.");
         
         client.Rename(name);
-        await _uow.SaveChangesAsync(cancellationToken);
+        await _repository.SaveChangesAsync(cancellationToken);
 
         return client;
     }
@@ -54,7 +51,7 @@ public class ClientService : IClientService
             return false;
 
         _repository.Remove(client);
-        await _uow.SaveChangesAsync(cancellationToken);
+        await _repository.SaveChangesAsync(cancellationToken);
 
         return true;
     }
@@ -66,7 +63,7 @@ public class ClientService : IClientService
                      ?? throw new InvalidOperationException("Client not found.");
         
         client.Enable();
-        await _uow.SaveChangesAsync(cancellationToken);
+        await _repository.SaveChangesAsync(cancellationToken);
 
         return client;
     }
@@ -77,7 +74,7 @@ public class ClientService : IClientService
                      ?? throw new InvalidOperationException("Client not found.");
         
         client.Disable();
-        await _uow.SaveChangesAsync(cancellationToken);
+        await _repository.SaveChangesAsync(cancellationToken);
 
         return client;
     }
@@ -90,7 +87,7 @@ public class ClientService : IClientService
                      ?? throw new InvalidOperationException("Client not found.");
         
         client.GrantScopes(audience, scopes);
-        await _uow.SaveChangesAsync(cancellationToken);
+        await _repository.SaveChangesAsync(cancellationToken);
 
         return client;
     }
@@ -102,7 +99,7 @@ public class ClientService : IClientService
                      ?? throw new InvalidOperationException("Client not found.");
         
         client.RevokeScopes(audience, scopes);
-        await _uow.SaveChangesAsync(cancellationToken);
+        await _repository.SaveChangesAsync(cancellationToken);
 
         return client;
     }
@@ -113,7 +110,7 @@ public class ClientService : IClientService
                      ?? throw new InvalidOperationException("Client not found.");
         
         client.RemoveAudience(audience);
-        await _uow.SaveChangesAsync(cancellationToken);
+        await _repository.SaveChangesAsync(cancellationToken);
 
         return client;
     }
@@ -127,7 +124,7 @@ public class ClientService : IClientService
         var (secret, plain) = _secretFactory.Create(expiresAt);
         client.AddSecret(secret);
 
-        await _uow.SaveChangesAsync(cancellationToken);
+        await _repository.SaveChangesAsync(cancellationToken);
         return plain;
     }
 
@@ -138,7 +135,7 @@ public class ClientService : IClientService
             return false;
         
         client.RevokeSecret(secretId);
-        await _uow.SaveChangesAsync(cancellationToken);
+        await _repository.SaveChangesAsync(cancellationToken);
         
         return true;
     }
@@ -150,7 +147,7 @@ public class ClientService : IClientService
             return false;
         
         client.RemoveSecret(secretId);
-        await _uow.SaveChangesAsync(cancellationToken);
+        await _repository.SaveChangesAsync(cancellationToken);
 
         return true;
     }
@@ -164,7 +161,7 @@ public class ClientService : IClientService
         var signingKey = _signingKeyFactory.Create(algorithm, expiresAt);
         client.AddSigningKey(signingKey);
 
-        await _uow.SaveChangesAsync(cancellationToken);
+        await _repository.SaveChangesAsync(cancellationToken);
         return signingKey;
     }
 
@@ -175,7 +172,7 @@ public class ClientService : IClientService
             return false;
         
         client.RevokeSigningKey(keyId);
-        await _uow.SaveChangesAsync(cancellationToken);
+        await _repository.SaveChangesAsync(cancellationToken);
         
         return true;
     }
@@ -187,7 +184,7 @@ public class ClientService : IClientService
             return false;
         
         client.RemoveSigningKey(keyId);
-        await _uow.SaveChangesAsync(cancellationToken);
+        await _repository.SaveChangesAsync(cancellationToken);
 
         return true;
     }

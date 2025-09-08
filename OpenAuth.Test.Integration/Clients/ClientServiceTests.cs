@@ -20,7 +20,7 @@ public class ClientServiceTests : IAsyncLifetime
     private ClientService CreateSut()
     {
         var context = _fx.CreateContext();
-        return new ClientService(new ClientRepository(context), context, new FakeClientSecretFactory(), new FakeSigningKeyFactory());
+        return new ClientService(new ClientRepository(context), new FakeClientSecretFactory(), new FakeSigningKeyFactory());
     }
 
     public class GetClient(SqlServerFixture fx) : ClientServiceTests(fx)

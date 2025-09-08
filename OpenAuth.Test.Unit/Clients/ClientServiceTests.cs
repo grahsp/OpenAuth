@@ -1,4 +1,3 @@
-using System.Collections;
 using OpenAuth.Application.Clients;
 using OpenAuth.Application.Security.Keys;
 using OpenAuth.Domain.Enums;
@@ -10,11 +9,10 @@ namespace OpenAuth.Test.Unit.Clients;
 public class ClientServiceTests
 {
     private readonly FakeClientRepository _repo = new();
-    private readonly FakeUnitOfWork _uow = new();
     private readonly IClientSecretFactory _secretFactory = new FakeClientSecretFactory();
     private readonly ISigningKeyFactory _keyFactory = new FakeSigningKeyFactory();
 
-    private ClientService CreateSut() => new(_repo, _uow, _secretFactory, _keyFactory);
+    private ClientService CreateSut() => new(_repo, _secretFactory, _keyFactory);
 
     private readonly Scope _read = new("read");
     private readonly Scope _write = new("write");
@@ -74,7 +72,7 @@ public class ClientServiceTests
             var client = await service.RegisterAsync("client");
 
             Assert.NotNull(await service.GetByIdAsync(client.Id));
-            Assert.True(_uow.Saved);
+            Assert.True(_repo.Saved);
         }
 
         [Fact]
@@ -105,7 +103,7 @@ public class ClientServiceTests
 
             var result = await service.DeleteAsync(client.Id);
 
-            Assert.True((bool)result);
+            Assert.True(result);
             Assert.Null(await service.GetByIdAsync(client.Id));
         }
 
@@ -114,7 +112,7 @@ public class ClientServiceTests
         {
             var service = CreateSut();
             var result = await service.DeleteAsync(ClientId.New());
-            Assert.False((bool)result);
+            Assert.False(result);
         }
     }
 
@@ -128,10 +126,10 @@ public class ClientServiceTests
             var client = await service.RegisterAsync("client");
 
             var disabled = await service.DisableAsync(client.Id);
-            Assert.False((bool)disabled.Enabled);
+            Assert.False(disabled.Enabled);
 
             var enabled = await service.EnableAsync(client.Id);
-            Assert.True((bool)enabled.Enabled);
+            Assert.True(enabled.Enabled);
         }
 
         [Fact]
@@ -190,7 +188,7 @@ public class ClientServiceTests
             await service.GrantScopesAsync(client.Id, aud, [_read]);
 
             var afterRemove = await service.RemoveAudienceAsync(client.Id, aud);
-            Assert.Empty((IEnumerable)afterRemove.GetAudiences());
+            Assert.Empty(afterRemove.GetAudiences());
         }
     }
 
@@ -228,8 +226,8 @@ public class ClientServiceTests
 
             var result = await service.RevokeSecretAsync(client.Id, secret.Id);
 
-            Assert.True((bool)result);
-            Assert.True((bool)secret.RevokedAt.HasValue);
+            Assert.True(result);
+            Assert.True(secret.RevokedAt.HasValue);
         }
 
         [Fact]
@@ -237,7 +235,7 @@ public class ClientServiceTests
         {
             var service = CreateSut();
             var result = await service.RevokeSecretAsync(ClientId.New(), SecretId.New());
-            Assert.False((bool)result);
+            Assert.False(result);
         }
         
         [Fact]
@@ -252,7 +250,7 @@ public class ClientServiceTests
             var result = await service.RemoveSecretAsync(client.Id, secret.Id);
             var updated = await _repo.GetByIdAsync(client.Id);
 
-            Assert.True((bool)result);
+            Assert.True(result);
             Assert.Empty(updated!.Secrets);
         }
 
@@ -262,7 +260,7 @@ public class ClientServiceTests
             var service = CreateSut();
 
             var result = await service.RemoveSecretAsync(ClientId.New(), SecretId.New());
-            Assert.False((bool)result);
+            Assert.False(result);
         }
     }
 
@@ -307,7 +305,7 @@ public class ClientServiceTests
             var updated = await _repo.GetByIdAsync(client.Id);
             var revokedKey = updated!.SigningKeys.Single();
         
-            Assert.True((bool)result);
+            Assert.True(result);
             Assert.False(revokedKey.IsActive());
             Assert.NotNull(revokedKey.RevokedAt);
         }
@@ -319,7 +317,7 @@ public class ClientServiceTests
 
             var result = await service.RevokeSigningKeyAsync(new ClientId(Guid.NewGuid()), SigningKeyId.New());
 
-            Assert.False((bool)result);
+            Assert.False(result);
         }
         
         [Fact]
@@ -333,7 +331,7 @@ public class ClientServiceTests
 
             var updated = await _repo.GetByIdAsync(client.Id);
 
-            Assert.True((bool)result);
+            Assert.True(result);
             Assert.Empty(updated!.SigningKeys);
         }
 
@@ -343,7 +341,7 @@ public class ClientServiceTests
             var service = CreateSut();
 
             var result = await service.RemoveSigningKeyAsync(new ClientId(Guid.NewGuid()), SigningKeyId.New());
-            Assert.False((bool)result);
+            Assert.False(result);
         }
     }
 }
