@@ -21,6 +21,8 @@ public class Program
         // Add services to the container.
         var builder = WebApplication.CreateBuilder(args);
 
+        builder.Services.AddControllers();
+        
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
 
@@ -56,6 +58,8 @@ public class Program
 
         // Configure the HTTP request pipeline.
         var app = builder.Build();
+
+        app.MapControllers();
 
         if (app.Environment.IsDevelopment())
         {
