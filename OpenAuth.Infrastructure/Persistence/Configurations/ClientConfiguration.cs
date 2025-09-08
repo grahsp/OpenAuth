@@ -37,10 +37,7 @@ public class ClientConfiguration : IEntityTypeConfiguration<Client>
             .IsRequired();
         
         builder.Property(x => x.Grants)
-            .HasConversion(
-                dict => JsonSerializer.Serialize(dict, (JsonSerializerOptions)null!),
-                json => JsonSerializer.Deserialize<Dictionary<string, List<string>>>(json, (JsonSerializerOptions)null!)
-                        ?? new Dictionary<string, List<string>>())
+            .HasJsonConversion()
             .HasColumnType("nvarchar(max)")
             .IsRequired();
             
