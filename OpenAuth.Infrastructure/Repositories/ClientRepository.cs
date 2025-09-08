@@ -28,4 +28,7 @@ public class ClientRepository : IClientRepository
 
     public void Remove(Client client) =>
         _context.Clients.Remove(client);
+    
+    public async Task SaveChangesAsync(CancellationToken cancellationToken = default) =>
+        await _context.SaveChangesAsync(cancellationToken);
 }

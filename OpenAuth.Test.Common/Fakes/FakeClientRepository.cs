@@ -6,6 +6,7 @@ namespace OpenAuth.Test.Common.Fakes;
 
 public class FakeClientRepository : IClientRepository
 {
+    public bool Saved { get; private set; }
     private readonly Dictionary<ClientId, Client> _store = new();
 
     public Task<Client?> GetByIdAsync(ClientId id, CancellationToken ct = default) =>
@@ -19,6 +20,12 @@ public class FakeClientRepository : IClientRepository
 
     public void Remove(Client client) =>
         _store.Remove(client.Id);
+
+    public Task SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        Saved = true;
+        return Task.CompletedTask;
+    }
 
     public IReadOnlyCollection<Client> Clients => _store.Values.ToList();
 }

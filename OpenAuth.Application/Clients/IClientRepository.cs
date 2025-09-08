@@ -9,4 +9,5 @@ public interface IClientRepository
     Task<Client?> GetByNameAsync(string name, CancellationToken cancellationToken = default);
     void Add(Client client);
     void Remove(Client client);
+    Task SaveChangesAsync(CancellationToken cancellationToken = default);
 }
