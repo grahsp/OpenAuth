@@ -14,6 +14,9 @@ public class FakeClientRepository : IClientRepository
 
     public Task<Client?> GetByNameAsync(string name, CancellationToken ct = default) =>
         Task.FromResult(_store.Values.FirstOrDefault(c => c.Name == name));
+    
+    public Task<Client?> GetBySecretIdAsync(SecretId id, CancellationToken ct = default) =>
+        Task.FromResult(_store.Values.FirstOrDefault(c => c.Secrets.Any(s => s.Id == id)));
 
     public void Add(Client client) =>
         _store[client.Id] = client;

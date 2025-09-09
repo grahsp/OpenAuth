@@ -23,6 +23,12 @@ public class ClientRepository : IClientRepository
             .Include(x => x.SigningKeys)
             .FirstOrDefaultAsync(x => x.Name == name, cancellationToken);
 
+    public Task<Client?> GetBySecretIdAsync(SecretId id, CancellationToken cancellationToken = default) =>
+        _context.ClientSecrets
+            .Include(x => x.Client)
+            .Select(x => x.Client)
+            .FirstOrDefaultAsync(cancellationToken);
+
     public void Add(Client client) =>
         _context.Clients.Add(client);
 
