@@ -116,16 +116,16 @@ public class ClientService : IClientService
     }
 
 
-    public async Task<string> AddSecretAsync(ClientId id, DateTime? expiresAt = null, CancellationToken cancellationToken = default)
+    public async Task<SecretCreationResult> AddSecretAsync(ClientId id, DateTime? expiresAt = null, CancellationToken cancellationToken = default)
     {
         var client = await _repository.GetByIdAsync(id, cancellationToken)
                      ?? throw new InvalidOperationException("Client not found.");
         
-        var (secret, plain) = _secretFactory.Create(expiresAt);
-        client.AddSecret(secret);
+        var creationResult = _secretFactory.Create(expiresAt);
+        client.AddSecret(creationResult.Secret);
 
         await _repository.SaveChangesAsync(cancellationToken);
-        return plain;
+        return creationResult;
     }
 
     public async Task<bool> RevokeSecretAsync(SecretId secretId, CancellationToken cancellationToken = default)
