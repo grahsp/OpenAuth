@@ -399,8 +399,8 @@ public class ClientServiceTests : IAsyncLifetime
             var service = CreateSut();
             var client = await service.RegisterAsync("client");
 
-            var plain = await service.AddSecretAsync(client.Id);
-            Assert.Equal("plain-secret-1", plain); // from FakeClientSecretFactory
+            var creationResult = await service.AddSecretAsync(client.Id);
+            Assert.Equal("plain-secret-1", creationResult.Plain); // from FakeClientSecretFactory
 
             var fetched = await service.GetByIdAsync(client.Id);
             Assert.NotNull(fetched);

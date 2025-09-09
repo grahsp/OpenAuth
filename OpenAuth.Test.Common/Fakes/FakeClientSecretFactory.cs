@@ -8,12 +8,13 @@ public class FakeClientSecretFactory : IClientSecretFactory
 {
     private int _counter = 0;
 
-    public (ClientSecret secret, string plain) Create(DateTime? expiresAt = null)
+    public SecretCreationResult Create(DateTime? expiresAt = null)
     {
         // Make deterministic secrets (increment counter)
         var plain = $"plain-secret-{++_counter}";
         var hash = new SecretHash($"hash:{plain}");
         var secret = new ClientSecret(hash, expiresAt);
-        return (secret, plain);
+        
+        return new SecretCreationResult(secret, plain);
     }
 }

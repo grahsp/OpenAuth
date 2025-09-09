@@ -1,8 +1,9 @@
 using OpenAuth.Domain.Entities;
+using OpenAuth.Domain.ValueObjects;
 
 namespace OpenAuth.Application.Clients;
 
 public interface IClientSecretFactory
 {
-    (ClientSecret secret, string plain) Create(DateTime? expiresAt = null);
+    SecretCreationResult Create(DateTime? expiresAt = null);
 }

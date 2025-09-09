@@ -33,13 +33,13 @@ public class ClientController : ControllerBase
     public async Task<ActionResult<RegisterClientResponse>> Create([FromBody] RegisterClientRequest request)
     {
         var client = await _clientService.RegisterAsync(request.Name);
-        var rawClientSecret = await _clientService.AddSecretAsync(client.Id);
+        var creationResult = await _clientService.AddSecretAsync(client.Id);
 
         var response = ClientMapper.ToResponse(client);
         return CreatedAtAction(
             nameof(GetById), 
             new { id = client.Id },
-            new RegisterClientResponse(response, rawClientSecret)
+            new RegisterClientResponse(response, creationResult.Plain)
         );
     }
 

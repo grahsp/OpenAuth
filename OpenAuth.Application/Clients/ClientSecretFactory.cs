@@ -1,5 +1,6 @@
 using OpenAuth.Application.Security.Secrets;
 using OpenAuth.Domain.Entities;
+using OpenAuth.Domain.ValueObjects;
 
 namespace OpenAuth.Application.Clients;
 
@@ -14,12 +15,12 @@ public class ClientSecretFactory : IClientSecretFactory
     private readonly ISecretGenerator _generator;
     private readonly ISecretHasher _hasher;
 
-    public (ClientSecret secret, string plain) Create(DateTime? expiresAt = null)
+    public SecretCreationResult Create(DateTime? expiresAt = null)
     {
         var plain = _generator.Generate();
         var hash = _hasher.Hash(plain);
         var secret = new ClientSecret(hash, expiresAt);
 
-        return (secret, plain);
+        return new SecretCreationResult(secret, plain);
     }
 }

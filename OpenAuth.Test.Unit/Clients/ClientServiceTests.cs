@@ -201,11 +201,11 @@ public class ClientServiceTests
             var service = CreateSut();
             var client = await service.RegisterAsync("client");
 
-            var plain = await service.AddSecretAsync(client.Id);
+            var creationResult = await service.AddSecretAsync(client.Id);
 
             var updated = await service.GetByIdAsync(client.Id);
             Assert.Single(updated!.Secrets);
-            Assert.Equal((string?)"plain-secret-1", (string?)plain);
+            Assert.Equal("plain-secret-1", creationResult.Plain);
         }
 
         [Fact]

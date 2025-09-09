@@ -20,7 +20,7 @@ public interface IClientService
     Task<Client> RevokeScopesAsync(ClientId id, Audience audience, IEnumerable<Scope> scopes, CancellationToken cancellationToken = default);
     Task<Client> RemoveAudienceAsync(ClientId id, Audience audience, CancellationToken cancellationToken = default);
     
-    Task<string> AddSecretAsync(ClientId id, DateTime? expiresAt = null, CancellationToken cancellationToken = default);
+    Task<SecretCreationResult> AddSecretAsync(ClientId id, DateTime? expiresAt = null, CancellationToken cancellationToken = default);
     Task<bool> RevokeSecretAsync(SecretId secretId, CancellationToken cancellationToken = default);
     Task<bool> RemoveSecretAsync(SecretId secretId, CancellationToken cancellationToken = default);
     
