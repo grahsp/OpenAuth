@@ -128,9 +128,9 @@ public class ClientService : IClientService
         return plain;
     }
 
-    public async Task<bool> RevokeSecretAsync(ClientId clientId, SecretId secretId, CancellationToken cancellationToken = default)
+    public async Task<bool> RevokeSecretAsync(SecretId secretId, CancellationToken cancellationToken = default)
     {
-        var client = await _repository.GetByIdAsync(clientId, cancellationToken);
+        var client = await _repository.GetBySecretIdAsync(secretId, cancellationToken);
         if (client is null)
             return false;
         
@@ -140,9 +140,9 @@ public class ClientService : IClientService
         return true;
     }
 
-    public async Task<bool> RemoveSecretAsync(ClientId clientId, SecretId secretId, CancellationToken cancellationToken = default)
+    public async Task<bool> RemoveSecretAsync(SecretId secretId, CancellationToken cancellationToken = default)
     {
-        var client = await _repository.GetByIdAsync(clientId, cancellationToken);
+        var client = await _repository.GetBySecretIdAsync(secretId, cancellationToken);
         if (client is null)
             return false;
         

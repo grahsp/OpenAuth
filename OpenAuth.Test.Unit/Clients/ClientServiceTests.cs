@@ -224,7 +224,7 @@ public class ClientServiceTests
             _ = await service.AddSecretAsync(client.Id);
             var secret = client.Secrets.First();
 
-            var result = await service.RevokeSecretAsync(client.Id, secret.Id);
+            var result = await service.RevokeSecretAsync(secret.Id);
 
             Assert.True(result);
             Assert.True(secret.RevokedAt.HasValue);
@@ -234,7 +234,7 @@ public class ClientServiceTests
         public async Task RevokeSecretAsync_ReturnsFalse_WhenClientNotFound()
         {
             var service = CreateSut();
-            var result = await service.RevokeSecretAsync(ClientId.New(), SecretId.New());
+            var result = await service.RevokeSecretAsync(SecretId.New());
             Assert.False(result);
         }
         
@@ -247,7 +247,7 @@ public class ClientServiceTests
             await service.AddSecretAsync(client.Id);
             var secret = client.Secrets.First();
 
-            var result = await service.RemoveSecretAsync(client.Id, secret.Id);
+            var result = await service.RemoveSecretAsync(secret.Id);
             var updated = await _repo.GetByIdAsync(client.Id);
 
             Assert.True(result);
@@ -259,7 +259,7 @@ public class ClientServiceTests
         {
             var service = CreateSut();
 
-            var result = await service.RemoveSecretAsync(ClientId.New(), SecretId.New());
+            var result = await service.RemoveSecretAsync(SecretId.New());
             Assert.False(result);
         }
     }
