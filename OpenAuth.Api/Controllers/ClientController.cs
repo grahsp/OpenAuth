@@ -18,10 +18,10 @@ public class ClientController : ControllerBase
 
     private readonly IClientService _clientService;
 
-    [HttpGet("{id:guid}")]
-    public async Task<ActionResult<Client>> GetById(Guid id)
+    [HttpGet("{clientId:guid}")]
+    public async Task<ActionResult<Client>> GetById(Guid clientId)
     {
-        var client = await _clientService.GetByIdAsync(new ClientId(id));
+        var client = await _clientService.GetByIdAsync(new ClientId(clientId));
         if (client is null)
             return NotFound();
 
@@ -38,15 +38,68 @@ public class ClientController : ControllerBase
         var response = ClientMapper.ToResponse(client);
         return CreatedAtAction(
             nameof(GetById), 
-            new { id = client.Id },
+            new { clientId = client.Id },
             new RegisterClientResponse(response, creationResult.Plain)
         );
     }
 
-    [HttpDelete("{id:guid}")]
-    public async Task<ActionResult> Delete(Guid id)
+    [HttpDelete("{clientId:guid}")]
+    public async Task<ActionResult> Delete(Guid clientId)
     {
-        var success = await _clientService.DeleteAsync(new ClientId(id));
+        var success = await _clientService.DeleteAsync(new ClientId(clientId));
+        return success ? NoContent() : NotFound();
+    }
+    
+    
+    // Client Secrets
+    [HttpGet("{clientId:guid}/secrets")]
+    public async Task<ActionResult<IEnumerable<ClientSecretResponse>>> GetClientSecrets(Guid clientId)
+    {
+        var client = await _clientService.GetByIdAsync(new ClientId(clientId));
+        if (client is null)
+            return NotFound();
+
+        var response = client.Secrets.Select(ClientMapper.ToResponse);
+        return Ok(response);
+    }
+
+    [HttpPost("{clientId:guid}/secrets")]
+    public async Task<ActionResult<RegisterClientSecretResponse>> AddClientSecret(Guid clientId)
+    {
+        var creationResult = await _clientService.AddSecretAsync(new ClientId(clientId), DateTime.UtcNow.AddDays(30));
+        
+        var secret = ClientMapper.ToResponse(creationResult.Secret);
+        var response = new RegisterClientSecretResponse(secret, creationResult.Plain);
+
+        return CreatedAtAction(
+            nameof(GetClientSecret), 
+            new { secretId = secret.Id },
+            response
+        );
+    }
+
+    [HttpGet("secrets/{secretId:guid}")]
+    public async Task<ActionResult<ClientSecretResponse>> GetClientSecret(Guid secretId)
+    {
+        var secret = await _clientService.GetSecretAsync(new SecretId(secretId));
+        if (secret is null)
+            return NotFound();
+
+        var response = ClientMapper.ToResponse(secret);
+        return Ok(response);
+    }
+
+    [HttpPost("secrets/{secretId:guid}/revoke")]
+    public async Task<ActionResult> RevokeClientSecret(Guid secretId)
+    {
+        var success = await _clientService.RevokeSecretAsync(new SecretId(secretId));
+        return success ? NoContent() : NotFound();
+    }
+    
+    [HttpDelete("secrets/{secretId:guid}")]
+    public async Task<ActionResult> DeleteClientSecret(Guid secretId)
+    {
+        var success = await _clientService.RemoveSecretAsync(new SecretId(secretId));
         return success ? NoContent() : NotFound();
     }
 }
