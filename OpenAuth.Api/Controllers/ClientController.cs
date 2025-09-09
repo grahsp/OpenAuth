@@ -8,7 +8,7 @@ using OpenAuth.Domain.ValueObjects;
 namespace OpenAuth.Api.Controllers;
 
 [ApiController]
-[Route("[controller]")]
+[Route("api/[controller]")]
 public class ClientController : ControllerBase
 {
     public ClientController(IClientService clientService)
@@ -19,7 +19,7 @@ public class ClientController : ControllerBase
     private readonly IClientService _clientService;
 
     [HttpGet("{id:guid}")]
-    public async Task<ActionResult<Client>> Get(Guid id)
+    public async Task<ActionResult<Client>> GetById(Guid id)
     {
         var client = await _clientService.GetByIdAsync(new ClientId(id));
         if (client is null)
@@ -29,25 +29,18 @@ public class ClientController : ControllerBase
         return Ok(response);
     }
     
-    [HttpGet("{name}")]
-    public async Task<ActionResult<Client>> Get(string name)
-    {
-        var client = await _clientService.GetByNameAsync(name);
-        if (client is null)
-            return NotFound();
-        
-        var response = ClientMapper.ToResponse(client);
-        return Ok(response);
-    }
-    
-    [HttpPost("create")]
+    [HttpPost]
     public async Task<ActionResult<RegisterClientResponse>> Create([FromBody] RegisterClientRequest request)
     {
         var client = await _clientService.RegisterAsync(request.Name);
         var rawClientSecret = await _clientService.AddSecretAsync(client.Id);
 
         var response = ClientMapper.ToResponse(client);
-        return Ok(new RegisterClientResponse(response, rawClientSecret));
+        return CreatedAtAction(
+            nameof(GetById), 
+            new { id = client.Id },
+            new RegisterClientResponse(response, rawClientSecret)
+        );
     }
 
     [HttpDelete("{id:guid}")]
