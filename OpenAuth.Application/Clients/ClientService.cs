@@ -116,6 +116,9 @@ public class ClientService : IClientService
     }
 
 
+    public async Task<ClientSecret?> GetSecretAsync(SecretId id, CancellationToken cancellationToken = default)
+        => await _repository.GetSecretAsync(id, cancellationToken);
+    
     public async Task<SecretCreationResult> AddSecretAsync(ClientId id, DateTime? expiresAt = null, CancellationToken cancellationToken = default)
     {
         var client = await _repository.GetByIdAsync(id, cancellationToken)
