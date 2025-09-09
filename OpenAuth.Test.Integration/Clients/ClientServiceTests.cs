@@ -447,7 +447,7 @@ public class ClientServiceTests : IAsyncLifetime
             var updated = await service.GetByIdAsync(client.Id);
             var secret = updated!.Secrets.First();
 
-            var result = await service.RevokeSecretAsync(client.Id, secret.Id);
+            var result = await service.RevokeSecretAsync(secret.Id);
             Assert.True(result);
 
             var fetched = await service.GetByIdAsync(client.Id);
@@ -464,18 +464,18 @@ public class ClientServiceTests : IAsyncLifetime
         {
             var service = CreateSut();
 
-            var result = await service.RevokeSecretAsync(ClientId.New(), new SecretId(Guid.NewGuid()));
+            var result = await service.RevokeSecretAsync(new SecretId(Guid.NewGuid()));
             Assert.False(result);
         }
 
         [Fact]
-        public async Task RevokeSecretAsync_ReturnsTrue_WhenSecretNotFound()
+        public async Task RevokeSecretAsync_ReturnsFalse_WhenSecretNotFound()
         {
             var service = CreateSut();
             var client = await service.RegisterAsync("client");
 
-            var result = await service.RevokeSecretAsync(client.Id, new SecretId(Guid.NewGuid()));
-            Assert.True(result);
+            var result = await service.RevokeSecretAsync(new SecretId(Guid.NewGuid()));
+            Assert.False(result);
 
             var fetched = await service.GetByIdAsync(client.Id);
             Assert.NotNull(fetched);
@@ -495,7 +495,7 @@ public class ClientServiceTests : IAsyncLifetime
             var updated= await service.GetByIdAsync(client.Id);
             var secret = updated!.Secrets.Single();
 
-            var result = await service.RemoveSecretAsync(client.Id, secret.Id);
+            var result = await service.RemoveSecretAsync(secret.Id);
             Assert.True(result);
 
             var fetched = await service.GetByIdAsync(client.Id);
@@ -508,18 +508,18 @@ public class ClientServiceTests : IAsyncLifetime
         {
             var service = CreateSut();
 
-            var result = await service.RemoveSecretAsync(ClientId.New(), new SecretId(Guid.NewGuid()));
+            var result = await service.RemoveSecretAsync(new SecretId(Guid.NewGuid()));
             Assert.False(result);
         }
 
         [Fact]
-        public async Task RemoveSecretAsync_ReturnsTrue_WhenSecretNotFound()
+        public async Task RemoveSecretAsync_ReturnsFalse_WhenSecretNotFound()
         {
             var service = CreateSut();
             var client = await service.RegisterAsync("client");
 
-            var result = await service.RemoveSecretAsync(client.Id, new SecretId(Guid.NewGuid()));
-            Assert.True(result);
+            var result = await service.RemoveSecretAsync(new SecretId(Guid.NewGuid()));
+            Assert.False(result);
 
             var fetched = await service.GetByIdAsync(client.Id);
             Assert.NotNull(fetched);
