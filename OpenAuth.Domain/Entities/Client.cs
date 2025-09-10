@@ -100,32 +100,33 @@ public class Client
     {
         if (!_grants.TryGetValue(audience, out var grant))
             throw new InvalidOperationException("Audience not found.");
-        
-        foreach (var scope in scopes)
-            grant.Add(scope);
 
-        Touch();
+        var updated = false;
+        foreach (var scope in scopes)
+            if (grant.Add(scope))
+                updated = true;
+
+        if (updated)
+            Touch();
     }
 
-    
     public void RevokeScopes(Audience audience, params Scope[] scopes) =>
         RevokeScopes(audience, (IEnumerable<Scope>)scopes);
 
     public void RevokeScopes(Audience audience, IEnumerable<Scope> scopes)
     {
         if (!_grants.TryGetValue(audience, out var grant))
-            return;
-        
+            throw new InvalidOperationException("Audience not found.");
+
+        var updated = false;
         foreach (var scope in scopes)
-            grant.Remove(scope);
+            if (grant.Remove(scope))
+                updated = true;
         
-        if (grant.Count == 0)
-            TryRemoveAudience(audience);
-        
-        Touch();
+        if (updated)
+            Touch();
     }
     
-
 
     public void Rename(string name) => SetName(name, true);
 
