@@ -16,9 +16,10 @@ public interface IClientService
     Task<Client> EnableAsync(ClientId id, CancellationToken cancellationToken = default);
     Task<Client> DisableAsync(ClientId id, CancellationToken cancellationToken = default);
     
+    Task<Client?> TryAddAudienceAsync(ClientId id, Audience audience, CancellationToken cancellationToken = default);
+    Task<Client> RemoveAudienceAsync(ClientId id, Audience audience, CancellationToken cancellationToken = default);
     Task<Client> GrantScopesAsync(ClientId id, Audience audience, IEnumerable<Scope> scopes, CancellationToken cancellationToken = default);
     Task<Client> RevokeScopesAsync(ClientId id, Audience audience, IEnumerable<Scope> scopes, CancellationToken cancellationToken = default);
-    Task<Client> RemoveAudienceAsync(ClientId id, Audience audience, CancellationToken cancellationToken = default);
     
     Task<ClientSecret?> GetSecretAsync(SecretId id, CancellationToken cancellationToken = default);
     Task<SecretCreationResult> AddSecretAsync(ClientId id, DateTime? expiresAt = null, CancellationToken cancellationToken = default);

@@ -78,7 +78,33 @@ public class ClientService : IClientService
 
         return client;
     }
+
+    // TODO: Replace nullable Client with explicit result type
+    public async Task<Client?> TryAddAudienceAsync(ClientId id, Audience audience,
+        CancellationToken cancellationToken = default)
+    {
+        var client = await _repository.GetByIdAsync(id, cancellationToken);
+        if (client is null)
+            return null;
+
+        var added = client.TryAddAudience(audience);
+        if (!added)
+            return null;
+        
+        await _repository.SaveChangesAsync(cancellationToken);
+        return client;
+    }
     
+    public async Task<Client> RemoveAudienceAsync(ClientId id, Audience audience, CancellationToken cancellationToken = default)
+    {
+        var client = await _repository.GetByIdAsync(id, cancellationToken)
+                     ?? throw new InvalidOperationException("Client not found.");
+        
+        client.TryRemoveAudience(audience);
+        await _repository.SaveChangesAsync(cancellationToken);
+
+        return client;
+    }
     
     public async Task<Client> GrantScopesAsync(ClientId id, Audience audience, IEnumerable<Scope> scopes,
         CancellationToken cancellationToken = default)
@@ -99,17 +125,6 @@ public class ClientService : IClientService
                      ?? throw new InvalidOperationException("Client not found.");
         
         client.RevokeScopes(audience, scopes);
-        await _repository.SaveChangesAsync(cancellationToken);
-
-        return client;
-    }
-
-    public async Task<Client> RemoveAudienceAsync(ClientId id, Audience audience, CancellationToken cancellationToken = default)
-    {
-        var client = await _repository.GetByIdAsync(id, cancellationToken)
-                     ?? throw new InvalidOperationException("Client not found.");
-        
-        client.TryRemoveAudience(audience);
         await _repository.SaveChangesAsync(cancellationToken);
 
         return client;
