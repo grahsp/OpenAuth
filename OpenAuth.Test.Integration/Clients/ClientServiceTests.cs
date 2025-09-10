@@ -601,13 +601,13 @@ public class ClientServiceTests : IAsyncLifetime
         }
 
         [Fact]
-        public async Task RevokeSigningKeyAsync_ReturnsTrue_WhenKeyNotFound()
+        public async Task RevokeSigningKeyAsync_ReturnsFalse_WhenKeyNotFound()
         {
             var service = CreateSut();
             var client = await service.RegisterAsync("client");
 
             var result = await service.RevokeSigningKeyAsync(new SigningKeyId(Guid.NewGuid()));
-            Assert.True(result);
+            Assert.False(result);
 
             var fetched = await service.GetByIdAsync(client.Id);
             Assert.NotNull(fetched);
@@ -643,14 +643,14 @@ public class ClientServiceTests : IAsyncLifetime
         }
 
         [Fact]
-        public async Task RemoveSigningKeyAsync_ReturnsTrue_WhenKeyNotFound()
+        public async Task RemoveSigningKeyAsync_ReturnsFalse_WhenKeyNotFound()
         {
             var service = CreateSut();
             var client = await service.RegisterAsync("client");
 
             var result = await service.RemoveSigningKeyAsync( new SigningKeyId(Guid.NewGuid()));
 
-            Assert.True(result);
+            Assert.False(result);
 
             var fetched = await service.GetByIdAsync(client.Id);
             Assert.NotNull(fetched);
