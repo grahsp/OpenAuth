@@ -93,6 +93,21 @@ public class Client
         return true;
     }
     
+    public void SetScopes(Audience audience, params Scope[] scopes)
+        => SetScopes(audience, (IEnumerable<Scope>)scopes);
+
+    public void SetScopes(Audience audience, IEnumerable<Scope> scopes)
+    {
+        if (!_grants.TryGetValue(audience, out var grant))
+            throw new InvalidOperationException("Audience not found.");
+        
+        grant.Clear();
+        foreach (var scope in scopes)
+            grant.Add(scope);
+        
+        Touch();
+    }
+    
     public void GrantScopes(Audience audience, params Scope[] scopes) =>
         GrantScopes(audience, (IEnumerable<Scope>)scopes);
 
