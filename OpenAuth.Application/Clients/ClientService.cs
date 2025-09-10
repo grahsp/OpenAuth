@@ -95,14 +95,17 @@ public class ClientService : IClientService
         return client;
     }
     
-    public async Task<Client> RemoveAudienceAsync(ClientId id, Audience audience, CancellationToken cancellationToken = default)
+    public async Task<Client?> TryRemoveAudienceAsync(ClientId id, Audience audience, CancellationToken cancellationToken = default)
     {
-        var client = await _repository.GetByIdAsync(id, cancellationToken)
-                     ?? throw new InvalidOperationException("Client not found.");
-        
-        client.TryRemoveAudience(audience);
-        await _repository.SaveChangesAsync(cancellationToken);
+        var client = await _repository.GetByIdAsync(id, cancellationToken);
+        if (client is null)
+            return null;
 
+        var removed = client.TryRemoveAudience(audience);
+        if (!removed)
+            return null;
+        
+        await _repository.SaveChangesAsync(cancellationToken);
         return client;
     }
     

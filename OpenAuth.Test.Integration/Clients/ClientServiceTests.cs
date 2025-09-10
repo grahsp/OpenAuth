@@ -385,7 +385,8 @@ public class ClientServiceTests : IAsyncLifetime
 
             await service.GrantScopesAsync(client.Id, audience, scopes);
 
-            var updated = await service.RemoveAudienceAsync(client.Id, audience);
+            var updated = await service.TryRemoveAudienceAsync(client.Id, audience);
+            Assert.NotNull(updated);
             Assert.Empty(updated.GetAudiences());
 
             var fetched = await service.GetByIdAsync(client.Id);
@@ -395,12 +396,12 @@ public class ClientServiceTests : IAsyncLifetime
         }
 
         [Fact]
-        public async Task RemoveAudienceAsync_Throws_WhenClientNotFound()
+        public async Task RemoveAudienceAsync_ReturnsNull_WhenClientNotFound()
         {
             var service = CreateSut();
 
-            await Assert.ThrowsAsync<InvalidOperationException>(async () =>
-                await service.RemoveAudienceAsync(ClientId.New(), new Audience("api")));
+            var client = await service.TryRemoveAudienceAsync(ClientId.New(), new Audience("api"));
+            Assert.Null(client);
         }
 
         [Fact]
@@ -409,8 +410,8 @@ public class ClientServiceTests : IAsyncLifetime
             var service = CreateSut();
             var client = await service.RegisterAsync("client");
 
-            var updated = await service.RemoveAudienceAsync(client.Id, new Audience("missing"));
-            Assert.Empty(updated.GetAudiences());
+            var updated = await service.TryRemoveAudienceAsync(client.Id, new Audience("missing"));
+            Assert.Null(updated);
 
             var fetched = await service.GetByIdAsync(client.Id);
             Assert.NotNull(fetched);
