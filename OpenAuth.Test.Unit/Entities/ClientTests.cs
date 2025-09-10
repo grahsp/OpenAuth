@@ -86,24 +86,6 @@ public class ClientTests
         }
 
         [Fact]
-        public void RevokeScopes_RemoveAudience_When_NoScopes()
-        {
-            var client = new Client("App");
-            var aud = new Audience("api");
-            var read = new Scope("read");
-            var write = new Scope("write");
-
-            client.TryAddAudience(aud);
-            client.GrantScopes(aud, read, write);
-            
-            client.RevokeScopes(aud, read, write);
-
-            var scopes = client.GetAllowedScopes(aud);
-            Assert.Empty(scopes);
-            Assert.DoesNotContain(aud, client.GetAudiences());
-        }
-
-        [Fact]
         public void RevokeScopes_TouchUpdatedAt()
         {
             var client = new Client("App");
@@ -124,6 +106,7 @@ public class ClientTests
         {
             var client = new Client("App");
             var aud = new Audience("unknown");
+            client.TryAddAudience(aud);
 
             var before = client.UpdatedAt;
             client.RevokeScopes(aud, new Scope("does-not-exist"));

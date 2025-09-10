@@ -265,6 +265,18 @@ public class ClientServiceTests : IAsyncLifetime
             await Assert.ThrowsAsync<InvalidOperationException>(async () =>
                 await service.GrantScopesAsync(ClientId.New(), audience, scopes));
         }
+        
+        [Fact]
+        public async Task GrantScopesAsync_Throws_WhenAudienceNotFound()
+        {
+            var service = CreateSut();
+            var client = await service.RegisterAsync("client");
+            var audience = new Audience("api");
+            Scope[] scopes = [Read];
+
+            await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+                await service.GrantScopesAsync(client.Id, audience, scopes));
+        }
 
         [Fact]
         public async Task GrantScopesAsync_Idempotent_WhenGrantingSameScopeTwice()
@@ -307,13 +319,10 @@ public class ClientServiceTests : IAsyncLifetime
             Assert.Equal(client.GetAllowedScopes(audience), scopes);
 
             var updated = await service.RevokeScopesAsync(client.Id, audience, scopes);
-
-            Assert.DoesNotContain(updated.GetAudiences(), a => a == audience);
             Assert.Empty(updated.GetAllowedScopes(audience));
 
             var fetched = await service.GetByIdAsync(client.Id);
             Assert.NotNull(fetched);
-            Assert.DoesNotContain(fetched.GetAudiences(), a => a == audience);
             Assert.Empty(fetched.GetAllowedScopes(audience));
         }
 
@@ -327,6 +336,18 @@ public class ClientServiceTests : IAsyncLifetime
 
             await Assert.ThrowsAsync<InvalidOperationException>(async () =>
                 await service.RevokeScopesAsync(ClientId.New(), audience, scopes));
+        }
+        
+        [Fact]
+        public async Task RevokeScopesAsync_Throws_WhenAudienceNotFound()
+        {
+            var service = CreateSut();
+            var client = await service.RegisterAsync("client");
+            var audience = new Audience("api");
+            Scope[] scopes = [Read];
+
+            await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+                await service.RevokeScopesAsync(client.Id, audience, scopes));
         }
 
         [Fact]
