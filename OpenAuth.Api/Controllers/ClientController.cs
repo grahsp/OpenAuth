@@ -3,6 +3,7 @@ using OpenAuth.Api.Dtos;
 using OpenAuth.Api.Mappers;
 using OpenAuth.Application.Clients;
 using OpenAuth.Domain.Entities;
+using OpenAuth.Domain.Enums;
 using OpenAuth.Domain.ValueObjects;
 
 namespace OpenAuth.Api.Controllers;
@@ -101,5 +102,56 @@ public class ClientController : ControllerBase
     {
         var success = await _clientService.RemoveSecretAsync(new SecretId(secretId));
         return success ? NoContent() : NotFound();
+    }
+    
+    
+    // Signing Keys
+    [HttpGet("{clientId:guid}/keys")]
+    public async Task<ActionResult<IEnumerable<SigningKeyResponse>>> GetSigningKeys(Guid clientId)
+    {
+        var client = await _clientService.GetByIdAsync(new ClientId(clientId));
+        if (client is null)
+            return NotFound();
+
+        var response = client.SigningKeys.Select(ClientMapper.ToResponse);
+        return Ok(response);
+    }
+
+    [HttpPost("{clientId:guid}/keys")]
+    public async Task<ActionResult<SigningKeyResponse>> AddSigningKey(Guid clientId)
+    {
+        var key = await _clientService.AddSigningKeyAsync(
+            new ClientId(clientId),
+            SigningAlgorithm.Rsa,
+            DateTime.UtcNow.AddDays(30)
+        );
+        
+        var response = ClientMapper.ToResponse(key);
+        return Ok(response);
+    }
+    
+    [HttpGet("keys/{keyId:guid}")]
+    public async Task<ActionResult<SigningKeyResponse>> GetSigningKey(Guid keyId)
+    {
+        var key = await _clientService.GetSigningKeyAsync(new SigningKeyId(keyId));
+        if (key is null)
+            return NotFound();
+        
+        var response = ClientMapper.ToResponse(key);
+        return Ok(response);
+    }
+    
+    [HttpPost("keys/{keyId:guid}/revoke")]
+    public async Task<ActionResult> RevokeSigningKey(Guid keyId)
+    {
+        var result = await _clientService.RevokeSigningKeyAsync(new SigningKeyId(keyId));
+        return result ? NoContent() : NotFound();
+    }
+    
+    [HttpDelete("keys/{keyId:guid}")]
+    public async Task<ActionResult> RemoveSigningKey(Guid keyId)
+    {
+        var result = await _clientService.RemoveSigningKeyAsync(new SigningKeyId(keyId));
+        return result ? NoContent() : NotFound();
     }
 }
