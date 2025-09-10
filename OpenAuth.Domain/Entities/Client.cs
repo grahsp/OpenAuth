@@ -74,6 +74,24 @@ public class Client
     public DateTime CreatedAt { get; private set; }
     public DateTime UpdatedAt { get; private set; }
 
+
+    public bool TryAddAudience(Audience audience)
+    {
+        if (!_grants.TryAdd(audience, []))
+            return false;
+        
+        Touch();
+        return true;
+    }
+
+    public bool TryRemoveAudience(Audience audience)
+    {
+        if (!_grants.Remove(audience))
+            return false;
+        
+        Touch();
+        return true;
+    }
     
     public void GrantScopes(Audience audience, params Scope[] scopes) =>
         GrantScopes(audience, (IEnumerable<Scope>)scopes);
@@ -81,7 +99,7 @@ public class Client
     public void GrantScopes(Audience audience, IEnumerable<Scope> scopes)
     {
         if (!_grants.TryGetValue(audience, out var grant))
-            _grants[audience] = grant = [];
+            throw new InvalidOperationException("Audience not found.");
         
         foreach (var scope in scopes)
             grant.Add(scope);
@@ -102,19 +120,12 @@ public class Client
             grant.Remove(scope);
         
         if (grant.Count == 0)
-            RemoveAudience(audience);
+            TryRemoveAudience(audience);
         
         Touch();
     }
     
 
-    public void RemoveAudience(Audience audience)
-    {
-        if (!_grants.Remove(audience))
-            return;
-        
-        Touch();
-    }
 
     public void Rename(string name) => SetName(name, true);
 

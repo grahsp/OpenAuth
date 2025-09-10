@@ -241,6 +241,7 @@ public class ClientServiceTests : IAsyncLifetime
 
             var audience = new Audience("api");
             Scope[] scopes = [Read, Write];
+            client.TryAddAudience(audience);
 
             var updated = await service.GrantScopesAsync(client.Id, audience, scopes);
 
@@ -273,6 +274,7 @@ public class ClientServiceTests : IAsyncLifetime
 
             var audience = new Audience("api");
             Scope[] scopes = [Read];
+            client.TryAddAudience(audience);
 
             await service.GrantScopesAsync(client.Id, audience, scopes);
             await service.GrantScopesAsync(client.Id, audience, scopes);
@@ -297,6 +299,8 @@ public class ClientServiceTests : IAsyncLifetime
 
             var audience = new Audience("api");
             Scope[] scopes = [Read, Write];
+
+            client.TryAddAudience(audience);
 
             await service.GrantScopesAsync(client.Id, audience, scopes);
             Assert.Contains(client.GetAudiences(), a => a == audience);
@@ -333,6 +337,7 @@ public class ClientServiceTests : IAsyncLifetime
 
             var audience = new Audience("api");
             Scope[] scopes = [Read];
+            client.TryAddAudience(audience);
 
             await service.GrantScopesAsync(client.Id, audience, scopes);
 
@@ -355,6 +360,7 @@ public class ClientServiceTests : IAsyncLifetime
 
             var audience = new Audience("api");
             Scope[] scopes = [Read, Write];
+            client.TryAddAudience(audience);
 
             await service.GrantScopesAsync(client.Id, audience, scopes);
 

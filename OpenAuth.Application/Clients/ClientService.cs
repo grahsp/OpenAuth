@@ -109,7 +109,7 @@ public class ClientService : IClientService
         var client = await _repository.GetByIdAsync(id, cancellationToken)
                      ?? throw new InvalidOperationException("Client not found.");
         
-        client.RemoveAudience(audience);
+        client.TryRemoveAudience(audience);
         await _repository.SaveChangesAsync(cancellationToken);
 
         return client;
