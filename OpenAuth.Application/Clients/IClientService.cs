@@ -17,7 +17,7 @@ public interface IClientService
     Task<Client> DisableAsync(ClientId id, CancellationToken cancellationToken = default);
     
     Task<Client?> TryAddAudienceAsync(ClientId id, Audience audience, CancellationToken cancellationToken = default);
-    Task<Client> RemoveAudienceAsync(ClientId id, Audience audience, CancellationToken cancellationToken = default);
+    Task<Client?> TryRemoveAudienceAsync(ClientId id, Audience audience, CancellationToken cancellationToken = default);
     Task<Client> GrantScopesAsync(ClientId id, Audience audience, IEnumerable<Scope> scopes, CancellationToken cancellationToken = default);
     Task<Client> RevokeScopesAsync(ClientId id, Audience audience, IEnumerable<Scope> scopes, CancellationToken cancellationToken = default);
     
