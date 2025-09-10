@@ -108,6 +108,17 @@ public class ClientService : IClientService
         await _repository.SaveChangesAsync(cancellationToken);
         return client;
     }
+
+    public async Task<Client> SetScopesAsync(ClientId id, Audience audience, IEnumerable<Scope> scopes, CancellationToken cancellationToken = default)
+    {
+        var client = await _repository.GetByIdAsync(id, cancellationToken)
+            ?? throw new InvalidOperationException("Client not found.");
+        
+        client.SetScopes(audience);
+        await _repository.SaveChangesAsync(cancellationToken);
+
+        return client;
+    }
     
     public async Task<Client> GrantScopesAsync(ClientId id, Audience audience, IEnumerable<Scope> scopes,
         CancellationToken cancellationToken = default)
