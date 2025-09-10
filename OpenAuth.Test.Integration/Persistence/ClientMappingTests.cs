@@ -29,6 +29,8 @@ public class ClientMappingTests : IAsyncLifetime
         const string name = "client";
         var client = new Client(name);
         var api = new Audience("api");
+
+        client.TryAddAudience(api);
         client.GrantScopes(api, Read, Write);
 
         ctx.Add(client);
@@ -67,6 +69,9 @@ public class ClientMappingTests : IAsyncLifetime
         var client = new Client("client");
         var api = new Audience("api");
         var web = new Audience("web");
+        
+        client.TryAddAudience(api);
+        client.TryAddAudience(web);
         
         client.GrantScopes(api, Read, Write);
         client.GrantScopes(web, Read);

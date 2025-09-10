@@ -158,6 +158,7 @@ public class ClientServiceTests
             var service = CreateSut();
             var client = await service.RegisterAsync("client");
             var aud = new Audience("api");
+            client.TryAddAudience(aud);
 
             var afterGrant = await service.GrantScopesAsync(client.Id, aud, [_read, _write]);
             Assert.Contains(_read, afterGrant.GetAllowedScopes(aud));
@@ -184,6 +185,7 @@ public class ClientServiceTests
             var service = CreateSut();
             var client = await service.RegisterAsync("client");
             var aud = new Audience("api");
+            client.TryAddAudience(aud);
             
             await service.GrantScopesAsync(client.Id, aud, [_read]);
 

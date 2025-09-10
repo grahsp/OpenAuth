@@ -20,6 +20,7 @@ public class JwtTokenGeneratorTests
     private static Client CreateClientWithScopes(string name, Audience audience, params Scope[] scopes)
     {
         var client = new Client(name);
+        client.TryAddAudience(audience);
         client.GrantScopes(audience, scopes);
         return client;
     }

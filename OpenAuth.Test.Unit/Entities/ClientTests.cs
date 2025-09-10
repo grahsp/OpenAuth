@@ -39,6 +39,7 @@ public class ClientTests
             var read = new Scope("read");
             var write = new Scope("write");
 
+            client.TryAddAudience(aud);
             client.GrantScopes(aud, read, write, write);
 
             var scopes = client.GetAllowedScopes(aud);
@@ -57,6 +58,7 @@ public class ClientTests
 
             var before = client.UpdatedAt;
 
+            client.TryAddAudience(aud);
             client.GrantScopes(aud, read);
 
             Assert.True(client.UpdatedAt > before);
@@ -72,6 +74,8 @@ public class ClientTests
             var aud = new Audience("api");
             var read = new Scope("read");
             var write = new Scope("write");
+            
+            client.TryAddAudience(aud);
             client.GrantScopes(aud, read, write);
 
             client.RevokeScopes(aud, read);
@@ -88,8 +92,10 @@ public class ClientTests
             var aud = new Audience("api");
             var read = new Scope("read");
             var write = new Scope("write");
+
+            client.TryAddAudience(aud);
             client.GrantScopes(aud, read, write);
-        
+            
             client.RevokeScopes(aud, read, write);
 
             var scopes = client.GetAllowedScopes(aud);
@@ -103,6 +109,8 @@ public class ClientTests
             var client = new Client("App");
             var aud = new Audience("api");
             var read = new Scope("read");
+            
+            client.TryAddAudience(aud);
             client.GrantScopes(aud, read);
         
             var before = client.UpdatedAt;
@@ -133,9 +141,11 @@ public class ClientTests
             var aud = new Audience("api");
             var read = new Scope("read");
             var write = new Scope("write");
+            client.TryAddAudience(aud);
             client.GrantScopes(aud, read, write);
             
-            client.RemoveAudience(aud);
+            var isRemoved = client.TryRemoveAudience(aud);
+            Assert.True(isRemoved);
             Assert.Empty(client.GetAllowedScopes(aud));
             Assert.Empty(client.GetAudiences());
         }
@@ -145,11 +155,12 @@ public class ClientTests
         {
             var client = new Client("App");
             var aud = new Audience("api");
-            client.GrantScopes(aud);
+            client.TryAddAudience(aud);
             
             var before = client.UpdatedAt;
-            client.RemoveAudience(aud);
+            var isRemoved = client.TryRemoveAudience(aud);
             
+            Assert.True(isRemoved);
             Assert.True(client.UpdatedAt > before);
         }
 
@@ -160,8 +171,9 @@ public class ClientTests
             var aud = new Audience("api");
 
             var before = client.UpdatedAt;
-            client.RemoveAudience(aud);
+            var isRemoved = client.TryRemoveAudience(aud);
             
+            Assert.False(isRemoved);
             Assert.Equal(before, client.UpdatedAt);
         }
     }
@@ -177,8 +189,14 @@ public class ClientTests
             const string write = "write";
 
             var client = new Client("App");
-            client.GrantScopes(new Audience(api), new Scope(read), new Scope(write));
-            client.GrantScopes(new Audience(billing), new Scope(read));
+            var apiAudience = new Audience(api);
+            var billingAudience = new Audience(billing);
+            
+            client.TryAddAudience(apiAudience);
+            client.TryAddAudience(billingAudience);
+            
+            client.GrantScopes(apiAudience, new Scope(read), new Scope(write));
+            client.GrantScopes(billingAudience, new Scope(read));
 
             var snapshot = client.Grants;
 
@@ -205,8 +223,12 @@ public class ClientTests
             var write = new Scope("write");
             
             var original = new Client("Original");
+            
+            original.TryAddAudience(api);
+            original.TryAddAudience(billing);
+            
             original.GrantScopes(api, read, write);
-            original.GrantScopes(new Audience("billing"), read);
+            original.GrantScopes(billing, read);
 
             var snapshot = original.Grants;
             var restored = new Client("Restored") { Grants = snapshot };
