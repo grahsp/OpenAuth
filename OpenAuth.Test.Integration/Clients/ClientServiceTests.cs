@@ -579,7 +579,7 @@ public class ClientServiceTests : IAsyncLifetime
 
             var key = await service.AddSigningKeyAsync(client.Id, SigningAlgorithm.Rsa);
 
-            var result = await service.RevokeSigningKeyAsync(client.Id, key.KeyId);
+            var result = await service.RevokeSigningKeyAsync(key.KeyId);
             Assert.True(result);
 
             var fetched = await service.GetByIdAsync(client.Id);
@@ -596,7 +596,7 @@ public class ClientServiceTests : IAsyncLifetime
         {
             var service = CreateSut();
 
-            var result = await service.RevokeSigningKeyAsync(ClientId.New(), new SigningKeyId(Guid.NewGuid()));
+            var result = await service.RevokeSigningKeyAsync(new SigningKeyId(Guid.NewGuid()));
             Assert.False(result);
         }
 
@@ -606,7 +606,7 @@ public class ClientServiceTests : IAsyncLifetime
             var service = CreateSut();
             var client = await service.RegisterAsync("client");
 
-            var result = await service.RevokeSigningKeyAsync(client.Id, new SigningKeyId(Guid.NewGuid()));
+            var result = await service.RevokeSigningKeyAsync(new SigningKeyId(Guid.NewGuid()));
             Assert.True(result);
 
             var fetched = await service.GetByIdAsync(client.Id);
@@ -625,7 +625,7 @@ public class ClientServiceTests : IAsyncLifetime
 
             var key = await service.AddSigningKeyAsync(client.Id, SigningAlgorithm.Rsa);
 
-            var result = await service.RemoveSigningKeyAsync(client.Id, key.KeyId);
+            var result = await service.RemoveSigningKeyAsync(key.KeyId);
             Assert.True(result);
 
             var fetched = await service.GetByIdAsync(client.Id);
@@ -638,7 +638,7 @@ public class ClientServiceTests : IAsyncLifetime
         {
             var service = CreateSut();
 
-            var result = await service.RemoveSigningKeyAsync(ClientId.New(), new SigningKeyId(Guid.NewGuid()));
+            var result = await service.RemoveSigningKeyAsync(new SigningKeyId(Guid.NewGuid()));
             Assert.False(result);
         }
 
@@ -648,7 +648,7 @@ public class ClientServiceTests : IAsyncLifetime
             var service = CreateSut();
             var client = await service.RegisterAsync("client");
 
-            var result = await service.RemoveSigningKeyAsync(client.Id, new SigningKeyId(Guid.NewGuid()));
+            var result = await service.RemoveSigningKeyAsync( new SigningKeyId(Guid.NewGuid()));
 
             Assert.True(result);
 

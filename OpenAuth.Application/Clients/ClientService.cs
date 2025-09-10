@@ -154,7 +154,10 @@ public class ClientService : IClientService
 
         return true;
     }
-    
+
+
+    public async Task<SigningKey?> GetSigningKeyAsync(SigningKeyId id, CancellationToken cancellationToken = default)
+        => await _repository.GetSigningKeyAsync(id, cancellationToken);
     
     public async Task<SigningKey> AddSigningKeyAsync(ClientId id, SigningAlgorithm algorithm, DateTime? expiresAt = null, CancellationToken cancellationToken = default)
     {
@@ -168,25 +171,25 @@ public class ClientService : IClientService
         return signingKey;
     }
 
-    public async Task<bool> RevokeSigningKeyAsync(ClientId clientId, SigningKeyId keyId, CancellationToken cancellationToken = default)
+    public async Task<bool> RevokeSigningKeyAsync(SigningKeyId id, CancellationToken cancellationToken = default)
     {
-        var client = await _repository.GetByIdAsync(clientId, cancellationToken);
+        var client = await _repository.GetBySigningKeyIdAsync(id, cancellationToken);
         if (client is null)
             return false;
         
-        client.RevokeSigningKey(keyId);
+        client.RevokeSigningKey(id);
         await _repository.SaveChangesAsync(cancellationToken);
         
         return true;
     }
 
-    public async Task<bool> RemoveSigningKeyAsync(ClientId clientId, SigningKeyId keyId, CancellationToken cancellationToken = default)
+    public async Task<bool> RemoveSigningKeyAsync(SigningKeyId id, CancellationToken cancellationToken = default)
     {
-        var client = await _repository.GetByIdAsync(clientId, cancellationToken);
+        var client = await _repository.GetBySigningKeyIdAsync(id, cancellationToken);
         if (client is null)
             return false;
         
-        client.RemoveSigningKey(keyId);
+        client.RemoveSigningKey(id);
         await _repository.SaveChangesAsync(cancellationToken);
 
         return true;

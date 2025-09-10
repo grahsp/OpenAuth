@@ -15,23 +15,31 @@ public class ClientRepository : IClientRepository
         => _context.Clients
             .Include(x => x.Secrets)
             .Include(x => x.SigningKeys)
-            .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+            .SingleOrDefaultAsync(x => x.Id == id, cancellationToken);
 
     public Task<Client?> GetByNameAsync(string name, CancellationToken cancellationToken = default)
         => _context.Clients
             .Include(x => x.Secrets)
             .Include(x => x.SigningKeys)
-            .FirstOrDefaultAsync(x => x.Name == name, cancellationToken);
+            .SingleOrDefaultAsync(x => x.Name == name, cancellationToken);
 
     public Task<Client?> GetBySecretIdAsync(SecretId id, CancellationToken cancellationToken = default)
-        => _context.ClientSecrets
-            .Include(x => x.Client)
-            .Select(x => x.Client)
-            .FirstOrDefaultAsync(cancellationToken);
+        => _context.Clients
+            .Include(x => x.Secrets)
+            .Include(x => x.SigningKeys)
+            .SingleOrDefaultAsync(x => x.Secrets.Any(s => s.Id == id), cancellationToken);
+    
+    public Task<Client?> GetBySigningKeyIdAsync(SigningKeyId id, CancellationToken cancellationToken = default)
+        => _context.Clients
+            .Include(x => x.Secrets)
+            .Include(x => x.SigningKeys)
+            .SingleOrDefaultAsync(x => x.SigningKeys.Any(k => k.KeyId == id), cancellationToken);
 
     public Task<ClientSecret?> GetSecretAsync(SecretId id, CancellationToken cancellationToken = default)
-        => _context.ClientSecrets
-            .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+        => _context.ClientSecrets.SingleOrDefaultAsync(x => x.Id == id, cancellationToken);
+
+    public Task<SigningKey?> GetSigningKeyAsync(SigningKeyId id, CancellationToken cancellationToken = default)
+        => _context.SigningKeys.SingleOrDefaultAsync(x => x.KeyId == id, cancellationToken);
 
     public void Add(Client client)
         => _context.Clients.Add(client);

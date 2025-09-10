@@ -25,7 +25,8 @@ public interface IClientService
     Task<bool> RevokeSecretAsync(SecretId secretId, CancellationToken cancellationToken = default);
     Task<bool> RemoveSecretAsync(SecretId secretId, CancellationToken cancellationToken = default);
     
+    Task<SigningKey?> GetSigningKeyAsync(SigningKeyId id, CancellationToken cancellationToken = default);
     Task<SigningKey> AddSigningKeyAsync(ClientId id, SigningAlgorithm algorithm, DateTime? expiresAt = null, CancellationToken cancellationToken = default);
-    Task<bool> RevokeSigningKeyAsync(ClientId clientId, SigningKeyId keyId, CancellationToken cancellationToken = default);
-    Task<bool> RemoveSigningKeyAsync(ClientId clientId, SigningKeyId keyId, CancellationToken cancellationToken = default);
+    Task<bool> RevokeSigningKeyAsync(SigningKeyId id, CancellationToken cancellationToken = default);
+    Task<bool> RemoveSigningKeyAsync(SigningKeyId id, CancellationToken cancellationToken = default);
 }
