@@ -26,4 +26,15 @@ public static class ClientMapper
             secret.ExpiresAt,
             secret.RevokedAt
         );
+
+    public static SigningKeyResponse ToResponse(SigningKey key)
+        => new SigningKeyResponse(
+            key.KeyId.Value,
+            key.ClientId.Value,
+            key.Algorithm.ToString(),
+            key.IsActive(),
+            key.CreatedAt,
+            key.ExpiresAt,
+            key.RevokedAt
+        );
 }
