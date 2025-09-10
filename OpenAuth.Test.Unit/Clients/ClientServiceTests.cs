@@ -300,7 +300,7 @@ public class ClientServiceTests
             var expiresAt = DateTime.UtcNow.AddDays(30);
             var key = await service.AddSigningKeyAsync(client.Id, SigningAlgorithm.Rsa, expiresAt);
 
-            var result = await service.RevokeSigningKeyAsync(client.Id, key.KeyId);
+            var result = await service.RevokeSigningKeyAsync(key.KeyId);
 
             var updated = await _repo.GetByIdAsync(client.Id);
             var revokedKey = updated!.SigningKeys.Single();
@@ -315,7 +315,7 @@ public class ClientServiceTests
         {
             var service = CreateSut();
 
-            var result = await service.RevokeSigningKeyAsync(new ClientId(Guid.NewGuid()), SigningKeyId.New());
+            var result = await service.RevokeSigningKeyAsync(SigningKeyId.New());
 
             Assert.False(result);
         }
@@ -327,7 +327,7 @@ public class ClientServiceTests
             var client = await service.RegisterAsync("client");
             var key = await service.AddSigningKeyAsync(client.Id, SigningAlgorithm.Rsa);
 
-            var result = await service.RemoveSigningKeyAsync(client.Id, key.KeyId);
+            var result = await service.RemoveSigningKeyAsync(key.KeyId);
 
             var updated = await _repo.GetByIdAsync(client.Id);
 
@@ -340,7 +340,7 @@ public class ClientServiceTests
         {
             var service = CreateSut();
 
-            var result = await service.RemoveSigningKeyAsync(new ClientId(Guid.NewGuid()), SigningKeyId.New());
+            var result = await service.RemoveSigningKeyAsync(SigningKeyId.New());
             Assert.False(result);
         }
     }
