@@ -19,7 +19,7 @@ public class ClientTests
         Assert.NotEqual(TimeSpan.Zero, client.TokenLifetime);
 
         Assert.NotEqual(Guid.Empty, client.Id.Value);
-        Assert.Empty(client.GetAudiences());
+        Assert.Empty(client.Audiences);
 
         // created/updated should be set near "now"
         Assert.InRange(client.CreatedAt, before, after);
@@ -46,7 +46,7 @@ public class ClientTests
             Assert.Equal(2, scopes.Count);
             Assert.Contains(read, scopes);
             Assert.Contains(write, scopes);
-            Assert.Contains(aud, client.GetAudiences());
+            Assert.Contains(aud, client.Audiences);
         }
 
         [Fact]
@@ -130,7 +130,7 @@ public class ClientTests
             var isRemoved = client.TryRemoveAudience(aud);
             Assert.True(isRemoved);
             Assert.Empty(client.GetAllowedScopes(aud));
-            Assert.Empty(client.GetAudiences());
+            Assert.Empty(client.Audiences);
         }
 
         [Fact]
@@ -158,76 +158,6 @@ public class ClientTests
             
             Assert.False(isRemoved);
             Assert.Equal(before, client.UpdatedAt);
-        }
-    }
-
-    public class PolicyMap
-    {
-        [Fact]
-        public void PolicyMap_Getter_ReturnsStrings_And_DistinctScopes()
-        {
-            const string api = "api";
-            const string billing = "billing";
-            const string read = "read";
-            const string write = "write";
-
-            var client = new Client("App");
-            var apiAudience = new Audience(api);
-            var billingAudience = new Audience(billing);
-            
-            client.TryAddAudience(apiAudience);
-            client.TryAddAudience(billingAudience);
-            
-            client.GrantScopes(apiAudience, new Scope(read), new Scope(write));
-            client.GrantScopes(billingAudience, new Scope(read));
-
-            var snapshot = client.Grants;
-
-            Assert.Equal(2, snapshot.Count);
-            Assert.Contains(api, snapshot.Keys);
-            Assert.Contains(billing, snapshot.Keys);
-
-            var apiScopes = snapshot[api];
-            Assert.Equal(2, apiScopes.Count);
-            Assert.Contains(read, apiScopes);
-            Assert.Contains(write, apiScopes); 
-            
-            var billingScopes = snapshot[billing];
-            Assert.Single(billingScopes);
-            Assert.Contains(read, billingScopes);
-        }
-
-        [Fact]
-        public void PolicyMap_Setter_SetsInternalAudiencesAndScopes()
-        {
-            var api = new Audience("api");
-            var billing = new Audience("billing");
-            var read = new Scope("read");
-            var write = new Scope("write");
-            
-            var original = new Client("Original");
-            
-            original.TryAddAudience(api);
-            original.TryAddAudience(billing);
-            
-            original.GrantScopes(api, read, write);
-            original.GrantScopes(billing, read);
-
-            var snapshot = original.Grants;
-            var restored = new Client("Restored") { Grants = snapshot };
-            
-            Assert.Equal(2, restored.GetAudiences().Count);
-            Assert.Contains(api, restored.GetAudiences());
-            Assert.Contains(billing, restored.GetAudiences());
-
-            var apiScopes = restored.GetAllowedScopes(api);
-            Assert.Equal(2, apiScopes.Count);
-            Assert.Contains(read, apiScopes);
-            Assert.Contains(write, apiScopes);
-
-            var billingScopes = restored.GetAllowedScopes(billing);
-            Assert.Single(billingScopes);
-            Assert.Contains(read, billingScopes);
         }
     }
 

@@ -24,27 +24,35 @@ public class ClientMappingTests : IAsyncLifetime
     [Fact]
     public async Task Client_RoundTrips_AllFields()
     {
-        await using var ctx = _fx.CreateContext();
-
         const string name = "client";
         var client = new Client(name);
         var api = new Audience("api");
 
         client.TryAddAudience(api);
         client.GrantScopes(api, Read, Write);
+        
+        await using (var ctx1 = _fx.CreateContext())
+        {
+            ctx1.Add(client);
+            await ctx1.SaveChangesAsync();
+        }
 
-        ctx.Add(client);
-        await ctx.SaveChangesAsync();
+        await using (var ctx2 = _fx.CreateContext())
+        {
+            var loaded = await ctx2.Clients
+                .Include(x => x.Audiences)
+                .ThenInclude(x => x.Scopes)
+                .SingleAsync(x => x.Id == client.Id);
 
-        var loaded = await ctx.Clients.SingleAsync(x => x.Id == client.Id);
-
-        Assert.Equal(client.Id, loaded.Id);
-        Assert.Equal(name, loaded.Name);
-        Assert.Equal(client.TokenLifetime, loaded.TokenLifetime);
-        Assert.Equal(client.Enabled, loaded.Enabled);
-        Assert.Equal(client.CreatedAt, loaded.CreatedAt);
-        Assert.Equal(client.UpdatedAt, loaded.UpdatedAt);
-        Assert.Equal([Read.Value, Write.Value], loaded.Grants[api.Value]);
+            Assert.Equal(client.Id, loaded.Id);
+            Assert.Equal(name, loaded.Name);
+            Assert.Equal(client.TokenLifetime, loaded.TokenLifetime);
+            Assert.Equal(client.Enabled, loaded.Enabled);
+            Assert.Equal(client.CreatedAt, loaded.CreatedAt);
+            Assert.Equal(client.UpdatedAt, loaded.UpdatedAt);
+            Assert.Equal(client.Audiences.Count, loaded.Audiences.Count);
+            Assert.Equal([Read, Write], loaded.GetAllowedScopes(api).ToArray());
+        }
     }
 
     [Fact]
@@ -59,39 +67,6 @@ public class ClientMappingTests : IAsyncLifetime
         
         ctx.Add(new Client(name));
         await Assert.ThrowsAnyAsync<DbUpdateException>(() => ctx.SaveChangesAsync());
-    }
-
-    [Fact]
-    public async Task Client_Grants_Are_Serialized_And_Deserialized()
-    {
-        await using var ctx = _fx.CreateContext();
-
-        var client = new Client("client");
-        var api = new Audience("api");
-        var web = new Audience("web");
-        
-        client.TryAddAudience(api);
-        client.TryAddAudience(web);
-        
-        client.GrantScopes(api, Read, Write);
-        client.GrantScopes(web, Read);
-
-        ctx.Add(client);
-        await ctx.SaveChangesAsync();
-
-        // Reload fresh to force deserialization from DB
-        var loaded = await ctx.Clients.SingleAsync(c => c.Id == client.Id);
-
-        // Ensure audiences roundtrip
-        var audiences = loaded.GetAudiences();
-        Assert.Equal([api, web], audiences);
-
-        // Ensure scopes roundtrip per audience
-        var apiScopes = loaded.GetAllowedScopes(api);
-        Assert.Equal([Read, Write], apiScopes);
-
-        var webScopes = loaded.GetAllowedScopes(web);
-        Assert.Equal([Read], webScopes);
     }
 
     [Fact]

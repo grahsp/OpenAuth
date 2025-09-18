@@ -190,7 +190,8 @@ public class ClientServiceTests
             await service.GrantScopesAsync(client.Id, aud, [_read]);
 
             var afterRemove = await service.TryRemoveAudienceAsync(client.Id, aud);
-            Assert.Empty(afterRemove.GetAudiences());
+            Assert.NotNull(afterRemove);
+            Assert.Empty(afterRemove.Audiences);
         }
     }
 

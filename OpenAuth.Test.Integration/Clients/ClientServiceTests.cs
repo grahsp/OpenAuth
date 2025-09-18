@@ -245,12 +245,12 @@ public class ClientServiceTests : IAsyncLifetime
 
             var updated = await service.GrantScopesAsync(client.Id, audience, scopes);
 
-            Assert.Contains(updated.GetAudiences(), a => a == audience);
+            Assert.Contains(updated.Audiences, a => a == audience);
             Assert.Equal(updated.GetAllowedScopes(audience), scopes);
 
             var fetched = await service.GetByIdAsync(client.Id);
             Assert.NotNull(fetched);
-            Assert.Contains(fetched.GetAudiences(), a => a == audience);
+            Assert.Contains(fetched.Audiences, a => a == audience);
             Assert.Equal(fetched.GetAllowedScopes(audience), scopes);
         }
 
@@ -292,7 +292,7 @@ public class ClientServiceTests : IAsyncLifetime
             await service.GrantScopesAsync(client.Id, audience, scopes);
             
             var updated = await service.GrantScopesAsync(client.Id, audience, scopes);
-            Assert.Single(updated.GetAudiences());
+            Assert.Single(updated.Audiences);
             Assert.Single(updated.GetAllowedScopes(audience));
         } 
     }
@@ -315,7 +315,7 @@ public class ClientServiceTests : IAsyncLifetime
             client.TryAddAudience(audience);
 
             await service.GrantScopesAsync(client.Id, audience, scopes);
-            Assert.Contains(client.GetAudiences(), a => a == audience);
+            Assert.Contains(client.Audiences, a => a == audience);
             Assert.Equal(client.GetAllowedScopes(audience), scopes);
 
             var updated = await service.RevokeScopesAsync(client.Id, audience, scopes);
@@ -363,7 +363,7 @@ public class ClientServiceTests : IAsyncLifetime
             await service.GrantScopesAsync(client.Id, audience, scopes);
 
             var updated = await service.RevokeScopesAsync(client.Id, audience, [Write]);
-            Assert.Contains(updated.GetAudiences(), a => a == audience);
+            Assert.Contains(updated.Audiences, a => a == audience);
             Assert.Equal(scopes, updated.GetAllowedScopes(audience));
         } 
     }
@@ -387,11 +387,11 @@ public class ClientServiceTests : IAsyncLifetime
 
             var updated = await service.TryRemoveAudienceAsync(client.Id, audience);
             Assert.NotNull(updated);
-            Assert.Empty(updated.GetAudiences());
+            Assert.Empty(updated.Audiences);
 
             var fetched = await service.GetByIdAsync(client.Id);
             Assert.NotNull(fetched);
-            Assert.Empty(fetched.GetAudiences());
+            Assert.Empty(fetched.Audiences);
             Assert.Empty(fetched.GetAllowedScopes(audience));
         }
 
@@ -415,7 +415,7 @@ public class ClientServiceTests : IAsyncLifetime
 
             var fetched = await service.GetByIdAsync(client.Id);
             Assert.NotNull(fetched);
-            Assert.Empty(fetched.GetAudiences());
+            Assert.Empty(fetched.Audiences);
         }
     }
 
