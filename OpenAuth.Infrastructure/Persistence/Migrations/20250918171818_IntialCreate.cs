@@ -3,10 +3,10 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace OpenAuth.Infrastructure.Migrations
+namespace OpenAuth.Infrastructure.Persistence.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class IntialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -19,13 +19,32 @@ namespace OpenAuth.Infrastructure.Migrations
                     Name = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: false),
                     Enabled = table.Column<bool>(type: "bit", nullable: false),
                     TokenLifetime = table.Column<long>(type: "bigint", nullable: false),
-                    Grants = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Clients", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Audience",
+                columns: table => new
+                {
+                    ClientId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Audience = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Audience", x => new { x.ClientId, x.Id });
+                    table.ForeignKey(
+                        name: "FK_Audience_Clients_ClientId",
+                        column: x => x.ClientId,
+                        principalTable: "Clients",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -74,6 +93,27 @@ namespace OpenAuth.Infrastructure.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "Scope",
+                columns: table => new
+                {
+                    AudienceClientId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    AudienceId = table.Column<int>(type: "int", nullable: false),
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Scope = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Scope", x => new { x.AudienceClientId, x.AudienceId, x.Id });
+                    table.ForeignKey(
+                        name: "FK_Scope_Audience_AudienceClientId_AudienceId",
+                        columns: x => new { x.AudienceClientId, x.AudienceId },
+                        principalTable: "Audience",
+                        principalColumns: new[] { "ClientId", "Id" },
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_Clients_Name",
                 table: "Clients",
@@ -98,7 +138,13 @@ namespace OpenAuth.Infrastructure.Migrations
                 name: "ClientSecrets");
 
             migrationBuilder.DropTable(
+                name: "Scope");
+
+            migrationBuilder.DropTable(
                 name: "SigningKeys");
+
+            migrationBuilder.DropTable(
+                name: "Audience");
 
             migrationBuilder.DropTable(
                 name: "Clients");

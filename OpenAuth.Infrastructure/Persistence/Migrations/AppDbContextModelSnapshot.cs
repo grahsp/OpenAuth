@@ -3,20 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OpenAuth.Infrastructure.Persistence;
 
 #nullable disable
 
-namespace OpenAuth.Infrastructure.Migrations
+namespace OpenAuth.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250908131009_InitialCreate")]
-    partial class InitialCreate
+    partial class AppDbContextModelSnapshot : ModelSnapshot
     {
-        /// <inheritdoc />
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -35,10 +32,6 @@ namespace OpenAuth.Infrastructure.Migrations
 
                     b.Property<bool>("Enabled")
                         .HasColumnType("bit");
-
-                    b.Property<string>("Grants")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -119,6 +112,64 @@ namespace OpenAuth.Infrastructure.Migrations
                     b.HasIndex("ClientId");
 
                     b.ToTable("SigningKeys");
+                });
+
+            modelBuilder.Entity("OpenAuth.Domain.Entities.Client", b =>
+                {
+                    b.OwnsMany("OpenAuth.Domain.ValueObjects.Audience", "Audiences", b1 =>
+                        {
+                            b1.Property<Guid>("ClientId")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<int>("Id")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("int");
+
+                            SqlServerPropertyBuilderExtensions.UseIdentityColumn(b1.Property<int>("Id"));
+
+                            b1.Property<string>("Value")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(max)")
+                                .HasColumnName("Audience");
+
+                            b1.HasKey("ClientId", "Id");
+
+                            b1.ToTable("Audience");
+
+                            b1.WithOwner()
+                                .HasForeignKey("ClientId");
+
+                            b1.OwnsMany("OpenAuth.Domain.ValueObjects.Scope", "Scopes", b2 =>
+                                {
+                                    b2.Property<Guid>("AudienceClientId")
+                                        .HasColumnType("uniqueidentifier");
+
+                                    b2.Property<int>("AudienceId")
+                                        .HasColumnType("int");
+
+                                    b2.Property<int>("Id")
+                                        .ValueGeneratedOnAdd()
+                                        .HasColumnType("int");
+
+                                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b2.Property<int>("Id"));
+
+                                    b2.Property<string>("Value")
+                                        .IsRequired()
+                                        .HasColumnType("nvarchar(max)")
+                                        .HasColumnName("Scope");
+
+                                    b2.HasKey("AudienceClientId", "AudienceId", "Id");
+
+                                    b2.ToTable("Scope");
+
+                                    b2.WithOwner()
+                                        .HasForeignKey("AudienceClientId", "AudienceId");
+                                });
+
+                            b1.Navigation("Scopes");
+                        });
+
+                    b.Navigation("Audiences");
                 });
 
             modelBuilder.Entity("OpenAuth.Domain.Entities.ClientSecret", b =>
