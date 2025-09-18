@@ -2,7 +2,7 @@ using OpenAuth.Domain.ValueObjects;
 
 namespace OpenAuth.Domain.Entities;
 
-public class Client
+public sealed class Client
 {
     private Client() { }
 
@@ -25,49 +25,15 @@ public class Client
     public List<ClientSecret> Secrets { get; private set; } = [];
     public List<SigningKey> SigningKeys { get; private set; } = [];
 
-    private readonly Dictionary<Audience, HashSet<Scope>> _grants = [];
     
-    public IReadOnlyList<Scope> GetAllowedScopes(Audience audience) =>
-        _grants
-            .GetValueOrDefault(audience)?
-            .OrderBy(s => s.Value, StringComparer.Ordinal)
-            .ToList() ?? [];
+    public IEnumerable<Audience> Audiences => _audiences;
+    private readonly HashSet<Audience> _audiences = [];
+
+    public IReadOnlyCollection<Audience> GetAudiences()
+        => Audiences.ToArray();
     
-    public IReadOnlyList<Audience> GetAudiences() =>
-        _grants
-            .Keys
-            .OrderBy(a => a.Value, StringComparer.Ordinal)
-            .ToList();
-    
-    /// <summary>
-    /// A map of audiences to granted scopes. Used for persistence/serialization.
-    /// Snapshot on get; on init, fully replaces internal state.
-    /// </summary>
-    public Dictionary<string, List<string>> Grants
-    {
-        get => _grants
-            .OrderBy(kv => kv.Key.Value, StringComparer.Ordinal)
-            .ToDictionary(
-                kv => kv.Key.Value,
-                kv => kv.Value
-                    .Select(s => s.Value)
-                    .Distinct()
-                    .OrderBy(s => s, StringComparer.Ordinal)
-                    .ToList(),
-                StringComparer.Ordinal);
-        
-        init
-        {
-            ArgumentNullException.ThrowIfNull(value);
-            
-            _grants.Clear();
-            foreach (var (audience, scopes) in value)
-                _grants.Add(
-                    new Audience(audience),
-                    [..scopes.Select(s => new Scope(s))]
-                );
-        }
-    }
+    public IReadOnlyCollection<Scope> GetAllowedScopes(Audience audience)
+        => Audiences.FirstOrDefault(x => x.Value == audience.Value)?.Scopes ?? [];
     
     
     // Metadata
@@ -77,7 +43,7 @@ public class Client
 
     public bool TryAddAudience(Audience audience)
     {
-        if (!_grants.TryAdd(audience, []))
+        if (!_audiences.Add(audience))
             return false;
         
         Touch();
@@ -86,7 +52,7 @@ public class Client
 
     public bool TryRemoveAudience(Audience audience)
     {
-        if (!_grants.Remove(audience))
+        if (!_audiences.Remove(audience))
             return false;
         
         Touch();
@@ -98,27 +64,27 @@ public class Client
 
     public void SetScopes(Audience audience, IEnumerable<Scope> scopes)
     {
-        if (!_grants.TryGetValue(audience, out var grant))
+        if (!_audiences.TryGetValue(audience, out var aud))
             throw new InvalidOperationException("Audience not found.");
+
+        foreach (var scope in aud.Scopes)
+            aud.RevokeScope(scope);
         
-        grant.Clear();
         foreach (var scope in scopes)
-            grant.Add(scope);
-        
-        Touch();
+            aud.GrantScope(scope);
     }
-    
+
     public void GrantScopes(Audience audience, params Scope[] scopes) =>
         GrantScopes(audience, (IEnumerable<Scope>)scopes);
 
     public void GrantScopes(Audience audience, IEnumerable<Scope> scopes)
     {
-        if (!_grants.TryGetValue(audience, out var grant))
+        if (!_audiences.TryGetValue(audience, out var aud))
             throw new InvalidOperationException("Audience not found.");
 
         var updated = false;
         foreach (var scope in scopes)
-            if (grant.Add(scope))
+            if (aud.GrantScope(scope))
                 updated = true;
 
         if (updated)
@@ -130,12 +96,12 @@ public class Client
 
     public void RevokeScopes(Audience audience, IEnumerable<Scope> scopes)
     {
-        if (!_grants.TryGetValue(audience, out var grant))
+        if (!_audiences.TryGetValue(audience, out var aud))
             throw new InvalidOperationException("Audience not found.");
 
         var updated = false;
         foreach (var scope in scopes)
-            if (grant.Remove(scope))
+            if (aud.RevokeScope(scope))
                 updated = true;
         
         if (updated)

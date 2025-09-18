@@ -1,10 +1,11 @@
 namespace OpenAuth.Domain.ValueObjects;
 
-public readonly record struct Scope
+public sealed record Scope
 {
-    public string Value { get; }
     public const int Min = 3, Max = 24;
     
+    public string Value { get; }
+
     public Scope(string value)
     {
         ArgumentNullException.ThrowIfNull(value);
