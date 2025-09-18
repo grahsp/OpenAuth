@@ -26,7 +26,7 @@ public class JwtTokenGenerator : IJwtTokenGenerator
         if (!signingKey.IsActive())
             throw new InvalidOperationException("Signing key is expired or revoked.");
 
-        if (!client.GetAudiences().Contains(audience))
+        if (!client.Audiences.Contains(audience))
             throw new InvalidOperationException("Audience doesn't exist.");
         
         var signingCredentials = _factory.Create(signingKey);

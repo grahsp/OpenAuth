@@ -26,12 +26,8 @@ public sealed class Client
     public List<SigningKey> SigningKeys { get; private set; } = [];
 
     
-    public IEnumerable<Audience> Audiences => _audiences;
     private readonly HashSet<Audience> _audiences = [];
-
-    public IReadOnlyCollection<Audience> GetAudiences()
-        => Audiences.ToArray();
-    
+    public IReadOnlyCollection<Audience> Audiences => _audiences;
     public IReadOnlyCollection<Scope> GetAllowedScopes(Audience audience)
         => Audiences.FirstOrDefault(x => x.Value == audience.Value)?.Scopes ?? [];
     
