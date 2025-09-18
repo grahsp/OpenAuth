@@ -1,4 +1,3 @@
-using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using OpenAuth.Domain.Entities;
@@ -28,17 +27,36 @@ public class ClientConfiguration : IEntityTypeConfiguration<Client>
             .HasMaxLength(64)
             .IsRequired();
 
+        // Audience & Scopes
+        builder.OwnsMany(client => client.Audiences,
+            audienceBuilder =>
+            {
+                audienceBuilder.Property(a => a.Value)
+                    .HasColumnName("Audience")
+                    .IsRequired();
+                
+                audienceBuilder.OwnsMany(audience => audience.Scopes,
+                    scopeBuilder =>
+                    {
+                        scopeBuilder.Property(s => s.Value)
+                            .HasColumnName("Scope")
+                            .IsRequired();
+                    });
+                
+                audienceBuilder.Navigation(a => a.Scopes)
+                    .HasField("_scopes")
+                    .UsePropertyAccessMode(PropertyAccessMode.Field);
+            });
+
+        builder.Navigation(c => c.Audiences)
+            .HasField("_audiences")
+            .UsePropertyAccessMode(PropertyAccessMode.Field);
         
         // Properties
         builder.Property(x => x.TokenLifetime)
             .HasConversion(
                 t => t.Ticks,
                 ticks => TimeSpan.FromTicks(ticks))
-            .IsRequired();
-        
-        builder.Property(x => x.Grants)
-            .HasJsonConversion()
-            .HasColumnType("nvarchar(max)")
             .IsRequired();
             
         builder.Property(x => x.Enabled)
