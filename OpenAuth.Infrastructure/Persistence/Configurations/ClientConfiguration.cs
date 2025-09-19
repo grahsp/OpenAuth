@@ -33,7 +33,8 @@ public class ClientConfiguration : IEntityTypeConfiguration<Client>
             {
                 audienceBuilder.Property(a => a.Value)
                     .HasColumnName("Audience")
-                    .IsRequired();
+                    .HasField("_value")
+                    .UsePropertyAccessMode(PropertyAccessMode.Field);
                 
                 audienceBuilder.OwnsMany(audience => audience.Scopes,
                     scopeBuilder =>

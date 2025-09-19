@@ -118,7 +118,7 @@ public class ClientTests
     public class TryAddAudience
     {
         [Fact]
-        public void TryAddAudience_AddsAudience_WithNoScopes()
+        public void ReturnsTrue_WhenAudienceDoesNotExists()
         {
             var client = new Client("App");
             var api = new Audience("api");
@@ -128,29 +128,48 @@ public class ClientTests
             Assert.True(result);
             Assert.Contains(api, client.Audiences);
         }
-
+        
         [Fact]
-        public void TryAddAudience_Returns_False_When_AudienceExists()
+        public void ReturnsFalse_WhenAudienceAlreadyExists()
         {
             var client = new Client("App");
-            var api = new Audience("api");
+            
+            // Ensure adding is not done by reference
+            var apiA = new Audience("api");
+            var apiB = new Audience("api");
 
-            client.TryAddAudience(api);
-            var result = client.TryAddAudience(api);
+            client.TryAddAudience(apiA);
+            var result = client.TryAddAudience(apiB);
             
             Assert.False(result);
-            Assert.Equal(1, client.Audiences.Count(a => a.Equals(api)));
+            Assert.Single(client.Audiences);
+        }
+        
+        [Fact]
+        public void ReturnsFalse_WhenAudienceExistWithDifferentCasing()
+        {
+            var client = new Client("App");
+            
+            // Ensure adding is not done by reference
+            var apiA = new Audience("api");
+            var apiB = new Audience("API");
+
+            client.TryAddAudience(apiA);
+            var result = client.TryAddAudience(apiB);
+            
+            Assert.False(result);
+            Assert.Single(client.Audiences);
         }
 
         [Fact]
-        public void TryAddAudience_ThrowsWhen_Null()
+        public void Throws_WhenAudienceIsNull()
         {
             var client = new Client("App");
             Assert.Throws<ArgumentNullException>(() => client.TryAddAudience(null!));
         }
 
         [Fact]
-        public void TryAddAudience_TouchUpdatedAt()
+        public void UpdatesUpdatedAt_WhenAudienceIsAdded()
         {
             var client = new Client("App");
             var api = new Audience("api");
@@ -163,7 +182,7 @@ public class ClientTests
         }
 
         [Fact]
-        public void TryAddAudience_NoOp_DoesNotTouchUpdatedAt()
+        public void DoesNotUpdateUpdatedAt_WhenAudienceAlreadyExists()
         {
             var client = new Client("App");
             var api = new Audience("api");
