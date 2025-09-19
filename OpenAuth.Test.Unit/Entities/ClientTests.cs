@@ -115,10 +115,73 @@ public class ClientTests
         }
     }
 
-    public class RemoveAudience
+    public class TryAddAudience
     {
         [Fact]
-        public void RemoveAudience_RemovesAudience_AndScopes()
+        public void TryAddAudience_AddsAudience_WithNoScopes()
+        {
+            var client = new Client("App");
+            var api = new Audience("api");
+
+            var result = client.TryAddAudience(api);
+            
+            Assert.True(result);
+            Assert.Contains(api, client.Audiences);
+        }
+
+        [Fact]
+        public void TryAddAudience_Returns_False_When_AudienceExists()
+        {
+            var client = new Client("App");
+            var api = new Audience("api");
+
+            client.TryAddAudience(api);
+            var result = client.TryAddAudience(api);
+            
+            Assert.False(result);
+            Assert.Equal(1, client.Audiences.Count(a => a.Equals(api)));
+        }
+
+        [Fact]
+        public void TryAddAudience_ThrowsWhen_Null()
+        {
+            var client = new Client("App");
+            Assert.Throws<ArgumentNullException>(() => client.TryAddAudience(null!));
+        }
+
+        [Fact]
+        public void TryAddAudience_TouchUpdatedAt()
+        {
+            var client = new Client("App");
+            var api = new Audience("api");
+
+            var before = client.UpdatedAt;
+            var result = client.TryAddAudience(api);
+            
+            Assert.True(result);
+            Assert.NotEqual(before, client.UpdatedAt);
+        }
+
+        [Fact]
+        public void TryAddAudience_NoOp_DoesNotTouchUpdatedAt()
+        {
+            var client = new Client("App");
+            var api = new Audience("api");
+            
+            client.TryAddAudience(api);
+            
+            var before = client.UpdatedAt;
+            var result = client.TryAddAudience(api);
+            
+            Assert.False(result);
+            Assert.Equal(before, client.UpdatedAt);
+        }
+    }
+
+    public class TryRemoveAudience
+    {
+        [Fact]
+        public void TryRemoveAudience_RemovesAudience_AndScopes()
         {
             var client = new Client("App");
             var aud = new Audience("api");
@@ -132,9 +195,16 @@ public class ClientTests
             Assert.Empty(client.GetAllowedScopes(aud));
             Assert.Empty(client.Audiences);
         }
+        
+        [Fact]
+        public void TryRemoveAudience_ThrowsWhen_Null()
+        {
+            var client = new Client("App");
+            Assert.Throws<ArgumentNullException>(() => client.TryRemoveAudience(null!));
+        }
 
         [Fact]
-        public void RemoveAudience_TouchUpdatedAt()
+        public void TryRemoveAudience_TouchUpdatedAt()
         {
             var client = new Client("App");
             var aud = new Audience("api");
@@ -148,7 +218,7 @@ public class ClientTests
         }
 
         [Fact]
-        public void RemoveAudience_NoOp_DoesNotTouchUpdatedAt()
+        public void TryRemoveAudience_NoOp_DoesNotTouchUpdatedAt()
         {
             var client = new Client("App");
             var aud = new Audience("api");
