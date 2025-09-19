@@ -12,8 +12,8 @@ using OpenAuth.Infrastructure.Persistence;
 namespace OpenAuth.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250918171818_IntialCreate")]
-    partial class IntialCreate
+    [Migration("20250919142059_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
