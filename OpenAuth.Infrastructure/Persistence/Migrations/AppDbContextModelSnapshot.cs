@@ -129,7 +129,8 @@ namespace OpenAuth.Infrastructure.Persistence.Migrations
 
                             b1.Property<string>("Value")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)");
+                                .HasColumnType("nvarchar(max)")
+                                .HasColumnName("Audience");
 
                             b1.HasKey("ClientId", "Id");
 
