@@ -39,6 +39,8 @@ public sealed class Client
 
     public bool TryAddAudience(Audience audience)
     {
+        ArgumentNullException.ThrowIfNull(audience);
+        
         if (!_audiences.Add(audience))
             return false;
         
@@ -48,6 +50,8 @@ public sealed class Client
 
     public bool TryRemoveAudience(Audience audience)
     {
+        ArgumentNullException.ThrowIfNull(audience);
+        
         if (!_audiences.Remove(audience))
             return false;
         
