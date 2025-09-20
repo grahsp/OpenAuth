@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using OpenAuth.Api.Dtos;
 using OpenAuth.Api.Mappers;
 using OpenAuth.Application.Clients;
+using OpenAuth.Application.Security.Tokens;
 using OpenAuth.Domain.Entities;
 using OpenAuth.Domain.Enums;
 using OpenAuth.Domain.ValueObjects;
@@ -12,12 +13,16 @@ namespace OpenAuth.Api.Controllers;
 [Route("api/[controller]")]
 public class ClientController : ControllerBase
 {
-    public ClientController(IClientService clientService)
+    public ClientController(IClientService clientService, IJwtTokenGenerator tokenGenerator, IClientSecretValidator secretValidator)
     {
         _clientService = clientService;
+        _tokenGenerator = tokenGenerator;
+        _secretValidator = secretValidator;
     }
 
     private readonly IClientService _clientService;
+    private readonly IJwtTokenGenerator _tokenGenerator;
+    private readonly IClientSecretValidator _secretValidator;
 
     [HttpGet("{clientId:guid}")]
     public async Task<ActionResult<Client>> GetById(Guid clientId)
@@ -233,5 +238,40 @@ public class ClientController : ControllerBase
     {
         var result = await _clientService.RemoveSigningKeyAsync(new SigningKeyId(keyId));
         return result ? NoContent() : NotFound();
+    }
+    
+    
+    // Tokens
+    [HttpPost("token")]
+    public async Task<ActionResult<string>> IssueToken([FromBody] ClientCredentialsRequest request)
+    {
+        if (!request.GrantType.Equals("client_credentials", StringComparison.CurrentCultureIgnoreCase))
+            return BadRequest();
+        
+        var client = await _clientService.GetByIdAsync(new ClientId(Guid.Parse(request.ClientId)));
+        if (client is null)
+            return NotFound();
+
+        var valid = _secretValidator.Verify(request.ClientSecret, client);
+        if (!valid)
+            return BadRequest();
+        
+        var signingKey = client.SigningKeys
+            .Where(x => x.IsActive())
+            .OrderBy(x => x.CreatedAt)
+            .FirstOrDefault();
+        if (signingKey is null)
+            return BadRequest();
+        
+        var audience = client.Audiences.SingleOrDefault(x => x.Value == request.Audience);
+        if (audience is null)
+            return BadRequest();
+
+        var scopes = request.Scopes?.Select(x => new Scope(x)).ToArray() ?? [];
+        if (scopes.All(x => audience.Scopes.Contains(x)))
+            return BadRequest();
+        
+        var token = _tokenGenerator.GenerateToken(client, audience, scopes, signingKey);
+        return Ok(token);
     }
 }
