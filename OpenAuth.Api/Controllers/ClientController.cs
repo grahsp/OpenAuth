@@ -272,6 +272,8 @@ public class ClientController : ControllerBase
             return BadRequest();
         
         var token = _tokenGenerator.GenerateToken(client, audience, scopes, signingKey);
-        return Ok(token);
+        var response = new TokenResponse(token, "Bearer", client.TokenLifetime.Seconds);
+        
+        return Ok(response);
     }
 }
