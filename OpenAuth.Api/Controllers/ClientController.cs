@@ -52,6 +52,55 @@ public class ClientController : ControllerBase
     }
     
     
+    // Audiences
+    [HttpGet("{clientId:guid}/audiences")]
+    public async Task<ActionResult> GetAudiences(Guid clientId)
+    {
+        var client = await _clientService.GetByIdAsync(new ClientId(clientId));
+        if (client is null)
+            return NotFound();
+
+        return Ok(client.Audiences);
+    }
+    
+    [HttpPost("{clientId:guid}/audiences")]
+    public async Task<ActionResult<Audience>> AddAudience(Guid clientId, [FromBody] RegisterAudienceRequest request)
+    {
+        var audience = new Audience(request.Name);
+        var client = await _clientService.TryAddAudienceAsync(new ClientId(clientId), audience);
+        
+        if (client is null)
+            return NotFound();
+
+        return CreatedAtAction(
+            nameof(GetAudience),
+            new { clientId = client.Id, name = audience.Value },
+            audience
+        );
+    }
+
+    [HttpGet("{clientId:guid}/audiences/{name}")]
+    public async Task<ActionResult<Audience>> GetAudience(Guid clientId, string name)
+    {
+        var client = await _clientService.GetByIdAsync(new ClientId(clientId));
+        if (client is null)
+            return NotFound();
+
+        var audience = client.Audiences.SingleOrDefault(x => x.Value == name);
+        if (audience is null)
+            return NotFound();
+        
+        return Ok(audience);
+    }
+
+    [HttpDelete("{clientId:guid}/audiences/{name}")]
+    public async Task<ActionResult> DeleteAudience(Guid clientId, string name)
+    {
+        var removed = await _clientService.TryRemoveAudienceAsync(new ClientId(clientId), new Audience(name));
+        return removed is null ? NotFound() : NoContent();
+    }
+    
+    
     // Client Secrets
     [HttpGet("{clientId:guid}/secrets")]
     public async Task<ActionResult<IEnumerable<ClientSecretResponse>>> GetClientSecrets(Guid clientId)
