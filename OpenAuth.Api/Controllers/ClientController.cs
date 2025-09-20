@@ -101,6 +101,37 @@ public class ClientController : ControllerBase
     }
     
     
+    // Scopes
+    [HttpPut("{clientId:guid}/audiences/{name}/scopes")]
+    public async Task<ActionResult> SetScopes([FromBody] ScopesRequest request, Guid clientId, string name)
+    {
+        var scopes = request.Scopes.Select(x => new Scope(x));
+        var client = await _clientService.SetScopesAsync(new ClientId(clientId), new Audience(name), scopes);
+        
+        var response = ClientMapper.ToResponse(client.Audiences.Single(x => x.Value == name));
+        return Ok(response);
+    }
+    
+    [HttpPost("{clientId:guid}/audiences/{name}/scopes")]
+    public async Task<ActionResult> GrantScopes([FromBody] ScopesRequest request, Guid clientId, string name)
+    {
+        var scopes = request.Scopes.Select(x => new Scope(x));
+        var client = await _clientService.GrantScopesAsync(new ClientId(clientId), new Audience(name), scopes);
+        
+        var response = ClientMapper.ToResponse(client.Audiences.Single(x => x.Value == name));
+        return Ok(response);
+    }
+    
+    [HttpDelete("{clientId:guid}/audiences/{name}/scopes")]
+    public async Task<ActionResult> RevokeScopes([FromBody] ScopesRequest request, Guid clientId, string name)
+    {
+        var scopes = request.Scopes.Select(x => new Scope(x));
+        await _clientService.RevokeScopesAsync(new ClientId(clientId), new Audience(name), scopes);
+        
+        return NoContent();
+    }
+    
+    
     // Client Secrets
     [HttpGet("{clientId:guid}/secrets")]
     public async Task<ActionResult<IEnumerable<ClientSecretResponse>>> GetClientSecrets(Guid clientId)
