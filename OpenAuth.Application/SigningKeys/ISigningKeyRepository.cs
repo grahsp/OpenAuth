@@ -7,6 +7,7 @@ public interface ISigningKeyRepository
 {
     Task<SigningKey?> GetByIdAsync(SigningKeyId id, CancellationToken cancellationToken = default);
     Task<IEnumerable<SigningKey>> GetAllAsync(CancellationToken cancellationToken = default);
+    Task<IEnumerable<SigningKey>> GetActiveAsync(CancellationToken cancellationToken = default);
     
     void Add(SigningKey key);
     void Remove(SigningKey key);

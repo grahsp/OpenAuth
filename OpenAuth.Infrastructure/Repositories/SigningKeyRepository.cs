@@ -23,6 +23,12 @@ public class SigningKeyRepository : ISigningKeyRepository
         => await _context.SigningKeys
             .ToListAsync(cancellationToken);
 
+    public async Task<IEnumerable<SigningKey>> GetActiveAsync(CancellationToken cancellationToken = default)
+        => await _context.SigningKeys
+            .OrderBy(k => k.CreatedAt)
+            .Where(SigningKey.IsActiveExpression)
+            .ToListAsync(cancellationToken);
+
     public void Add(SigningKey key)
         => _context.SigningKeys.Add(key);
 
