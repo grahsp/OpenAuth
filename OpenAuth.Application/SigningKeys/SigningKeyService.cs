@@ -1,16 +1,20 @@
+using OpenAuth.Application.Security.Keys;
 using OpenAuth.Domain.Entities;
+using OpenAuth.Domain.Enums;
 using OpenAuth.Domain.ValueObjects;
 
 namespace OpenAuth.Application.SigningKeys;
 
 public class SigningKeyService : ISigningKeyService
 {
-    public SigningKeyService(ISigningKeyRepository repository)
+    public SigningKeyService(ISigningKeyRepository repository, ISigningKeyFactory keyFactory)
     {
         _repository = repository;
+        _keyFactory = keyFactory;
     }
 
     private readonly ISigningKeyRepository _repository;
+    private readonly ISigningKeyFactory _keyFactory;
 
 
     public async Task<SigningKey?> GetByIdAsync(SigningKeyId id, CancellationToken cancellationToken = default)
@@ -22,18 +26,37 @@ public class SigningKeyService : ISigningKeyService
     public async Task<IEnumerable<SigningKey>> GetActiveAsync(CancellationToken cancellationToken = default)
         => await _repository.GetActiveAsync(cancellationToken);
 
-    public Task<SigningKey> CreateAsync(SigningKey key, CancellationToken cancellationToken = default)
+    public async Task<SigningKey> CreateAsync(SigningAlgorithm algorithm, DateTime? expiresAt = null, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        var key = _keyFactory.Create(algorithm, expiresAt);
+        
+        _repository.Add(key);
+        await _repository.SaveChangesAsync(cancellationToken);
+
+        return key;
     }
 
-    public Task<bool> RevokeAsync(SigningKeyId id, CancellationToken cancellationToken = default)
+    public async Task<bool> RevokeAsync(SigningKeyId id, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        var key = await GetByIdAsync(id, cancellationToken);
+        if (key is null)
+            return false;
+        
+        key.Revoke();
+        await _repository.SaveChangesAsync(cancellationToken);
+
+        return true;
     }
 
-    public Task<bool> RemoveAsync(SigningKeyId id, CancellationToken cancellationToken = default)
+    public async Task<bool> RemoveAsync(SigningKeyId id, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        var key = await GetByIdAsync(id, cancellationToken);
+        if (key is null)
+            return false;
+        
+        _repository.Remove(key);
+        await _repository.SaveChangesAsync(cancellationToken);
+
+        return true;
     }
 }
