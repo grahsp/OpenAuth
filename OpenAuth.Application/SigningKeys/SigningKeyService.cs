@@ -19,6 +19,9 @@ public class SigningKeyService : ISigningKeyService
 
     public async Task<SigningKey?> GetByIdAsync(SigningKeyId id, CancellationToken cancellationToken = default)
         => await _repository.GetByIdAsync(id, cancellationToken);
+    
+    public async Task<SigningKey?> GetCurrentAsync(CancellationToken cancellationToken = default)
+        => await _repository.GetCurrentAsync(cancellationToken);
 
     public async Task<IEnumerable<SigningKey>> GetAllAsync(CancellationToken cancellationToken = default)
         => await _repository.GetAllAsync(cancellationToken);

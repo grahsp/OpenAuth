@@ -7,6 +7,7 @@ namespace OpenAuth.Application.SigningKeys;
 public interface ISigningKeyService
 {
     Task<SigningKey?> GetByIdAsync(SigningKeyId id, CancellationToken cancellationToken = default);
+    Task<SigningKey?> GetCurrentAsync(CancellationToken cancellationToken = default);
     Task<IEnumerable<SigningKey>> GetAllAsync(CancellationToken cancellationToken = default);
     Task<IEnumerable<SigningKey>> GetActiveAsync(CancellationToken cancellationToken = default);
     
