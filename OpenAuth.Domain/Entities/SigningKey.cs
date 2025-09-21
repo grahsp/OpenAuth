@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using OpenAuth.Domain.Enums;
 using OpenAuth.Domain.ValueObjects;
 
@@ -51,9 +52,11 @@ public class SigningKey
             PrivateKey = privateKey
         };
     }
+
+    public static Expression<Func<SigningKey, bool>> IsActiveExpression
+        => k => k.RevokedAt == null && (k.ExpiresAt == null || k.ExpiresAt > DateTime.UtcNow);
     
-    
-    public bool IsActive() => RevokedAt is null && (ExpiresAt is null || ExpiresAt > DateTime.UtcNow);
+    public bool IsActive() => IsActiveExpression.Compile().Invoke(this);
     
     public void Revoke() =>
         RevokedAt ??= DateTime.UtcNow;
