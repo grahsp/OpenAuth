@@ -5,6 +5,7 @@ using OpenAuth.Application.Security.Keys;
 using OpenAuth.Application.Security.Secrets;
 using OpenAuth.Application.Security.Signing;
 using OpenAuth.Application.Security.Tokens;
+using OpenAuth.Application.SigningKeys;
 using OpenAuth.Infrastructure.Persistence;
 using OpenAuth.Infrastructure.Repositories;
 using OpenAuth.Infrastructure.Security.Keys;
@@ -43,6 +44,9 @@ public class Program
         builder.Services.AddScoped<ISecretGenerator, SecretGenerator>();
 
         // Signing Keys
+        builder.Services.AddScoped<ISigningKeyService, SigningKeyService>();
+        builder.Services.AddScoped<ISigningKeyRepository, SigningKeyRepository>();
+        
         builder.Services.AddScoped<ISigningKeyStrategy, HmacSigningKeyStrategy>();
         builder.Services.AddScoped<ISigningKeyStrategy, RsaSigningKeyStrategy>();
         builder.Services.AddScoped<ISigningKeyFactory, SigningKeyFactory>();
