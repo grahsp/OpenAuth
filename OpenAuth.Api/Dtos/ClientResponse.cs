@@ -1,5 +1,3 @@
-using OpenAuth.Api.Mappers;
-
 namespace OpenAuth.Api.Dtos;
 
 public record ClientResponse(
@@ -7,6 +5,5 @@ public record ClientResponse(
     string Name,
     bool IsActive,
     IEnumerable<AudienceResponse> Audiences,
-    IEnumerable<ClientSecretSummaryResponse> Secrets,
-    IEnumerable<SigningKeySummaryResponse> SigningKeys
+    IEnumerable<ClientSecretSummaryResponse> Secrets
 );
