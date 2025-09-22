@@ -12,8 +12,8 @@ using OpenAuth.Infrastructure.Persistence;
 namespace OpenAuth.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250922085413_RefactorSigningKey")]
-    partial class RefactorSigningKey
+    [Migration("20250922153954_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -91,9 +91,6 @@ namespace OpenAuth.Infrastructure.Persistence.Migrations
                     b.Property<int>("Algorithm")
                         .HasColumnType("int");
 
-                    b.Property<Guid?>("ClientId1")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -111,8 +108,6 @@ namespace OpenAuth.Infrastructure.Persistence.Migrations
                         .HasColumnType("datetime2");
 
                     b.HasKey("KeyId");
-
-                    b.HasIndex("ClientId1");
 
                     b.ToTable("SigningKeys");
                 });
@@ -186,18 +181,9 @@ namespace OpenAuth.Infrastructure.Persistence.Migrations
                     b.Navigation("Client");
                 });
 
-            modelBuilder.Entity("OpenAuth.Domain.Entities.SigningKey", b =>
-                {
-                    b.HasOne("OpenAuth.Domain.Entities.Client", null)
-                        .WithMany("SigningKeys")
-                        .HasForeignKey("ClientId1");
-                });
-
             modelBuilder.Entity("OpenAuth.Domain.Entities.Client", b =>
                 {
                     b.Navigation("Secrets");
-
-                    b.Navigation("SigningKeys");
                 });
 #pragma warning restore 612, 618
         }
