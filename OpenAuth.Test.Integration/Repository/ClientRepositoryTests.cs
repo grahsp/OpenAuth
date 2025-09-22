@@ -95,22 +95,4 @@ public class ClientRepositoryTests : IAsyncLifetime
         Assert.NotNull(fetched);
         Assert.Single(fetched.Secrets);
     }
-
-    [Fact]
-    public async Task GetByIdAsync_IncludesSigningKeys()
-    {
-        await using var context = _fx.CreateContext();
-        var repo = CreateRepository(context);
-
-        var client = new Client("client");
-        client.AddSigningKey(SigningKey.CreateSymmetric(SigningAlgorithm.Hmac, "secret-key"));
-        
-        repo.Add(client);
-        await context.SaveChangesAsync();
-
-        var fetched = await repo.GetByIdAsync(client.Id);
-
-        Assert.NotNull(fetched);
-        Assert.Single(fetched.SigningKeys);
-    }
 }
