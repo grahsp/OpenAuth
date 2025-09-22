@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using OpenAuth.Application.SigningKeys;
 using OpenAuth.Domain.Enums;
 using OpenAuth.Domain.ValueObjects;
@@ -259,10 +260,11 @@ public class SigningKeyServiceTests : IAsyncLifetime
         public async Task PersistSigningKey_WhenCreated()
         {
             var service = CreateSut();
-
             var created = await service.CreateAsync(SigningAlgorithm.Rsa);
-            var fetched = await service.GetByIdAsync(created.KeyId);
-
+            
+            await using var context = _fx.CreateContext();
+            
+            var fetched = await context.SigningKeys.FirstOrDefaultAsync(k => k.KeyId == created.KeyId);
             Assert.NotNull(fetched);
             Assert.Equal(created.KeyId, fetched.KeyId);
         }
@@ -279,6 +281,26 @@ public class SigningKeyServiceTests : IAsyncLifetime
             var fetched = (await service.GetAllAsync()).ToArray();
             foreach (var key in fetched)
                 Assert.Contains(fetched, k => k.KeyId == key.KeyId);
+        }
+    }
+
+    public class RevokeAsync(SqlServerFixture fx) : SigningKeyServiceTests(fx)
+    {
+        [Fact]
+        public async Task PersistChanges_WhenRevoked()
+        {
+            var service = CreateSut();
+            var key = await service.CreateAsync(SigningAlgorithm.Rsa);
+            
+            var revoked = await service.RevokeAsync(key.KeyId);
+            Assert.True(revoked);
+
+            // Create new context to ensure changes are persisted
+            await using var context = _fx.CreateContext();
+            
+            var fetched = await context.SigningKeys.FirstOrDefaultAsync(k => k.KeyId == key.KeyId);
+            Assert.NotNull(fetched);
+            Assert.False(fetched.IsActive());
         }
     }
 }
