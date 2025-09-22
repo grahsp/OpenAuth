@@ -1,5 +1,4 @@
 using OpenAuth.Domain.Entities;
-using OpenAuth.Domain.Enums;
 using OpenAuth.Domain.ValueObjects;
 
 namespace OpenAuth.Application.Clients;
@@ -26,9 +25,4 @@ public interface IClientService
     Task<SecretCreationResult> AddSecretAsync(ClientId id, DateTime? expiresAt = null, CancellationToken cancellationToken = default);
     Task<bool> RevokeSecretAsync(SecretId secretId, CancellationToken cancellationToken = default);
     Task<bool> RemoveSecretAsync(SecretId secretId, CancellationToken cancellationToken = default);
-    
-    Task<SigningKey?> GetSigningKeyAsync(SigningKeyId id, CancellationToken cancellationToken = default);
-    Task<SigningKey> AddSigningKeyAsync(ClientId id, SigningAlgorithm algorithm, DateTime? expiresAt = null, CancellationToken cancellationToken = default);
-    Task<bool> RevokeSigningKeyAsync(SigningKeyId id, CancellationToken cancellationToken = default);
-    Task<bool> RemoveSigningKeyAsync(SigningKeyId id, CancellationToken cancellationToken = default);
 }
