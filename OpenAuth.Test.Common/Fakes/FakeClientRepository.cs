@@ -18,19 +18,10 @@ public class FakeClientRepository : IClientRepository
     public Task<Client?> GetBySecretIdAsync(SecretId id, CancellationToken ct = default)
         => Task.FromResult(_store.Values.FirstOrDefault(c => c.Secrets.Any(s => s.Id == id)));
 
-    public Task<Client?> GetBySigningKeyIdAsync(SigningKeyId id, CancellationToken ct = default)
-        => Task.FromResult(_store.Values.FirstOrDefault(c => c.SigningKeys.Any(k => k.KeyId == id)));
-
     public Task<ClientSecret?> GetSecretAsync(SecretId id, CancellationToken cancellationToken = default)
     {
         var client = _store.Values.FirstOrDefault(c => c.Secrets.Any(s => s.Id == id));
         return Task.FromResult(client?.Secrets.FirstOrDefault(s => s.Id == id));
-    }
-
-    public Task<SigningKey?> GetSigningKeyAsync(SigningKeyId id, CancellationToken cancellationToken = default)
-    {
-        var client = _store.Values.FirstOrDefault(c => c.SigningKeys.Any(s => s.KeyId == id));
-        return Task.FromResult(client?.SigningKeys.FirstOrDefault(s => s.KeyId == id));
     }
 
     public void Add(Client client)
