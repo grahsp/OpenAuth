@@ -23,7 +23,6 @@ public sealed class Client
     public TimeSpan TokenLifetime { get; private set; } = TimeSpan.FromMinutes(10);
 
     public List<ClientSecret> Secrets { get; private set; } = [];
-    public List<SigningKey> SigningKeys { get; private set; } = [];
 
     
     private readonly HashSet<Audience> _audiences = [];
@@ -153,17 +152,6 @@ public sealed class Client
         Secrets.Add(secret);
         Touch();
     }
-
-    public void AddSigningKey(SigningKey signingKey)
-    {
-        ArgumentNullException.ThrowIfNull(signingKey);
-
-        if (SigningKeys.Any(x => x.KeyId == signingKey.KeyId))
-            throw new InvalidOperationException("SigningKey already exists under client.");
-        
-        SigningKeys.Add(signingKey);
-        Touch();
-    }
     
     public void RevokeSecret(SecretId secretId)
     {
@@ -172,16 +160,6 @@ public sealed class Client
             return;
         
         secret.Revoke();
-        Touch();
-    }
-    
-    public void RevokeSigningKey(SigningKeyId keyId)
-    {
-        var signingKey = SigningKeys.FirstOrDefault(x => x.KeyId == keyId);
-        if (signingKey is null)
-            return;
-
-        signingKey.Revoke();
         Touch();
     }
 
@@ -194,23 +172,9 @@ public sealed class Client
         Secrets.Remove(secret);
         Touch();
     }
-    
-    public void RemoveSigningKey(SigningKeyId keyId)
-    {
-        var signingKey = SigningKeys.FirstOrDefault(x => x.KeyId == keyId);
-        if (signingKey is null)
-            return;
-
-        SigningKeys.Remove(signingKey);
-        Touch();
-    }
 
     public IEnumerable<ClientSecret> ActiveSecrets() =>
         Secrets.Where(x => x.IsActive())
-            .OrderByDescending(x => x.CreatedAt);
-
-    public IEnumerable<SigningKey> ActiveSigningKeys() =>
-        SigningKeys.Where(x => x.IsActive())
             .OrderByDescending(x => x.CreatedAt);
 
     public void Enable()
