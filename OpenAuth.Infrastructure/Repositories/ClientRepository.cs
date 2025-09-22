@@ -14,32 +14,20 @@ public class ClientRepository : IClientRepository
     public Task<Client?> GetByIdAsync(ClientId id, CancellationToken cancellationToken = default)
         => _context.Clients
             .Include(x => x.Secrets)
-            .Include(x => x.SigningKeys)
             .SingleOrDefaultAsync(x => x.Id == id, cancellationToken);
 
     public Task<Client?> GetByNameAsync(string name, CancellationToken cancellationToken = default)
         => _context.Clients
             .Include(x => x.Secrets)
-            .Include(x => x.SigningKeys)
             .SingleOrDefaultAsync(x => x.Name == name, cancellationToken);
 
     public Task<Client?> GetBySecretIdAsync(SecretId id, CancellationToken cancellationToken = default)
         => _context.Clients
             .Include(x => x.Secrets)
-            .Include(x => x.SigningKeys)
             .SingleOrDefaultAsync(x => x.Secrets.Any(s => s.Id == id), cancellationToken);
-    
-    public Task<Client?> GetBySigningKeyIdAsync(SigningKeyId id, CancellationToken cancellationToken = default)
-        => _context.Clients
-            .Include(x => x.Secrets)
-            .Include(x => x.SigningKeys)
-            .SingleOrDefaultAsync(x => x.SigningKeys.Any(k => k.KeyId == id), cancellationToken);
 
     public Task<ClientSecret?> GetSecretAsync(SecretId id, CancellationToken cancellationToken = default)
         => _context.ClientSecrets.SingleOrDefaultAsync(x => x.Id == id, cancellationToken);
-
-    public Task<SigningKey?> GetSigningKeyAsync(SigningKeyId id, CancellationToken cancellationToken = default)
-        => _context.SigningKeys.SingleOrDefaultAsync(x => x.KeyId == id, cancellationToken);
 
     public void Add(Client client)
         => _context.Clients.Add(client);
