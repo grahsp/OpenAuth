@@ -1,6 +1,4 @@
-using OpenAuth.Application.Security.Keys;
 using OpenAuth.Domain.Entities;
-using OpenAuth.Domain.Enums;
 using OpenAuth.Domain.ValueObjects;
 
 namespace OpenAuth.Application.Clients;
@@ -9,13 +7,11 @@ public class ClientService : IClientService
 {
     private readonly IClientRepository _repository;
     private readonly IClientSecretFactory _secretFactory;
-    private readonly ISigningKeyFactory _signingKeyFactory;
     
-    public ClientService(IClientRepository repository, IClientSecretFactory secretFactory, ISigningKeyFactory signingKeyFactory)
+    public ClientService(IClientRepository repository, IClientSecretFactory secretFactory)
     {
         _repository = repository;
         _secretFactory = secretFactory;
-        _signingKeyFactory = signingKeyFactory;
     }
     
     public async Task<Client?> GetByIdAsync(ClientId id, CancellationToken cancellationToken = default) =>
@@ -179,46 +175,6 @@ public class ClientService : IClientService
             return false;
         
         client.RemoveSecret(secretId);
-        await _repository.SaveChangesAsync(cancellationToken);
-
-        return true;
-    }
-
-
-    public async Task<SigningKey?> GetSigningKeyAsync(SigningKeyId id, CancellationToken cancellationToken = default)
-        => await _repository.GetSigningKeyAsync(id, cancellationToken);
-    
-    public async Task<SigningKey> AddSigningKeyAsync(ClientId id, SigningAlgorithm algorithm, DateTime? expiresAt = null, CancellationToken cancellationToken = default)
-    {
-        var client = await _repository.GetByIdAsync(id, cancellationToken)
-                     ?? throw new InvalidOperationException("Client not found.");
-
-        var signingKey = _signingKeyFactory.Create(algorithm, expiresAt);
-        client.AddSigningKey(signingKey);
-
-        await _repository.SaveChangesAsync(cancellationToken);
-        return signingKey;
-    }
-
-    public async Task<bool> RevokeSigningKeyAsync(SigningKeyId id, CancellationToken cancellationToken = default)
-    {
-        var client = await _repository.GetBySigningKeyIdAsync(id, cancellationToken);
-        if (client is null)
-            return false;
-        
-        client.RevokeSigningKey(id);
-        await _repository.SaveChangesAsync(cancellationToken);
-        
-        return true;
-    }
-
-    public async Task<bool> RemoveSigningKeyAsync(SigningKeyId id, CancellationToken cancellationToken = default)
-    {
-        var client = await _repository.GetBySigningKeyIdAsync(id, cancellationToken);
-        if (client is null)
-            return false;
-        
-        client.RemoveSigningKey(id);
         await _repository.SaveChangesAsync(cancellationToken);
 
         return true;
