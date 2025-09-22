@@ -252,4 +252,33 @@ public class SigningKeyServiceTests : IAsyncLifetime
             Assert.Empty(fetched);       
         }
     }
+
+    public class CreateAsync(SqlServerFixture fx) : SigningKeyServiceTests(fx)
+    {
+        [Fact]
+        public async Task PersistSigningKey_WhenCreated()
+        {
+            var service = CreateSut();
+
+            var created = await service.CreateAsync(SigningAlgorithm.Rsa);
+            var fetched = await service.GetByIdAsync(created.KeyId);
+
+            Assert.NotNull(fetched);
+            Assert.Equal(created.KeyId, fetched.KeyId);
+        }
+
+        [Fact]
+        public async Task CreatesUniqueKeyIds()
+        {
+            var service = CreateSut();
+            
+            var keyA = await service.CreateAsync(SigningAlgorithm.Rsa);
+            var keyB = await service.CreateAsync(SigningAlgorithm.Rsa);
+            Assert.NotEqual(keyA.KeyId, keyB.KeyId);       
+            
+            var fetched = (await service.GetAllAsync()).ToArray();
+            foreach (var key in fetched)
+                Assert.Contains(fetched, k => k.KeyId == key.KeyId);
+        }
+    }
 }
