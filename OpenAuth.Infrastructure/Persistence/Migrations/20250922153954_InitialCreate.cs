@@ -28,6 +28,23 @@ namespace OpenAuth.Infrastructure.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "SigningKeys",
+                columns: table => new
+                {
+                    KeyId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Algorithm = table.Column<int>(type: "int", nullable: false),
+                    PublicKey = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    PrivateKey = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ExpiresAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    RevokedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_SigningKeys", x => x.KeyId);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Audience",
                 columns: table => new
                 {
@@ -70,30 +87,6 @@ namespace OpenAuth.Infrastructure.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "SigningKeys",
-                columns: table => new
-                {
-                    KeyId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ClientId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Algorithm = table.Column<int>(type: "int", nullable: false),
-                    PublicKey = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    PrivateKey = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    ExpiresAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    RevokedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_SigningKeys", x => x.KeyId);
-                    table.ForeignKey(
-                        name: "FK_SigningKeys_Clients_ClientId",
-                        column: x => x.ClientId,
-                        principalTable: "Clients",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Scope",
                 columns: table => new
                 {
@@ -123,11 +116,6 @@ namespace OpenAuth.Infrastructure.Persistence.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_ClientSecrets_ClientId",
                 table: "ClientSecrets",
-                column: "ClientId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_SigningKeys_ClientId",
-                table: "SigningKeys",
                 column: "ClientId");
         }
 
