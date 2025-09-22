@@ -20,7 +20,6 @@ public class SigningKeyMappingTests : IAsyncLifetime
     {
         await using var ctx = _fx.CreateContext();
 
-        var client = new Client("client");
         const string publicKey = "public-key";
         const string privateKey = "private-key";
         var signingKey = SigningKey.CreateAsymmetric(
@@ -29,29 +28,16 @@ public class SigningKeyMappingTests : IAsyncLifetime
             privateKey,
             DateTime.UtcNow.AddHours(1));
         
-        client.AddSigningKey(signingKey);
-        ctx.Add(client);
+        ctx.Add(signingKey);
         await ctx.SaveChangesAsync();
 
         var loaded = await ctx.SigningKeys.SingleAsync(c => c.KeyId == signingKey.KeyId);
 
         Assert.Equal(signingKey.KeyId, loaded.KeyId);
-        Assert.Equal(client.Id, loaded.ClientId);
         Assert.Equal(SigningAlgorithm.Hmac, loaded.Algorithm);
         Assert.Equal(publicKey, loaded.PublicKey);
         Assert.Equal(privateKey, loaded.PrivateKey);
         Assert.Equal(signingKey.CreatedAt, loaded.CreatedAt);
         Assert.Equal(signingKey.ExpiresAt, loaded.ExpiresAt);
-    }
-
-    [Fact]
-    public async Task ClientSecret_Requires_Client()
-    {
-        await using var ctx = _fx.CreateContext();
-
-        var signingKey = SigningKey.CreateSymmetric(SigningAlgorithm.Hmac, "secret-key");
-        
-        ctx.Add(signingKey);
-        await Assert.ThrowsAnyAsync<DbUpdateException>(() => ctx.SaveChangesAsync());
     }
 }
