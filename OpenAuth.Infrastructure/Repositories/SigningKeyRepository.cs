@@ -21,7 +21,8 @@ public class SigningKeyRepository : ISigningKeyRepository
     
     public async Task<SigningKey?> GetCurrentAsync(CancellationToken cancellationToken = default)
         => await _context.SigningKeys
-            .OrderBy(k => k.CreatedAt)
+            .OrderByDescending(k => k.CreatedAt)
+            .ThenBy(k => k.KeyId)
             .Where(SigningKey.IsActiveExpression)
             .FirstOrDefaultAsync(cancellationToken);
 
@@ -31,7 +32,8 @@ public class SigningKeyRepository : ISigningKeyRepository
 
     public async Task<IEnumerable<SigningKey>> GetActiveAsync(CancellationToken cancellationToken = default)
         => await _context.SigningKeys
-            .OrderBy(k => k.CreatedAt)
+            .OrderByDescending(k => k.CreatedAt)
+            .ThenBy(k => k.KeyId)
             .Where(SigningKey.IsActiveExpression)
             .ToListAsync(cancellationToken);
 
