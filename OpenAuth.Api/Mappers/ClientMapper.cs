@@ -12,9 +12,7 @@ public static class ClientMapper
             client.Name,
             client.Enabled,
             client.Audiences.Select(ToResponse),
-            client.Secrets.Select(x => new ClientSecretSummaryResponse(x.Id.Value, x.CreatedAt, x.ExpiresAt)),
-            client.SigningKeys
-                .Select(x => new SigningKeySummaryResponse(x.KeyId.Value, x.Algorithm.ToString(), x.CreatedAt, x.ExpiresAt))
+            client.Secrets.Select(x => new ClientSecretSummaryResponse(x.Id.Value, x.CreatedAt, x.ExpiresAt))
         );
 
     public static AudienceResponse ToResponse(Audience audience)
@@ -31,15 +29,5 @@ public static class ClientMapper
             secret.CreatedAt,
             secret.ExpiresAt,
             secret.RevokedAt
-        );
-
-    public static SigningKeyResponse ToResponse(SigningKey key)
-        => new SigningKeyResponse(
-            key.KeyId.Value,
-            key.Algorithm.ToString(),
-            key.IsActive(),
-            key.CreatedAt,
-            key.ExpiresAt,
-            key.RevokedAt
         );
 }
