@@ -19,15 +19,6 @@ public class SigningKeyConfiguration : IEntityTypeConfiguration<SigningKey>
             .ValueGeneratedNever()
             .IsRequired();
 
-        
-        // Relations
-        // builder.HasOne(x => x.Client)
-        //     .WithMany(y => y.SigningKeys)
-        //     .HasForeignKey(x => x.ClientId)
-        //     .OnDelete(DeleteBehavior.Cascade)
-        //     .IsRequired();
-        
-
         // Properties
         builder.Property(x => x.Algorithm)
             .HasConversion<int>()
