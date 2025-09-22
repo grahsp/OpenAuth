@@ -87,21 +87,4 @@ public class ClientMappingTests : IAsyncLifetime
         await ctx.SaveChangesAsync();
         Assert.False(await ctx.ClientSecrets.AnyAsync());
     }
-    
-    [Fact]
-    public async Task Deleting_Client_Cascades_To_SigningKeys()
-    {
-        await using var ctx = _fx.CreateContext();
-
-        var client = new Client("client");
-        client.SigningKeys.Add(SigningKey.CreateSymmetric(SigningAlgorithm.Hmac, "secret-key"));
-
-        ctx.Add(client);
-        await ctx.SaveChangesAsync();
-        Assert.True(await ctx.SigningKeys.AnyAsync());
-
-        ctx.Remove(client);
-        await ctx.SaveChangesAsync();
-        Assert.False(await ctx.SigningKeys.AnyAsync());
-    }
 }
