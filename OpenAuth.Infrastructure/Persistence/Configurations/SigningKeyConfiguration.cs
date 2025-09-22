@@ -21,11 +21,11 @@ public class SigningKeyConfiguration : IEntityTypeConfiguration<SigningKey>
 
         
         // Relations
-        builder.HasOne(x => x.Client)
-            .WithMany(y => y.SigningKeys)
-            .HasForeignKey(x => x.ClientId)
-            .OnDelete(DeleteBehavior.Cascade)
-            .IsRequired();
+        // builder.HasOne(x => x.Client)
+        //     .WithMany(y => y.SigningKeys)
+        //     .HasForeignKey(x => x.ClientId)
+        //     .OnDelete(DeleteBehavior.Cascade)
+        //     .IsRequired();
         
 
         // Properties
