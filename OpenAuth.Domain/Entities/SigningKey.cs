@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq.Expressions;
 using OpenAuth.Domain.Enums;
 using OpenAuth.Domain.ValueObjects;
@@ -18,7 +19,9 @@ public class SigningKey
     
     public SigningKeyId KeyId { get; init; }
     
+    [NotMapped]
     public ClientId ClientId { get; private set; }
+    [NotMapped]
     public Client Client { get; private set; } = null!;
     
     public SigningAlgorithm Algorithm { get; private init; }
