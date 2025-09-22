@@ -28,6 +28,8 @@ public class SigningKeyRepository : ISigningKeyRepository
 
     public async Task<IEnumerable<SigningKey>> GetAllAsync(CancellationToken cancellationToken = default)
         => await _context.SigningKeys
+            .OrderByDescending(k => k.CreatedAt)
+            .ThenBy(k => k.KeyId)
             .ToListAsync(cancellationToken);
 
     public async Task<IEnumerable<SigningKey>> GetActiveAsync(CancellationToken cancellationToken = default)
