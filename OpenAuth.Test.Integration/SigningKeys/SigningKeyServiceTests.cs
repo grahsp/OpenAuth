@@ -303,4 +303,22 @@ public class SigningKeyServiceTests : IAsyncLifetime
             Assert.False(fetched.IsActive());
         }
     }
+
+    public class RemoveAsync(SqlServerFixture fx) : SigningKeyServiceTests(fx)
+    {
+        [Fact]
+        public async Task PersistChanges_WhenRemoved()
+        {
+            var service = CreateSut();
+            var key = await service.CreateAsync(SigningAlgorithm.Rsa);
+            
+            var removed = await service.RemoveAsync(key.KeyId);
+            Assert.True(removed);
+            
+            await using var context = _fx.CreateContext();
+            
+            var fetched = await context.SigningKeys.FirstOrDefaultAsync(k => k.KeyId == key.KeyId);
+            Assert.Null(fetched);       
+        }
+    }
 }
