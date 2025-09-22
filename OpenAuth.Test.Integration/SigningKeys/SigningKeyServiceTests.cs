@@ -140,4 +140,64 @@ public class SigningKeyServiceTests : IAsyncLifetime
         }
     }
 
+    public class GetAllAsync(SqlServerFixture fx) : SigningKeyServiceTests(fx)
+    {
+        [Fact]
+        public async Task ReturnsExistingKeys()
+        {
+            var service = CreateSut();
+
+            await service.CreateAsync(SigningAlgorithm.Rsa);
+            await service.CreateAsync(SigningAlgorithm.Rsa);
+
+            var fetched = await service.GetAllAsync();
+            Assert.Equal(2, fetched.Count());
+        }
+
+        [Fact]
+        public async Task ReturnsExistingExpiredKeys()
+        {
+            var service = CreateSut();
+            
+            await service.CreateAsync(SigningAlgorithm.Rsa, DateTime.UtcNow.AddDays(-1));
+            
+            var fetched = await service.GetAllAsync();
+            Assert.False(fetched.First().IsActive());
+        }
+        
+        [Fact]
+        public async Task ReturnsExistingRevokedKeys()
+        {
+            var service = CreateSut();
+            
+            var revoked = await service.CreateAsync(SigningAlgorithm.Rsa);
+            await service.RevokeAsync(revoked.KeyId);
+            
+            var fetched = await service.GetAllAsync();
+            Assert.False(fetched.First().IsActive());
+        }
+
+        [Fact]
+        public async Task ReturnsExistingKeys_OrderedByCreationDate()
+        {
+            var service = CreateSut();
+
+            await service.CreateAsync(SigningAlgorithm.Rsa);
+            await service.CreateAsync(SigningAlgorithm.Rsa);
+
+            var fetched = (await service.GetAllAsync()).ToArray();
+            
+            for (var i = 1; i < fetched.Length; i++)
+                Assert.True(fetched[i].CreatedAt <= fetched[i - 1].CreatedAt);
+        }
+
+        [Fact]
+        public async Task ReturnsEmptyList_WhenNoKeysExist()
+        {
+            var service = CreateSut();
+            
+            var fetched = await service.GetAllAsync();
+            Assert.Empty(fetched);
+        }
+    }
 }
