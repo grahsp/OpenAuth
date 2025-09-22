@@ -36,7 +36,6 @@ public static class ClientMapper
     public static SigningKeyResponse ToResponse(SigningKey key)
         => new SigningKeyResponse(
             key.KeyId.Value,
-            key.ClientId.Value,
             key.Algorithm.ToString(),
             key.IsActive(),
             key.CreatedAt,
