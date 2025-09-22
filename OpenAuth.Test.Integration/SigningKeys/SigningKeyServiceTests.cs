@@ -200,4 +200,56 @@ public class SigningKeyServiceTests : IAsyncLifetime
             Assert.Empty(fetched);
         }
     }
+    
+    public class GetActiveAsync(SqlServerFixture fx) : SigningKeyServiceTests(fx)
+    {
+        [Fact]
+        public async Task ReturnsActiveKeys()
+        {
+            var service = CreateSut();
+            
+            await service.CreateAsync(SigningAlgorithm.Rsa);
+            await service.CreateAsync(SigningAlgorithm.Rsa);
+            
+            var fetched = await service.GetActiveAsync();
+            Assert.Equal(2, fetched.Count());
+        }
+        
+        [Fact]
+        public async Task ReturnsActiveKeys_IgnoreRevoked()
+        {
+            var service = CreateSut();
+            
+            var active = await service.CreateAsync(SigningAlgorithm.Rsa);
+            
+            var revoked = await service.CreateAsync(SigningAlgorithm.Rsa);
+            await service.RevokeAsync(revoked.KeyId);
+            
+            var fetched = (await service.GetActiveAsync()).ToArray();
+            Assert.Single(fetched);
+            Assert.Contains(active.KeyId, fetched.Select(k => k.KeyId));;
+        }
+        
+        [Fact]
+        public async Task ReturnsActiveKeys_IgnoreExpired()
+        {
+            var service = CreateSut();
+            
+            var active = await service.CreateAsync(SigningAlgorithm.Rsa);
+            await service.CreateAsync(SigningAlgorithm.Rsa, DateTime.UtcNow.AddDays(-1));
+            
+            var fetched = (await service.GetActiveAsync()).ToArray();
+            Assert.Single(fetched);
+            Assert.Contains(active.KeyId, fetched.Select(k => k.KeyId));;
+        }
+
+        [Fact]
+        public async Task ReturnsEmptyList_WhenNoKeysExist()
+        {
+            var service = CreateSut();
+            
+            var fetched = await service.GetActiveAsync();
+            Assert.Empty(fetched);       
+        }
+    }
 }
