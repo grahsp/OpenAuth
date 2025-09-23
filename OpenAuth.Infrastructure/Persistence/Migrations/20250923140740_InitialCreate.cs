@@ -31,17 +31,16 @@ namespace OpenAuth.Infrastructure.Persistence.Migrations
                 name: "SigningKeys",
                 columns: table => new
                 {
-                    KeyId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Algorithm = table.Column<int>(type: "int", nullable: false),
-                    PublicKey = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    PrivateKey = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Key = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ExpiresAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     RevokedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_SigningKeys", x => x.KeyId);
+                    table.PrimaryKey("PK_SigningKeys", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
