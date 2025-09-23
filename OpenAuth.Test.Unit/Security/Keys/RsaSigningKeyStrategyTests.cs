@@ -27,9 +27,7 @@ public class RsaSigningKeyStrategyTests
 
         Assert.Equal(SigningAlgorithm.Rsa, key.Algorithm);
         Assert.NotNull(key.PrivateKey);
-        Assert.NotNull(key.PublicKey);
         Assert.Contains("BEGIN PRIVATE KEY", key.PrivateKey);
-        Assert.Contains("BEGIN PUBLIC KEY", key.PublicKey);
         Assert.Equal(expires, key.ExpiresAt);
         Assert.NotEqual(default, key.KeyId);
     }

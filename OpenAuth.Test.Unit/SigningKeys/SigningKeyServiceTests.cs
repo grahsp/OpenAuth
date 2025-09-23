@@ -23,7 +23,7 @@ public class SigningKeyServiceTests
         [Fact]
         public async Task CallsFactory_WithExpectedArgument()
         {
-            var expectedKey = SigningKey.CreateAsymmetric(SigningAlgorithm.Rsa, "public-key", "private-key");
+            var expectedKey = new SigningKey(SigningAlgorithm.Rsa, "private-key");
             _keyFactory.Create(SigningAlgorithm.Rsa).Returns(expectedKey);
             
             var created = await _service.CreateAsync(SigningAlgorithm.Rsa);
@@ -35,7 +35,7 @@ public class SigningKeyServiceTests
         [Fact]
         public async Task AddKeyToRepository_AndSaveChanges()
         {
-            var expectedKey = SigningKey.CreateAsymmetric(SigningAlgorithm.Rsa, "public-key", "private-key");
+            var expectedKey = new SigningKey(SigningAlgorithm.Rsa, "private-key");
             _keyFactory.Create(SigningAlgorithm.Rsa).Returns(expectedKey);
 
             await _service.CreateAsync(SigningAlgorithm.Rsa);
@@ -47,7 +47,7 @@ public class SigningKeyServiceTests
         [Fact]
         public async Task ReturnsCreatedKey()
         {
-            var expectedKey = SigningKey.CreateAsymmetric(SigningAlgorithm.Rsa, "public-key", "private-key");
+            var expectedKey = new SigningKey(SigningAlgorithm.Rsa, "private-key");
             _keyFactory.Create(SigningAlgorithm.Rsa).Returns(expectedKey);
             
             var created = await _service.CreateAsync(SigningAlgorithm.Rsa);
@@ -60,7 +60,7 @@ public class SigningKeyServiceTests
         public async Task SetCorrectExpiresAt()
         {
             var expiresAt = DateTime.UtcNow.AddDays(30);
-            var expectedKey = SigningKey.CreateAsymmetric(SigningAlgorithm.Rsa, "public-key", "private-key", expiresAt);
+            var expectedKey = new SigningKey(SigningAlgorithm.Rsa, "private-key", expiresAt);
             _keyFactory.Create(SigningAlgorithm.Rsa, expiresAt).Returns(expectedKey);
             
             var created = await _service.CreateAsync(SigningAlgorithm.Rsa, expiresAt);

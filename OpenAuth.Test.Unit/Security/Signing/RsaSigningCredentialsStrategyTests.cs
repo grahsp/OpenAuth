@@ -13,13 +13,13 @@ public class RsaSigningCredentialsStrategyTests
         var privatePem = PemEncoding.Write("PRIVATE KEY", rsa.ExportPkcs8PrivateKey());
         var publicPem  = PemEncoding.Write("PUBLIC KEY", rsa.ExportSubjectPublicKeyInfo());
 
-        return SigningKey.CreateAsymmetric(SigningAlgorithm.Rsa, new string(publicPem), new string(privatePem));
+        return new SigningKey(SigningAlgorithm.Rsa, new string(privatePem));
     }
 
     [Fact]
     public void Create_Throws_WhenAlgorithmMismatch()
     {
-        var key = SigningKey.CreateSymmetric(SigningAlgorithm.Hmac, "secret");
+        var key = new SigningKey(SigningAlgorithm.Hmac, "secret");
         var strategy = new RsaSigningCredentialsStrategy();
 
         Assert.Throws<InvalidOperationException>(() => strategy.GetSigningCredentials(key));

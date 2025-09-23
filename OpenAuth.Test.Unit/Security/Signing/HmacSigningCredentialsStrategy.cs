@@ -9,7 +9,7 @@ public class HmacSigningCredentialsStrategyTests
     [Fact]
     public void Create_Throws_WhenAlgorithmMismatch()
     {
-        var key = SigningKey.CreateSymmetric(SigningAlgorithm.Rsa, "secret"); // Wrong algorithm
+        var key = new SigningKey(SigningAlgorithm.Rsa, "secret"); // Wrong algorithm
         var strategy = new HmacSigningCredentialsStrategy();
 
         Assert.Throws<InvalidOperationException>(() => strategy.GetSigningCredentials(key));
@@ -18,7 +18,7 @@ public class HmacSigningCredentialsStrategyTests
     [Fact]
     public void Create_ReturnsSigningCredentials_WithExpectedProperties()
     {
-        var key = SigningKey.CreateSymmetric(SigningAlgorithm.Hmac, "secret");
+        var key = new SigningKey(SigningAlgorithm.Hmac, "secret");
         var strategy = new HmacSigningCredentialsStrategy();
 
         var signingCredentials = strategy.GetSigningCredentials(key);

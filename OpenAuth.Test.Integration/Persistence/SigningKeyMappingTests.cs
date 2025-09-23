@@ -22,11 +22,7 @@ public class SigningKeyMappingTests : IAsyncLifetime
 
         const string publicKey = "public-key";
         const string privateKey = "private-key";
-        var signingKey = SigningKey.CreateAsymmetric(
-            SigningAlgorithm.Hmac,
-            publicKey, 
-            privateKey,
-            DateTime.UtcNow.AddHours(1));
+        var signingKey = new SigningKey(SigningAlgorithm.Hmac, privateKey, DateTime.UtcNow.AddHours(1));
         
         ctx.Add(signingKey);
         await ctx.SaveChangesAsync();
@@ -35,7 +31,6 @@ public class SigningKeyMappingTests : IAsyncLifetime
 
         Assert.Equal(signingKey.KeyId, loaded.KeyId);
         Assert.Equal(SigningAlgorithm.Hmac, loaded.Algorithm);
-        Assert.Equal(publicKey, loaded.PublicKey);
         Assert.Equal(privateKey, loaded.PrivateKey);
         Assert.Equal(signingKey.CreatedAt, loaded.CreatedAt);
         Assert.Equal(signingKey.ExpiresAt, loaded.ExpiresAt);
