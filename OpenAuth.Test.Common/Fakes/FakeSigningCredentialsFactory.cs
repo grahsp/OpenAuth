@@ -8,8 +8,8 @@ public class FakeSigningCredentialsFactory : ISigningCredentialsFactory
 {
     public SigningCredentials Create(SigningKey signingKey)
     {
-        var bytes = Convert.FromBase64String(signingKey.PrivateKey);
-        var key = new SymmetricSecurityKey(bytes) { KeyId = signingKey.KeyId.ToString() };
+        var bytes = Convert.FromBase64String(signingKey.Key.Value);
+        var key = new SymmetricSecurityKey(bytes) { KeyId = signingKey.Id.ToString() };
         return new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
     }
 }

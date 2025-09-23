@@ -1,15 +1,16 @@
 using System.Security.Cryptography;
 using Microsoft.IdentityModel.Tokens;
 using OpenAuth.Application.SigningKeys;
+using OpenAuth.Domain.ValueObjects;
 
 namespace OpenAuth.Infrastructure.Security.Keys;
 
 public class RsaKeyParameterExporter : IKeyParameterExporter
 {
-    public KeyParameters Export(string privateKeyPem)
+    public KeyParameters Export(Key key)
     {
         using var rsa = RSA.Create();
-        rsa.ImportFromPem(privateKeyPem);
+        rsa.ImportFromPem(key.Value);
 
         var parameters = rsa.ExportParameters(false);
         if (parameters.Modulus is null || parameters.Exponent is null)

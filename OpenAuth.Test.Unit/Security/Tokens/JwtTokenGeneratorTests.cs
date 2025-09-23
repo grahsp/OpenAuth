@@ -15,7 +15,7 @@ public class JwtTokenGeneratorTests
         CreateSigningKey(null);
     
     private static SigningKey CreateSigningKey(DateTime? expires) =>
-        new SigningKey(SigningAlgorithm.Hmac, Convert.ToBase64String(RandomNumberGenerator.GetBytes(32)), expires);
+        new SigningKey(SigningAlgorithm.Hmac, new Key(Convert.ToBase64String(RandomNumberGenerator.GetBytes(32))), expires);
 
     private static Client CreateClientWithScopes(string name, Audience audience, params Scope[] scopes)
     {

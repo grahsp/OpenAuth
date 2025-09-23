@@ -10,9 +10,9 @@ public class SigningKeyConfiguration : IEntityTypeConfiguration<SigningKey>
     public void Configure(EntityTypeBuilder<SigningKey> builder)
     {
         // ID
-        builder.HasKey(x => x.KeyId);
+        builder.HasKey(x => x.Id);
 
-        builder.Property(x => x.KeyId)
+        builder.Property(x => x.Id)
             .HasConversion(
                 id => id.Value,
                 value => new SigningKeyId(value))
@@ -24,7 +24,11 @@ public class SigningKeyConfiguration : IEntityTypeConfiguration<SigningKey>
             .HasConversion<int>()
             .IsRequired();
         
-        builder.Property(x => x.PrivateKey)
+        builder.Property(x => x.Key)
+            .HasConversion(
+                key => key.Value,
+                value => new Key(value))
+            .ValueGeneratedNever()
             .IsRequired();
         
         builder.Property(x => x.CreatedAt)

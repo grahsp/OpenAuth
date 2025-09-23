@@ -9,7 +9,7 @@ public static class SigningKeyMapper
 {
     public static SigningKeyResponse ToResponse(SigningKey key)
         => new SigningKeyResponse(
-            key.KeyId.Value,
+            key.Id.Value,
             key.Algorithm.ToString(),
             key.IsActive(),
             key.CreatedAt,
@@ -21,7 +21,7 @@ public static class SigningKeyMapper
     {
         return new Jwk
         {
-            Kid = key.KeyId.Value.ToString(),
+            Kid = key.Id.Value.ToString(),
             Kty = "RSA",
             Alg = "RS256",
             Use = "sig",

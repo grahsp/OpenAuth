@@ -27,7 +27,7 @@ public class JwksController : ControllerBase
             keys.Select(k =>
                 SigningKeyMapper.ToJwk(
                     k,
-                    _keyParameterExporter.Export(k.PrivateKey)
+                    _keyParameterExporter.Export(k.Key)
                 )
             ));
         

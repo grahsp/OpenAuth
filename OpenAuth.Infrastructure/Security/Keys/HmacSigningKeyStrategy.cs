@@ -2,6 +2,7 @@ using System.Security.Cryptography;
 using OpenAuth.Application.Security.Keys;
 using OpenAuth.Domain.Entities;
 using OpenAuth.Domain.Enums;
+using OpenAuth.Domain.ValueObjects;
 
 namespace OpenAuth.Infrastructure.Security.Keys;
 
@@ -24,7 +25,7 @@ public class HmacSigningKeyStrategy : ISigningKeyStrategy
 
     public SigningKey Create(DateTime? expiresAt = null)
     {
-        var key = GenerateKey();
+        var key = new Key(GenerateKey());
         return new SigningKey(Algorithm, key, expiresAt);
     }
 

@@ -26,10 +26,10 @@ public class RsaSigningKeyStrategyTests
         var key = strategy.Create(expires);
 
         Assert.Equal(SigningAlgorithm.Rsa, key.Algorithm);
-        Assert.NotNull(key.PrivateKey);
-        Assert.Contains("BEGIN PRIVATE KEY", key.PrivateKey);
+        Assert.NotNull(key.Key);
+        Assert.Contains("BEGIN PRIVATE KEY", key.Key.Value);
         Assert.Equal(expires, key.ExpiresAt);
-        Assert.NotEqual(default, key.KeyId);
+        Assert.NotEqual(default, key.Id);
     }
 
     [Fact]
@@ -40,7 +40,7 @@ public class RsaSigningKeyStrategyTests
         var k1 = strategy.Create();
         var k2 = strategy.Create();
 
-        Assert.NotEqual(k1.PrivateKey, k2.PrivateKey);
-        Assert.NotEqual(k1.KeyId, k2.KeyId);
+        Assert.NotEqual(k1.Key, k2.Key);
+        Assert.NotEqual(k1.Id, k2.Id);
     }
 }
