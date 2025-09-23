@@ -8,7 +8,7 @@ using OpenAuth.Domain.ValueObjects;
 namespace OpenAuth.Api.Controllers;
 
 [ApiController]
-[Route("api/connect")]
+[Route("connect")]
 public class TokenController : ControllerBase
 {
     public TokenController(IClientService clientService, IClientSecretValidator secretValidator, ISigningKeyService signingKeyService, IJwtTokenGenerator tokenGenerator)

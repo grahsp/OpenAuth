@@ -6,7 +6,7 @@ using OpenAuth.Application.SigningKeys;
 namespace OpenAuth.Api.Controllers;
 
 [ApiController]
-[Route("api/.well-known")]
+[Route(".well-known")]
 public class JwksController : ControllerBase
 {
     public JwksController(ISigningKeyService service, IKeyParameterExporter keyParameterExporter)
