@@ -25,17 +25,9 @@ public class RsaSigningKeyStrategy : ISigningKeyStrategy
     public SigningKey Create(DateTime? expiresAt = null)
     {
         using var rsa = RSA.Create(_size);
-
         var privateKeyPem = ExportPrivateKeyPem(rsa);
-        var publicKeyPem = ExportPublicKeyPem(rsa);
 
-        return SigningKey.CreateAsymmetric(Algorithm, publicKeyPem, privateKeyPem, expiresAt);
-    }
-
-    private static string ExportPublicKeyPem(RSA rsa)
-    {
-        var key = PemEncoding.Write("PUBLIC KEY", rsa.ExportSubjectPublicKeyInfo());
-        return new string(key);
+        return new SigningKey(Algorithm, privateKeyPem, expiresAt);
     }
     
     private static string ExportPrivateKeyPem(RSA rsa)

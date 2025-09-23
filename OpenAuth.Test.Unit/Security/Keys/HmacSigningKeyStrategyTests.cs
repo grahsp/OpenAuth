@@ -28,7 +28,6 @@ public class HmacSigningKeyStrategyTests
         Assert.Equal(SigningAlgorithm.Hmac, key.Algorithm);
         Assert.NotNull(key.PrivateKey);
         Assert.NotEmpty(key.PrivateKey);
-        Assert.Null(key.PublicKey); // HMAC shouldn't have a public key
         Assert.Equal(expires, key.ExpiresAt);
         Assert.NotEqual(default, key.KeyId);
 

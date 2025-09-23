@@ -7,10 +7,5 @@ namespace OpenAuth.Test.Common.Fakes;
 public class FakeSigningKeyFactory : ISigningKeyFactory
 {
     public SigningKey Create(SigningAlgorithm algorithm, DateTime? expiresAt = null) =>
-        SigningKey.CreateAsymmetric(
-            algorithm,
-            "public-key",
-            "private-key",
-            expiresAt
-        );
+        new SigningKey(algorithm, "private-key", expiresAt);
 }

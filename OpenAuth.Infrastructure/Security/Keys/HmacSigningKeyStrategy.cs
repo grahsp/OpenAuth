@@ -25,7 +25,7 @@ public class HmacSigningKeyStrategy : ISigningKeyStrategy
     public SigningKey Create(DateTime? expiresAt = null)
     {
         var key = GenerateKey();
-        return SigningKey.CreateSymmetric(Algorithm, key, expiresAt);
+        return new SigningKey(Algorithm, key, expiresAt);
     }
 
     private string GenerateKey()

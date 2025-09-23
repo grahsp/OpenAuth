@@ -23,9 +23,6 @@ public class SigningKeyConfiguration : IEntityTypeConfiguration<SigningKey>
         builder.Property(x => x.Algorithm)
             .HasConversion<int>()
             .IsRequired();
-
-        builder.Property(x => x.PublicKey)
-            .IsRequired(false);
         
         builder.Property(x => x.PrivateKey)
             .IsRequired();
