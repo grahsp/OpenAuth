@@ -1,11 +1,11 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using OpenAuth.Application.Clients;
 using OpenAuth.Application.Security.Keys;
 using OpenAuth.Application.Security.Secrets;
 using OpenAuth.Application.Security.Signing;
 using OpenAuth.Application.Security.Tokens;
 using OpenAuth.Application.SigningKeys;
+using OpenAuth.Domain.Configurations;
 using OpenAuth.Infrastructure.Persistence;
 using OpenAuth.Infrastructure.Repositories;
 using OpenAuth.Infrastructure.Security.Keys;
@@ -56,7 +56,7 @@ public class Program
         builder.Services.AddScoped<ISigningCredentialsFactory, SigningCredentialsFactory>();
         
         // Token Generator
-        builder.Services.AddSingleton(Options.Create("test-issuer"));
+        builder.Services.Configure<Auth>(builder.Configuration.GetSection("Auth"));
         builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
         
 

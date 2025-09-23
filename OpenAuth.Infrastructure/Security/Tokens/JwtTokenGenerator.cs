@@ -5,6 +5,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using OpenAuth.Application.Security.Signing;
 using OpenAuth.Application.Security.Tokens;
+using OpenAuth.Domain.Configurations;
 using OpenAuth.Domain.Entities;
 using OpenAuth.Domain.ValueObjects;
 
@@ -12,12 +13,12 @@ namespace OpenAuth.Infrastructure.Security.Tokens;
 
 public class JwtTokenGenerator : IJwtTokenGenerator
 {
-    private readonly string _issuer;
+    private readonly Auth _config;
     private readonly ISigningCredentialsFactory _factory;
     
-    public JwtTokenGenerator(IOptions<string> issuer, ISigningCredentialsFactory factory)
+    public JwtTokenGenerator(IOptions<Auth> config, ISigningCredentialsFactory factory)
     {
-        _issuer = issuer.Value;
+        _config = config.Value;
         _factory = factory;
     }
 
@@ -55,7 +56,7 @@ public class JwtTokenGenerator : IJwtTokenGenerator
             throw new InvalidOperationException($"Invalid scopes requested: { string.Join(", ", invalidScopes) }.");
 
         var token = new JwtSecurityToken(
-            issuer: _issuer,
+            issuer: _config.Issuer,
             claims: claims,
             notBefore: now,
             expires: expires,
