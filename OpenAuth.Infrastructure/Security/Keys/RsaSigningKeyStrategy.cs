@@ -2,6 +2,7 @@ using System.Security.Cryptography;
 using OpenAuth.Application.Security.Keys;
 using OpenAuth.Domain.Entities;
 using OpenAuth.Domain.Enums;
+using OpenAuth.Domain.ValueObjects;
 
 namespace OpenAuth.Infrastructure.Security.Keys;
 
@@ -25,9 +26,9 @@ public class RsaSigningKeyStrategy : ISigningKeyStrategy
     public SigningKey Create(DateTime? expiresAt = null)
     {
         using var rsa = RSA.Create(_size);
-        var privateKeyPem = ExportPrivateKeyPem(rsa);
+        var key = new Key(ExportPrivateKeyPem(rsa));
 
-        return new SigningKey(Algorithm, privateKeyPem, expiresAt);
+        return new SigningKey(Algorithm, key, expiresAt);
     }
     
     private static string ExportPrivateKeyPem(RSA rsa)

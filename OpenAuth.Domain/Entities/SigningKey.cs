@@ -8,20 +8,18 @@ public class SigningKey
 {
     private SigningKey() { }
     
-    public SigningKey(SigningAlgorithm algorithm, string privateKey, DateTime? expiresAt = null)
+    public SigningKey(SigningAlgorithm algorithm, Key key, DateTime? expiresAt = null)
     {
-        KeyId = SigningKeyId.New();
+        Id = SigningKeyId.New();
         Algorithm = algorithm;
-        PrivateKey = privateKey;
+        Key = key;
         CreatedAt = DateTime.UtcNow;
         ExpiresAt = expiresAt ?? DateTime.UtcNow.AddDays(30);
     }
     
-    public SigningKeyId KeyId { get; init; }
-    
+    public SigningKeyId Id { get; init; }
     public SigningAlgorithm Algorithm { get; private init; }
-
-    public string PrivateKey { get; private init; } = null!;
+    public Key Key { get; private init; } = null!;
 
     public DateTime CreatedAt { get; private init; }
     public DateTime? ExpiresAt { get; private set; }

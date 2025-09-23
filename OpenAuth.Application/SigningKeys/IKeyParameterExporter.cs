@@ -1,6 +1,8 @@
+using OpenAuth.Domain.ValueObjects;
+
 namespace OpenAuth.Application.SigningKeys;
 
 public interface IKeyParameterExporter
 {
-    KeyParameters Export(string privateKeyPem);
+    KeyParameters Export(Key key);
 }

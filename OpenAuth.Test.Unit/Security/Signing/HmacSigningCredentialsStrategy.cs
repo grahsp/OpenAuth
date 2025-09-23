@@ -1,5 +1,6 @@
 using OpenAuth.Domain.Entities;
 using OpenAuth.Domain.Enums;
+using OpenAuth.Domain.ValueObjects;
 using OpenAuth.Infrastructure.Security.Signing;
 
 namespace OpenAuth.Test.Unit.Security.Signing;
@@ -9,7 +10,7 @@ public class HmacSigningCredentialsStrategyTests
     [Fact]
     public void Create_Throws_WhenAlgorithmMismatch()
     {
-        var key = new SigningKey(SigningAlgorithm.Rsa, "secret"); // Wrong algorithm
+        var key = new SigningKey(SigningAlgorithm.Rsa, new Key("secret")); // Wrong algorithm
         var strategy = new HmacSigningCredentialsStrategy();
 
         Assert.Throws<InvalidOperationException>(() => strategy.GetSigningCredentials(key));
@@ -18,12 +19,12 @@ public class HmacSigningCredentialsStrategyTests
     [Fact]
     public void Create_ReturnsSigningCredentials_WithExpectedProperties()
     {
-        var key = new SigningKey(SigningAlgorithm.Hmac, "secret");
+        var key = new SigningKey(SigningAlgorithm.Hmac, new Key("secret"));
         var strategy = new HmacSigningCredentialsStrategy();
 
         var signingCredentials = strategy.GetSigningCredentials(key);
 
         Assert.Equal(SigningAlgorithm.Hmac, key.Algorithm);
-        Assert.Equal(key.KeyId.ToString(), signingCredentials.Key.KeyId);
+        Assert.Equal(key.Id.ToString(), signingCredentials.Key.KeyId);
     }
 }

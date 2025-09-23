@@ -3,6 +3,7 @@ using OpenAuth.Application.Security.Keys;
 using OpenAuth.Application.SigningKeys;
 using OpenAuth.Domain.Entities;
 using OpenAuth.Domain.Enums;
+using OpenAuth.Domain.ValueObjects;
 
 namespace OpenAuth.Test.Unit.SigningKeys;
 
@@ -23,19 +24,19 @@ public class SigningKeyServiceTests
         [Fact]
         public async Task CallsFactory_WithExpectedArgument()
         {
-            var expectedKey = new SigningKey(SigningAlgorithm.Rsa, "private-key");
+            var expectedKey = new SigningKey(SigningAlgorithm.Rsa, new Key("private-key"));
             _keyFactory.Create(SigningAlgorithm.Rsa).Returns(expectedKey);
             
             var created = await _service.CreateAsync(SigningAlgorithm.Rsa);
             
             _keyFactory.Received(1).Create(SigningAlgorithm.Rsa);
-            Assert.Equal(expectedKey.KeyId, created.KeyId);
+            Assert.Equal(expectedKey.Id, created.Id);
         }
 
         [Fact]
         public async Task AddKeyToRepository_AndSaveChanges()
         {
-            var expectedKey = new SigningKey(SigningAlgorithm.Rsa, "private-key");
+            var expectedKey = new SigningKey(SigningAlgorithm.Rsa, new Key("private-key"));
             _keyFactory.Create(SigningAlgorithm.Rsa).Returns(expectedKey);
 
             await _service.CreateAsync(SigningAlgorithm.Rsa);
@@ -47,7 +48,7 @@ public class SigningKeyServiceTests
         [Fact]
         public async Task ReturnsCreatedKey()
         {
-            var expectedKey = new SigningKey(SigningAlgorithm.Rsa, "private-key");
+            var expectedKey = new SigningKey(SigningAlgorithm.Rsa, new Key("private-key"));
             _keyFactory.Create(SigningAlgorithm.Rsa).Returns(expectedKey);
             
             var created = await _service.CreateAsync(SigningAlgorithm.Rsa);
@@ -60,7 +61,7 @@ public class SigningKeyServiceTests
         public async Task SetCorrectExpiresAt()
         {
             var expiresAt = DateTime.UtcNow.AddDays(30);
-            var expectedKey = new SigningKey(SigningAlgorithm.Rsa, "private-key", expiresAt);
+            var expectedKey = new SigningKey(SigningAlgorithm.Rsa, new Key("private-key"), expiresAt);
             _keyFactory.Create(SigningAlgorithm.Rsa, expiresAt).Returns(expectedKey);
             
             var created = await _service.CreateAsync(SigningAlgorithm.Rsa, expiresAt);

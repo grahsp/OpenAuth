@@ -16,8 +16,8 @@ public class HmacSigningCredentialsStrategy : ISigningCredentialsStrategy
         if (signingKey.Algorithm != Algorithm)
             throw new InvalidOperationException($"Expected HMAC key but got { signingKey.Algorithm }.");
         
-        var bytes= Encoding.UTF8.GetBytes(signingKey.PrivateKey);
-        var key = new SymmetricSecurityKey(bytes) { KeyId = signingKey.KeyId.ToString() };
+        var bytes= Encoding.UTF8.GetBytes(signingKey.Key.Value);
+        var key = new SymmetricSecurityKey(bytes) { KeyId = signingKey.Id.ToString() };
         
         return new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
     }

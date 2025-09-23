@@ -56,7 +56,7 @@ public class SigningKeysController : ControllerBase
         var key = await _service.CreateAsync(request.Algorithm, request.ExpiresAt);
         var response = SigningKeyMapper.ToResponse(key);
         
-        return CreatedAtAction(nameof(Get), new { keyId = key.KeyId }, response);
+        return CreatedAtAction(nameof(Get), new { keyId = key.Id }, response);
     }
 
 

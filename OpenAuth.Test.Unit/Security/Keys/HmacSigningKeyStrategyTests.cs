@@ -26,13 +26,13 @@ public class HmacSigningKeyStrategyTests
         var key = strategy.Create(expires);
 
         Assert.Equal(SigningAlgorithm.Hmac, key.Algorithm);
-        Assert.NotNull(key.PrivateKey);
-        Assert.NotEmpty(key.PrivateKey);
+        Assert.NotNull(key.Key);
+        Assert.NotEmpty(key.Key.Value);
         Assert.Equal(expires, key.ExpiresAt);
-        Assert.NotEqual(default, key.KeyId);
+        Assert.NotEqual(default, key.Id);
 
         // Check Base64 validity + length
-        var decoded = Convert.FromBase64String(key.PrivateKey);
+        var decoded = Convert.FromBase64String(key.Key.Value);
         Assert.Equal(32, decoded.Length);
     }
 
@@ -44,7 +44,7 @@ public class HmacSigningKeyStrategyTests
         var k1 = strategy.Create();
         var k2 = strategy.Create();
 
-        Assert.NotEqual(k1.PrivateKey, k2.PrivateKey);
-        Assert.NotEqual(k1.KeyId, k2.KeyId);
+        Assert.NotEqual(k1.Key, k2.Key);
+        Assert.NotEqual(k1.Id, k2.Id);
     }
 }

@@ -17,8 +17,8 @@ public class RsaSigningCredentialsStrategy : ISigningCredentialsStrategy
             throw new InvalidOperationException($"Expected RSA key but got { signingKey.Algorithm}.");
         
         var privateRsa = RSA.Create();
-        privateRsa.ImportFromPem(signingKey.PrivateKey);
-        var key = new RsaSecurityKey(privateRsa) { KeyId = signingKey.KeyId.ToString() };
+        privateRsa.ImportFromPem(signingKey.Key.Value);
+        var key = new RsaSecurityKey(privateRsa) { KeyId = signingKey.Id.ToString() };
         
         return new SigningCredentials(key, SecurityAlgorithms.RsaSha256);
     }

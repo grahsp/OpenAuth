@@ -41,9 +41,9 @@ public class SigningKeyServiceTests : IAsyncLifetime
             var key = await service.CreateAsync(SigningAlgorithm.Rsa);
             Assert.NotNull(key);
             
-            var fetched = await service.GetByIdAsync(key.KeyId);
+            var fetched = await service.GetByIdAsync(key.Id);
             Assert.NotNull(fetched);
-            Assert.Equal(key.KeyId, fetched.KeyId);
+            Assert.Equal(key.Id, fetched.Id);
         }
 
         [Fact]
@@ -68,7 +68,7 @@ public class SigningKeyServiceTests : IAsyncLifetime
             
             var fetched = await service.GetCurrentAsync();
             Assert.NotNull(fetched);
-            Assert.Equal(key.KeyId, fetched.KeyId);
+            Assert.Equal(key.Id, fetched.Id);
         }
         
         [Fact]
@@ -83,7 +83,7 @@ public class SigningKeyServiceTests : IAsyncLifetime
             
             var fetched = await service.GetCurrentAsync();
             Assert.NotNull(fetched);
-            Assert.Equal(key.KeyId, fetched.KeyId);
+            Assert.Equal(key.Id, fetched.Id);
         }
 
         [Fact]
@@ -95,11 +95,11 @@ public class SigningKeyServiceTests : IAsyncLifetime
             Assert.NotNull(key);
             
             var revoked = await service.CreateAsync(SigningAlgorithm.Rsa);
-            await service.RevokeAsync(revoked.KeyId);
+            await service.RevokeAsync(revoked.Id);
             
             var fetched = await service.GetCurrentAsync();
             Assert.NotNull(fetched);
-            Assert.Equal(key.KeyId, fetched.KeyId);           
+            Assert.Equal(key.Id, fetched.Id);           
         }
         
         [Fact]
@@ -111,11 +111,11 @@ public class SigningKeyServiceTests : IAsyncLifetime
             Assert.NotNull(key);
             
             var expired = await service.CreateAsync(SigningAlgorithm.Rsa, DateTime.UtcNow);
-            await service.RevokeAsync(expired.KeyId);
+            await service.RevokeAsync(expired.Id);
             
             var fetched = await service.GetCurrentAsync();
             Assert.NotNull(fetched);
-            Assert.Equal(key.KeyId, fetched.KeyId);           
+            Assert.Equal(key.Id, fetched.Id);           
         }
         
         [Fact]
@@ -172,7 +172,7 @@ public class SigningKeyServiceTests : IAsyncLifetime
             var service = CreateSut();
             
             var revoked = await service.CreateAsync(SigningAlgorithm.Rsa);
-            await service.RevokeAsync(revoked.KeyId);
+            await service.RevokeAsync(revoked.Id);
             
             var fetched = await service.GetAllAsync();
             Assert.False(fetched.First().IsActive());
@@ -224,11 +224,11 @@ public class SigningKeyServiceTests : IAsyncLifetime
             var active = await service.CreateAsync(SigningAlgorithm.Rsa);
             
             var revoked = await service.CreateAsync(SigningAlgorithm.Rsa);
-            await service.RevokeAsync(revoked.KeyId);
+            await service.RevokeAsync(revoked.Id);
             
             var fetched = (await service.GetActiveAsync()).ToArray();
             Assert.Single(fetched);
-            Assert.Contains(active.KeyId, fetched.Select(k => k.KeyId));;
+            Assert.Contains(active.Id, fetched.Select(k => k.Id));;
         }
         
         [Fact]
@@ -241,7 +241,7 @@ public class SigningKeyServiceTests : IAsyncLifetime
             
             var fetched = (await service.GetActiveAsync()).ToArray();
             Assert.Single(fetched);
-            Assert.Contains(active.KeyId, fetched.Select(k => k.KeyId));;
+            Assert.Contains(active.Id, fetched.Select(k => k.Id));;
         }
 
         [Fact]
@@ -264,9 +264,9 @@ public class SigningKeyServiceTests : IAsyncLifetime
             
             await using var context = _fx.CreateContext();
             
-            var fetched = await context.SigningKeys.FirstOrDefaultAsync(k => k.KeyId == created.KeyId);
+            var fetched = await context.SigningKeys.FirstOrDefaultAsync(k => k.Id == created.Id);
             Assert.NotNull(fetched);
-            Assert.Equal(created.KeyId, fetched.KeyId);
+            Assert.Equal(created.Id, fetched.Id);
         }
 
         [Fact]
@@ -276,11 +276,11 @@ public class SigningKeyServiceTests : IAsyncLifetime
             
             var keyA = await service.CreateAsync(SigningAlgorithm.Rsa);
             var keyB = await service.CreateAsync(SigningAlgorithm.Rsa);
-            Assert.NotEqual(keyA.KeyId, keyB.KeyId);       
+            Assert.NotEqual(keyA.Id, keyB.Id);       
             
             var fetched = (await service.GetAllAsync()).ToArray();
             foreach (var key in fetched)
-                Assert.Contains(fetched, k => k.KeyId == key.KeyId);
+                Assert.Contains(fetched, k => k.Id == key.Id);
         }
     }
 
@@ -292,13 +292,13 @@ public class SigningKeyServiceTests : IAsyncLifetime
             var service = CreateSut();
             var key = await service.CreateAsync(SigningAlgorithm.Rsa);
             
-            var revoked = await service.RevokeAsync(key.KeyId);
+            var revoked = await service.RevokeAsync(key.Id);
             Assert.True(revoked);
 
             // Create new context to ensure changes are persisted
             await using var context = _fx.CreateContext();
             
-            var fetched = await context.SigningKeys.FirstOrDefaultAsync(k => k.KeyId == key.KeyId);
+            var fetched = await context.SigningKeys.FirstOrDefaultAsync(k => k.Id == key.Id);
             Assert.NotNull(fetched);
             Assert.False(fetched.IsActive());
         }
@@ -312,12 +312,12 @@ public class SigningKeyServiceTests : IAsyncLifetime
             var service = CreateSut();
             var key = await service.CreateAsync(SigningAlgorithm.Rsa);
             
-            var removed = await service.RemoveAsync(key.KeyId);
+            var removed = await service.RemoveAsync(key.Id);
             Assert.True(removed);
             
             await using var context = _fx.CreateContext();
             
-            var fetched = await context.SigningKeys.FirstOrDefaultAsync(k => k.KeyId == key.KeyId);
+            var fetched = await context.SigningKeys.FirstOrDefaultAsync(k => k.Id == key.Id);
             Assert.Null(fetched);       
         }
     }

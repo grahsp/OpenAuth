@@ -17,25 +17,25 @@ public class SigningKeyRepository : ISigningKeyRepository
     
     public async Task<SigningKey?> GetByIdAsync(SigningKeyId id, CancellationToken cancellationToken = default)
         => await _context.SigningKeys
-            .SingleOrDefaultAsync(x => x.KeyId == id, cancellationToken);
+            .SingleOrDefaultAsync(x => x.Id == id, cancellationToken);
     
     public async Task<SigningKey?> GetCurrentAsync(CancellationToken cancellationToken = default)
         => await _context.SigningKeys
             .OrderByDescending(k => k.CreatedAt)
-            .ThenBy(k => k.KeyId)
+            .ThenBy(k => k.Id)
             .Where(SigningKey.IsActiveExpression)
             .FirstOrDefaultAsync(cancellationToken);
 
     public async Task<IEnumerable<SigningKey>> GetAllAsync(CancellationToken cancellationToken = default)
         => await _context.SigningKeys
             .OrderByDescending(k => k.CreatedAt)
-            .ThenBy(k => k.KeyId)
+            .ThenBy(k => k.Id)
             .ToListAsync(cancellationToken);
 
     public async Task<IEnumerable<SigningKey>> GetActiveAsync(CancellationToken cancellationToken = default)
         => await _context.SigningKeys
             .OrderByDescending(k => k.CreatedAt)
-            .ThenBy(k => k.KeyId)
+            .ThenBy(k => k.Id)
             .Where(SigningKey.IsActiveExpression)
             .ToListAsync(cancellationToken);
 
