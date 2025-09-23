@@ -82,7 +82,7 @@ namespace OpenAuth.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("OpenAuth.Domain.Entities.SigningKey", b =>
                 {
-                    b.Property<Guid>("KeyId")
+                    b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("Algorithm")
@@ -94,17 +94,14 @@ namespace OpenAuth.Infrastructure.Persistence.Migrations
                     b.Property<DateTime?>("ExpiresAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("PrivateKey")
+                    b.Property<string>("Key")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PublicKey")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("RevokedAt")
                         .HasColumnType("datetime2");
 
-                    b.HasKey("KeyId");
+                    b.HasKey("Id");
 
                     b.ToTable("SigningKeys");
                 });
