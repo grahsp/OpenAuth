@@ -3,6 +3,7 @@ using OpenAuth.Application.SigningKeys;
 using OpenAuth.Domain.Entities;
 using OpenAuth.Domain.ValueObjects;
 using OpenAuth.Infrastructure.Persistence;
+using OpenAuth.Infrastructure.Persistence.QuerySpecifications;
 
 namespace OpenAuth.Infrastructure.Repositories;
 
@@ -23,7 +24,7 @@ public class SigningKeyRepository : ISigningKeyRepository
         => await _context.SigningKeys
             .OrderByDescending(k => k.CreatedAt)
             .ThenBy(k => k.Id)
-            .Where(SigningKey.IsActiveExpression)
+            .Where(SigningKeyQuerySpecifications.IsActive(DateTime.UtcNow))
             .FirstOrDefaultAsync(cancellationToken);
 
     public async Task<IEnumerable<SigningKey>> GetAllAsync(CancellationToken cancellationToken = default)
@@ -36,7 +37,7 @@ public class SigningKeyRepository : ISigningKeyRepository
         => await _context.SigningKeys
             .OrderByDescending(k => k.CreatedAt)
             .ThenBy(k => k.Id)
-            .Where(SigningKey.IsActiveExpression)
+            .Where(SigningKeyQuerySpecifications.IsActive(DateTime.UtcNow))
             .ToListAsync(cancellationToken);
 
     public void Add(SigningKey key)
