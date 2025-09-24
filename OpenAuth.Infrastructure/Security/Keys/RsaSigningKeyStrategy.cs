@@ -28,7 +28,8 @@ public class RsaSigningKeyStrategy : ISigningKeyStrategy
         using var rsa = RSA.Create(_size);
         var key = new Key(ExportPrivateKeyPem(rsa));
 
-        return new SigningKey(Algorithm, key, expiresAt);
+        // TODO: Add passthrough for expiration date
+        return new SigningKey(Algorithm, key, DateTime.UtcNow, expiresAt ?? DateTime.MaxValue);
     }
     
     private static string ExportPrivateKeyPem(RSA rsa)

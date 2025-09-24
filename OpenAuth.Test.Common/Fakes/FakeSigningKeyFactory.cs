@@ -8,5 +8,5 @@ namespace OpenAuth.Test.Common.Fakes;
 public class FakeSigningKeyFactory : ISigningKeyFactory
 {
     public SigningKey Create(SigningAlgorithm algorithm, DateTime? expiresAt = null) =>
-        new SigningKey(algorithm, new Key("private-key"), expiresAt);
+        new SigningKey(algorithm, new Key("private-key"), DateTime.MinValue, expiresAt ?? DateTime.MaxValue);
 }

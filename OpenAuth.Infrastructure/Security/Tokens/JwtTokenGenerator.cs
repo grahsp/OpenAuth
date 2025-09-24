@@ -24,7 +24,8 @@ public class JwtTokenGenerator : IJwtTokenGenerator
 
     public string GenerateToken(Client client, Audience audience, IEnumerable<Scope> scopes, SigningKey signingKey)
     {
-        if (!signingKey.IsActive())
+        // TODO: Inject TimeProvider
+        if (!signingKey.IsActive(DateTime.UtcNow))
             throw new InvalidOperationException("Signing key is expired or revoked.");
 
         if (!client.Audiences.Contains(audience))
