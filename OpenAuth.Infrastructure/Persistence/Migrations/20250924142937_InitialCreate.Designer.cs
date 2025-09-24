@@ -12,7 +12,7 @@ using OpenAuth.Infrastructure.Persistence;
 namespace OpenAuth.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250923140740_InitialCreate")]
+    [Migration("20250924142937_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -94,7 +94,7 @@ namespace OpenAuth.Infrastructure.Persistence.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTime?>("ExpiresAt")
+                    b.Property<DateTime>("ExpiresAt")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Key")
