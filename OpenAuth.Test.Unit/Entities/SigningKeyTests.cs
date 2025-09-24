@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Time.Testing;
 using OpenAuth.Domain.Entities;
 using OpenAuth.Domain.Enums;
 using OpenAuth.Domain.ValueObjects;
@@ -6,42 +7,110 @@ namespace OpenAuth.Test.Unit.Entities;
 
 public class SigningKeyTests
 {
+    private readonly TimeProvider _time = new FakeTimeProvider();
+    
+    
     [Fact]
-    public void CreateSymmetric_SetsExpectedProperties()
+    public void Constructor_SetsPropertiesCorrectly()
     {
-        var expires = DateTime.UtcNow.AddHours(1);
-        var key = new SigningKey(SigningAlgorithm.Hmac, new Key("secret-value"), DateTime.MinValue, expires);
-
-        Assert.Equal(SigningAlgorithm.Hmac, key.Algorithm);
-        Assert.Equal("secret-value", key.Key.Value);
-        Assert.NotEqual(default, key.Id);
-        Assert.True((DateTime.UtcNow - key.CreatedAt).TotalSeconds < 5);
-        Assert.Equal(expires, key.ExpiresAt);
+        var createdAt = _time.GetUtcNow().DateTime;
+        var expiresAt = createdAt.AddHours(1);
+        var key = new Key("private-key");
+        
+        var signingKey = new SigningKey(SigningAlgorithm.Rsa, key, createdAt, expiresAt);
+        
+        Assert.NotEqual(default, signingKey.Id);
+        Assert.Equal(SigningAlgorithm.Rsa, signingKey.Algorithm);
+        Assert.Equal(key, signingKey.Key);
+        Assert.Equal(createdAt, signingKey.CreatedAt);
+        Assert.Equal(expiresAt, signingKey.ExpiresAt);
+        Assert.Null(signingKey.RevokedAt);
     }
 
     [Fact]
-    public void CreateAsymmetric_SetsExpectedProperties()
+    public void IsActive_True_WhenNotExpiredAndNotRevoked()
     {
-        var expires = DateTime.UtcNow.AddHours(1);
-        var key = new SigningKey(SigningAlgorithm.Rsa, new Key("private-pem"), DateTime.MinValue, expires);
+        var now = _time.GetUtcNow().DateTime;
+        var signingKey = new SigningKey(SigningAlgorithm.Rsa, new Key("private-key"), now, now.AddMinutes(5));
 
-        Assert.Equal(SigningAlgorithm.Rsa, key.Algorithm);
-        Assert.Equal(new Key("private-pem"), key.Key);
-        Assert.NotEqual(default, key.Id);
-        Assert.Equal(expires, key.ExpiresAt);
-    }
-
-    [Fact]
-    public void IsActive_True_WhenExpiryInFuture()
-    {
-        var key = new SigningKey(SigningAlgorithm.Hmac, new Key("secret"), DateTime.MinValue, DateTime.MaxValue);
-        Assert.True(key.IsActive(DateTime.MinValue));
+        Assert.True(signingKey.IsActive(now));
     }
 
     [Fact]
     public void IsActive_False_WhenExpired()
     {
-        var key = new SigningKey(SigningAlgorithm.Hmac, new Key("secret"), DateTime.MinValue, DateTime.MinValue);
-        Assert.False(key.IsActive(DateTime.MaxValue));
+        var now = _time.GetUtcNow().DateTime;
+        var signingKey = new SigningKey(SigningAlgorithm.Rsa, new Key("private-key"), now, now.AddMinutes(-1));
+        
+        Assert.False(signingKey.IsActive(now));
     } 
+    
+    [Fact]
+    public void IsActive_False_WhenRevoked()
+    {
+        var now = _time.GetUtcNow().DateTime;
+        var signingKey = new SigningKey(SigningAlgorithm.Rsa, new Key("private-key"), now, now.AddMinutes(5));
+        signingKey.Revoke(now);
+        
+        Assert.False(signingKey.IsActive(now));
+    }
+
+    [Theory]
+    [InlineData(1, false)]
+    [InlineData(0, true)]
+    [InlineData(-1, true)]
+    public void HasExpired_ReturnsExpectedValue(int offsetMinutes, bool expected)
+    {
+        var now = _time.GetUtcNow().DateTime;
+        var expiresAt = now.AddMinutes(offsetMinutes);
+        
+        var signingKey = new SigningKey(SigningAlgorithm.Rsa, new Key("private-key"), now, expiresAt);
+        
+        Assert.Equal(expected, signingKey.HasExpired(now));
+    }
+    
+    [Fact]
+    public void IsRevoked_FalseInitially()
+    {
+        var now = _time.GetUtcNow().DateTime;
+        var signingKey = new SigningKey(SigningAlgorithm.Rsa, new Key("private-key"), now, now.AddMinutes(5));
+
+        Assert.True(signingKey.IsActive(DateTime.MinValue));
+    }
+    
+    [Fact]
+    public void IsRevoked_TrueAfterRevocation()
+    {
+        var now = _time.GetUtcNow().DateTime;
+        var signingKey = new SigningKey(SigningAlgorithm.Rsa, new Key("private-key"), now, now.AddMinutes(5));
+        signingKey.Revoke(now);
+        
+        Assert.True(signingKey.IsRevoked());
+    }
+
+    [Fact]
+    public void Revoke_SetsRevokedAt_AndReturnsTrue()
+    {
+        var now = _time.GetUtcNow().DateTime;
+        var signingKey = new SigningKey(SigningAlgorithm.Rsa, new Key("private-key"), now, now.AddMinutes(5));
+        
+        var result = signingKey.Revoke(now);
+        
+        Assert.True(result);
+        Assert.Equal(now, signingKey.RevokedAt);
+    }
+
+    [Fact]
+    public void Revoke_ReturnsFalse_WhenAlreadyRevoked_AndDoesNotUpdateRevokedAt()
+    {
+        var now = _time.GetUtcNow().DateTime;
+        var signingKey = new SigningKey(SigningAlgorithm.Rsa, new Key("private-key"), now, now.AddMinutes(5));
+        signingKey.Revoke(now);
+
+        var later = now.AddHours(1);
+        var result = signingKey.Revoke(later);
+        
+        Assert.False(result);
+        Assert.Equal(now, signingKey.RevokedAt);   
+    }
 }
