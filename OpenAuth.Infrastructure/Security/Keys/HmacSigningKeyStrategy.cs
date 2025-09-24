@@ -26,7 +26,9 @@ public class HmacSigningKeyStrategy : ISigningKeyStrategy
     public SigningKey Create(DateTime? expiresAt = null)
     {
         var key = new Key(GenerateKey());
-        return new SigningKey(Algorithm, key, expiresAt);
+        
+        // TODO: Add passthrough for expiration date
+        return new SigningKey(Algorithm, key, DateTime.UtcNow, expiresAt ?? DateTime.MaxValue);
     }
 
     private string GenerateKey()

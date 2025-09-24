@@ -45,7 +45,8 @@ public class SigningKeyService : ISigningKeyService
         if (key is null)
             return false;
         
-        key.Revoke();
+        // TODO: Inject TimeProvider
+        key.Revoke(DateTime.UtcNow);
         await _repository.SaveChangesAsync(cancellationToken);
 
         return true;

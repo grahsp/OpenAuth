@@ -11,7 +11,6 @@ public static class SigningKeyMapper
         => new SigningKeyResponse(
             key.Id.Value,
             key.Algorithm.ToString(),
-            key.IsActive(),
             key.CreatedAt,
             key.ExpiresAt,
             key.RevokedAt

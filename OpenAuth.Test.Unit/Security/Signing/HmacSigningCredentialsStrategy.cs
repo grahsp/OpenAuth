@@ -10,7 +10,7 @@ public class HmacSigningCredentialsStrategyTests
     [Fact]
     public void Create_Throws_WhenAlgorithmMismatch()
     {
-        var key = new SigningKey(SigningAlgorithm.Rsa, new Key("secret")); // Wrong algorithm
+        var key = new SigningKey(SigningAlgorithm.Rsa, new Key("secret"), DateTime.MinValue, DateTime.MaxValue); // Wrong algorithm
         var strategy = new HmacSigningCredentialsStrategy();
 
         Assert.Throws<InvalidOperationException>(() => strategy.GetSigningCredentials(key));
@@ -19,7 +19,7 @@ public class HmacSigningCredentialsStrategyTests
     [Fact]
     public void Create_ReturnsSigningCredentials_WithExpectedProperties()
     {
-        var key = new SigningKey(SigningAlgorithm.Hmac, new Key("secret"));
+        var key = new SigningKey(SigningAlgorithm.Hmac, new Key("secret"), DateTime.MinValue, DateTime.MaxValue);
         var strategy = new HmacSigningCredentialsStrategy();
 
         var signingCredentials = strategy.GetSigningCredentials(key);
