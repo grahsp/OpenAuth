@@ -35,7 +35,7 @@ namespace OpenAuth.Infrastructure.Persistence.Migrations
                     Algorithm = table.Column<int>(type: "int", nullable: false),
                     Key = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    ExpiresAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    ExpiresAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     RevokedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
