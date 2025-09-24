@@ -22,7 +22,7 @@ public class SigningKeyMappingTests : IAsyncLifetime
         await using var ctx = _fx.CreateContext();
 
         var key = new Key("private-key");
-        var signingKey = new SigningKey(SigningAlgorithm.Hmac, key, DateTime.UtcNow.AddHours(1));
+        var signingKey = new SigningKey(SigningAlgorithm.Hmac, key, DateTime.MinValue, DateTime.MaxValue);
         
         ctx.Add(signingKey);
         await ctx.SaveChangesAsync();

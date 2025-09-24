@@ -12,11 +12,8 @@ namespace OpenAuth.Test.Unit.Security.Tokens;
 
 public class JwtTokenGeneratorTests
 {
-    private static SigningKey CreateSigningKey() =>
-        CreateSigningKey(null);
-    
-    private static SigningKey CreateSigningKey(DateTime? expires) =>
-        new SigningKey(SigningAlgorithm.Hmac, new Key(Convert.ToBase64String(RandomNumberGenerator.GetBytes(32))), expires);
+    private static SigningKey CreateSigningKey(DateTime? expires = null) =>
+        new SigningKey(SigningAlgorithm.Hmac, new Key(Convert.ToBase64String(RandomNumberGenerator.GetBytes(32))), DateTime.MinValue, expires ?? DateTime.MaxValue);
 
     private static Client CreateClientWithScopes(string name, Audience audience, params Scope[] scopes)
     {

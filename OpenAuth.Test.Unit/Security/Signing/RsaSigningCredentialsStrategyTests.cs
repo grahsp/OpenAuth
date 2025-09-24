@@ -14,13 +14,13 @@ public class RsaSigningCredentialsStrategyTests
         var pem = PemEncoding.Write("PRIVATE KEY", rsa.ExportPkcs8PrivateKey());
         var key = new Key(new string(pem));
 
-        return new SigningKey(SigningAlgorithm.Rsa, key);
+        return new SigningKey(SigningAlgorithm.Rsa, key, DateTime.MinValue, DateTime.MaxValue);
     }
 
     [Fact]
     public void Create_Throws_WhenAlgorithmMismatch()
     {
-        var key = new SigningKey(SigningAlgorithm.Hmac, new Key("secret"));
+        var key = new SigningKey(SigningAlgorithm.Hmac, new Key("secret"), DateTime.MinValue, DateTime.MaxValue);
         var strategy = new RsaSigningCredentialsStrategy();
 
         Assert.Throws<InvalidOperationException>(() => strategy.GetSigningCredentials(key));
