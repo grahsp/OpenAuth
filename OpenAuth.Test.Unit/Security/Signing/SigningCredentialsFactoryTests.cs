@@ -16,7 +16,7 @@ public class SigningCredentialsFactoryTests
         var rsaStrategy = new RsaSigningCredentialsStrategy();
         var factory = new SigningCredentialsFactory([hmacStrategy, rsaStrategy]);
 
-        var key = new SigningKey(SigningAlgorithm.Hmac, new Key("secret"));
+        var key = new SigningKey(SigningAlgorithm.Hmac, new Key("secret"), DateTime.MinValue, DateTime.MaxValue);
         var signingCredentials = factory.Create(key);
 
         Assert.Equal(SecurityAlgorithms.HmacSha256, signingCredentials.Algorithm);
@@ -33,7 +33,7 @@ public class SigningCredentialsFactoryTests
         var pem = PemEncoding.Write("PRIVATE KEY", rsa.ExportPkcs8PrivateKey());
         var key = new Key(new string(pem));
 
-        var signingKey = new SigningKey(SigningAlgorithm.Rsa, key);
+        var signingKey = new SigningKey(SigningAlgorithm.Rsa, key, DateTime.MinValue, DateTime.MaxValue);
         var signingCredentials = factory.Create(signingKey);
 
         Assert.Equal(SecurityAlgorithms.RsaSha256, signingCredentials.Algorithm);
@@ -43,7 +43,7 @@ public class SigningCredentialsFactoryTests
     public void Create_Throws_WhenStrategyNotRegistered()
     {
         var factory = new SigningCredentialsFactory([]);
-        var key = new SigningKey(SigningAlgorithm.Hmac, new Key("secret"));
+        var key = new SigningKey(SigningAlgorithm.Hmac, new Key("secret"), DateTime.MinValue, DateTime.MaxValue);
 
         Assert.Throws<InvalidOperationException>(() => factory.Create(key));
     }

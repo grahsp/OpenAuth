@@ -10,7 +10,7 @@ public class SigningKeyTests
     public void CreateSymmetric_SetsExpectedProperties()
     {
         var expires = DateTime.UtcNow.AddHours(1);
-        var key = new SigningKey(SigningAlgorithm.Hmac, new Key("secret-value"), expires);
+        var key = new SigningKey(SigningAlgorithm.Hmac, new Key("secret-value"), DateTime.MinValue, expires);
 
         Assert.Equal(SigningAlgorithm.Hmac, key.Algorithm);
         Assert.Equal("secret-value", key.Key.Value);
@@ -23,7 +23,7 @@ public class SigningKeyTests
     public void CreateAsymmetric_SetsExpectedProperties()
     {
         var expires = DateTime.UtcNow.AddHours(1);
-        var key = new SigningKey(SigningAlgorithm.Rsa, new Key("private-pem"), expires);
+        var key = new SigningKey(SigningAlgorithm.Rsa, new Key("private-pem"), DateTime.MinValue, expires);
 
         Assert.Equal(SigningAlgorithm.Rsa, key.Algorithm);
         Assert.Equal(new Key("private-pem"), key.Key);
@@ -32,23 +32,16 @@ public class SigningKeyTests
     }
 
     [Fact]
-    public void IsActive_True_WhenNoExpiry()
-    {
-        var key = new SigningKey(SigningAlgorithm.Hmac, new Key("secret"));
-        Assert.True(key.IsActive());
-    }
-
-    [Fact]
     public void IsActive_True_WhenExpiryInFuture()
     {
-        var key = new SigningKey(SigningAlgorithm.Hmac, new Key("secret"), DateTime.UtcNow.AddMinutes(5));
-        Assert.True(key.IsActive());
+        var key = new SigningKey(SigningAlgorithm.Hmac, new Key("secret"), DateTime.MinValue, DateTime.MaxValue);
+        Assert.True(key.IsActive(DateTime.MinValue));
     }
 
     [Fact]
     public void IsActive_False_WhenExpired()
     {
-        var key = new SigningKey(SigningAlgorithm.Hmac, new Key("secret"), DateTime.UtcNow.AddMinutes(-1));
-        Assert.False(key.IsActive());
+        var key = new SigningKey(SigningAlgorithm.Hmac, new Key("secret"), DateTime.MinValue, DateTime.MinValue);
+        Assert.False(key.IsActive(DateTime.MaxValue));
     } 
 }
