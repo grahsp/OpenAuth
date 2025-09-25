@@ -1,19 +1,20 @@
 using System.Security.Cryptography;
 using OpenAuth.Application.Security.Keys;
-using OpenAuth.Domain.Entities;
 using OpenAuth.Domain.Enums;
 using OpenAuth.Domain.ValueObjects;
 
 namespace OpenAuth.Infrastructure.Security.Keys;
 
-public class RsaSigningKeyStrategy : ISigningKeyStrategy
+public class RsaKeyMaterialGenerator : IKeyMaterialGenerator
 {
     private const int MinSize = 2048, DefaultSize = 4096, MaxSize = 8192;
     private readonly int _size;
     
-    public RsaSigningKeyStrategy() : this(DefaultSize) { }
+    public const KeyType TargetKeyType = KeyType.RSA;
+    public IReadOnlyCollection<SigningAlgorithm> SupportedAlgorithms
+        => [SigningAlgorithm.RS256];
     
-    public RsaSigningKeyStrategy(int size)
+    public RsaKeyMaterialGenerator(int size = DefaultSize)
     {
         if (size is < MinSize or > MaxSize)
             throw new ArgumentOutOfRangeException(nameof(size), $"RSA key size must be between { MinSize } and { MaxSize }.");
@@ -21,15 +22,13 @@ public class RsaSigningKeyStrategy : ISigningKeyStrategy
         _size = size;
     }
     
-    public SigningAlgorithm Algorithm => SigningAlgorithm.Rsa;
     
-    public SigningKey Create(DateTime? expiresAt = null)
+    public KeyMaterial Create(SigningAlgorithm algorithm)
     {
         using var rsa = RSA.Create(_size);
         var key = new Key(ExportPrivateKeyPem(rsa));
 
-        // TODO: Add passthrough for expiration date
-        return new SigningKey(Algorithm, key, DateTime.UtcNow, expiresAt ?? DateTime.MaxValue);
+        return new KeyMaterial(key, algorithm, TargetKeyType);
     }
     
     private static string ExportPrivateKeyPem(RSA rsa)

@@ -5,5 +5,5 @@ namespace OpenAuth.Application.Security.Keys;
 
 public interface ISigningKeyFactory
 {
-    SigningKey Create(SigningAlgorithm algorithm, DateTime? expiresAt = null);
+    SigningKey Create(SigningAlgorithm algorithm, DateTime createdAt, TimeSpan? lifetime = null);
 }
