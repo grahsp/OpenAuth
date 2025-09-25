@@ -2,6 +2,6 @@ namespace OpenAuth.Domain.Enums;
 
 public enum SigningAlgorithm
 {
-    Rsa,
-    Hmac,
+    RS256,
+    HM256,
 }

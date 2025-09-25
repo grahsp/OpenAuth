@@ -1,4 +1,3 @@
-using OpenAuth.Domain.Enums;
 using OpenAuth.Domain.ValueObjects;
 
 namespace OpenAuth.Domain.Entities;
@@ -13,15 +12,13 @@ public class SigningKey
     /// <summary>
     /// Initializes a new instance of the <see cref="SigningKey"/> class.
     /// </summary>
-    /// <param name="algorithm">The signing algorithm used with this key.</param>
-    /// <param name="key">The underlying cryptographic key material.</param>
+    /// <param name="keyMaterial">The data to generate and validate tokens.</param>
     /// <param name="createdAt">The UTC time when the key was created.</param>
     /// <param name="expiresAt">The UTC time when the key expires.</param> 
-    public SigningKey(SigningAlgorithm algorithm, Key key, DateTime createdAt, DateTime expiresAt)
+    public SigningKey(KeyMaterial keyMaterial, DateTime createdAt, DateTime expiresAt)
     {
         Id = SigningKeyId.New();
-        Algorithm = algorithm;
-        Key = key;
+        KeyMaterial = keyMaterial;
         CreatedAt = createdAt;
         ExpiresAt = expiresAt;
     }
@@ -30,16 +27,11 @@ public class SigningKey
     /// Gets the unique identifier for this signing key (kid).
     /// </summary>
     public SigningKeyId Id { get; private init; }
-    
-    /// <summary>
-    /// Gets the signing algorithm used with this key.
-    /// </summary>
-    public SigningAlgorithm Algorithm { get; private init; }
 
     /// <summary>
-    /// Gets the cryptographic key material.
+    /// Gets the key material used to generate and validate tokens.
     /// </summary>
-    public Key Key { get; private init; } = null!;
+    public KeyMaterial KeyMaterial { get; private init; } = null!;
 
     /// <summary>
     /// Gets the time when the key was created.

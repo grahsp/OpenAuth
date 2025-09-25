@@ -48,8 +48,8 @@ public class Program
         builder.Services.AddScoped<ISigningKeyRepository, SigningKeyRepository>();
         builder.Services.AddScoped<IKeyParameterExporter, RsaKeyParameterExporter>();
         
-        builder.Services.AddScoped<ISigningKeyStrategy, HmacSigningKeyStrategy>();
-        builder.Services.AddScoped<ISigningKeyStrategy, RsaSigningKeyStrategy>();
+        builder.Services.AddScoped<IKeyMaterialGenerator, HmacKeyMaterialGenerator>();
+        builder.Services.AddScoped<IKeyMaterialGenerator, RsaKeyMaterialGenerator>();
         builder.Services.AddScoped<ISigningKeyFactory, SigningKeyFactory>();
 
         builder.Services.AddScoped<ISigningCredentialsStrategy, HmacSigningCredentialsStrategy>();
