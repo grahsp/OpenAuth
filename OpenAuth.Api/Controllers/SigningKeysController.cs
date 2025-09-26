@@ -53,7 +53,7 @@ public class SigningKeysController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<SigningKeyResponse>> Create([FromBody] SigningKeyRequest request)
     {
-        var key = await _service.CreateAsync(request.Algorithm, request.ExpiresAt);
+        var key = await _service.CreateAsync(request.Algorithm, request.Lifetime);
         var response = SigningKeyMapper.ToResponse(key);
         
         return CreatedAtAction(nameof(Get), new { keyId = key.Id }, response);
