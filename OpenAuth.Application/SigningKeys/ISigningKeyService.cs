@@ -11,7 +11,7 @@ public interface ISigningKeyService
     Task<IEnumerable<SigningKey>> GetAllAsync(CancellationToken cancellationToken = default);
     Task<IEnumerable<SigningKey>> GetActiveAsync(CancellationToken cancellationToken = default);
     
-    Task<SigningKey> CreateAsync(SigningAlgorithm algorithm, DateTime? expiresAt = null, CancellationToken cancellationToken = default);
+    Task<SigningKey> CreateAsync(SigningAlgorithm algorithm, TimeSpan? lifetime = null, CancellationToken cancellationToken = default);
     
     Task<bool> RevokeAsync(SigningKeyId id, CancellationToken cancellationToken = default);
     Task<bool> RemoveAsync(SigningKeyId id, CancellationToken cancellationToken = default);

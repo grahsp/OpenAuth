@@ -7,14 +7,16 @@ namespace OpenAuth.Application.SigningKeys;
 
 public class SigningKeyService : ISigningKeyService
 {
-    public SigningKeyService(ISigningKeyRepository repository, ISigningKeyFactory keyFactory)
+    public SigningKeyService(ISigningKeyRepository repository, ISigningKeyFactory keyFactory, TimeProvider time)
     {
         _repository = repository;
         _keyFactory = keyFactory;
+        _time = time;
     }
 
     private readonly ISigningKeyRepository _repository;
     private readonly ISigningKeyFactory _keyFactory;
+    private readonly TimeProvider _time;
 
 
     public async Task<SigningKey?> GetByIdAsync(SigningKeyId id, CancellationToken cancellationToken = default)
@@ -29,9 +31,10 @@ public class SigningKeyService : ISigningKeyService
     public async Task<IEnumerable<SigningKey>> GetActiveAsync(CancellationToken cancellationToken = default)
         => await _repository.GetActiveAsync(cancellationToken);
 
-    public async Task<SigningKey> CreateAsync(SigningAlgorithm algorithm, DateTime? expiresAt = null, CancellationToken cancellationToken = default)
+    public async Task<SigningKey> CreateAsync(SigningAlgorithm algorithm, TimeSpan? lifetime = null, CancellationToken cancellationToken = default)
     {
-        var key = _keyFactory.Create(algorithm, expiresAt);
+        var now = _time.GetUtcNow().DateTime;
+        var key = _keyFactory.Create(algorithm, now, lifetime);
         
         _repository.Add(key);
         await _repository.SaveChangesAsync(cancellationToken);
@@ -45,8 +48,7 @@ public class SigningKeyService : ISigningKeyService
         if (key is null)
             return false;
         
-        // TODO: Inject TimeProvider
-        key.Revoke(DateTime.UtcNow);
+        key.Revoke(_time.GetUtcNow().DateTime);
         await _repository.SaveChangesAsync(cancellationToken);
 
         return true;
