@@ -11,9 +11,7 @@ public class HmacKeyMaterialGenerator : IKeyMaterialGenerator
     private const int MinSize = 32, DefaultSize = 64, MaxSize = 128;
     private readonly int _size;
 
-    public const KeyType TargetKeyType = KeyType.HMAC;
-    public IReadOnlyCollection<SigningAlgorithm> SupportedAlgorithms
-        => [SigningAlgorithm.HM256];
+    public KeyType KeyType => KeyType.HMAC;
 
     public HmacKeyMaterialGenerator(int size = DefaultSize)
     {
@@ -26,7 +24,7 @@ public class HmacKeyMaterialGenerator : IKeyMaterialGenerator
     public KeyMaterial Create(SigningAlgorithm algorithm)
     {
         var key = new Key(GenerateKey());
-        return new KeyMaterial(key, algorithm, TargetKeyType);
+        return new KeyMaterial(key, algorithm, KeyType);
     }
 
     private string GenerateKey()

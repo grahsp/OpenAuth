@@ -5,6 +5,6 @@ namespace OpenAuth.Application.Security.Keys;
 
 public interface IKeyMaterialGenerator
 {
-    IReadOnlyCollection<SigningAlgorithm> SupportedAlgorithms { get; }
+    KeyType KeyType { get; }
     KeyMaterial Create(SigningAlgorithm algorithm);
 }

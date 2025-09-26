@@ -10,9 +10,7 @@ public class RsaKeyMaterialGenerator : IKeyMaterialGenerator
     private const int MinSize = 2048, DefaultSize = 4096, MaxSize = 8192;
     private readonly int _size;
     
-    public const KeyType TargetKeyType = KeyType.RSA;
-    public IReadOnlyCollection<SigningAlgorithm> SupportedAlgorithms
-        => [SigningAlgorithm.RS256];
+    public KeyType KeyType => KeyType.RSA;
     
     public RsaKeyMaterialGenerator(int size = DefaultSize)
     {
@@ -28,7 +26,7 @@ public class RsaKeyMaterialGenerator : IKeyMaterialGenerator
         using var rsa = RSA.Create(_size);
         var key = new Key(ExportPrivateKeyPem(rsa));
 
-        return new KeyMaterial(key, algorithm, TargetKeyType);
+        return new KeyMaterial(key, algorithm, KeyType);
     }
     
     private static string ExportPrivateKeyPem(RSA rsa)
