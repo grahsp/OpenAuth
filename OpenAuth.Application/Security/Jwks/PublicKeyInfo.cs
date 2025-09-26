@@ -3,8 +3,9 @@ using OpenAuth.Domain.ValueObjects;
 
 namespace OpenAuth.Application.Security.Jwks;
 
-public interface IPublicKeyExporter
-{
-    KeyType KeyType { get; }
-    KeyParameters Export(Key key);
-}
+public abstract record PublicKeyInfo
+(
+    SigningKeyId Kid,
+    SigningAlgorithm Alg,
+    string Use = "sig"
+);
