@@ -1,4 +1,4 @@
-namespace OpenAuth.Api.Dtos;
+namespace OpenAuth.Domain.ValueObjects;
 
 public record Jwk
 {
