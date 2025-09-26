@@ -48,7 +48,7 @@ public class Program
         // Signing Keys
         builder.Services.AddScoped<ISigningKeyService, SigningKeyService>();
         builder.Services.AddScoped<ISigningKeyRepository, SigningKeyRepository>();
-        builder.Services.AddScoped<IPublicKeyExporter, RsaPublicKeyExporter>();
+        builder.Services.AddScoped<IPublicKeyInfoExtractor, RsaPublicKeyInfoExtractor>();
         
         builder.Services.AddScoped<IKeyMaterialGenerator, HmacKeyMaterialGenerator>();
         builder.Services.AddScoped<IKeyMaterialGenerator, RsaKeyMaterialGenerator>();
