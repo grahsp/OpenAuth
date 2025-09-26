@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using OpenAuth.Application.Clients;
+using OpenAuth.Application.Security.Jwks;
 using OpenAuth.Application.Security.Keys;
 using OpenAuth.Application.Security.Secrets;
 using OpenAuth.Application.Security.Signing;
@@ -8,6 +9,7 @@ using OpenAuth.Application.SigningKeys;
 using OpenAuth.Domain.Configurations;
 using OpenAuth.Infrastructure.Persistence;
 using OpenAuth.Infrastructure.Repositories;
+using OpenAuth.Infrastructure.Security.Jwks;
 using OpenAuth.Infrastructure.Security.Keys;
 using OpenAuth.Infrastructure.Security.Secrets;
 using OpenAuth.Infrastructure.Security.Signing;
@@ -46,7 +48,7 @@ public class Program
         // Signing Keys
         builder.Services.AddScoped<ISigningKeyService, SigningKeyService>();
         builder.Services.AddScoped<ISigningKeyRepository, SigningKeyRepository>();
-        builder.Services.AddScoped<IKeyParameterExporter, RsaKeyParameterExporter>();
+        builder.Services.AddScoped<IPublicKeyExporter, RsaPublicKeyExporter>();
         
         builder.Services.AddScoped<IKeyMaterialGenerator, HmacKeyMaterialGenerator>();
         builder.Services.AddScoped<IKeyMaterialGenerator, RsaKeyMaterialGenerator>();
