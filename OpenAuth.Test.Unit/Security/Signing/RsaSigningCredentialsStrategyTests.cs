@@ -1,40 +1,29 @@
-using System.Security.Cryptography;
-using OpenAuth.Domain.Entities;
 using OpenAuth.Domain.Enums;
-using OpenAuth.Domain.ValueObjects;
 using OpenAuth.Infrastructure.Security.Signing;
+using OpenAuth.Test.Common.Helpers;
 
 namespace OpenAuth.Test.Unit.Security.Signing;
 
 public class RsaSigningCredentialsStrategyTests
 {
-    private static SigningKey GenerateRsaKey()
-    {
-        using var rsa = RSA.Create(2048);
-        var pem = PemEncoding.Write("PRIVATE KEY", rsa.ExportPkcs8PrivateKey());
-        var key = new Key(new string(pem));
-
-        return new SigningKey(SigningAlgorithm.Rsa, key, DateTime.MinValue, DateTime.MaxValue);
-    }
-
     [Fact]
     public void Create_Throws_WhenAlgorithmMismatch()
     {
-        var key = new SigningKey(SigningAlgorithm.Hmac, new Key("secret"), DateTime.MinValue, DateTime.MaxValue);
+        var signingKey = TestSigningKey.CreateHmacSigningKey();
         var strategy = new RsaSigningCredentialsStrategy();
 
-        Assert.Throws<InvalidOperationException>(() => strategy.GetSigningCredentials(key));
+        Assert.Throws<InvalidOperationException>(() => strategy.GetSigningCredentials(signingKey.Id.ToString(), signingKey.KeyMaterial));
     }
 
     [Fact]
     public void Create_ReturnsSigningCredentials_WithExpectedProperties()
     {
-        var key = GenerateRsaKey();
+        var signingKey = TestSigningKey.CreateRsaSigningKey(algorithm: SigningAlgorithm.RS256);
         var strategy = new RsaSigningCredentialsStrategy();
 
-        var signingCredentials = strategy.GetSigningCredentials(key);
+        var signingCredentials = strategy.GetSigningCredentials(signingKey.Id.ToString(), signingKey.KeyMaterial);
 
-        Assert.Equal(SigningAlgorithm.Rsa, key.Algorithm);
-        Assert.Equal(key.Id.ToString(), signingCredentials.Key.KeyId);
+        Assert.Equal(signingKey.Id.ToString(), signingCredentials.Key.KeyId);
+        Assert.Equal(SigningAlgorithm.RS256, signingKey.KeyMaterial.Alg);
     }
 }

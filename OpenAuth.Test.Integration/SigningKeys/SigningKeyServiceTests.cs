@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Time.Testing;
 using OpenAuth.Application.SigningKeys;
 using OpenAuth.Domain.Enums;
 using OpenAuth.Domain.ValueObjects;
@@ -28,7 +29,7 @@ public class SigningKeyServiceTests : IAsyncLifetime
     private SigningKeyService CreateSut()
     {
         var context = _fx.CreateContext();
-        return new SigningKeyService(new SigningKeyRepository(context), new FakeSigningKeyFactory());
+        return new SigningKeyService(new SigningKeyRepository(context), new FakeSigningKeyFactory(), new FakeTimeProvider());
     }
     
     public class GetByIdAsync(SqlServerFixture fx) : SigningKeyServiceTests(fx)
@@ -38,7 +39,7 @@ public class SigningKeyServiceTests : IAsyncLifetime
         {
             var service = CreateSut();
 
-            var key = await service.CreateAsync(SigningAlgorithm.Rsa);
+            var key = await service.CreateAsync(SigningAlgorithm.RS256);
             Assert.NotNull(key);
             
             var fetched = await service.GetByIdAsync(key.Id);
@@ -63,7 +64,7 @@ public class SigningKeyServiceTests : IAsyncLifetime
         {
             var service = CreateSut();
 
-            var key = await service.CreateAsync(SigningAlgorithm.Rsa);
+            var key = await service.CreateAsync(SigningAlgorithm.RS256);
             Assert.NotNull(key);
             
             var fetched = await service.GetCurrentAsync();
@@ -91,10 +92,10 @@ public class SigningKeyServiceTests : IAsyncLifetime
         {
             var service = CreateSut();
             
-            var key = await service.CreateAsync(SigningAlgorithm.Rsa);
+            var key = await service.CreateAsync(SigningAlgorithm.RS256);
             Assert.NotNull(key);
             
-            var revoked = await service.CreateAsync(SigningAlgorithm.Rsa);
+            var revoked = await service.CreateAsync(SigningAlgorithm.RS256);
             await service.RevokeAsync(revoked.Id);
             
             var fetched = await service.GetCurrentAsync();
@@ -107,10 +108,10 @@ public class SigningKeyServiceTests : IAsyncLifetime
         {
             var service = CreateSut();
             
-            var key = await service.CreateAsync(SigningAlgorithm.Rsa);
+            var key = await service.CreateAsync(SigningAlgorithm.RS256);
             Assert.NotNull(key);
             
-            var expired = await service.CreateAsync(SigningAlgorithm.Rsa, DateTime.UtcNow);
+            var expired = await service.CreateAsync(SigningAlgorithm.RS256, TimeSpan.FromDays(30));
             await service.RevokeAsync(expired.Id);
             
             var fetched = await service.GetCurrentAsync();
@@ -133,8 +134,8 @@ public class SigningKeyServiceTests : IAsyncLifetime
             var service = CreateSut();
             
             
-            await service.CreateAsync(SigningAlgorithm.Rsa, DateTime.UtcNow.AddDays(-1));
-            await service.CreateAsync(SigningAlgorithm.Rsa, DateTime.UtcNow.AddDays(-1));
+            await service.CreateAsync(SigningAlgorithm.RS256, TimeSpan.FromMinutes(-1));
+            await service.CreateAsync(SigningAlgorithm.RS256, TimeSpan.FromMinutes(-1));
             
             var fetched = await service.GetCurrentAsync();
             Assert.Null(fetched);
@@ -148,8 +149,8 @@ public class SigningKeyServiceTests : IAsyncLifetime
         {
             var service = CreateSut();
 
-            await service.CreateAsync(SigningAlgorithm.Rsa);
-            await service.CreateAsync(SigningAlgorithm.Rsa);
+            await service.CreateAsync(SigningAlgorithm.RS256);
+            await service.CreateAsync(SigningAlgorithm.RS256);
 
             var fetched = await service.GetAllAsync();
             Assert.Equal(2, fetched.Count());
@@ -160,7 +161,7 @@ public class SigningKeyServiceTests : IAsyncLifetime
         {
             var service = CreateSut();
             
-            await service.CreateAsync(SigningAlgorithm.Rsa, DateTime.MinValue);
+            await service.CreateAsync(SigningAlgorithm.RS256, TimeSpan.FromDays(30));
             
             var fetched = await service.GetAllAsync();
             Assert.False(fetched.First().IsActive(DateTime.MaxValue));
@@ -171,7 +172,7 @@ public class SigningKeyServiceTests : IAsyncLifetime
         {
             var service = CreateSut();
             
-            var revoked = await service.CreateAsync(SigningAlgorithm.Rsa);
+            var revoked = await service.CreateAsync(SigningAlgorithm.RS256);
             await service.RevokeAsync(revoked.Id);
             
             var fetched = await service.GetAllAsync();
@@ -183,8 +184,8 @@ public class SigningKeyServiceTests : IAsyncLifetime
         {
             var service = CreateSut();
 
-            await service.CreateAsync(SigningAlgorithm.Rsa);
-            await service.CreateAsync(SigningAlgorithm.Rsa);
+            await service.CreateAsync(SigningAlgorithm.RS256);
+            await service.CreateAsync(SigningAlgorithm.RS256);
 
             var fetched = (await service.GetAllAsync()).ToArray();
             
@@ -209,8 +210,8 @@ public class SigningKeyServiceTests : IAsyncLifetime
         {
             var service = CreateSut();
             
-            await service.CreateAsync(SigningAlgorithm.Rsa);
-            await service.CreateAsync(SigningAlgorithm.Rsa);
+            await service.CreateAsync(SigningAlgorithm.RS256);
+            await service.CreateAsync(SigningAlgorithm.RS256);
             
             var fetched = await service.GetActiveAsync();
             Assert.Equal(2, fetched.Count());
@@ -221,14 +222,14 @@ public class SigningKeyServiceTests : IAsyncLifetime
         {
             var service = CreateSut();
             
-            var active = await service.CreateAsync(SigningAlgorithm.Rsa);
+            var active = await service.CreateAsync(SigningAlgorithm.RS256);
             
-            var revoked = await service.CreateAsync(SigningAlgorithm.Rsa);
+            var revoked = await service.CreateAsync(SigningAlgorithm.RS256);
             await service.RevokeAsync(revoked.Id);
             
             var fetched = (await service.GetActiveAsync()).ToArray();
             Assert.Single(fetched);
-            Assert.Contains(active.Id, fetched.Select(k => k.Id));;
+            Assert.Contains(active.Id, fetched.Select(k => k.Id));
         }
         
         [Fact]
@@ -236,12 +237,12 @@ public class SigningKeyServiceTests : IAsyncLifetime
         {
             var service = CreateSut();
             
-            var active = await service.CreateAsync(SigningAlgorithm.Rsa);
-            await service.CreateAsync(SigningAlgorithm.Rsa, DateTime.UtcNow.AddDays(-1));
+            var active = await service.CreateAsync(SigningAlgorithm.RS256);
+            await service.CreateAsync(SigningAlgorithm.RS256, TimeSpan.FromMinutes(-1));
             
             var fetched = (await service.GetActiveAsync()).ToArray();
             Assert.Single(fetched);
-            Assert.Contains(active.Id, fetched.Select(k => k.Id));;
+            Assert.Contains(active.Id, fetched.Select(k => k.Id));
         }
 
         [Fact]
@@ -260,7 +261,7 @@ public class SigningKeyServiceTests : IAsyncLifetime
         public async Task PersistSigningKey_WhenCreated()
         {
             var service = CreateSut();
-            var created = await service.CreateAsync(SigningAlgorithm.Rsa);
+            var created = await service.CreateAsync(SigningAlgorithm.RS256);
             
             await using var context = _fx.CreateContext();
             
@@ -274,8 +275,8 @@ public class SigningKeyServiceTests : IAsyncLifetime
         {
             var service = CreateSut();
             
-            var keyA = await service.CreateAsync(SigningAlgorithm.Rsa);
-            var keyB = await service.CreateAsync(SigningAlgorithm.Rsa);
+            var keyA = await service.CreateAsync(SigningAlgorithm.RS256);
+            var keyB = await service.CreateAsync(SigningAlgorithm.RS256);
             Assert.NotEqual(keyA.Id, keyB.Id);       
             
             var fetched = (await service.GetAllAsync()).ToArray();
@@ -290,7 +291,7 @@ public class SigningKeyServiceTests : IAsyncLifetime
         public async Task PersistChanges_WhenRevoked()
         {
             var service = CreateSut();
-            var key = await service.CreateAsync(SigningAlgorithm.Rsa);
+            var key = await service.CreateAsync(SigningAlgorithm.RS256);
             
             var revoked = await service.RevokeAsync(key.Id);
             Assert.True(revoked);
@@ -310,7 +311,7 @@ public class SigningKeyServiceTests : IAsyncLifetime
         public async Task PersistChanges_WhenRemoved()
         {
             var service = CreateSut();
-            var key = await service.CreateAsync(SigningAlgorithm.Rsa);
+            var key = await service.CreateAsync(SigningAlgorithm.RS256);
             
             var removed = await service.RemoveAsync(key.Id);
             Assert.True(removed);

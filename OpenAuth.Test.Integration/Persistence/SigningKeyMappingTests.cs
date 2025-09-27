@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using OpenAuth.Domain.Entities;
 using OpenAuth.Domain.Enums;
+using OpenAuth.Test.Common.Helpers;
 using OpenAuth.Test.Integration.Fixtures;
 using Key = OpenAuth.Domain.ValueObjects.Key;
 
@@ -22,7 +23,7 @@ public class SigningKeyMappingTests : IAsyncLifetime
         await using var ctx = _fx.CreateContext();
 
         var key = new Key("private-key");
-        var signingKey = new SigningKey(SigningAlgorithm.Hmac, key, DateTime.MinValue, DateTime.MaxValue);
+        var signingKey = TestSigningKey.CreateRsaSigningKey();
         
         ctx.Add(signingKey);
         await ctx.SaveChangesAsync();
@@ -30,8 +31,8 @@ public class SigningKeyMappingTests : IAsyncLifetime
         var loaded = await ctx.SigningKeys.SingleAsync(c => c.Id == signingKey.Id);
 
         Assert.Equal(signingKey.Id, loaded.Id);
-        Assert.Equal(SigningAlgorithm.Hmac, loaded.Algorithm);
-        Assert.Equal(key, loaded.Key);
+        Assert.Equal(signingKey.KeyMaterial.Alg, loaded.KeyMaterial.Alg);
+        Assert.Equal(key, loaded.KeyMaterial.Key);
         Assert.Equal(signingKey.CreatedAt, loaded.CreatedAt);
         Assert.Equal(signingKey.ExpiresAt, loaded.ExpiresAt);
     }
