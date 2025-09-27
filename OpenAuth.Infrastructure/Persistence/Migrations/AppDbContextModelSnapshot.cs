@@ -85,18 +85,11 @@ namespace OpenAuth.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("Algorithm")
-                        .HasColumnType("int");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime>("ExpiresAt")
                         .HasColumnType("datetime2");
-
-                    b.Property<string>("Key")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("RevokedAt")
                         .HasColumnType("datetime2");
@@ -173,6 +166,40 @@ namespace OpenAuth.Infrastructure.Persistence.Migrations
                         .IsRequired();
 
                     b.Navigation("Client");
+                });
+
+            modelBuilder.Entity("OpenAuth.Domain.Entities.SigningKey", b =>
+                {
+                    b.OwnsOne("OpenAuth.Domain.ValueObjects.KeyMaterial", "KeyMaterial", b1 =>
+                        {
+                            b1.Property<Guid>("SigningKeyId")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<string>("Alg")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(max)")
+                                .HasColumnName("Algorithm");
+
+                            b1.Property<string>("Key")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(max)")
+                                .HasColumnName("Key");
+
+                            b1.Property<string>("Kty")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(max)")
+                                .HasColumnName("KeyType");
+
+                            b1.HasKey("SigningKeyId");
+
+                            b1.ToTable("SigningKeys");
+
+                            b1.WithOwner()
+                                .HasForeignKey("SigningKeyId");
+                        });
+
+                    b.Navigation("KeyMaterial")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("OpenAuth.Domain.Entities.Client", b =>
