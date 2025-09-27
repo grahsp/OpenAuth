@@ -20,16 +20,25 @@ public class SigningKeyConfiguration : IEntityTypeConfiguration<SigningKey>
             .IsRequired();
 
         // Properties
-        builder.Property(x => x.Algorithm)
-            .HasConversion<int>()
-            .IsRequired();
-        
-        builder.Property(x => x.Key)
-            .HasConversion(
-                key => key.Value,
-                value => new Key(value))
-            .ValueGeneratedNever()
-            .IsRequired();
+        builder.OwnsOne(x => x.KeyMaterial, kb =>
+        {
+            kb.Property(k => k.Key)
+                .HasConversion(
+                    v => v.Value,
+                    v => new Key(v))
+                .HasColumnName("Key")
+                .IsRequired();
+
+            kb.Property(km => km.Alg)
+                .HasConversion<string>()
+                .HasColumnName("Algorithm")
+                .IsRequired();
+
+            kb.Property(km => km.Kty)
+                .HasConversion<string>()
+                .HasColumnName("KeyType")
+                .IsRequired();
+        });
         
         builder.Property(x => x.CreatedAt)
             .IsRequired();

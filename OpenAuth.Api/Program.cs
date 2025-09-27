@@ -34,6 +34,8 @@ public class Program
         {
             opts.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
         });
+        
+        builder.Services.AddSingleton(TimeProvider.System);
 
         // Client Services
         builder.Services.AddScoped<IClientRepository, ClientRepository>();
