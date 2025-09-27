@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 using OpenAuth.Application.Security.Keys;
 using OpenAuth.Application.SigningKeys;
@@ -11,7 +12,8 @@ public class SigningKeyServiceTests
 {
     public SigningKeyServiceTests()
     {
-        _service = new SigningKeyService(_repository, _keyFactory);
+        var time = new FakeTimeProvider();
+        _service = new SigningKeyService(_repository, _keyFactory, time);
     }
     
     private readonly ISigningKeyService _service;
@@ -24,20 +26,21 @@ public class SigningKeyServiceTests
         [Fact]
         public async Task CallsFactory_WithExpectedArgument()
         {
-            var expected = new SigningKey(SigningAlgorithm.Rsa, new Key("private-key"), DateTime.MinValue, DateTime.MaxValue);
+            var keyMaterial = new KeyMaterial(new Key("private-key"), SigningAlgorithm.RS256, KeyType.RSA);
+            var expected = new SigningKey(keyMaterial, DateTime.MinValue, DateTime.MaxValue);
             _keyFactory
-                .Create(Arg.Any<SigningAlgorithm>(), Arg.Any<DateTime?>())
+                .Create(Arg.Any<SigningAlgorithm>(), Arg.Any<DateTime>())
                 .Returns(expected);
             
-            await _service.CreateAsync(SigningAlgorithm.Rsa);
+            await _service.CreateAsync(SigningAlgorithm.RS256);
             
-            _keyFactory.Received(1).Create(Arg.Any<SigningAlgorithm>(), Arg.Any<DateTime?>());
+            _keyFactory.Received(1).Create(Arg.Any<SigningAlgorithm>(), Arg.Any<DateTime>());
         }
 
         [Fact]
         public async Task AddKeyToRepository_AndSaveChanges()
         {
-            await _service.CreateAsync(SigningAlgorithm.Rsa);
+            await _service.CreateAsync(SigningAlgorithm.RS256);
 
             _repository.Received(1).Add(Arg.Any<SigningKey>());
             await _repository.Received(1).SaveChangesAsync();
@@ -46,12 +49,13 @@ public class SigningKeyServiceTests
         [Fact]
         public async Task ReturnsCreatedKey()
         {
-            var expected = new SigningKey(SigningAlgorithm.Rsa, new Key("private-key"), DateTime.MinValue, DateTime.MaxValue);
+            var keyMaterial = new KeyMaterial(new Key("private-key"), SigningAlgorithm.RS256, KeyType.RSA);
+            var expected = new SigningKey(keyMaterial, DateTime.MinValue, DateTime.MaxValue);
             _keyFactory
-                .Create(Arg.Any<SigningAlgorithm>(), Arg.Any<DateTime?>())
+                .Create(Arg.Any<SigningAlgorithm>(), Arg.Any<DateTime>())
                 .Returns(expected);
             
-            var created = await _service.CreateAsync(SigningAlgorithm.Rsa);
+            var created = await _service.CreateAsync(SigningAlgorithm.RS256);
             Assert.Same(expected, created);
         }
     }

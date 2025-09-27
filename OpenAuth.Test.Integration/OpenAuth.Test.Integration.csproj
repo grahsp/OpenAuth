@@ -24,4 +24,10 @@
       <ProjectReference Include="..\OpenAuth.Test.Common\OpenAuth.Test.Common.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Reference Include="Microsoft.Extensions.TimeProvider.Testing">
+        <HintPath>..\..\..\.nuget\packages\microsoft.extensions.timeprovider.testing\9.9.0\lib\net9.0\Microsoft.Extensions.TimeProvider.Testing.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+
 </Project>
