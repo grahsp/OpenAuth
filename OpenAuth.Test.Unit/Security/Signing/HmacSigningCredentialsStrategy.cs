@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Time.Testing;
 using OpenAuth.Domain.Enums;
 using OpenAuth.Infrastructure.Security.Signing;
 using OpenAuth.Test.Common.Helpers;
@@ -6,10 +7,12 @@ namespace OpenAuth.Test.Unit.Security.Signing;
 
 public class HmacSigningCredentialsStrategyTests
 {
+    private readonly TimeProvider _time = new FakeTimeProvider();
+    
     [Fact]
     public void Create_Throws_WhenAlgorithmMismatch()
     {
-        var signingKey = TestSigningKey.CreateRsaSigningKey(); // Wrong algorithm
+        var signingKey = TestSigningKey.CreateRsaSigningKey(_time); // Wrong algorithm
         var strategy = new HmacSigningCredentialsStrategy();
 
         Assert.Throws<InvalidOperationException>(() => strategy.GetSigningCredentials(signingKey.Id.ToString(), signingKey.KeyMaterial));
@@ -18,7 +21,7 @@ public class HmacSigningCredentialsStrategyTests
     [Fact]
     public void Create_ReturnsSigningCredentials_WithExpectedProperties()
     {
-        var signingKey = TestSigningKey.CreateHmacSigningKey(algorithm: SigningAlgorithm.HM256); // Wrong algorithm
+        var signingKey = TestSigningKey.CreateHmacSigningKey(_time, algorithm: SigningAlgorithm.HM256); // Wrong algorithm
         var strategy = new HmacSigningCredentialsStrategy();
 
         var signingCredentials = strategy.GetSigningCredentials(signingKey.Id.ToString(), signingKey.KeyMaterial);

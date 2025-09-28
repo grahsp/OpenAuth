@@ -15,24 +15,27 @@ public class JwtTokenGenerator : IJwtTokenGenerator
 {
     private readonly Auth _config;
     private readonly ISigningCredentialsFactory _factory;
+    private readonly TimeProvider _time;
     
-    public JwtTokenGenerator(IOptions<Auth> config, ISigningCredentialsFactory factory)
+    public JwtTokenGenerator(IOptions<Auth> config, ISigningCredentialsFactory factory, TimeProvider time)
     {
         _config = config.Value;
         _factory = factory;
+        _time = time;
     }
 
     public string GenerateToken(Client client, Audience audience, IEnumerable<Scope> scopes, SigningKey signingKey)
     {
+        var now = _time.GetUtcNow().DateTime;
+        
         // TODO: Inject TimeProvider
-        if (!signingKey.IsActive(DateTime.UtcNow))
+        if (!signingKey.IsActive(now))
             throw new InvalidOperationException("Signing key is expired or revoked.");
 
         if (!client.Audiences.Contains(audience))
             throw new InvalidOperationException("Audience doesn't exist.");
         
         var signingCredentials = _factory.Create(signingKey);
-        var now = DateTime.UtcNow;
         var expires = now.Add(client.TokenLifetime);
 
         var claims = new List<Claim>

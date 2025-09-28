@@ -6,7 +6,7 @@ namespace OpenAuth.Test.Common.Helpers;
 
 public static class TestSigningKey
 {
-    public static SigningKey CreateRsaSigningKey(Key? key = null, DateTime? createdAt = null, DateTime? expiresAt = null, SigningAlgorithm algorithm = SigningAlgorithm.RS256)
+    public static SigningKey CreateRsaSigningKey(DateTime createdAt, DateTime expiresAt, Key? key = null, SigningAlgorithm algorithm = SigningAlgorithm.RS256)
         => new SigningKey(
             new KeyMaterial
             (
@@ -14,14 +14,21 @@ public static class TestSigningKey
                 algorithm,
                 KeyType.RSA
             ),
-            createdAt ?? DateTime.MinValue,
-            expiresAt ?? DateTime.MaxValue
+            createdAt,
+            expiresAt
         );
     
-    public static SigningKey CreateHmacSigningKey(Key? key = null, DateTime? createdAt = null, DateTime? expiresAt = null, SigningAlgorithm algorithm = SigningAlgorithm.HM256)
+    public static SigningKey CreateRsaSigningKey(TimeProvider timeProvider, Key? key = null, SigningAlgorithm algorithm = SigningAlgorithm.RS256)
+        => CreateRsaSigningKey(timeProvider.GetUtcNow().DateTime, timeProvider.GetUtcNow().DateTime.AddDays(30), key, algorithm);
+    
+    
+    public static SigningKey CreateHmacSigningKey(DateTime createdAt, DateTime expiresAt, Key? key = null, SigningAlgorithm algorithm = SigningAlgorithm.HM256)
         => new SigningKey(
             new KeyMaterial(key ?? new Key("this-is-a-very-secret-key-that-should-not-be-exposed"), algorithm, KeyType.HMAC),
-            createdAt ?? DateTime.MinValue,
-            expiresAt ?? DateTime.MaxValue
+            createdAt,
+            expiresAt
         );
+    
+    public static SigningKey CreateHmacSigningKey(TimeProvider timeProvider, Key? key = null, SigningAlgorithm algorithm = SigningAlgorithm.HM256)
+        => CreateHmacSigningKey(timeProvider.GetUtcNow().DateTime, timeProvider.GetUtcNow().DateTime.AddDays(30), key, algorithm);
 }

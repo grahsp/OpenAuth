@@ -111,7 +111,7 @@ public class SigningKeyServiceTests : IAsyncLifetime
             var key = await service.CreateAsync(SigningAlgorithm.RS256);
             Assert.NotNull(key);
             
-            var expired = await service.CreateAsync(SigningAlgorithm.RS256, TimeSpan.FromDays(30));
+            var expired = await service.CreateAsync(SigningAlgorithm.RS256, TimeSpan.FromDays(-1));
             await service.RevokeAsync(expired.Id);
             
             var fetched = await service.GetCurrentAsync();
@@ -132,7 +132,6 @@ public class SigningKeyServiceTests : IAsyncLifetime
         public async Task ReturnsNull_WhenNoActiveKeys()
         {
             var service = CreateSut();
-            
             
             await service.CreateAsync(SigningAlgorithm.RS256, TimeSpan.FromMinutes(-1));
             await service.CreateAsync(SigningAlgorithm.RS256, TimeSpan.FromMinutes(-1));
