@@ -23,13 +23,13 @@ public class SigningKeyService : ISigningKeyService
         => await _repository.GetByIdAsync(id, cancellationToken);
     
     public async Task<SigningKey?> GetCurrentAsync(CancellationToken cancellationToken = default)
-        => await _repository.GetCurrentAsync(cancellationToken);
+        => await _repository.GetCurrentAsync(_time.GetUtcNow().DateTime, cancellationToken);
 
     public async Task<IEnumerable<SigningKey>> GetAllAsync(CancellationToken cancellationToken = default)
         => await _repository.GetAllAsync(cancellationToken);
 
     public async Task<IEnumerable<SigningKey>> GetActiveAsync(CancellationToken cancellationToken = default)
-        => await _repository.GetActiveAsync(cancellationToken);
+        => await _repository.GetActiveAsync(_time.GetUtcNow().DateTime, cancellationToken);
 
     public async Task<SigningKey> CreateAsync(SigningAlgorithm algorithm, TimeSpan? lifetime = null, CancellationToken cancellationToken = default)
     {

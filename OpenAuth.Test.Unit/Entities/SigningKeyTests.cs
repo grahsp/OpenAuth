@@ -16,7 +16,7 @@ public class SigningKeyTests
         var createdAt = _time.GetUtcNow().DateTime;
         var expiresAt = createdAt.AddHours(1);
         var key = new Key("private-key");
-        var signingKey = TestSigningKey.CreateRsaSigningKey(key, createdAt, expiresAt);
+        var signingKey = TestSigningKey.CreateRsaSigningKey(createdAt, expiresAt, key);
         
         Assert.NotEqual(default, signingKey.Id);
         Assert.Equal(SigningAlgorithm.RS256, signingKey.KeyMaterial.Alg);
@@ -29,17 +29,16 @@ public class SigningKeyTests
     [Fact]
     public void IsActive_True_WhenNotExpiredAndNotRevoked()
     {
-        var now = _time.GetUtcNow().DateTime;
-        var signingKey = TestSigningKey.CreateRsaSigningKey(new Key("private-key"), now, now.AddMinutes(5));
+        var signingKey = TestSigningKey.CreateRsaSigningKey(_time);
         
-        Assert.True(signingKey.IsActive(now));
+        Assert.True(signingKey.IsActive(_time.GetUtcNow().DateTime));
     }
 
     [Fact]
     public void IsActive_False_WhenExpired()
     {
         var now = _time.GetUtcNow().DateTime;
-        var signingKey = TestSigningKey.CreateRsaSigningKey(new Key("private-key"), now, now.AddMinutes(-1));
+        var signingKey = TestSigningKey.CreateRsaSigningKey(now, now.AddMinutes(-1));
         
         Assert.False(signingKey.IsActive(now));
     } 
@@ -48,7 +47,7 @@ public class SigningKeyTests
     public void IsActive_False_WhenRevoked()
     {
         var now = _time.GetUtcNow().DateTime;
-        var signingKey = TestSigningKey.CreateRsaSigningKey(new Key("private-key"), now, now.AddMinutes(5));
+        var signingKey = TestSigningKey.CreateRsaSigningKey(now, now.AddMinutes(5));
         signingKey.Revoke(now);
         
         Assert.False(signingKey.IsActive(now));
@@ -62,7 +61,7 @@ public class SigningKeyTests
     {
         var now = _time.GetUtcNow().DateTime;
         var expiresAt = now.AddMinutes(offsetMinutes);
-        var signingKey = TestSigningKey.CreateRsaSigningKey(new Key("private-key"), now, expiresAt);
+        var signingKey = TestSigningKey.CreateRsaSigningKey(now, expiresAt);
         
         Assert.Equal(expected, signingKey.HasExpired(now));
     }
@@ -71,7 +70,7 @@ public class SigningKeyTests
     public void IsRevoked_FalseInitially()
     {
         var now = _time.GetUtcNow().DateTime;
-        var signingKey = TestSigningKey.CreateRsaSigningKey(new Key("private-key"), now, now.AddMinutes(5));
+        var signingKey = TestSigningKey.CreateRsaSigningKey(now, now.AddMinutes(5));
 
         Assert.True(signingKey.IsActive(DateTime.MinValue));
     }
@@ -80,7 +79,7 @@ public class SigningKeyTests
     public void IsRevoked_TrueAfterRevocation()
     {
         var now = _time.GetUtcNow().DateTime;
-        var signingKey = TestSigningKey.CreateRsaSigningKey(new Key("private-key"), now, now.AddMinutes(5));
+        var signingKey = TestSigningKey.CreateRsaSigningKey(now, now.AddMinutes(5));
         signingKey.Revoke(now);
         
         Assert.True(signingKey.IsRevoked());
@@ -90,7 +89,7 @@ public class SigningKeyTests
     public void Revoke_SetsRevokedAt_AndReturnsTrue()
     {
         var now = _time.GetUtcNow().DateTime;
-        var signingKey = TestSigningKey.CreateRsaSigningKey(new Key("private-key"), now, now.AddMinutes(5));
+        var signingKey = TestSigningKey.CreateRsaSigningKey(now, now.AddMinutes(5));
         
         var result = signingKey.Revoke(now);
         
@@ -102,7 +101,7 @@ public class SigningKeyTests
     public void Revoke_ReturnsFalse_WhenAlreadyRevoked_AndDoesNotUpdateRevokedAt()
     {
         var now = _time.GetUtcNow().DateTime;
-        var signingKey = TestSigningKey.CreateRsaSigningKey(new Key("private-key"), now, now.AddMinutes(5));
+        var signingKey = TestSigningKey.CreateRsaSigningKey(now, now.AddMinutes(5));
         signingKey.Revoke(now);
 
         var later = now.AddHours(1);

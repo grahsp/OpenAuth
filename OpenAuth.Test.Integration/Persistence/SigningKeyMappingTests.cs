@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Time.Testing;
 using OpenAuth.Domain.Entities;
 using OpenAuth.Domain.Enums;
 using OpenAuth.Test.Common.Helpers;
@@ -11,6 +12,7 @@ namespace OpenAuth.Test.Integration.Persistence;
 public class SigningKeyMappingTests : IAsyncLifetime
 {
     private readonly SqlServerFixture _fx;
+    private readonly TimeProvider _time = new FakeTimeProvider();
     public SigningKeyMappingTests(SqlServerFixture fx) => _fx = fx;
 
     public Task InitializeAsync() => _fx.ResetAsync();
@@ -23,7 +25,7 @@ public class SigningKeyMappingTests : IAsyncLifetime
         await using var ctx = _fx.CreateContext();
 
         var key = new Key("private-key");
-        var signingKey = TestSigningKey.CreateRsaSigningKey();
+        var signingKey = TestSigningKey.CreateRsaSigningKey(_time, key);
         
         ctx.Add(signingKey);
         await ctx.SaveChangesAsync();

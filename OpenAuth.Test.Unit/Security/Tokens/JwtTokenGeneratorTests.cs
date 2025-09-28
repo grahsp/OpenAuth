@@ -1,5 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Time.Testing;
 using OpenAuth.Domain.Configurations;
 using OpenAuth.Domain.Entities;
 using OpenAuth.Domain.ValueObjects;
@@ -11,6 +12,8 @@ namespace OpenAuth.Test.Unit.Security.Tokens;
 
 public class JwtTokenGeneratorTests
 {
+    private static readonly TimeProvider Time = new FakeTimeProvider();
+    
     private static Client CreateClientWithScopes(string name, Audience audience, params Scope[] scopes)
     {
         var client = new Client(name);
@@ -22,14 +25,15 @@ public class JwtTokenGeneratorTests
     private static JwtTokenGenerator CreateSut()
         => new JwtTokenGenerator(
             Options.Create(new Auth { Issuer = "test-issuer" }),
-            new FakeHmacSigningCredentialsFactory()
+            new FakeHmacSigningCredentialsFactory(),
+            Time
         );
 
     [Fact]
     public void GenerateToken_IncludesExpectedClaims()
     {
         var sut = CreateSut();
-        var key = TestSigningKey.CreateHmacSigningKey();
+        var key = TestSigningKey.CreateHmacSigningKey(Time);
         var audience = new Audience("api");
         var scope = new Scope("read");
         var client = CreateClientWithScopes("client123", audience, scope);
@@ -38,8 +42,8 @@ public class JwtTokenGeneratorTests
 
         var jwt = new JwtSecurityTokenHandler().ReadJwtToken(token);
 
-        Assert.Equal((string?)"test-issuer", (string?)jwt.Issuer);
-        Assert.Equal((string?)client.Id.ToString(), (string?)jwt.Subject);
+        Assert.Equal("test-issuer", jwt.Issuer);
+        Assert.Equal(client.Id.ToString(), jwt.Subject);
         Assert.Contains(audience.Value, jwt.Audiences);
         Assert.Contains(jwt.Claims, c => c.Type == "scope" && c.Value == scope.Value);
     }
@@ -48,7 +52,7 @@ public class JwtTokenGeneratorTests
     public void GenerateToken_Throws_WhenSigningKeyInactive()
     {
         var sut = CreateSut();
-        var key = TestSigningKey.CreateRsaSigningKey(expiresAt: DateTime.UtcNow.AddSeconds(-1));
+        var key = TestSigningKey.CreateRsaSigningKey(Time.GetUtcNow().DateTime, Time.GetUtcNow().DateTime.AddSeconds(-1));
         var audience = new Audience("api");
         var scope = new Scope("read");
         var client = CreateClientWithScopes("client123", audience, scope);
@@ -61,7 +65,7 @@ public class JwtTokenGeneratorTests
     public void GenerateToken_Throws_WhenAudienceNotAllowed()
     {
         var sut = CreateSut();
-        var key = TestSigningKey.CreateRsaSigningKey();
+        var key = TestSigningKey.CreateRsaSigningKey(Time);
         var client = new Client("client123");
 
         Assert.Throws<InvalidOperationException>(() =>
@@ -72,7 +76,7 @@ public class JwtTokenGeneratorTests
     public void GenerateToken_Throws_WhenInvalidScopeRequested()
     {
         var sut = CreateSut();
-        var key = TestSigningKey.CreateHmacSigningKey();
+        var key = TestSigningKey.CreateHmacSigningKey(Time);
         var audience = new Audience("api");
         var client = CreateClientWithScopes("client123", audience, new Scope("read"));
 

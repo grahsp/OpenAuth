@@ -1,4 +1,5 @@
 using System.Security.Cryptography;
+using Microsoft.Extensions.Time.Testing;
 using Microsoft.IdentityModel.Tokens;
 using OpenAuth.Domain.ValueObjects;
 using OpenAuth.Infrastructure.Security.Signing;
@@ -8,6 +9,8 @@ namespace OpenAuth.Test.Unit.Security.Signing;
 
 public class SigningCredentialsFactoryTests
 {
+    private readonly TimeProvider _time = new FakeTimeProvider();
+    
     [Fact]
     public void Create_UsesCorrectStrategy_ForHmac()
     {
@@ -15,7 +18,7 @@ public class SigningCredentialsFactoryTests
         var rsaStrategy = new RsaSigningCredentialsStrategy();
         var factory = new SigningCredentialsFactory([hmacStrategy, rsaStrategy]);
 
-        var signingKey = TestSigningKey.CreateHmacSigningKey();
+        var signingKey = TestSigningKey.CreateHmacSigningKey(_time);
         var signingCredentials = factory.Create(signingKey);
 
         Assert.Equal(SecurityAlgorithms.HmacSha256, signingCredentials.Algorithm);
@@ -32,7 +35,7 @@ public class SigningCredentialsFactoryTests
         var pem = PemEncoding.Write("PRIVATE KEY", rsa.ExportPkcs8PrivateKey());
         var key = new Key(new string(pem));
 
-        var signingKey = TestSigningKey.CreateRsaSigningKey(key);
+        var signingKey = TestSigningKey.CreateRsaSigningKey(_time, key);
         var signingCredentials = factory.Create(signingKey);
 
         Assert.Equal(SecurityAlgorithms.RsaSha256, signingCredentials.Algorithm);
