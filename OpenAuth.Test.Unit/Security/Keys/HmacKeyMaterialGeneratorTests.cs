@@ -6,28 +6,32 @@ namespace OpenAuth.Test.Unit.Security.Keys;
 public class HmacKeyMaterialGeneratorTests
 {
     [Fact]
-    public void Ctor_Throws_WhenSizeTooSmall()
+    public void Ctor_Throws_WhenSizeOutOfRange()
     {
-        Assert.Throws<ArgumentOutOfRangeException>(() => new HmacKeyMaterialGenerator(8));
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            new HmacKeyMaterialGenerator(HmacKeyMaterialGenerator.MinSize - 1));
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            new HmacKeyMaterialGenerator(HmacKeyMaterialGenerator.MaxSize + 1));
     }
-
+    
     [Fact]
-    public void Ctor_Throws_WhenSizeTooLarge()
+    public void Ctor_AllowsMinAndMaxSizes()
     {
-        Assert.Throws<ArgumentOutOfRangeException>(() => new HmacKeyMaterialGenerator(1024));
+        _ = new HmacKeyMaterialGenerator(HmacKeyMaterialGenerator.MinSize);
+        _ = new HmacKeyMaterialGenerator(HmacKeyMaterialGenerator.MaxSize);
     }
 
     [Fact]
     public void Create_SetsExpectedProperties()
     {
-        var strategy = new HmacKeyMaterialGenerator(32);
-        var expires = DateTime.UtcNow.AddHours(1);
-
-        var keyMaterial = strategy.Create(SigningAlgorithm.HM256);
+        var strategy = new HmacKeyMaterialGenerator(HmacKeyMaterialGenerator.MinSize);
+        
+        var alg = SigningAlgorithm.HM256;
+        var keyMaterial = strategy.Create(alg);
 
         Assert.NotNull(keyMaterial.Key);
         Assert.NotEmpty(keyMaterial.Key.Value);
-        Assert.Equal(SigningAlgorithm.HM256, keyMaterial.Alg);
+        Assert.Equal(alg, keyMaterial.Alg);
         Assert.Equal(KeyType.HMAC, keyMaterial.Kty);
 
         // Check Base64 validity + length
@@ -36,9 +40,31 @@ public class HmacKeyMaterialGeneratorTests
     }
 
     [Fact]
+    public void Create_SetsExpectedSize()
+    {
+        const int expectedBytes = HmacKeyMaterialGenerator.MinSize;
+        var strategy = new HmacKeyMaterialGenerator(expectedBytes);
+        var keyMaterial = strategy.Create(SigningAlgorithm.HM256);
+
+        var rawBytes = Convert.FromBase64String(keyMaterial.Key.Value);
+        Assert.Equal(expectedBytes, rawBytes.Length);
+    }
+    
+    [Fact]
+    public void Create_ReturnsValidBase64()
+    {
+        var strategy = new HmacKeyMaterialGenerator(HmacKeyMaterialGenerator.MinSize);
+        var keyMaterial = strategy.Create(SigningAlgorithm.HM256);
+
+        var ex =Record.Exception(() => Convert.FromBase64String(keyMaterial.Key.Value));
+        
+        Assert.Null(ex);
+    }
+
+    [Fact]
     public void Create_ProducesUniqueKeys()
     {
-        var strategy = new HmacKeyMaterialGenerator(32);
+        var strategy = new HmacKeyMaterialGenerator(HmacKeyMaterialGenerator.MinSize);
 
         var k1 = strategy.Create(SigningAlgorithm.HM256);
         var k2 = strategy.Create(SigningAlgorithm.HM256);
