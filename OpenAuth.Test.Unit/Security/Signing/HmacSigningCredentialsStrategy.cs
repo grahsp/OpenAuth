@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Time.Testing;
 using OpenAuth.Domain.Enums;
+using OpenAuth.Infrastructure.Security.Extensions;
 using OpenAuth.Infrastructure.Security.Signing;
 using OpenAuth.Test.Common.Helpers;
 
@@ -28,7 +29,7 @@ public class HmacSigningCredentialsStrategyTests
         var signingKey = TestSigningKey.CreateHmacSigningKey(_time, algorithm: alg);
         var signingCredentials = _strategy.GetSigningCredentials(expectedKid, signingKey.KeyMaterial);
 
-        Assert.Equal(alg.ToString(), signingCredentials.Algorithm);
+        Assert.Equal(alg.ToSecurityString(), signingCredentials.Algorithm);
         Assert.Equal(expectedKid, signingCredentials.Key.KeyId);
     }
 }
