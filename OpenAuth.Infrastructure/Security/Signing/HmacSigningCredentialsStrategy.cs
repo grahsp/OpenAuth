@@ -7,10 +7,17 @@ using OpenAuth.Infrastructure.Security.Extensions;
 
 namespace OpenAuth.Infrastructure.Security.Signing;
 
+/// <summary>
+/// Provides signing credentials extraction for HMAC key material.
+/// Wraps a symmetric secret in a <see cref="SymmetricSecurityKey"/> 
+/// and produces <see cref="SigningCredentials"/> suitable for JWT signing.
+/// </summary>
 public class HmacSigningCredentialsStrategy : ISigningCredentialsStrategy
 {
+    /// <inheritdoc />
     public KeyType KeyType => KeyType.HMAC;
 
+    /// <inheritdoc />
     public SigningCredentials GetSigningCredentials(string kid, KeyMaterial keyMaterial)
     {
         if (keyMaterial.Kty != KeyType)

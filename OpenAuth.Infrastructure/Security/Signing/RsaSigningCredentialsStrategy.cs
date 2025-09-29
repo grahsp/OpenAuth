@@ -7,10 +7,17 @@ using OpenAuth.Infrastructure.Security.Extensions;
 
 namespace OpenAuth.Infrastructure.Security.Signing;
 
+/// <summary>
+/// Provides signing credentials extraction for RSA key material.
+/// Wraps an <see cref="RSA"/> private key in a <see cref="RsaSecurityKey"/> 
+/// and produces <see cref="SigningCredentials"/> suitable for JWT signing.
+/// </summary>
 public class RsaSigningCredentialsStrategy : ISigningCredentialsStrategy
 {
+    /// <inheritdoc />
     public KeyType KeyType => KeyType.RSA;
 
+    /// <inheritdoc />
     public SigningCredentials GetSigningCredentials(string kid, KeyMaterial keyMaterial)
     {
         if (keyMaterial.Kty != KeyType)
