@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Time.Testing;
 using OpenAuth.Domain.Enums;
+using OpenAuth.Infrastructure.Security.Extensions;
 using OpenAuth.Infrastructure.Security.Signing;
 using OpenAuth.Test.Common.Helpers;
 
@@ -30,6 +31,6 @@ public class RsaSigningCredentialsStrategyTests
 
         Assert.NotNull(credentials);
         Assert.Equal(expectedKid, credentials.Key.KeyId);
-        Assert.Equal(alg.ToString(), credentials.Algorithm);
+        Assert.Equal(alg.ToSecurityString(), credentials.Algorithm);
     }
 }
