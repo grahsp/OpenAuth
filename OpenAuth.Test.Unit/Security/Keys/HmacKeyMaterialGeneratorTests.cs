@@ -26,7 +26,7 @@ public class HmacKeyMaterialGeneratorTests
     {
         var strategy = new HmacKeyMaterialGenerator(HmacKeyMaterialGenerator.MinSize);
         
-        var alg = SigningAlgorithm.HM256;
+        var alg = SigningAlgorithm.HS256;
         var keyMaterial = strategy.Create(alg);
 
         Assert.NotNull(keyMaterial.Key);
@@ -44,7 +44,7 @@ public class HmacKeyMaterialGeneratorTests
     {
         const int expectedBytes = HmacKeyMaterialGenerator.MinSize;
         var strategy = new HmacKeyMaterialGenerator(expectedBytes);
-        var keyMaterial = strategy.Create(SigningAlgorithm.HM256);
+        var keyMaterial = strategy.Create(SigningAlgorithm.HS256);
 
         var rawBytes = Convert.FromBase64String(keyMaterial.Key.Value);
         Assert.Equal(expectedBytes, rawBytes.Length);
@@ -54,7 +54,7 @@ public class HmacKeyMaterialGeneratorTests
     public void Create_ReturnsValidBase64()
     {
         var strategy = new HmacKeyMaterialGenerator(HmacKeyMaterialGenerator.MinSize);
-        var keyMaterial = strategy.Create(SigningAlgorithm.HM256);
+        var keyMaterial = strategy.Create(SigningAlgorithm.HS256);
 
         var ex =Record.Exception(() => Convert.FromBase64String(keyMaterial.Key.Value));
         
@@ -66,8 +66,8 @@ public class HmacKeyMaterialGeneratorTests
     {
         var strategy = new HmacKeyMaterialGenerator(HmacKeyMaterialGenerator.MinSize);
 
-        var k1 = strategy.Create(SigningAlgorithm.HM256);
-        var k2 = strategy.Create(SigningAlgorithm.HM256);
+        var k1 = strategy.Create(SigningAlgorithm.HS256);
+        var k2 = strategy.Create(SigningAlgorithm.HS256);
 
         Assert.NotEqual(k1.Key, k2.Key);
     }
