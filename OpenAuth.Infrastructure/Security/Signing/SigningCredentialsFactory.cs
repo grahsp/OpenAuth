@@ -7,7 +7,7 @@ namespace OpenAuth.Infrastructure.Security.Signing;
 
 public class SigningCredentialsFactory : ISigningCredentialsFactory
 {
-    private readonly IDictionary<KeyType, ISigningCredentialsStrategy> _strategies;
+    private readonly Dictionary<KeyType, ISigningCredentialsStrategy> _strategies;
     
     public SigningCredentialsFactory(IEnumerable<ISigningCredentialsStrategy> strategies)
     {
@@ -18,7 +18,7 @@ public class SigningCredentialsFactory : ISigningCredentialsFactory
         }
         catch (ArgumentException e)
         {
-            throw new InvalidOperationException("Duplicate signing credentials strategy registered.", e);
+            throw new ArgumentException("Duplicate signing credentials strategy registered.", e);
         }
         
         if (_strategies.Count == 0)
@@ -27,6 +27,8 @@ public class SigningCredentialsFactory : ISigningCredentialsFactory
     
     public SigningCredentials Create(SigningKey signingKey)
     {
+        ArgumentNullException.ThrowIfNull(signingKey);
+        
         if (!_strategies.TryGetValue(signingKey.KeyMaterial.Kty, out var strategy))
             throw new InvalidOperationException(
                 $"""
