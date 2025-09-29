@@ -9,6 +9,7 @@
 
     <ItemGroup>
         <PackageReference Include="coverlet.collector" Version="6.0.2"/>
+        <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" Version="9.9.0" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0"/>
         <PackageReference Include="Respawn" Version="6.2.1" />
         <PackageReference Include="Testcontainers" Version="4.7.0" />
@@ -22,12 +23,6 @@
 
     <ItemGroup>
       <ProjectReference Include="..\OpenAuth.Test.Common\OpenAuth.Test.Common.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Reference Include="Microsoft.Extensions.TimeProvider.Testing">
-        <HintPath>..\..\..\.nuget\packages\microsoft.extensions.timeprovider.testing\9.9.0\lib\net9.0\Microsoft.Extensions.TimeProvider.Testing.dll</HintPath>
-      </Reference>
     </ItemGroup>
 
 </Project>
