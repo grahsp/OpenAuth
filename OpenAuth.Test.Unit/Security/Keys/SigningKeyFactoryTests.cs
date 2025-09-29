@@ -42,11 +42,11 @@ public class SigningKeyFactoryTests
     {
         var factory = new SigningKeyFactory([_rsaGenerator]);
         
-        Assert.Throws<ArgumentException>(() =>
-            factory.Create(SigningAlgorithm.RS256, _time.GetUtcNow().DateTime, TimeSpan.Zero));
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            factory.Create(SigningAlgorithm.RS256, _time.GetUtcNow().UtcDateTime, TimeSpan.Zero));
         
-        Assert.Throws<ArgumentException>(() =>
-            factory.Create(SigningAlgorithm.RS256, _time.GetUtcNow().DateTime, TimeSpan.FromSeconds(-1)));
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            factory.Create(SigningAlgorithm.RS256, _time.GetUtcNow().UtcDateTime, TimeSpan.FromSeconds(-1)));
     }
     
     [Fact]
@@ -55,7 +55,7 @@ public class SigningKeyFactoryTests
         var factory = new SigningKeyFactory([_rsaGenerator]);
         
         Assert.Throws<InvalidOperationException>(() =>
-            factory.Create(SigningAlgorithm.HS256, _time.GetUtcNow().DateTime));
+            factory.Create(SigningAlgorithm.HS256, _time.GetUtcNow().UtcDateTime));
     }
 
     [Fact]
@@ -63,7 +63,7 @@ public class SigningKeyFactoryTests
     {
         var factory = new SigningKeyFactory([_rsaGenerator]);
         
-        var now = _time.GetUtcNow().DateTime;
+        var now = _time.GetUtcNow().UtcDateTime;
         const SigningAlgorithm alg = SigningAlgorithm.RS256;
         
         var signingKey = factory.Create(alg, now);
@@ -80,7 +80,7 @@ public class SigningKeyFactoryTests
     {
         var factory = new SigningKeyFactory([_rsaGenerator]);
         
-        var now = _time.GetUtcNow().DateTime;
+        var now = _time.GetUtcNow().UtcDateTime;
         var lifetime = TimeSpan.FromDays(1);
         const SigningAlgorithm alg = SigningAlgorithm.RS256;
         
@@ -98,7 +98,7 @@ public class SigningKeyFactoryTests
     {
         var factory = new SigningKeyFactory([_rsaGenerator, _hmacGenerator]);
         
-        var now = _time.GetUtcNow().DateTime;
+        var now = _time.GetUtcNow().UtcDateTime;
         var rsaKey = factory.Create(SigningAlgorithm.RS256, now);
         var hmacKey = factory.Create(SigningAlgorithm.HS256, now);
         
