@@ -7,7 +7,7 @@ namespace OpenAuth.Infrastructure.Security.Keys;
 
 public class RsaKeyMaterialGenerator : IKeyMaterialGenerator
 {
-    private const int MinSize = 2048, DefaultSize = 4096, MaxSize = 8192;
+    public const int MinSize = 2048, DefaultSize = 4096, MaxSize = 8192;
     private readonly int _size;
     
     public KeyType KeyType => KeyType.RSA;
@@ -16,6 +16,9 @@ public class RsaKeyMaterialGenerator : IKeyMaterialGenerator
     {
         if (size is < MinSize or > MaxSize)
             throw new ArgumentOutOfRangeException(nameof(size), $"RSA key size must be between { MinSize } and { MaxSize }.");
+        
+        if (size % 8 != 0)
+            throw new ArgumentOutOfRangeException(nameof(size), $"RSA key size must be a multiple of 8.");
         
         _size = size;
     }
