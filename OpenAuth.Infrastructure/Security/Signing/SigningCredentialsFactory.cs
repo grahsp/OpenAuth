@@ -5,10 +5,29 @@ using OpenAuth.Domain.Enums;
 
 namespace OpenAuth.Infrastructure.Security.Signing;
 
+/// <summary>
+/// Default implementation of <see cref="ISigningCredentialsFactory"/>.
+/// Uses registered <see cref="ISigningCredentialsStrategy"/> implementations
+/// to convert domain-level <see cref="SigningKey"/> instances into framework-level
+/// <see cref="SigningCredentials"/>.
+/// </summary>
 public class SigningCredentialsFactory : ISigningCredentialsFactory
 {
     private readonly Dictionary<KeyType, ISigningCredentialsStrategy> _strategies;
     
+    /// <summary>
+    /// Initializes a new instance of the <see cref="SigningCredentialsFactory"/> class.
+    /// </summary>
+    /// <param name="strategies">
+    /// A collection of <see cref="ISigningCredentialsStrategy"/> implementations
+    /// that handle supported <see cref="KeyType"/> values.
+    /// </param>
+    /// <exception cref="ArgumentException">
+    /// Thrown if duplicate strategies are registered for the same <see cref="KeyType"/>.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown if no strategies are provided.
+    /// </exception>
     public SigningCredentialsFactory(IEnumerable<ISigningCredentialsStrategy> strategies)
     {
         try
@@ -25,6 +44,7 @@ public class SigningCredentialsFactory : ISigningCredentialsFactory
             throw new InvalidOperationException("No signing credentials strategies were registered."); 
     }
     
+    /// <inheritdoc />
     public SigningCredentials Create(SigningKey signingKey)
     {
         ArgumentNullException.ThrowIfNull(signingKey);
