@@ -22,13 +22,13 @@ public static class TestSigningKey
         => CreateRsaSigningKey(timeProvider.GetUtcNow().DateTime, timeProvider.GetUtcNow().DateTime.AddDays(30), key, algorithm);
     
     
-    public static SigningKey CreateHmacSigningKey(DateTime createdAt, DateTime expiresAt, Key? key = null, SigningAlgorithm algorithm = SigningAlgorithm.HM256)
+    public static SigningKey CreateHmacSigningKey(DateTime createdAt, DateTime expiresAt, Key? key = null, SigningAlgorithm algorithm = SigningAlgorithm.HS256)
         => new SigningKey(
             new KeyMaterial(key ?? new Key("this-is-a-very-secret-key-that-should-not-be-exposed"), algorithm, KeyType.HMAC),
             createdAt,
             expiresAt
         );
     
-    public static SigningKey CreateHmacSigningKey(TimeProvider timeProvider, Key? key = null, SigningAlgorithm algorithm = SigningAlgorithm.HM256)
+    public static SigningKey CreateHmacSigningKey(TimeProvider timeProvider, Key? key = null, SigningAlgorithm algorithm = SigningAlgorithm.HS256)
         => CreateHmacSigningKey(timeProvider.GetUtcNow().DateTime, timeProvider.GetUtcNow().DateTime.AddDays(30), key, algorithm);
 }

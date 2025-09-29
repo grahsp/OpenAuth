@@ -11,7 +11,7 @@ public class FakeSigningKeyFactory : ISigningKeyFactory
         => algorithm switch
         {
             SigningAlgorithm.RS256 => TestSigningKey.CreateRsaSigningKey(createdAt: createdAt, expiresAt: createdAt.Add(lifetime ?? TimeSpan.FromDays(30))),
-            SigningAlgorithm.HM256 => TestSigningKey.CreateHmacSigningKey(createdAt: createdAt, expiresAt: createdAt.Add(lifetime ?? TimeSpan.FromDays(30))),
+            SigningAlgorithm.HS256 => TestSigningKey.CreateHmacSigningKey(createdAt: createdAt, expiresAt: createdAt.Add(lifetime ?? TimeSpan.FromDays(30))),
             _ => throw new ArgumentOutOfRangeException(nameof(algorithm), algorithm, null)
         };
 }

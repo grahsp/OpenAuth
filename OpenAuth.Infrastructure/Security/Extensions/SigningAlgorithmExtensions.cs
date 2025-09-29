@@ -9,7 +9,7 @@ public static class SigningAlgorithmExtensions
         => algorithm switch
         {
             SigningAlgorithm.RS256 => SecurityAlgorithms.RsaSha256,
-            SigningAlgorithm.HM256 => SecurityAlgorithms.HmacSha256,
+            SigningAlgorithm.HS256 => SecurityAlgorithms.HmacSha256,
             _ => throw new ArgumentOutOfRangeException(nameof(algorithm), algorithm, null)
         };
 }

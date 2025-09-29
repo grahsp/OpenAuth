@@ -55,7 +55,7 @@ public class SigningKeyFactoryTests
         var factory = new SigningKeyFactory([_rsaGenerator]);
         
         Assert.Throws<InvalidOperationException>(() =>
-            factory.Create(SigningAlgorithm.HM256, _time.GetUtcNow().DateTime));
+            factory.Create(SigningAlgorithm.HS256, _time.GetUtcNow().DateTime));
     }
 
     [Fact]
@@ -100,7 +100,7 @@ public class SigningKeyFactoryTests
         
         var now = _time.GetUtcNow().DateTime;
         var rsaKey = factory.Create(SigningAlgorithm.RS256, now);
-        var hmacKey = factory.Create(SigningAlgorithm.HM256, now);
+        var hmacKey = factory.Create(SigningAlgorithm.HS256, now);
         
         Assert.Equal(KeyType.RSA, rsaKey.KeyMaterial.Kty);
         Assert.Equal(KeyType.HMAC, hmacKey.KeyMaterial.Kty);
