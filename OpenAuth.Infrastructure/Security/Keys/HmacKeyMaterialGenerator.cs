@@ -8,7 +8,7 @@ namespace OpenAuth.Infrastructure.Security.Keys;
 
 public class HmacKeyMaterialGenerator : IKeyMaterialGenerator
 {
-    private const int MinSize = 32, DefaultSize = 64, MaxSize = 128;
+    public const int MinSize = 32, DefaultSize = 64, MaxSize = 128;
     private readonly int _size;
 
     public KeyType KeyType => KeyType.HMAC;
