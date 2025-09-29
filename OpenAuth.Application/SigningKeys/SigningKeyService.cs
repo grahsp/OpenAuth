@@ -33,7 +33,7 @@ public class SigningKeyService : ISigningKeyService
 
     public async Task<SigningKey> CreateAsync(SigningAlgorithm algorithm, TimeSpan? lifetime = null, CancellationToken cancellationToken = default)
     {
-        var now = _time.GetUtcNow().DateTime;
+        var now = _time.GetUtcNow().UtcDateTime;
         var key = _keyFactory.Create(algorithm, now, lifetime);
         
         _repository.Add(key);
