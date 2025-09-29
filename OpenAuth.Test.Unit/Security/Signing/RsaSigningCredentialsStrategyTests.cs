@@ -7,26 +7,29 @@ namespace OpenAuth.Test.Unit.Security.Signing;
 
 public class RsaSigningCredentialsStrategyTests
 {
+    private readonly RsaSigningCredentialsStrategy _strategy = new();
     private readonly TimeProvider _time = new FakeTimeProvider();
     
     [Fact]
-    public void Create_Throws_WhenAlgorithmMismatch()
+    public void GetSigningCredentials_Throws_WhenKeyTypeMismatch()
     {
         var signingKey = TestSigningKey.CreateHmacSigningKey(_time);
-        var strategy = new RsaSigningCredentialsStrategy();
-
-        Assert.Throws<InvalidOperationException>(() => strategy.GetSigningCredentials(signingKey.Id.ToString(), signingKey.KeyMaterial));
+        
+        Assert.Throws<InvalidOperationException>(() =>
+            _strategy.GetSigningCredentials(signingKey.Id.ToString(), signingKey.KeyMaterial));
     }
 
     [Fact]
-    public void Create_ReturnsSigningCredentials_WithExpectedProperties()
+    public void GetSigningCredentials_ReturnsSigningCredentials_WithExpectedProperties()
     {
-        var signingKey = TestSigningKey.CreateRsaSigningKey(_time, algorithm: SigningAlgorithm.RS256);
-        var strategy = new RsaSigningCredentialsStrategy();
+        const string expectedKid = "test-kid";
+        const SigningAlgorithm alg = SigningAlgorithm.RS256;
+        
+        var signingKey = TestSigningKey.CreateRsaSigningKey(_time, algorithm: alg);
+        var credentials = _strategy.GetSigningCredentials(expectedKid, signingKey.KeyMaterial);
 
-        var signingCredentials = strategy.GetSigningCredentials(signingKey.Id.ToString(), signingKey.KeyMaterial);
-
-        Assert.Equal(signingKey.Id.ToString(), signingCredentials.Key.KeyId);
-        Assert.Equal(SigningAlgorithm.RS256, signingKey.KeyMaterial.Alg);
+        Assert.NotNull(credentials);
+        Assert.Equal(expectedKid, credentials.Key.KeyId);
+        Assert.Equal(alg.ToString(), credentials.Algorithm);
     }
 }
