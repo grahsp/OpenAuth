@@ -29,7 +29,10 @@ public class SigningKeyFactory : ISigningKeyFactory
     public SigningKey Create(SigningAlgorithm algorithm, DateTime createdAt, TimeSpan? lifetime = null)
     {
         if (createdAt == default)
-            throw new ArgumentException("Creation date must be a valid UTC timestamp.", nameof(createdAt));
+            throw new ArgumentException("Creation date must be explicitly set.", nameof(createdAt));
+
+        if (createdAt.Kind != DateTimeKind.Utc)
+            throw new ArgumentException("Creation date must be expressed in UTC.", nameof(createdAt));
         
         if (lifetime.HasValue && lifetime <= TimeSpan.Zero)
             throw new ArgumentOutOfRangeException(nameof(lifetime), "Lifetime must be positive.");
