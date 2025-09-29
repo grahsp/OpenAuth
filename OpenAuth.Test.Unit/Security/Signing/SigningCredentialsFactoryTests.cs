@@ -1,7 +1,6 @@
-using System.Security.Cryptography;
 using Microsoft.Extensions.Time.Testing;
-using Microsoft.IdentityModel.Tokens;
-using OpenAuth.Domain.ValueObjects;
+using OpenAuth.Application.Security.Signing;
+using OpenAuth.Infrastructure.Security.Extensions;
 using OpenAuth.Infrastructure.Security.Signing;
 using OpenAuth.Test.Common.Helpers;
 
@@ -9,44 +8,57 @@ namespace OpenAuth.Test.Unit.Security.Signing;
 
 public class SigningCredentialsFactoryTests
 {
+    private readonly ISigningCredentialsStrategy _rsaStrategy =
+        new RsaSigningCredentialsStrategy();
+    private readonly ISigningCredentialsStrategy _hmacStrategy =
+        new HmacSigningCredentialsStrategy();
+    
     private readonly TimeProvider _time = new FakeTimeProvider();
+
+    [Fact]
+    public void Ctor_Throws_WhenNoStrategiesRegistered()
+    {
+        Assert.Throws<InvalidOperationException>(() =>
+            new SigningCredentialsFactory([]));
+    }
+
+    [Fact]
+    public void Ctor_Throws_WhenDuplicateStrategyRegistered()
+    {
+        Assert.Throws<ArgumentException>(() =>
+            new SigningCredentialsFactory([_rsaStrategy, _rsaStrategy]));
+    }
     
     [Fact]
-    public void Create_UsesCorrectStrategy_ForHmac()
+    public void Create_Throws_WhenSigningKeyIsNull()
     {
-        var hmacStrategy = new HmacSigningCredentialsStrategy();
-        var rsaStrategy = new RsaSigningCredentialsStrategy();
-        var factory = new SigningCredentialsFactory([hmacStrategy, rsaStrategy]);
+        var factory = new SigningCredentialsFactory([_rsaStrategy]);
 
-        var signingKey = TestSigningKey.CreateHmacSigningKey(_time);
-        var signingCredentials = factory.Create(signingKey);
-
-        Assert.Equal(SecurityAlgorithms.HmacSha256, signingCredentials.Algorithm);
+        Assert.Throws<ArgumentNullException>(() =>
+            factory.Create(null!));
     }
 
     [Fact]
-    public void Create_UsesCorrectStrategy_ForRsa()
+    public void Create_Throws_WhenAlgorithmNotSupported()
     {
-        var hmacStrategy = new HmacSigningCredentialsStrategy();
-        var rsaStrategy = new RsaSigningCredentialsStrategy();
-        var factory = new SigningCredentialsFactory([hmacStrategy, rsaStrategy]);
-
-        using var rsa = RSA.Create(2048);
-        var pem = PemEncoding.Write("PRIVATE KEY", rsa.ExportPkcs8PrivateKey());
-        var key = new Key(new string(pem));
-
-        var signingKey = TestSigningKey.CreateRsaSigningKey(_time, key);
-        var signingCredentials = factory.Create(signingKey);
-
-        Assert.Equal(SecurityAlgorithms.RsaSha256, signingCredentials.Algorithm);
+        var factory = new SigningCredentialsFactory([_rsaStrategy]);
+        var signingKey = TestSigningKey.CreateHmacSigningKey(_time);
+        
+        Assert.Throws<InvalidOperationException>(() =>
+            factory.Create(signingKey));
     }
+    
+    [Fact]
+    public void Create_UsesCorrectStrategyForAlgorithm()
+    {
+        var factory = new SigningCredentialsFactory([_rsaStrategy, _hmacStrategy]);
+        var hmacKey = TestSigningKey.CreateHmacSigningKey(_time);
+        var rsaKey = TestSigningKey.CreateRsaSigningKey(_time);
 
-    // [Fact]
-    // public void Create_Throws_WhenStrategyNotRegistered()
-    // {
-    //     var factory = new SigningCredentialsFactory([]);
-    //     var signingKey = TestSigningKey.CreateHmacSigningKey();
-    //
-    //     Assert.Throws<InvalidOperationException>(() => factory.Create(signingKey));
-    // }
+        var hmacCredentials = factory.Create(hmacKey);
+        var rsaCredentials = factory.Create(rsaKey);
+
+        Assert.Equal(hmacKey.KeyMaterial.Alg.ToSecurityString(), hmacCredentials.Algorithm);
+        Assert.Equal(rsaKey.KeyMaterial.Alg.ToSecurityString(), rsaCredentials.Algorithm);
+    }
 }
