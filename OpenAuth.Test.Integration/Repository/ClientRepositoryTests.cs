@@ -1,5 +1,5 @@
+using Microsoft.Extensions.Time.Testing;
 using OpenAuth.Domain.Entities;
-using OpenAuth.Domain.Enums;
 using OpenAuth.Domain.ValueObjects;
 using OpenAuth.Infrastructure.Persistence;
 using OpenAuth.Infrastructure.Repositories;
@@ -11,12 +11,15 @@ namespace OpenAuth.Test.Integration.Repository;
 public class ClientRepositoryTests : IAsyncLifetime
 {
     private readonly SqlServerFixture _fx;
+    private readonly TimeProvider _time = new FakeTimeProvider();
+    
     public ClientRepositoryTests(SqlServerFixture fx) => _fx = fx;
 
     public async Task InitializeAsync() => await _fx.ResetAsync();
     public Task DisposeAsync() => Task.CompletedTask;
     
-    private static ClientRepository CreateRepository(AppDbContext context) => new(context);
+    private static ClientRepository CreateRepository(AppDbContext context)
+        => new(context);
 
     [Fact]
     public async Task GetByIdAsync_ReturnsClient_WhenExists()
@@ -25,7 +28,7 @@ public class ClientRepositoryTests : IAsyncLifetime
         var repo = CreateRepository(context);
 
         const string name = "client";
-        var client = new Client(name);
+        var client = new Client(name, _time.GetUtcNow());
         
         repo.Add(client);
         await context.SaveChangesAsync();
@@ -55,7 +58,7 @@ public class ClientRepositoryTests : IAsyncLifetime
         var repo = CreateRepository(context);
 
         const string name = "client";
-        var client = new Client(name);
+        var client = new Client(name, _time.GetUtcNow());
         
         repo.Add(client);
         await context.SaveChangesAsync();
@@ -84,8 +87,8 @@ public class ClientRepositoryTests : IAsyncLifetime
         await using var context = _fx.CreateContext();
         var repo = CreateRepository(context);
 
-        var client = new Client("client");
-        client.AddSecret(new ClientSecret(new SecretHash("secret-hash")));
+        var client = new Client("client", _time.GetUtcNow());
+        client.AddSecret(new ClientSecret(new SecretHash("secret-hash")), _time.GetUtcNow());
         
         repo.Add(client);
         await context.SaveChangesAsync();
