@@ -1,7 +1,7 @@
 namespace OpenAuth.Api.Dtos;
 
 public record ClientResponse(
-    Guid Id,
+    string Id,
     string Name,
     bool IsActive,
     IEnumerable<AudienceResponse> Audiences,

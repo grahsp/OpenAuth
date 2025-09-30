@@ -6,16 +6,16 @@ public sealed class Client
 {
     private Client() { }
 
-    public Client(string name, DateTimeOffset now)
+    public Client(ClientName name, DateTimeOffset now)
     {
-        SetName(name, false, now);
+        Name = name;
         CreatedAt = UpdatedAt = now;
     }
     
 
     // General
     public ClientId Id { get; init; } = ClientId.New();
-    public string Name { get; private set; } = null!;
+    public ClientName Name { get; private set; } = null!;
     public bool Enabled { get; private set; } = true;
     
     
@@ -99,30 +99,19 @@ public sealed class Client
         if (updated)
             Touch(now);
     }
-    
 
-    public void Rename(string name, DateTimeOffset now) => SetName(name, true, now);
 
-    private void SetName(string name, bool updateTimeStamp, DateTimeOffset now)
+    public void Rename(ClientName newName, DateTimeOffset now)
     {
-        ArgumentNullException.ThrowIfNull(name);
-        ArgumentException.ThrowIfNullOrWhiteSpace(name);
-        name = name.Trim();
+        ArgumentNullException.ThrowIfNull(newName);
         
-        const int min = 3, max = 24;
-        if (name.Length < min)
-            throw new ArgumentOutOfRangeException(nameof(name), $"Client name cannot be shorter than {min} characters.");
-        if (name.Length > max)
-            throw new ArgumentOutOfRangeException(nameof(name), $"Client name cannot be longer than {max} characters.");
-
-        if (name == Name)
+        if (newName == Name)
             return;
         
-        Name = name;
-        if (updateTimeStamp)
-            Touch(now);
+        Name = newName;
+        Touch(now);
     }
-    
+
     public void SetTokenLifetime(TimeSpan value, DateTimeOffset now)
     {
         if (value <= TimeSpan.Zero)

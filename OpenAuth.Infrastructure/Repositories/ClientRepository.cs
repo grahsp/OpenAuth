@@ -16,7 +16,7 @@ public class ClientRepository : IClientRepository
             .Include(x => x.Secrets)
             .SingleOrDefaultAsync(x => x.Id == id, cancellationToken);
 
-    public Task<Client?> GetByNameAsync(string name, CancellationToken cancellationToken = default)
+    public Task<Client?> GetByNameAsync(ClientName name, CancellationToken cancellationToken = default)
         => _context.Clients
             .Include(x => x.Secrets)
             .SingleOrDefaultAsync(x => x.Name == name, cancellationToken);

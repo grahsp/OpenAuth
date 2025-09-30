@@ -32,7 +32,7 @@ public class ClientServiceTests : IAsyncLifetime
         {
             var service = CreateSut();
 
-            var created = await service.RegisterAsync("client");
+            var created = await service.RegisterAsync(new ClientName("client"));
             var fetched = await service.GetByIdAsync(created.Id);
 
             Assert.NotNull(fetched);
@@ -54,9 +54,9 @@ public class ClientServiceTests : IAsyncLifetime
         {
             var service = CreateSut();
 
-            const string name = "client";
-            var created = await service.RegisterAsync(name);
-            var fetched = await service.GetByNameAsync(name);
+            var clientName = new ClientName("client");
+            var created = await service.RegisterAsync(clientName);
+            var fetched = await service.GetByNameAsync(clientName);
 
             Assert.NotNull(fetched);
             Assert.Equal(created.Id, fetched.Id);
@@ -68,7 +68,7 @@ public class ClientServiceTests : IAsyncLifetime
         {
             var service = CreateSut();
 
-            var fetched = await service.GetByNameAsync("missing-client");
+            var fetched = await service.GetByNameAsync(new ClientName("missing"));
             Assert.Null(fetched);
         }
     }
@@ -80,7 +80,7 @@ public class ClientServiceTests : IAsyncLifetime
         {
             var service = CreateSut();
 
-            var created = await service.RegisterAsync("client");
+            var created = await service.RegisterAsync(new ClientName("client"));
             var fetched = await service.GetByIdAsync(created.Id);
 
             Assert.NotNull(fetched);
@@ -93,16 +93,17 @@ public class ClientServiceTests : IAsyncLifetime
         {
             var service = CreateSut();
 
-            var client1 = await service.RegisterAsync("client-1");
-            var client2 = await service.RegisterAsync("client-2");
+            var clientA = await service.RegisterAsync(new ClientName("client-A"));
+            var clientB = await service.RegisterAsync(new ClientName("client-B"));
 
-            var fetched1 = await service.GetByIdAsync(client1.Id);
-            var fetched2 = await service.GetByIdAsync(client2.Id);
+            var fetchedA = await service.GetByIdAsync(clientA.Id);
+            var fetchedB = await service.GetByIdAsync(clientB.Id);
 
-            Assert.NotNull(fetched1);
-            Assert.NotNull(fetched2);
-            Assert.Equal(client1.Name, fetched1.Name);
-            Assert.Equal(client2.Name, fetched2.Name);
+            Assert.NotNull(fetchedA);
+            Assert.NotNull(fetchedB);
+            
+            Assert.Same(clientA, fetchedA);
+            Assert.Same(clientB, fetchedB);
         }
     }
     
@@ -113,18 +114,18 @@ public class ClientServiceTests : IAsyncLifetime
         {
             var service = CreateSut();
 
-            const string newName = "new-client";
-            const string oldName = "old-client";
+            var initialClientName = new ClientName("new-client");
+            var updatedClientName = new ClientName("old-client");
             
-            var client = await service.RegisterAsync(oldName);
-            var updated = await service.RenameAsync(client.Id, newName);
+            var client = await service.RegisterAsync(updatedClientName);
+            var updated = await service.RenameAsync(client.Id, initialClientName);
 
-            Assert.Equal(newName, updated.Name);
+            Assert.Equal(initialClientName, updated.Name);
 
             var fetched = await service.GetByIdAsync(client.Id);
 
             Assert.NotNull(fetched);
-            Assert.Equal(newName, fetched.Name);
+            Assert.Equal(initialClientName, fetched.Name);
         }
 
         [Fact]
@@ -133,7 +134,7 @@ public class ClientServiceTests : IAsyncLifetime
             var service = CreateSut();
 
             await Assert.ThrowsAsync<InvalidOperationException>(async () =>
-                await service.RenameAsync(ClientId.New(), "client"));
+                await service.RenameAsync(ClientId.New(), new ClientName("client")));
         }
     }
 
@@ -144,7 +145,7 @@ public class ClientServiceTests : IAsyncLifetime
         {
             var service = CreateSut();
 
-            var client = await service.RegisterAsync("client");
+            var client = await service.RegisterAsync(new ClientName("client"));
             
             var result = await service.DeleteAsync(client.Id);
             Assert.True(result);
@@ -167,8 +168,8 @@ public class ClientServiceTests : IAsyncLifetime
         {
             var service = CreateSut();
 
-            var client1 = await service.RegisterAsync("client-1");
-            var client2 = await service.RegisterAsync("client-2");
+            var client1 = await service.RegisterAsync(new ClientName("client-A"));
+            var client2 = await service.RegisterAsync(new ClientName("client-B"));
 
             var result = await service.DeleteAsync(client1.Id);
             Assert.True(result);
@@ -186,7 +187,7 @@ public class ClientServiceTests : IAsyncLifetime
         {
             var service = CreateSut();
 
-            var client = await service.RegisterAsync("client");
+            var client = await service.RegisterAsync(new ClientName("client"));
             await service.DisableAsync(client.Id);
 
             var updated = await service.EnableAsync(client.Id);
@@ -202,7 +203,7 @@ public class ClientServiceTests : IAsyncLifetime
         {
             var service = CreateSut();
 
-            var client = await service.RegisterAsync("client");
+            var client = await service.RegisterAsync(new ClientName("client"));
             var updated = await service.DisableAsync(client.Id);
 
             Assert.False(updated.Enabled);
@@ -239,7 +240,7 @@ public class ClientServiceTests : IAsyncLifetime
         public async Task GrantScopesAsync_AddsScopes_WhenClientExists()
         {
             var service = CreateSut();
-            var client = await service.RegisterAsync("client");
+            var client = await service.RegisterAsync(new ClientName("client"));
 
             var audience = new Audience("api");
             Scope[] scopes = [Read, Write];
@@ -272,7 +273,7 @@ public class ClientServiceTests : IAsyncLifetime
         public async Task GrantScopesAsync_Throws_WhenAudienceNotFound()
         {
             var service = CreateSut();
-            var client = await service.RegisterAsync("client");
+            var client = await service.RegisterAsync(new ClientName("client"));
             var audience = new Audience("api");
             Scope[] scopes = [Read];
 
@@ -284,7 +285,7 @@ public class ClientServiceTests : IAsyncLifetime
         public async Task GrantScopesAsync_Idempotent_WhenGrantingSameScopeTwice()
         {
             var service = CreateSut();
-            var client = await service.RegisterAsync("client");
+            var client = await service.RegisterAsync(new ClientName("client"));
 
             var audience = new Audience("api");
             Scope[] scopes = [Read];
@@ -309,7 +310,7 @@ public class ClientServiceTests : IAsyncLifetime
         public async Task RevokeScopesAsync_RemovesScopes_WhenClientExists()
         {
             var service = CreateSut();
-            var client = await service.RegisterAsync("client");
+            var client = await service.RegisterAsync(new ClientName("client"));
 
             var audience = new Audience("api");
             Scope[] scopes = [Read, Write];
@@ -344,7 +345,7 @@ public class ClientServiceTests : IAsyncLifetime
         public async Task RevokeScopesAsync_Throws_WhenAudienceNotFound()
         {
             var service = CreateSut();
-            var client = await service.RegisterAsync("client");
+            var client = await service.RegisterAsync(new ClientName("client"));
             var audience = new Audience("api");
             Scope[] scopes = [Read];
 
@@ -356,7 +357,7 @@ public class ClientServiceTests : IAsyncLifetime
         public async Task RevokeScopesAsync_DoesNothing_WhenScopeDoesNotExist()
         {
             var service = CreateSut();
-            var client = await service.RegisterAsync("client");
+            var client = await service.RegisterAsync(new ClientName("client"));
 
             var audience = new Audience("api");
             Scope[] scopes = [Read];
@@ -379,7 +380,7 @@ public class ClientServiceTests : IAsyncLifetime
         public async Task RemoveAudienceAsync_RemovesAudience_WhenClientExists()
         {
             var service = CreateSut();
-            var client = await service.RegisterAsync("client");
+            var client = await service.RegisterAsync(new ClientName("client"));
 
             var audience = new Audience("api");
             Scope[] scopes = [Read, Write];
@@ -410,7 +411,7 @@ public class ClientServiceTests : IAsyncLifetime
         public async Task RemoveAudienceAsync_DoesNothing_WhenAudienceDoesNotExist()
         {
             var service = CreateSut();
-            var client = await service.RegisterAsync("client");
+            var client = await service.RegisterAsync(new ClientName("client"));
 
             var updated = await service.TryRemoveAudienceAsync(client.Id, new Audience("missing"));
             Assert.Null(updated);
@@ -427,7 +428,7 @@ public class ClientServiceTests : IAsyncLifetime
         public async Task AddSecretAsync_AddsSecretAndReturnsPlainText()
         {
             var service = CreateSut();
-            var client = await service.RegisterAsync("client");
+            var client = await service.RegisterAsync(new ClientName("client"));
 
             var creationResult = await service.AddSecretAsync(client.Id);
             Assert.Equal("plain-secret-1", creationResult.Plain); // from FakeClientSecretFactory
@@ -450,7 +451,7 @@ public class ClientServiceTests : IAsyncLifetime
         public async Task AddSecretAsync_SetsExpiration_WhenProvided()
         {
             var service = CreateSut();
-            var client = await service.RegisterAsync("client");
+            var client = await service.RegisterAsync(new ClientName("client"));
 
             var expiresAt = DateTime.UtcNow.AddDays(7);
             await service.AddSecretAsync(client.Id, expiresAt);
@@ -471,7 +472,7 @@ public class ClientServiceTests : IAsyncLifetime
         public async Task RevokeSecretAsync_RevokesSecret_NotRemoves_WhenExists()
         {
             var service = CreateSut();
-            var client = await service.RegisterAsync("client");
+            var client = await service.RegisterAsync(new ClientName("client"));
 
             await service.AddSecretAsync(client.Id);
             var updated = await service.GetByIdAsync(client.Id);
@@ -502,7 +503,7 @@ public class ClientServiceTests : IAsyncLifetime
         public async Task RevokeSecretAsync_ReturnsFalse_WhenSecretNotFound()
         {
             var service = CreateSut();
-            var client = await service.RegisterAsync("client");
+            var client = await service.RegisterAsync(new ClientName("client"));
 
             var result = await service.RevokeSecretAsync(new SecretId(Guid.NewGuid()));
             Assert.False(result);
@@ -519,7 +520,7 @@ public class ClientServiceTests : IAsyncLifetime
         public async Task RemoveSecretAsync_RemovesSecret_WhenExists()
         {
             var service = CreateSut();
-            var client = await service.RegisterAsync("client");
+            var client = await service.RegisterAsync(new ClientName("client"));
 
             await service.AddSecretAsync(client.Id);
             var updated= await service.GetByIdAsync(client.Id);
@@ -546,7 +547,7 @@ public class ClientServiceTests : IAsyncLifetime
         public async Task RemoveSecretAsync_ReturnsFalse_WhenSecretNotFound()
         {
             var service = CreateSut();
-            var client = await service.RegisterAsync("client");
+            var client = await service.RegisterAsync(new ClientName("client"));
 
             var result = await service.RemoveSecretAsync(new SecretId(Guid.NewGuid()));
             Assert.False(result);

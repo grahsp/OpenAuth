@@ -12,28 +12,31 @@ namespace OpenAuth.Test.Unit.Security.Tokens;
 
 public class JwtTokenGeneratorTests
 {
-    private static readonly TimeProvider Time = new FakeTimeProvider();
+    private readonly FakeTimeProvider _time = new();
     
-    private static Client CreateClientWithScopes(string name, Audience audience, params Scope[] scopes)
+    private Client CreateClientWithScopes(string name, Audience audience, params Scope[] scopes)
     {
-        var client = new Client(name, Time.GetUtcNow());
-        client.TryAddAudience(audience, Time.GetUtcNow());
-        client.GrantScopes(audience, scopes, Time.GetUtcNow());
+        var now = _time.GetUtcNow();
+        var client = new Client(new ClientName(name), now);
+        
+        client.TryAddAudience(audience, now);
+        client.GrantScopes(audience, scopes, now);
+        
         return client;
     }
 
-    private static JwtTokenGenerator CreateSut()
+    private JwtTokenGenerator CreateSut()
         => new JwtTokenGenerator(
             Options.Create(new Auth { Issuer = "test-issuer" }),
             new FakeHmacSigningCredentialsFactory(),
-            Time
+            _time
         );
 
     [Fact]
     public void GenerateToken_IncludesExpectedClaims()
     {
         var sut = CreateSut();
-        var key = TestSigningKey.CreateHmacSigningKey(Time);
+        var key = TestSigningKey.CreateHmacSigningKey(_time);
         var audience = new Audience("api");
         var scope = new Scope("read");
         var client = CreateClientWithScopes("client123", audience, scope);
@@ -52,7 +55,7 @@ public class JwtTokenGeneratorTests
     public void GenerateToken_Throws_WhenSigningKeyInactive()
     {
         var sut = CreateSut();
-        var key = TestSigningKey.CreateRsaSigningKey(Time.GetUtcNow().DateTime, Time.GetUtcNow().DateTime.AddSeconds(-1));
+        var key = TestSigningKey.CreateRsaSigningKey(_time.GetUtcNow().DateTime, _time.GetUtcNow().DateTime.AddSeconds(-1));
         var audience = new Audience("api");
         var scope = new Scope("read");
         var client = CreateClientWithScopes("client123", audience, scope);
@@ -65,8 +68,8 @@ public class JwtTokenGeneratorTests
     public void GenerateToken_Throws_WhenAudienceNotAllowed()
     {
         var sut = CreateSut();
-        var key = TestSigningKey.CreateRsaSigningKey(Time);
-        var client = new Client("client123", Time.GetUtcNow());
+        var key = TestSigningKey.CreateRsaSigningKey(_time);
+        var client = new Client(new ClientName("test"), _time.GetUtcNow());
 
         Assert.Throws<InvalidOperationException>(() =>
             sut.GenerateToken(client, new Audience("api"), [new Scope("read")], key));
@@ -76,7 +79,7 @@ public class JwtTokenGeneratorTests
     public void GenerateToken_Throws_WhenInvalidScopeRequested()
     {
         var sut = CreateSut();
-        var key = TestSigningKey.CreateHmacSigningKey(Time);
+        var key = TestSigningKey.CreateHmacSigningKey(_time);
         var audience = new Audience("api");
         var client = CreateClientWithScopes("client123", audience, new Scope("read"));
 

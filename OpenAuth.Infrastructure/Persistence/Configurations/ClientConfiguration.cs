@@ -24,7 +24,10 @@ public class ClientConfiguration : IEntityTypeConfiguration<Client>
             .IsUnique();
             
         builder.Property(x => x.Name)
-            .HasMaxLength(64)
+            .HasConversion(
+                name => name.Value,
+                value => new ClientName(value))
+            .ValueGeneratedNever()
             .IsRequired();
 
         // Audience & Scopes

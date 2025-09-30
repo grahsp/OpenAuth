@@ -23,7 +23,7 @@ public class ClientServiceTests
         public async Task GetByIdAsync_ReturnsClient_WhenExists()
         {
             var service = CreateSut();
-            var created = await service.RegisterAsync("client");
+            var created = await service.RegisterAsync(new ClientName("test"));
 
             var result = await service.GetByIdAsync(created.Id);
 
@@ -42,10 +42,11 @@ public class ClientServiceTests
         [Fact]
         public async Task GetByNameAsync_ReturnsClient_WhenExists()
         {
-            const string clientName = "client";
             var service = CreateSut();
+            
+            var clientName = new ClientName("test");
+            
             var created = await service.RegisterAsync(clientName);
-
             var result = await service.GetByNameAsync(clientName);
 
             Assert.NotNull(result);
@@ -56,7 +57,7 @@ public class ClientServiceTests
         public async Task GetByNameAsync_ReturnsNull_WhenNotExists()
         {
             var service = CreateSut();
-            var result = await service.GetByNameAsync("missing");
+            var result = await service.GetByNameAsync(new ClientName("missing"));
             Assert.Null(result);
         }
     }
@@ -68,7 +69,7 @@ public class ClientServiceTests
         public async Task RegisterAsync_AddsClient()
         {
             var service = CreateSut();
-            var client = await service.RegisterAsync("client");
+            var client = await service.RegisterAsync(new ClientName("test"));
 
             Assert.NotNull(await service.GetByIdAsync(client.Id));
             Assert.True(_repo.Saved);
@@ -77,13 +78,13 @@ public class ClientServiceTests
         [Fact]
         public async Task RenameAsync_ChangesName()
         {
-            const string updatedClientName = "cool client";
             var service = CreateSut();
-            var client = await service.RegisterAsync("client");
+            
+            var expectedName = new ClientName("cool client");
+            var client = await service.RegisterAsync(new ClientName("test"));
 
-            var renamed = await service.RenameAsync(client.Id, updatedClientName);
-
-            Assert.Equal((string?)updatedClientName, (string?)renamed.Name);
+            var renamed = await service.RenameAsync(client.Id, expectedName);
+            Assert.Equal(expectedName, renamed.Name);
         }
 
         [Fact]
@@ -91,14 +92,14 @@ public class ClientServiceTests
         {
             var service = CreateSut();
             await Assert.ThrowsAsync<InvalidOperationException>(
-                () => service.RenameAsync(ClientId.New(), "client"));
+                () => service.RenameAsync(ClientId.New(), new ClientName("test")));
         }
 
         [Fact]
         public async Task DeleteAsync_RemovesClient()
         {
             var service = CreateSut();
-            var client = await service.RegisterAsync("client");
+            var client = await service.RegisterAsync(new ClientName("test"));
 
             var result = await service.DeleteAsync(client.Id);
 
@@ -122,7 +123,7 @@ public class ClientServiceTests
         public async Task EnableDisable_TogglesEnabled()
         {
             var service = CreateSut();
-            var client = await service.RegisterAsync("client");
+            var client = await service.RegisterAsync(new ClientName("test"));
 
             var disabled = await service.DisableAsync(client.Id);
             Assert.False(disabled.Enabled);
@@ -155,7 +156,7 @@ public class ClientServiceTests
         public async Task GrantAndRevokeScopes_ModifiesClientScopes()
         {
             var service = CreateSut();
-            var client = await service.RegisterAsync("client");
+            var client = await service.RegisterAsync(new ClientName("test"));
             var aud = new Audience("api");
             client.TryAddAudience(aud, _time.GetUtcNow());
 
@@ -182,7 +183,7 @@ public class ClientServiceTests
         public async Task RemoveAudience_RemovesAllScopes()
         {
             var service = CreateSut();
-            var client = await service.RegisterAsync("client");
+            var client = await service.RegisterAsync(new ClientName("test"));
             var aud = new Audience("api");
             client.TryAddAudience(aud, _time.GetUtcNow());
             
@@ -201,7 +202,7 @@ public class ClientServiceTests
         public async Task AddSecretAsync_PersistsSecretWithProperties()
         {
             var service = CreateSut();
-            var client = await service.RegisterAsync("client");
+            var client = await service.RegisterAsync(new ClientName("test"));
 
             var creationResult = await service.AddSecretAsync(client.Id);
 
@@ -222,7 +223,7 @@ public class ClientServiceTests
         public async Task RevokeSecretAsync_RevokesSecret_WhenClientAndSecretExist()
         {
             var service = CreateSut();
-            var client = await service.RegisterAsync("client");
+            var client = await service.RegisterAsync(new ClientName("test"));
             _ = await service.AddSecretAsync(client.Id);
             var secret = client.Secrets.First();
 
@@ -244,7 +245,7 @@ public class ClientServiceTests
         public async Task RemoveSecretAsync_RemovesSecret_WhenClientAndSecretExist()
         {
             var service = CreateSut();
-            var client = await service.RegisterAsync("client");
+            var client = await service.RegisterAsync(new ClientName("test"));
             
             await service.AddSecretAsync(client.Id);
             var secret = client.Secrets.First();

@@ -19,10 +19,10 @@ public class ClientService : IClientService
     public async Task<Client?> GetByIdAsync(ClientId id, CancellationToken cancellationToken = default) =>
         await _repository.GetByIdAsync(id, cancellationToken);
     
-    public async Task<Client?> GetByNameAsync(string name, CancellationToken cancellationToken = default) =>
+    public async Task<Client?> GetByNameAsync(ClientName name, CancellationToken cancellationToken = default) =>
         await _repository.GetByNameAsync(name, cancellationToken);
 
-    public async Task<Client> RegisterAsync(string name, CancellationToken cancellationToken = default)
+    public async Task<Client> RegisterAsync(ClientName name, CancellationToken cancellationToken = default)
     {
         var client = new Client(name, _time.GetUtcNow());
         _repository.Add(client);
@@ -31,7 +31,7 @@ public class ClientService : IClientService
         return client;
     }
     
-    public async Task<Client> RenameAsync(ClientId id, string name, CancellationToken cancellationToken = default)
+    public async Task<Client> RenameAsync(ClientId id, ClientName name, CancellationToken cancellationToken = default)
     {
         var client = await _repository.GetByIdAsync(id, cancellationToken)
                      ?? throw new InvalidOperationException("Client not found.");

@@ -12,7 +12,7 @@ public class ClientTests
     [Fact]
     public void Constructor_SetsDefaults()
     {
-        const string clientName = "App";
+        var clientName = new ClientName("App");
         var now = Time.GetUtcNow();
         var client = new Client(clientName, now);
 
@@ -32,7 +32,7 @@ public class ClientTests
         [Fact]
         public void GrantScopes_AddsScopes_AddScopes_NoDuplicates()
         {
-            var client = new Client("App", Time.GetUtcNow());
+            var client = new Client(new ClientName("App"), Time.GetUtcNow());
             var aud = new Audience("api");
             var read = new Scope("read");
             var write = new Scope("write");
@@ -51,7 +51,7 @@ public class ClientTests
         public void GrantScopes_TouchUpdatedAt()
         {
             var now = Time.GetUtcNow();
-            var client = new Client("App", now);
+            var client = new Client(new ClientName("App"), now);
             
             var aud = new Audience("api");
             var read = new Scope("read");
@@ -70,7 +70,7 @@ public class ClientTests
         [Fact]
         public void RevokeScopes_RemovesScopes_RemoveAllButOneScope_AudienceRemains()
         {
-            var client = new Client("App", Time.GetUtcNow());
+            var client = new Client(new ClientName("App"), Time.GetUtcNow());
             var aud = new Audience("api");
             var read = new Scope("read");
             var write = new Scope("write");
@@ -88,7 +88,7 @@ public class ClientTests
         [Fact]
         public void RevokeScopes_TouchUpdatedAt()
         {
-            var client = new Client("App", Time.GetUtcNow());
+            var client = new Client(new ClientName("App"), Time.GetUtcNow());
             var aud = new Audience("api");
             var read = new Scope("read");
             
@@ -105,7 +105,7 @@ public class ClientTests
         [Fact]
         public void RevokeScopes_NoOp_DoesNotTouchUpdatedAt()
         {
-            var client = new Client("App", Time.GetUtcNow());
+            var client = new Client(new ClientName("App"), Time.GetUtcNow());
             var aud = new Audience("unknown");
             client.TryAddAudience(aud, Time.GetUtcNow());
 
@@ -121,7 +121,7 @@ public class ClientTests
         [Fact]
         public void ReturnsTrue_WhenAudienceDoesNotExists()
         {
-            var client = new Client("App", Time.GetUtcNow());
+            var client = new Client(new ClientName("App"), Time.GetUtcNow());
             var api = new Audience("api");
 
             var result = client.TryAddAudience(api, Time.GetUtcNow());
@@ -133,7 +133,7 @@ public class ClientTests
         [Fact]
         public void ReturnsFalse_WhenAudienceAlreadyExists()
         {
-            var client = new Client("App", Time.GetUtcNow());
+            var client = new Client(new ClientName("App"), Time.GetUtcNow());
             
             // Ensure adding is not done by reference
             var apiA = new Audience("api");
@@ -149,7 +149,7 @@ public class ClientTests
         [Fact]
         public void ReturnsFalse_WhenAudienceExistWithDifferentCasing()
         {
-            var client = new Client("App", Time.GetUtcNow());
+            var client = new Client(new ClientName("App"), Time.GetUtcNow());
             
             // Ensure adding is not done by reference
             var apiA = new Audience("api");
@@ -165,7 +165,7 @@ public class ClientTests
         [Fact]
         public void Throws_WhenAudienceIsNull()
         {
-            var client = new Client("App", Time.GetUtcNow());
+            var client = new Client(new ClientName("App"), Time.GetUtcNow());
             
             Assert.Throws<ArgumentNullException>(()
                 => client.TryAddAudience(null!, Time.GetUtcNow()));
@@ -174,7 +174,7 @@ public class ClientTests
         [Fact]
         public void UpdatesUpdatedAt_WhenAudienceIsAdded()
         {
-            var client = new Client("App", Time.GetUtcNow());
+            var client = new Client(new ClientName("App"), Time.GetUtcNow());
             var api = new Audience("api");
 
             Time.Advance(TimeSpan.FromSeconds(1));
@@ -189,7 +189,7 @@ public class ClientTests
         public void DoesNotUpdateUpdatedAt_WhenAudienceAlreadyExists()
         {
             var now = Time.GetUtcNow();
-            var client = new Client("App", now);
+            var client = new Client(new ClientName("App"), now);
             var api = new Audience("api");
             
             client.TryAddAudience(api, now);
@@ -208,7 +208,7 @@ public class ClientTests
         [Fact]
         public void TryRemoveAudience_RemovesAudience_AndScopes()
         {
-            var client = new Client("App", Time.GetUtcNow());
+            var client = new Client(new ClientName("App"), Time.GetUtcNow());
             var aud = new Audience("api");
             var read = new Scope("read");
             var write = new Scope("write");
@@ -224,7 +224,7 @@ public class ClientTests
         [Fact]
         public void TryRemoveAudience_ThrowsWhen_Null()
         {
-            var client = new Client("App", Time.GetUtcNow());
+            var client = new Client(new ClientName("App"), Time.GetUtcNow());
             
             Assert.Throws<ArgumentNullException>(()
                 => client.TryRemoveAudience(null!, Time.GetUtcNow()));
@@ -234,7 +234,7 @@ public class ClientTests
         public void TryRemoveAudience_TouchUpdatedAt()
         {
             var now = Time.GetUtcNow();
-            var client = new Client("App", now);
+            var client = new Client(new ClientName("App"), now);
             
             var aud = new Audience("api");
             client.TryAddAudience(aud, now);
@@ -250,7 +250,7 @@ public class ClientTests
         [Fact]
         public void TryRemoveAudience_NoOp_DoesNotTouchUpdatedAt()
         {
-            var client = new Client("App", Time.GetUtcNow());
+            var client = new Client(new ClientName("App"), Time.GetUtcNow());
             var aud = new Audience("api");
 
             var before = client.UpdatedAt;
@@ -266,55 +266,30 @@ public class ClientTests
         [Fact]
         public void Rename_UpdateName_WhenValid()
         {
-            var client = new Client("App", Time.GetUtcNow());
-            const string name = "New App";
+            var client = new Client(new ClientName("App"), Time.GetUtcNow());
+            var newClientName = new ClientName("New App");
             
-            client.Rename(name, Time.GetUtcNow());
-            Assert.Equal(name, client.Name);
+            client.Rename(newClientName, Time.GetUtcNow());
+            Assert.Equal(newClientName, client.Name);
         }
         
         [Fact]
         public void Rename_ThrowsWhen_Null()
         {
-            var client = new Client("App", Time.GetUtcNow());
+            var client = new Client(new ClientName("App"), Time.GetUtcNow());
             
             Assert.Throws<ArgumentNullException>(() =>
                 client.Rename(null!, Time.GetUtcNow()));
         }
 
         [Fact]
-        public void Rename_ThrowsWhen_ValueTooShort()
-        {
-            var client = new Client("App", Time.GetUtcNow());
-            
-            Assert.Throws<ArgumentOutOfRangeException>(() =>
-                client.Rename("A", Time.GetUtcNow()));
-        }
-        
-        [Fact]
-        public void Rename_ThrowsWhen_ValueTooLong()
-        {
-            var client = new Client("App", Time.GetUtcNow());
-            Assert.Throws<ArgumentOutOfRangeException>(() =>
-                client.Rename(new string('a', 64), Time.GetUtcNow()));
-        }
-        
-        [Fact]
-        public void Rename_ThrowsWhen_ValueWhitespace()
-        {
-            var client = new Client("App", Time.GetUtcNow());
-            Assert.Throws<ArgumentException>(() =>
-                client.Rename(new string(' ', 16), Time.GetUtcNow()));
-        }
-
-        [Fact]
         public void Rename_TouchUpdatedAt()
         {
-            var client = new Client("App", Time.GetUtcNow());
+            var client = new Client(new ClientName("App"), Time.GetUtcNow());
             
             Time.Advance(TimeSpan.FromSeconds(1));
             var expected = Time.GetUtcNow();
-            client.Rename("Anything", expected);
+            client.Rename(new ClientName("client"), expected);
             
             Assert.Equal(expected, client.UpdatedAt);
         }
@@ -323,7 +298,7 @@ public class ClientTests
         public void Rename_NoOp_DoesNotTouchUpdatedAt()
         {
             var now = Time.GetUtcNow();
-            var client = new Client("App", now);
+            var client = new Client(new ClientName("App"), now);
             
             Time.Advance(TimeSpan.FromSeconds(1));
             var updatedTime = Time.GetUtcNow();
@@ -339,7 +314,7 @@ public class ClientTests
         [Fact]
         public void SetTokenLifetime_SetTokenLifetime_WhenValid()
         {
-            var client = new Client("App", Time.GetUtcNow());
+            var client = new Client(new ClientName("App"), Time.GetUtcNow());
             var newLifetime = TimeSpan.FromSeconds(1);
             
             client.SetTokenLifetime(newLifetime, Time.GetUtcNow());
@@ -350,7 +325,7 @@ public class ClientTests
         [Fact]
         public void SetTokenLifetime_ThrowsOn_ZeroValue()
         {
-            var client = new Client("App", Time.GetUtcNow());
+            var client = new Client(new ClientName("App"), Time.GetUtcNow());
             Assert.Throws<ArgumentOutOfRangeException>(()
                 => client.SetTokenLifetime(TimeSpan.Zero, Time.GetUtcNow()));
         }
@@ -358,7 +333,7 @@ public class ClientTests
         [Fact]
         public void SetTokenLifetime_TouchUpdatedAt()
         {
-            var client = new Client("App", Time.GetUtcNow());
+            var client = new Client(new ClientName("App"), Time.GetUtcNow());
             
             Time.Advance(TimeSpan.FromSeconds(1));
             var expected = Time.GetUtcNow();
@@ -370,7 +345,7 @@ public class ClientTests
         [Fact]
         public void SetTokenLifetime_NoOp_DoesNotTouchUpdatedAt()
         {
-            var client = new Client("App", Time.GetUtcNow());
+            var client = new Client(new ClientName("App"), Time.GetUtcNow());
             
             var before = client.UpdatedAt;
             client.SetTokenLifetime(client.TokenLifetime, Time.GetUtcNow());
@@ -384,7 +359,7 @@ public class ClientTests
         [Fact]
         public void AddSecret_Adds_Secret_To_Client()
         {
-            var client = new Client("App", Time.GetUtcNow());
+            var client = new Client(new ClientName("App"), Time.GetUtcNow());
             var secret = new ClientSecret(new SecretHash("v1$1$abc$xyz"));
 
             client.AddSecret(secret, Time.GetUtcNow());
@@ -395,7 +370,7 @@ public class ClientTests
         [Fact]
         public void AddSecret_Updates_Timestamp()
         {
-            var client = new Client("App", Time.GetUtcNow());
+            var client = new Client(new ClientName("App"), Time.GetUtcNow());
             var secret = new ClientSecret(new SecretHash("v1$1$abc$xyz"));
             
             Time.Advance(TimeSpan.FromSeconds(1));
@@ -408,7 +383,7 @@ public class ClientTests
         [Fact]
         public void AddSecret_DoesNot_Update_After_Exception()
         {
-            var client = new Client("App", Time.GetUtcNow());
+            var client = new Client(new ClientName("App"), Time.GetUtcNow());
             var secret = new ClientSecret(new SecretHash("v1$1$abc$xyz"));
             client.AddSecret(secret, Time.GetUtcNow());
 
@@ -420,14 +395,14 @@ public class ClientTests
         [Fact]
         public void AddSecret_Throws_When_Null()
         {
-            var client = new Client("App", Time.GetUtcNow());
+            var client = new Client(new ClientName("App"), Time.GetUtcNow());
             Assert.Throws<ArgumentNullException>(() => client.AddSecret(null!, Time.GetUtcNow()));
         }
         
         [Fact]
         public void AddSecret_Throws_When_Duplicate_Id()
         {
-            var client = new Client("App", Time.GetUtcNow());
+            var client = new Client(new ClientName("App"), Time.GetUtcNow());
             var secret = new ClientSecret(new SecretHash("v1$1$abc$xyz"));
 
             client.AddSecret(secret, Time.GetUtcNow());
@@ -442,7 +417,7 @@ public class ClientTests
         [Fact]
         public void RevokeSecret_Revokes_If_Exists()
         {
-            var client = new Client("App", Time.GetUtcNow());
+            var client = new Client(new ClientName("App"), Time.GetUtcNow());
             var secret = new ClientSecret(new SecretHash("v1$1$abc$xyz"));
             client.AddSecret(secret, Time.GetUtcNow());
 
@@ -455,7 +430,7 @@ public class ClientTests
         [Fact]
         public void RevokeSecret_DoesNothing_If_NotFound()
         {
-            var client = new Client("App", Time.GetUtcNow());
+            var client = new Client(new ClientName("App"), Time.GetUtcNow());
             var secret = new ClientSecret(new SecretHash("v1$1$abc$xyz"));
 
             client.RevokeSecret(secret.Id, Time.GetUtcNow());
@@ -466,7 +441,7 @@ public class ClientTests
         public void RevokeSecret_Updates_Timestamp_If_Exists()
         {
             var now = Time.GetUtcNow();
-            var client = new Client("App", now);
+            var client = new Client(new ClientName("App"), now);
             
             var secret = new ClientSecret(new SecretHash("v1$1$abc$xyz"));
             client.AddSecret(secret, now);
@@ -481,7 +456,7 @@ public class ClientTests
         [Fact]
         public void RevokeSecret_DoesNot_Update_Timestamp_If_NotFound()
         {
-            var client = new Client("App", Time.GetUtcNow());
+            var client = new Client(new ClientName("App"), Time.GetUtcNow());
 
             var before = client.UpdatedAt;
             client.RevokeSecret(SecretId.New(), Time.GetUtcNow());
@@ -495,7 +470,7 @@ public class ClientTests
         [Fact]
         public void RemoveSecret_Removes_If_Exists()
         {
-            var client = new Client("App", Time.GetUtcNow());
+            var client = new Client(new ClientName("App"), Time.GetUtcNow());
             var secret = new ClientSecret(new SecretHash("v1$1$abc$xyz"));
             client.AddSecret(secret, Time.GetUtcNow());
 
@@ -507,7 +482,7 @@ public class ClientTests
         [Fact]
         public void RemoveSecret_DoesNothing_If_NotFound()
         {
-            var client = new Client("App", Time.GetUtcNow());
+            var client = new Client(new ClientName("App"), Time.GetUtcNow());
             var secret = new ClientSecret(new SecretHash("v1$1$abc$xyz"));
 
             client.RemoveSecret(secret.Id, Time.GetUtcNow());
@@ -519,7 +494,7 @@ public class ClientTests
         public void RemoveSecret_Updates_Timestamp_If_Exists()
         {
             var now = Time.GetUtcNow();
-            var client = new Client("App", now);
+            var client = new Client(new ClientName("App"), now);
             
             var secret = new ClientSecret(new SecretHash("v1$1$abc$xyz"));
             client.AddSecret(secret, now);
@@ -534,7 +509,7 @@ public class ClientTests
         [Fact]
         public void RemoveSecret_DoesNot_Update_Timestamp_If_NotFound()
         {
-            var client = new Client("App", Time.GetUtcNow());
+            var client = new Client(new ClientName("App"), Time.GetUtcNow());
 
             var before = client.UpdatedAt;
             client.RemoveSecret(SecretId.New(), Time.GetUtcNow());
@@ -548,7 +523,7 @@ public class ClientTests
         [Fact]
         public void ActiveSecrets_Only_Returns_NonRevoked_And_NonExpired()
         {
-            var client = new Client("App", Time.GetUtcNow());
+            var client = new Client(new ClientName("App"), Time.GetUtcNow());
             var active = new ClientSecret(new SecretHash("v1$1$abc$xyz"), DateTime.UtcNow.AddMinutes(5));
             var expired = new ClientSecret(new SecretHash("v1$1$abc$xyz"), DateTime.UtcNow.AddMinutes(-5));
             var revoked = new ClientSecret(new SecretHash("v1$1$abc$xyz"), DateTime.UtcNow.AddMinutes(5));
@@ -568,7 +543,7 @@ public class ClientTests
         [Fact]
         public void Revoke_Secret_Changes_ActiveSecrets_Result()
         {
-            var client = new Client("App", Time.GetUtcNow());
+            var client = new Client(new ClientName("App"), Time.GetUtcNow());
             var secret = new ClientSecret(new SecretHash("v1$1$abc$xyz"), DateTime.UtcNow.AddMinutes(5));
             client.AddSecret(secret, Time.GetUtcNow());
 
@@ -585,7 +560,7 @@ public class ClientTests
         [Fact]
         public void EnableAndDisable_TogglesEnable_And_TouchUpdatedAt()
         {
-            var client = new Client("App", Time.GetUtcNow());
+            var client = new Client(new ClientName("App"), Time.GetUtcNow());
             
             // Act - Disable
             Time.Advance(TimeSpan.FromSeconds(1));
@@ -607,7 +582,7 @@ public class ClientTests
         [Fact]
         public void Enable_NoOp_DoesNotTouchUpdatedAt()
         {
-            var client = new Client("App", Time.GetUtcNow());
+            var client = new Client(new ClientName("App"), Time.GetUtcNow());
             var before = client.UpdatedAt;
 
             client.Enable(Time.GetUtcNow());
@@ -617,7 +592,7 @@ public class ClientTests
         [Fact]
         public void Disable_NoOup_DoesNotTouchUpdatedAt()
         {
-            var client = new Client("App", Time.GetUtcNow());
+            var client = new Client(new ClientName("App"), Time.GetUtcNow());
             client.Disable(Time.GetUtcNow());
             
             var before = client.UpdatedAt;
