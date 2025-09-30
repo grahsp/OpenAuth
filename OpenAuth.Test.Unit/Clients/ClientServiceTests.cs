@@ -1,6 +1,5 @@
+using Microsoft.Extensions.Time.Testing;
 using OpenAuth.Application.Clients;
-using OpenAuth.Application.Security.Keys;
-using OpenAuth.Domain.Enums;
 using OpenAuth.Domain.ValueObjects;
 using OpenAuth.Test.Common.Fakes;
 
@@ -10,8 +9,9 @@ public class ClientServiceTests
 {
     private readonly FakeClientRepository _repo = new();
     private readonly IClientSecretFactory _secretFactory = new FakeClientSecretFactory();
+    private readonly TimeProvider _time = new FakeTimeProvider();
 
-    private ClientService CreateSut() => new(_repo, _secretFactory);
+    private ClientService CreateSut() => new(_repo, _secretFactory, _time);
 
     private readonly Scope _read = new("read");
     private readonly Scope _write = new("write");
@@ -157,7 +157,7 @@ public class ClientServiceTests
             var service = CreateSut();
             var client = await service.RegisterAsync("client");
             var aud = new Audience("api");
-            client.TryAddAudience(aud);
+            client.TryAddAudience(aud, _time.GetUtcNow());
 
             var afterGrant = await service.GrantScopesAsync(client.Id, aud, [_read, _write]);
             Assert.Contains(_read, afterGrant.GetAllowedScopes(aud));
@@ -184,7 +184,7 @@ public class ClientServiceTests
             var service = CreateSut();
             var client = await service.RegisterAsync("client");
             var aud = new Audience("api");
-            client.TryAddAudience(aud);
+            client.TryAddAudience(aud, _time.GetUtcNow());
             
             await service.GrantScopesAsync(client.Id, aud, [_read]);
 
