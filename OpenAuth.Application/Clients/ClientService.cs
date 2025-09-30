@@ -36,7 +36,7 @@ public class ClientService : IClientService
         var client = await _repository.GetByIdAsync(id, cancellationToken)
                      ?? throw new InvalidOperationException("Client not found.");
         
-        client.Rename(name);
+        client.Rename(name, _time.GetUtcNow());
         await _repository.SaveChangesAsync(cancellationToken);
 
         return client;
@@ -60,7 +60,7 @@ public class ClientService : IClientService
         var client = await _repository.GetByIdAsync(id, cancellationToken)
                      ?? throw new InvalidOperationException("Client not found.");
         
-        client.Enable();
+        client.Enable(_time.GetUtcNow());
         await _repository.SaveChangesAsync(cancellationToken);
 
         return client;
@@ -71,7 +71,7 @@ public class ClientService : IClientService
         var client = await _repository.GetByIdAsync(id, cancellationToken)
                      ?? throw new InvalidOperationException("Client not found.");
         
-        client.Disable();
+        client.Disable(_time.GetUtcNow());
         await _repository.SaveChangesAsync(cancellationToken);
 
         return client;
@@ -85,7 +85,7 @@ public class ClientService : IClientService
         if (client is null)
             return null;
 
-        var added = client.TryAddAudience(audience);
+        var added = client.TryAddAudience(audience, _time.GetUtcNow());
         if (!added)
             return null;
         
@@ -99,7 +99,7 @@ public class ClientService : IClientService
         if (client is null)
             return null;
 
-        var removed = client.TryRemoveAudience(audience);
+        var removed = client.TryRemoveAudience(audience, _time.GetUtcNow());
         if (!removed)
             return null;
         
@@ -112,7 +112,7 @@ public class ClientService : IClientService
         var client = await _repository.GetByIdAsync(id, cancellationToken)
             ?? throw new InvalidOperationException("Client not found.");
         
-        client.SetScopes(audience);
+        client.SetScopes(audience, scopes, _time.GetUtcNow());
         await _repository.SaveChangesAsync(cancellationToken);
 
         return client;
@@ -124,7 +124,7 @@ public class ClientService : IClientService
         var client = await _repository.GetByIdAsync(id, cancellationToken)
                      ?? throw new InvalidOperationException("Client not found.");
         
-        client.GrantScopes(audience, scopes);
+        client.GrantScopes(audience, scopes, _time.GetUtcNow());
         await _repository.SaveChangesAsync(cancellationToken);
 
         return client;
@@ -136,7 +136,7 @@ public class ClientService : IClientService
         var client = await _repository.GetByIdAsync(id, cancellationToken)
                      ?? throw new InvalidOperationException("Client not found.");
         
-        client.RevokeScopes(audience, scopes);
+        client.RevokeScopes(audience, scopes, _time.GetUtcNow());
         await _repository.SaveChangesAsync(cancellationToken);
 
         return client;
@@ -152,7 +152,7 @@ public class ClientService : IClientService
                      ?? throw new InvalidOperationException("Client not found.");
         
         var creationResult = _secretFactory.Create(expiresAt);
-        client.AddSecret(creationResult.Secret);
+        client.AddSecret(creationResult.Secret, _time.GetUtcNow());
 
         await _repository.SaveChangesAsync(cancellationToken);
         return creationResult;
@@ -164,7 +164,7 @@ public class ClientService : IClientService
         if (client is null)
             return false;
         
-        client.RevokeSecret(secretId);
+        client.RevokeSecret(secretId, _time.GetUtcNow());
         await _repository.SaveChangesAsync(cancellationToken);
         
         return true;
@@ -176,7 +176,7 @@ public class ClientService : IClientService
         if (client is null)
             return false;
         
-        client.RemoveSecret(secretId);
+        client.RemoveSecret(secretId, _time.GetUtcNow());
         await _repository.SaveChangesAsync(cancellationToken);
 
         return true;
