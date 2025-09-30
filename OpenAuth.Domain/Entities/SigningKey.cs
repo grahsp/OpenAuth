@@ -15,7 +15,7 @@ public class SigningKey
     /// <param name="keyMaterial">The data to generate and validate tokens.</param>
     /// <param name="createdAt">The UTC time when the key was created.</param>
     /// <param name="expiresAt">The UTC time when the key expires.</param> 
-    public SigningKey(KeyMaterial keyMaterial, DateTime createdAt, DateTime expiresAt)
+    public SigningKey(KeyMaterial keyMaterial, DateTimeOffset createdAt, DateTimeOffset expiresAt)
     {
         Id = SigningKeyId.New();
         KeyMaterial = keyMaterial;
@@ -36,30 +36,30 @@ public class SigningKey
     /// <summary>
     /// Gets the time when the key was created.
     /// </summary>
-    public DateTime CreatedAt { get; private init; }
+    public DateTimeOffset CreatedAt { get; private init; }
     
     /// <summary>
     /// Gets the time when the key expires.
     /// </summary>
-    public DateTime ExpiresAt { get; private init; }
+    public DateTimeOffset ExpiresAt { get; private init; }
     
     /// <summary>
     /// Gets the time when the key was revoked, if any.
     /// </summary>
-    public DateTime? RevokedAt { get; private set; }
+    public DateTimeOffset? RevokedAt { get; private set; }
 
     
     
     /// <summary>
     /// Determines whether this key is currently active (not revoked and not expired).
     /// </summary>
-    public bool IsActive(DateTime now)
+    public bool IsActive(DateTimeOffset now)
         => !HasExpired(now) && !IsRevoked();
 
     /// <summary>
     /// Determines whether this key has expired at the given point in time.
     /// </summary>
-    public bool HasExpired(DateTime now)
+    public bool HasExpired(DateTimeOffset now)
         => ExpiresAt <= now;
 
     /// <summary>
@@ -73,7 +73,7 @@ public class SigningKey
     /// </summary>
     /// <param name="now">The time of revocation.</param>
     /// <returns><c>true</c> if the key was successfully revoked; otherwise <c>false</c>.</returns>
-    public bool Revoke(DateTime now)
+    public bool Revoke(DateTimeOffset now)
     {
         if (RevokedAt is not null)
             return false;

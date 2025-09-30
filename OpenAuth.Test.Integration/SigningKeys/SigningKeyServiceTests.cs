@@ -15,9 +15,11 @@ public class SigningKeyServiceTests : IAsyncLifetime
     public SigningKeyServiceTests(SqlServerFixture fx)
     {
         _fx = fx;
+        _time = new FakeTimeProvider();
     }
     
     private readonly SqlServerFixture _fx;
+    private readonly TimeProvider _time;
     
 
     public async Task InitializeAsync()
@@ -29,7 +31,7 @@ public class SigningKeyServiceTests : IAsyncLifetime
     private SigningKeyService CreateSut()
     {
         var context = _fx.CreateContext();
-        return new SigningKeyService(new SigningKeyRepository(context), new FakeSigningKeyFactory(), new FakeTimeProvider());
+        return new SigningKeyService(new SigningKeyRepository(context), new FakeSigningKeyFactory(), _time);
     }
     
     public class GetByIdAsync(SqlServerFixture fx) : SigningKeyServiceTests(fx)
@@ -160,10 +162,10 @@ public class SigningKeyServiceTests : IAsyncLifetime
         {
             var service = CreateSut();
             
-            await service.CreateAsync(SigningAlgorithm.RS256, TimeSpan.FromDays(30));
+            await service.CreateAsync(SigningAlgorithm.RS256, TimeSpan.FromDays(-1));
             
             var fetched = await service.GetAllAsync();
-            Assert.False(fetched.First().IsActive(DateTime.MaxValue));
+            Assert.False(fetched.First().IsActive(_time.GetUtcNow()));
         }
         
         [Fact]
@@ -175,7 +177,7 @@ public class SigningKeyServiceTests : IAsyncLifetime
             await service.RevokeAsync(revoked.Id);
             
             var fetched = await service.GetAllAsync();
-            Assert.False(fetched.First().IsActive(DateTime.MinValue));
+            Assert.False(fetched.First().IsActive(_time.GetUtcNow()));
         }
 
         [Fact]
@@ -300,7 +302,8 @@ public class SigningKeyServiceTests : IAsyncLifetime
             
             var fetched = await context.SigningKeys.FirstOrDefaultAsync(k => k.Id == key.Id);
             Assert.NotNull(fetched);
-            Assert.False(fetched.IsActive(DateTime.MaxValue));
+            Assert.NotNull(fetched.RevokedAt);
+            Assert.False(fetched.IsActive(_time.GetUtcNow()));
         }
     }
 
