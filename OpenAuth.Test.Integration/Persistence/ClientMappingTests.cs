@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Time.Testing;
 using OpenAuth.Domain.Entities;
-using OpenAuth.Domain.Enums;
 using OpenAuth.Domain.ValueObjects;
 using OpenAuth.Test.Integration.Fixtures;
 
@@ -10,6 +10,8 @@ namespace OpenAuth.Test.Integration.Persistence;
 public class ClientMappingTests : IAsyncLifetime
 {
     private readonly SqlServerFixture _fx;
+    private readonly TimeProvider _time = new FakeTimeProvider();
+    
     public ClientMappingTests(SqlServerFixture fx) => _fx = fx;
 
     public async Task InitializeAsync() => await _fx.ResetAsync();
@@ -25,11 +27,11 @@ public class ClientMappingTests : IAsyncLifetime
     public async Task Client_RoundTrips_AllFields()
     {
         const string name = "client";
-        var client = new Client(name);
+        var client = new Client(name, _time.GetUtcNow());
         var api = new Audience("api");
 
-        client.TryAddAudience(api);
-        client.GrantScopes(api, Read, Write);
+        client.TryAddAudience(api, _time.GetUtcNow());
+        client.GrantScopes(api, [Read, Write], _time.GetUtcNow());
         
         await using (var ctx1 = _fx.CreateContext())
         {
@@ -62,10 +64,10 @@ public class ClientMappingTests : IAsyncLifetime
 
         const string name = "client";
 
-        ctx.Add(new Client(name));
+        ctx.Add(new Client(name, _time.GetUtcNow()));
         await ctx.SaveChangesAsync();
         
-        ctx.Add(new Client(name));
+        ctx.Add(new Client(name, _time.GetUtcNow()));
         await Assert.ThrowsAnyAsync<DbUpdateException>(() => ctx.SaveChangesAsync());
     }
 
@@ -74,10 +76,10 @@ public class ClientMappingTests : IAsyncLifetime
     {
         await using var ctx = _fx.CreateContext();
         
-        var client = new Client("client");
+        var client = new Client("client", _time.GetUtcNow());
         var secret = new ClientSecret(new SecretHash("secret"));
 
-        client.AddSecret(secret);
+        client.AddSecret(secret, _time.GetUtcNow());
         
         ctx.Add(client);
         await ctx.SaveChangesAsync();
