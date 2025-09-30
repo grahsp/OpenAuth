@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Time.Testing;
 using OpenAuth.Domain.Entities;
 using OpenAuth.Domain.ValueObjects;
 using OpenAuth.Test.Integration.Fixtures;
@@ -9,6 +10,8 @@ namespace OpenAuth.Test.Integration.Persistence;
 public class ClientSecretMappingTests : IAsyncLifetime
 {
     private readonly SqlServerFixture _fx;
+    private readonly TimeProvider _time = new FakeTimeProvider();
+    
     public ClientSecretMappingTests(SqlServerFixture fx) => _fx = fx;
 
     public Task InitializeAsync() => _fx.ResetAsync();
@@ -20,11 +23,11 @@ public class ClientSecretMappingTests : IAsyncLifetime
     {
         await using var ctx = _fx.CreateContext();
         
-        var client = new Client("client");
+        var client = new Client("client", _time.GetUtcNow());
         var hash = new SecretHash("secret");
         var secret = new ClientSecret(hash, DateTime.UtcNow.AddDays(7));
 
-        client.AddSecret(secret);
+        client.AddSecret(secret, _time.GetUtcNow());
         ctx.Add(client);
         await ctx.SaveChangesAsync();
 
