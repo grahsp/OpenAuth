@@ -6,10 +6,10 @@ public sealed class Client
 {
     private Client() { }
 
-    public Client(string name)
+    public Client(string name, DateTimeOffset now)
     {
         SetName(name, false);
-        CreatedAt = UpdatedAt = DateTime.UtcNow;
+        CreatedAt = UpdatedAt = now;
     }
     
 
@@ -32,8 +32,8 @@ public sealed class Client
     
     
     // Metadata
-    public DateTime CreatedAt { get; private set; }
-    public DateTime UpdatedAt { get; private set; }
+    public DateTimeOffset CreatedAt { get; private set; }
+    public DateTimeOffset UpdatedAt { get; private set; }
 
 
     public bool TryAddAudience(Audience audience)

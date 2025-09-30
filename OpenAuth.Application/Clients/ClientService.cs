@@ -7,11 +7,13 @@ public class ClientService : IClientService
 {
     private readonly IClientRepository _repository;
     private readonly IClientSecretFactory _secretFactory;
+    private readonly TimeProvider _time;
     
-    public ClientService(IClientRepository repository, IClientSecretFactory secretFactory)
+    public ClientService(IClientRepository repository, IClientSecretFactory secretFactory, TimeProvider time)
     {
         _repository = repository;
         _secretFactory = secretFactory;
+        _time = time;
     }
     
     public async Task<Client?> GetByIdAsync(ClientId id, CancellationToken cancellationToken = default) =>
@@ -22,7 +24,7 @@ public class ClientService : IClientService
 
     public async Task<Client> RegisterAsync(string name, CancellationToken cancellationToken = default)
     {
-        var client = new Client(name);
+        var client = new Client(name, _time.GetUtcNow());
         _repository.Add(client);
         await _repository.SaveChangesAsync(cancellationToken);
 
