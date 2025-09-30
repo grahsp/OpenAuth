@@ -12,16 +12,12 @@ namespace OpenAuth.Api.Controllers;
 [Route("api/[controller]")]
 public class ClientController : ControllerBase
 {
-    public ClientController(IClientService clientService, IJwtTokenGenerator tokenGenerator, IClientSecretValidator secretValidator)
+    public ClientController(IClientService clientService)
     {
         _clientService = clientService;
-        _tokenGenerator = tokenGenerator;
-        _secretValidator = secretValidator;
     }
 
     private readonly IClientService _clientService;
-    private readonly IJwtTokenGenerator _tokenGenerator;
-    private readonly IClientSecretValidator _secretValidator;
 
     [HttpGet("{clientId:guid}")]
     public async Task<ActionResult<Client>> GetById(Guid clientId)
@@ -37,7 +33,7 @@ public class ClientController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<RegisterClientResponse>> Create([FromBody] RegisterClientRequest request)
     {
-        var client = await _clientService.RegisterAsync(request.Name);
+        var client = await _clientService.RegisterAsync(new ClientName(request.Name));
         var creationResult = await _clientService.AddSecretAsync(client.Id);
 
         var response = ClientMapper.ToResponse(client);

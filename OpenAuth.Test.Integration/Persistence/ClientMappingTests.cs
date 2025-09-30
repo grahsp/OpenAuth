@@ -26,8 +26,8 @@ public class ClientMappingTests : IAsyncLifetime
     [Fact]
     public async Task Client_RoundTrips_AllFields()
     {
-        const string name = "client";
-        var client = new Client(name, _time.GetUtcNow());
+        var clientName = new ClientName("client");
+        var client = new Client(clientName, _time.GetUtcNow());
         var api = new Audience("api");
 
         client.TryAddAudience(api, _time.GetUtcNow());
@@ -47,7 +47,7 @@ public class ClientMappingTests : IAsyncLifetime
                 .SingleAsync(x => x.Id == client.Id);
 
             Assert.Equal(client.Id, loaded.Id);
-            Assert.Equal(name, loaded.Name);
+            Assert.Equal(clientName, loaded.Name);
             Assert.Equal(client.TokenLifetime, loaded.TokenLifetime);
             Assert.Equal(client.Enabled, loaded.Enabled);
             Assert.Equal(client.CreatedAt, loaded.CreatedAt);
@@ -62,12 +62,12 @@ public class ClientMappingTests : IAsyncLifetime
     {
         await using var ctx = _fx.CreateContext();
 
-        const string name = "client";
+        var clientName = new ClientName("client");
 
-        ctx.Add(new Client(name, _time.GetUtcNow()));
+        ctx.Add(new Client(clientName, _time.GetUtcNow()));
         await ctx.SaveChangesAsync();
         
-        ctx.Add(new Client(name, _time.GetUtcNow()));
+        ctx.Add(new Client(clientName, _time.GetUtcNow()));
         await Assert.ThrowsAnyAsync<DbUpdateException>(() => ctx.SaveChangesAsync());
     }
 
@@ -76,7 +76,7 @@ public class ClientMappingTests : IAsyncLifetime
     {
         await using var ctx = _fx.CreateContext();
         
-        var client = new Client("client", _time.GetUtcNow());
+        var client = new Client(new ClientName("client"), _time.GetUtcNow());
         var secret = new ClientSecret(new SecretHash("secret"));
 
         client.AddSecret(secret, _time.GetUtcNow());

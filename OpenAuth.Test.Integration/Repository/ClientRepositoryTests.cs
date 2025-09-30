@@ -25,19 +25,16 @@ public class ClientRepositoryTests : IAsyncLifetime
     public async Task GetByIdAsync_ReturnsClient_WhenExists()
     {
         await using var context = _fx.CreateContext();
+        
         var repo = CreateRepository(context);
-
-        const string name = "client";
-        var client = new Client(name, _time.GetUtcNow());
+        var client = new Client(new ClientName("client"), _time.GetUtcNow());
         
         repo.Add(client);
         await context.SaveChangesAsync();
 
         var fetched = await repo.GetByIdAsync(client.Id);
-
         Assert.NotNull(fetched);
-        Assert.Equal(client.Id, fetched.Id);
-        Assert.Equal(name, fetched.Name);
+        Assert.Same(client, fetched);
     }
 
     [Fact]
@@ -47,7 +44,6 @@ public class ClientRepositoryTests : IAsyncLifetime
         var repo = CreateRepository(context);
 
         var fetched = await repo.GetByIdAsync(new ClientId(Guid.NewGuid()));
-
         Assert.Null(fetched);
     }
 
@@ -57,17 +53,15 @@ public class ClientRepositoryTests : IAsyncLifetime
         await using var context = _fx.CreateContext();
         var repo = CreateRepository(context);
 
-        const string name = "client";
-        var client = new Client(name, _time.GetUtcNow());
+        var clientName = new ClientName("client");
+        var client = new Client(clientName, _time.GetUtcNow());
         
         repo.Add(client);
         await context.SaveChangesAsync();
 
-        var fetched = await repo.GetByNameAsync(name);
-
+        var fetched = await repo.GetByNameAsync(clientName);
         Assert.NotNull(fetched);
-        Assert.Equal(client.Id, fetched.Id);
-        Assert.Equal(name, fetched.Name);
+        Assert.Same(client, fetched);
     }
 
     [Fact]
@@ -76,8 +70,7 @@ public class ClientRepositoryTests : IAsyncLifetime
         await using var context = _fx.CreateContext();
         var repo = CreateRepository(context);
 
-        var fetched = await repo.GetByNameAsync("missing-client");
-
+        var fetched = await repo.GetByNameAsync(new ClientName("missing-client"));
         Assert.Null(fetched);
     }
 
@@ -87,14 +80,13 @@ public class ClientRepositoryTests : IAsyncLifetime
         await using var context = _fx.CreateContext();
         var repo = CreateRepository(context);
 
-        var client = new Client("client", _time.GetUtcNow());
+        var client = new Client(new ClientName("client"), _time.GetUtcNow());
         client.AddSecret(new ClientSecret(new SecretHash("secret-hash")), _time.GetUtcNow());
         
         repo.Add(client);
         await context.SaveChangesAsync();
 
         var fetched = await repo.GetByIdAsync(client.Id);
-
         Assert.NotNull(fetched);
         Assert.Single(fetched.Secrets);
     }

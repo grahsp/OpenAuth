@@ -12,7 +12,7 @@ public class FakeClientRepository : IClientRepository
     public Task<Client?> GetByIdAsync(ClientId id, CancellationToken ct = default)
         => Task.FromResult(_store.GetValueOrDefault(id));
 
-    public Task<Client?> GetByNameAsync(string name, CancellationToken ct = default)
+    public Task<Client?> GetByNameAsync(ClientName name, CancellationToken ct = default)
         => Task.FromResult(_store.Values.FirstOrDefault(c => c.Name == name));
     
     public Task<Client?> GetBySecretIdAsync(SecretId id, CancellationToken ct = default)

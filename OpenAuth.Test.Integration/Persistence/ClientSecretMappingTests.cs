@@ -23,7 +23,7 @@ public class ClientSecretMappingTests : IAsyncLifetime
     {
         await using var ctx = _fx.CreateContext();
         
-        var client = new Client("client", _time.GetUtcNow());
+        var client = new Client(new ClientName("client"), _time.GetUtcNow());
         var hash = new SecretHash("secret");
         var secret = new ClientSecret(hash, DateTime.UtcNow.AddDays(7));
 

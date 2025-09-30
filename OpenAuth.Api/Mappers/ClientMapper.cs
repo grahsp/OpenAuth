@@ -8,8 +8,8 @@ public static class ClientMapper
 {
     public static ClientResponse ToResponse(Client client)
         => new ClientResponse(
-            client.Id.Value,
-            client.Name,
+            client.Id.ToString(),
+            client.Name.ToString(),
             client.Enabled,
             client.Audiences.Select(ToResponse),
             client.Secrets.Select(x => new ClientSecretSummaryResponse(x.Id.Value, x.CreatedAt, x.ExpiresAt))
