@@ -6,16 +6,15 @@ namespace OpenAuth.Test.Unit.Entities;
 
 public class ClientTests
 {
-    private static readonly TimeProvider Time = new FakeTimeProvider();
+    private static readonly FakeTimeProvider Time = new();
     
     
     [Fact]
     public void Constructor_SetsDefaults()
     {
         const string clientName = "App";
-        var before = DateTime.UtcNow;
-        var client = new Client(clientName, Time.GetUtcNow());
-        var after = DateTime.UtcNow;
+        var now = Time.GetUtcNow();
+        var client = new Client(clientName, now);
 
         Assert.Equal(clientName, client.Name);
         Assert.True(client.Enabled);
@@ -24,12 +23,8 @@ public class ClientTests
         Assert.NotEqual(Guid.Empty, client.Id.Value);
         Assert.Empty(client.Audiences);
 
-        // created/updated should be set near "now"
-        Assert.InRange(client.CreatedAt, before, after);
-        Assert.InRange(client.UpdatedAt, before, after);
-
-        // updated should not be earlier than created
-        Assert.True(client.UpdatedAt >= client.CreatedAt);
+        Assert.Equal(now, client.CreatedAt);
+        Assert.Equal(now, client.UpdatedAt);
     }
 
     public class GrantScopes
@@ -55,16 +50,18 @@ public class ClientTests
         [Fact]
         public void GrantScopes_TouchUpdatedAt()
         {
-            var client = new Client("App", Time.GetUtcNow());
+            var now = Time.GetUtcNow();
+            var client = new Client("App", now);
+            
             var aud = new Audience("api");
             var read = new Scope("read");
+            client.TryAddAudience(aud, now);
+            
+            Time.Advance(TimeSpan.FromSeconds(1));
+            var expected = Time.GetUtcNow();
+            client.GrantScopes(aud, [read], expected);
 
-            var before = client.UpdatedAt;
-
-            client.TryAddAudience(aud, Time.GetUtcNow());
-            client.GrantScopes(aud, [read], Time.GetUtcNow());
-
-            Assert.True(client.UpdatedAt > before);
+            Assert.Equal(expected, client.UpdatedAt);
         }
     }
 
@@ -98,10 +95,11 @@ public class ClientTests
             client.TryAddAudience(aud, Time.GetUtcNow());
             client.GrantScopes(aud, [read], Time.GetUtcNow());
         
-            var before = client.UpdatedAt;
+            Time.Advance(TimeSpan.FromSeconds(1));
+            var expected = Time.GetUtcNow();
             client.RevokeScopes(aud, [read], Time.GetUtcNow());
 
-            Assert.True(client.UpdatedAt > before);
+            Assert.Equal(expected, client.UpdatedAt);
         }
 
         [Fact]
@@ -179,26 +177,29 @@ public class ClientTests
             var client = new Client("App", Time.GetUtcNow());
             var api = new Audience("api");
 
-            var before = client.UpdatedAt;
-            var result = client.TryAddAudience(api, Time.GetUtcNow());
+            Time.Advance(TimeSpan.FromSeconds(1));
+            var expected = Time.GetUtcNow();
+            var result = client.TryAddAudience(api, expected);
             
             Assert.True(result);
-            Assert.NotEqual(before, client.UpdatedAt);
+            Assert.Equal(expected, client.UpdatedAt);
         }
 
         [Fact]
         public void DoesNotUpdateUpdatedAt_WhenAudienceAlreadyExists()
         {
-            var client = new Client("App", Time.GetUtcNow());
+            var now = Time.GetUtcNow();
+            var client = new Client("App", now);
             var api = new Audience("api");
             
-            client.TryAddAudience(api, Time.GetUtcNow());
+            client.TryAddAudience(api, now);
             
-            var before = client.UpdatedAt;
-            var result = client.TryAddAudience(api, Time.GetUtcNow());
+            Time.Advance(TimeSpan.FromSeconds(1));
+            var before = Time.GetUtcNow();
+            var result = client.TryAddAudience(api, before);
             
             Assert.False(result);
-            Assert.Equal(before, client.UpdatedAt);
+            Assert.NotEqual(before, client.UpdatedAt);
         }
     }
 
@@ -232,15 +233,18 @@ public class ClientTests
         [Fact]
         public void TryRemoveAudience_TouchUpdatedAt()
         {
-            var client = new Client("App", Time.GetUtcNow());
-            var aud = new Audience("api");
-            client.TryAddAudience(aud, Time.GetUtcNow());
+            var now = Time.GetUtcNow();
+            var client = new Client("App", now);
             
-            var before = client.UpdatedAt;
-            var isRemoved = client.TryRemoveAudience(aud, Time.GetUtcNow());
+            var aud = new Audience("api");
+            client.TryAddAudience(aud, now);
+            
+            Time.Advance(TimeSpan.FromSeconds(1));
+            var expected = Time.GetUtcNow();
+            var isRemoved = client.TryRemoveAudience(aud, expected);
             
             Assert.True(isRemoved);
-            Assert.True(client.UpdatedAt > before);
+            Assert.Equal(expected, client.UpdatedAt);
         }
 
         [Fact]
@@ -307,20 +311,26 @@ public class ClientTests
         public void Rename_TouchUpdatedAt()
         {
             var client = new Client("App", Time.GetUtcNow());
-            var before = client.UpdatedAt;
             
-            client.Rename("Anything", Time.GetUtcNow());
-            Assert.True(client.UpdatedAt > before);
+            Time.Advance(TimeSpan.FromSeconds(1));
+            var expected = Time.GetUtcNow();
+            client.Rename("Anything", expected);
+            
+            Assert.Equal(expected, client.UpdatedAt);
         }
 
         [Fact]
         public void Rename_NoOp_DoesNotTouchUpdatedAt()
         {
-            var client = new Client("App", Time.GetUtcNow());
-            var before = client.UpdatedAt;
+            var now = Time.GetUtcNow();
+            var client = new Client("App", now);
             
-            client.Rename(client.Name, Time.GetUtcNow());
-            Assert.Equal(client.UpdatedAt, before);
+            Time.Advance(TimeSpan.FromSeconds(1));
+            var updatedTime = Time.GetUtcNow();
+            client.Rename(client.Name, updatedTime);
+            
+            Assert.NotEqual(updatedTime, client.UpdatedAt);
+            Assert.Equal(now, client.UpdatedAt);
         }
     }
 
@@ -350,10 +360,11 @@ public class ClientTests
         {
             var client = new Client("App", Time.GetUtcNow());
             
-            var before = client.UpdatedAt;
-            client.SetTokenLifetime(TimeSpan.FromSeconds(1), Time.GetUtcNow());
+            Time.Advance(TimeSpan.FromSeconds(1));
+            var expected = Time.GetUtcNow();
+            client.SetTokenLifetime(TimeSpan.FromSeconds(1), expected);
             
-            Assert.True(client.UpdatedAt > before);           
+            Assert.Equal(expected, client.UpdatedAt);
         }
 
         [Fact]
@@ -387,10 +398,11 @@ public class ClientTests
             var client = new Client("App", Time.GetUtcNow());
             var secret = new ClientSecret(new SecretHash("v1$1$abc$xyz"));
             
-            var before = client.UpdatedAt;
-            client.AddSecret(secret, Time.GetUtcNow());
+            Time.Advance(TimeSpan.FromSeconds(1));
+            var expected = Time.GetUtcNow();
+            client.AddSecret(secret, expected);
 
-            Assert.True(client.UpdatedAt > before);
+            Assert.Equal(expected, client.UpdatedAt);
         }
 
         [Fact]
@@ -453,14 +465,17 @@ public class ClientTests
         [Fact]
         public void RevokeSecret_Updates_Timestamp_If_Exists()
         {
-            var client = new Client("App", Time.GetUtcNow());
-            var secret = new ClientSecret(new SecretHash("v1$1$abc$xyz"));
-            client.AddSecret(secret, Time.GetUtcNow());
+            var now = Time.GetUtcNow();
+            var client = new Client("App", now);
             
-            var before = client.UpdatedAt;
-            client.RevokeSecret(secret.Id, Time.GetUtcNow());
+            var secret = new ClientSecret(new SecretHash("v1$1$abc$xyz"));
+            client.AddSecret(secret, now);
+            
+            Time.Advance(TimeSpan.FromSeconds(1));
+            var expected = Time.GetUtcNow();
+            client.RevokeSecret(secret.Id, expected);
 
-            Assert.True(client.UpdatedAt > before);
+            Assert.Equal(expected, client.UpdatedAt);
         }
         
         [Fact]
@@ -503,14 +518,17 @@ public class ClientTests
         [Fact]
         public void RemoveSecret_Updates_Timestamp_If_Exists()
         {
-            var client = new Client("App", Time.GetUtcNow());
-            var secret = new ClientSecret(new SecretHash("v1$1$abc$xyz"));
-            client.AddSecret(secret, Time.GetUtcNow());
+            var now = Time.GetUtcNow();
+            var client = new Client("App", now);
             
-            var before = client.UpdatedAt;
-            client.RemoveSecret(secret.Id, Time.GetUtcNow());
+            var secret = new ClientSecret(new SecretHash("v1$1$abc$xyz"));
+            client.AddSecret(secret, now);
+            
+            Time.Advance(TimeSpan.FromSeconds(1));
+            var expected = Time.GetUtcNow();
+            client.RemoveSecret(secret.Id, expected);
 
-            Assert.True(client.UpdatedAt > before);
+            Assert.Equal(expected, client.UpdatedAt);
         }
         
         [Fact]
@@ -569,15 +587,21 @@ public class ClientTests
         {
             var client = new Client("App", Time.GetUtcNow());
             
-            var before = client.UpdatedAt;
+            // Act - Disable
+            Time.Advance(TimeSpan.FromSeconds(1));
+            var expectedAfterDisable = Time.GetUtcNow();
             client.Disable(Time.GetUtcNow());
+            
             Assert.False(client.Enabled);
-            Assert.True(client.UpdatedAt > before);
+            Assert.Equal(expectedAfterDisable, client.UpdatedAt);
 
-            before = client.UpdatedAt;
+            // Act - Enable
+            Time.Advance(TimeSpan.FromSeconds(1));
+            var expectedAfterEnable = Time.GetUtcNow();
             client.Enable(Time.GetUtcNow());
+            
             Assert.True(client.Enabled);
-            Assert.True(client.UpdatedAt > before);
+            Assert.Equal(expectedAfterEnable, client.UpdatedAt);
         }
 
         [Fact]
