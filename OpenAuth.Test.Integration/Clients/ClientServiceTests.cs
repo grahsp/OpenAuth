@@ -1,5 +1,5 @@
+using Microsoft.Extensions.Time.Testing;
 using OpenAuth.Application.Clients;
-using OpenAuth.Domain.Enums;
 using OpenAuth.Domain.ValueObjects;
 using OpenAuth.Infrastructure.Repositories;
 using OpenAuth.Test.Common.Fakes;
@@ -12,6 +12,8 @@ namespace OpenAuth.Test.Integration.Clients;
 public class ClientServiceTests : IAsyncLifetime
 {
     private readonly SqlServerFixture _fx;
+    private readonly TimeProvider _time = new FakeTimeProvider();
+    
     public ClientServiceTests(SqlServerFixture fx) => _fx = fx;    
 
     public async Task InitializeAsync() => await _fx.ResetAsync();
@@ -20,7 +22,7 @@ public class ClientServiceTests : IAsyncLifetime
     private ClientService CreateSut()
     {
         var context = _fx.CreateContext();
-        return new ClientService(new ClientRepository(context), new FakeClientSecretFactory());
+        return new ClientService(new ClientRepository(context), new FakeClientSecretFactory(), _time);
     }
 
     public class GetClient(SqlServerFixture fx) : ClientServiceTests(fx)
@@ -241,16 +243,16 @@ public class ClientServiceTests : IAsyncLifetime
 
             var audience = new Audience("api");
             Scope[] scopes = [Read, Write];
-            client.TryAddAudience(audience);
+            client.TryAddAudience(audience, _time.GetUtcNow());
 
             var updated = await service.GrantScopesAsync(client.Id, audience, scopes);
 
-            Assert.Contains(updated.Audiences, a => a == audience);
+            Assert.Contains(updated.Audiences, a => a.Equals(audience));
             Assert.Equal(updated.GetAllowedScopes(audience), scopes);
 
             var fetched = await service.GetByIdAsync(client.Id);
             Assert.NotNull(fetched);
-            Assert.Contains(fetched.Audiences, a => a == audience);
+            Assert.Contains(fetched.Audiences, a => a.Equals(audience));
             Assert.Equal(fetched.GetAllowedScopes(audience), scopes);
         }
 
@@ -286,7 +288,7 @@ public class ClientServiceTests : IAsyncLifetime
 
             var audience = new Audience("api");
             Scope[] scopes = [Read];
-            client.TryAddAudience(audience);
+            client.TryAddAudience(audience, _time.GetUtcNow());
 
             await service.GrantScopesAsync(client.Id, audience, scopes);
             await service.GrantScopesAsync(client.Id, audience, scopes);
@@ -312,10 +314,10 @@ public class ClientServiceTests : IAsyncLifetime
             var audience = new Audience("api");
             Scope[] scopes = [Read, Write];
 
-            client.TryAddAudience(audience);
+            client.TryAddAudience(audience, _time.GetUtcNow());
 
             await service.GrantScopesAsync(client.Id, audience, scopes);
-            Assert.Contains(client.Audiences, a => a == audience);
+            Assert.Contains(client.Audiences, a => a.Equals(audience));
             Assert.Equal(client.GetAllowedScopes(audience), scopes);
 
             var updated = await service.RevokeScopesAsync(client.Id, audience, scopes);
@@ -358,12 +360,12 @@ public class ClientServiceTests : IAsyncLifetime
 
             var audience = new Audience("api");
             Scope[] scopes = [Read];
-            client.TryAddAudience(audience);
+            client.TryAddAudience(audience, _time.GetUtcNow());
 
             await service.GrantScopesAsync(client.Id, audience, scopes);
 
             var updated = await service.RevokeScopesAsync(client.Id, audience, [Write]);
-            Assert.Contains(updated.Audiences, a => a == audience);
+            Assert.Contains(updated.Audiences, a => a.Equals(audience));
             Assert.Equal(scopes, updated.GetAllowedScopes(audience));
         } 
     }
@@ -381,7 +383,7 @@ public class ClientServiceTests : IAsyncLifetime
 
             var audience = new Audience("api");
             Scope[] scopes = [Read, Write];
-            client.TryAddAudience(audience);
+            client.TryAddAudience(audience, _time.GetUtcNow());
 
             await service.GrantScopesAsync(client.Id, audience, scopes);
 
