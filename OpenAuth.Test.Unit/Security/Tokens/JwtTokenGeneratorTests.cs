@@ -16,9 +16,9 @@ public class JwtTokenGeneratorTests
     
     private static Client CreateClientWithScopes(string name, Audience audience, params Scope[] scopes)
     {
-        var client = new Client(name);
-        client.TryAddAudience(audience);
-        client.GrantScopes(audience, scopes);
+        var client = new Client(name, Time.GetUtcNow());
+        client.TryAddAudience(audience, Time.GetUtcNow());
+        client.GrantScopes(audience, scopes, Time.GetUtcNow());
         return client;
     }
 
@@ -66,7 +66,7 @@ public class JwtTokenGeneratorTests
     {
         var sut = CreateSut();
         var key = TestSigningKey.CreateRsaSigningKey(Time);
-        var client = new Client("client123");
+        var client = new Client("client123", Time.GetUtcNow());
 
         Assert.Throws<InvalidOperationException>(() =>
             sut.GenerateToken(client, new Audience("api"), [new Scope("read")], key));
