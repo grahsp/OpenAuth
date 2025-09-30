@@ -43,10 +43,10 @@ public class SigningKeyFactoryTests
         var factory = new SigningKeyFactory([_rsaGenerator]);
         
         Assert.Throws<ArgumentOutOfRangeException>(() =>
-            factory.Create(SigningAlgorithm.RS256, _time.GetUtcNow().UtcDateTime, TimeSpan.Zero));
+            factory.Create(SigningAlgorithm.RS256, _time.GetUtcNow(), TimeSpan.Zero));
         
         Assert.Throws<ArgumentOutOfRangeException>(() =>
-            factory.Create(SigningAlgorithm.RS256, _time.GetUtcNow().UtcDateTime, TimeSpan.FromSeconds(-1)));
+            factory.Create(SigningAlgorithm.RS256, _time.GetUtcNow(), TimeSpan.FromSeconds(-1)));
     }
     
     [Fact]
@@ -55,7 +55,7 @@ public class SigningKeyFactoryTests
         var factory = new SigningKeyFactory([_rsaGenerator]);
         
         Assert.Throws<InvalidOperationException>(() =>
-            factory.Create(SigningAlgorithm.HS256, _time.GetUtcNow().UtcDateTime));
+            factory.Create(SigningAlgorithm.HS256, _time.GetUtcNow()));
     }
 
     [Fact]
@@ -63,7 +63,7 @@ public class SigningKeyFactoryTests
     {
         var factory = new SigningKeyFactory([_rsaGenerator]);
         
-        var now = _time.GetUtcNow().UtcDateTime;
+        var now = _time.GetUtcNow();
         const SigningAlgorithm alg = SigningAlgorithm.RS256;
         
         var signingKey = factory.Create(alg, now);
@@ -80,7 +80,7 @@ public class SigningKeyFactoryTests
     {
         var factory = new SigningKeyFactory([_rsaGenerator]);
         
-        var now = _time.GetUtcNow().UtcDateTime;
+        var now = _time.GetUtcNow();
         var lifetime = TimeSpan.FromDays(1);
         const SigningAlgorithm alg = SigningAlgorithm.RS256;
         
@@ -98,7 +98,7 @@ public class SigningKeyFactoryTests
     {
         var factory = new SigningKeyFactory([_rsaGenerator, _hmacGenerator]);
         
-        var now = _time.GetUtcNow().UtcDateTime;
+        var now = _time.GetUtcNow();
         var rsaKey = factory.Create(SigningAlgorithm.RS256, now);
         var hmacKey = factory.Create(SigningAlgorithm.HS256, now);
         

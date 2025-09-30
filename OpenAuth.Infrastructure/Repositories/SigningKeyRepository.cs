@@ -20,7 +20,7 @@ public class SigningKeyRepository : ISigningKeyRepository
         => await _context.SigningKeys
             .SingleOrDefaultAsync(x => x.Id == id, cancellationToken);
     
-    public async Task<SigningKey?> GetCurrentAsync(DateTime now, CancellationToken cancellationToken = default)
+    public async Task<SigningKey?> GetCurrentAsync(DateTimeOffset now, CancellationToken cancellationToken = default)
         => await _context.SigningKeys
             .OrderByDescending(k => k.CreatedAt)
             .ThenBy(k => k.Id)
@@ -33,7 +33,7 @@ public class SigningKeyRepository : ISigningKeyRepository
             .ThenBy(k => k.Id)
             .ToListAsync(cancellationToken);
 
-    public async Task<IEnumerable<SigningKey>> GetActiveAsync(DateTime now, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<SigningKey>> GetActiveAsync(DateTimeOffset now, CancellationToken cancellationToken = default)
         => await _context.SigningKeys
             .OrderByDescending(k => k.CreatedAt)
             .ThenBy(k => k.Id)

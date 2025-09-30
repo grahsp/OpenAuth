@@ -6,7 +6,7 @@ namespace OpenAuth.Test.Common.Helpers;
 
 public static class TestSigningKey
 {
-    public static SigningKey CreateRsaSigningKey(DateTime createdAt, DateTime expiresAt, Key? key = null, SigningAlgorithm algorithm = SigningAlgorithm.RS256)
+    public static SigningKey CreateRsaSigningKey(DateTimeOffset createdAt, DateTimeOffset expiresAt, Key? key = null, SigningAlgorithm algorithm = SigningAlgorithm.RS256)
         => new SigningKey(
             new KeyMaterial
             (
@@ -22,7 +22,7 @@ public static class TestSigningKey
         => CreateRsaSigningKey(timeProvider.GetUtcNow().DateTime, timeProvider.GetUtcNow().DateTime.AddDays(30), key, algorithm);
     
     
-    public static SigningKey CreateHmacSigningKey(DateTime createdAt, DateTime expiresAt, Key? key = null, SigningAlgorithm algorithm = SigningAlgorithm.HS256)
+    public static SigningKey CreateHmacSigningKey(DateTimeOffset createdAt, DateTimeOffset expiresAt, Key? key = null, SigningAlgorithm algorithm = SigningAlgorithm.HS256)
         => new SigningKey(
             new KeyMaterial(key ?? new Key("this-is-a-very-secret-key-that-should-not-be-exposed"), algorithm, KeyType.HMAC),
             createdAt,
