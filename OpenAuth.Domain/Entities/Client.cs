@@ -1,12 +1,15 @@
+using System.Runtime.CompilerServices;
 using OpenAuth.Domain.ValueObjects;
 
+[assembly: InternalsVisibleTo("OpenAuth.Test.Common")]
+[assembly: InternalsVisibleTo("OpenAuth.Infrastructure")]
 namespace OpenAuth.Domain.Entities;
 
 public sealed class Client
 {
     private Client() { }
 
-    public Client(ClientName name, DateTimeOffset now)
+    private Client(ClientName name, DateTimeOffset now)
     {
         Name = name;
         CreatedAt = UpdatedAt = now;
@@ -36,8 +39,8 @@ public sealed class Client
     public DateTimeOffset UpdatedAt { get; private set; }
 
 
-    public static Client Create(ClientName name, TimeProvider time)
-        => new Client(name, time.GetUtcNow());
+    internal static Client Create(ClientName name, DateTimeOffset now)
+        => new(name, now);
 
     public bool TryAddAudience(Audience audience, DateTimeOffset now)
     {

@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Time.Testing;
 using OpenAuth.Application.Clients;
 using OpenAuth.Domain.ValueObjects;
+using OpenAuth.Infrastructure.Clients;
 using OpenAuth.Infrastructure.Repositories;
 using OpenAuth.Test.Common.Fakes;
 using OpenAuth.Test.Integration.Fixtures;
@@ -22,7 +23,11 @@ public class ClientServiceTests : IAsyncLifetime
     private ClientService CreateSut()
     {
         var context = _fx.CreateContext();
-        return new ClientService(new ClientRepository(context), new FakeClientSecretFactory(), _time);
+        return new ClientService(
+            new ClientRepository(context),
+            new FakeClientSecretFactory(),
+            new ClientFactory(_time),
+            _time);
     }
 
     public class GetClient(SqlServerFixture fx) : ClientServiceTests(fx)

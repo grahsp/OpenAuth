@@ -1,20 +1,31 @@
 using Microsoft.Extensions.Time.Testing;
 using OpenAuth.Application.Clients;
 using OpenAuth.Domain.ValueObjects;
+using OpenAuth.Infrastructure.Clients;
 using OpenAuth.Test.Common.Fakes;
 
 namespace OpenAuth.Test.Unit.Clients;
 
 public class ClientServiceTests
 {
-    private readonly FakeClientRepository _repo = new();
-    private readonly IClientSecretFactory _secretFactory = new FakeClientSecretFactory();
-    private readonly TimeProvider _time = new FakeTimeProvider();
-
-    private ClientService CreateSut() => new(_repo, _secretFactory, _time);
+    private FakeClientRepository _repo;
+    private IClientSecretFactory _secretFactory;
+    private IClientFactory _clientFactory;
+    private TimeProvider _time;
 
     private readonly Scope _read = new("read");
     private readonly Scope _write = new("write");
+
+    public ClientServiceTests()
+    {
+        _repo = new FakeClientRepository();
+        _secretFactory = new FakeClientSecretFactory();
+        _time = new FakeTimeProvider();
+        _clientFactory = new ClientFactory(_time);
+    }
+
+    private ClientService CreateSut()
+        => new(_repo, _secretFactory, new ClientFactory(_time), _time);
 
     
     public class Queries : ClientServiceTests
