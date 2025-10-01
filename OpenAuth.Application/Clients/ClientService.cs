@@ -7,12 +7,14 @@ public class ClientService : IClientService
 {
     private readonly IClientRepository _repository;
     private readonly IClientSecretFactory _secretFactory;
+    private readonly IClientFactory _clientFactory;
     private readonly TimeProvider _time;
     
-    public ClientService(IClientRepository repository, IClientSecretFactory secretFactory, TimeProvider time)
+    public ClientService(IClientRepository repository, IClientSecretFactory secretFactory, IClientFactory clientFactory, TimeProvider time)
     {
         _repository = repository;
         _secretFactory = secretFactory;
+        _clientFactory = clientFactory;
         _time = time;
     }
     
@@ -24,7 +26,7 @@ public class ClientService : IClientService
 
     public async Task<Client> RegisterAsync(ClientName name, CancellationToken cancellationToken = default)
     {
-        var client = new Client(name, _time.GetUtcNow());
+        var client = _clientFactory.Create(name);
         _repository.Add(client);
         await _repository.SaveChangesAsync(cancellationToken);
 

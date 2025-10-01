@@ -19,7 +19,7 @@ public class JwtTokenGeneratorTests
     {
         var now = _time.GetUtcNow();
         var client = new ClientBuilder()
-            .WithTimeProvider(_time)
+            .CreatedAt(now)
             .Build();
         
         client.TryAddAudience(audience, now);

@@ -17,7 +17,7 @@ public class ClientTests
         var now = _time.GetUtcNow();
         var client = new ClientBuilder()
             .WithName(clientName)
-            .WithTimeProvider(_time)
+            .CreatedAt(now)
             .Build();
 
         Assert.Equal(clientName, client.Name);
@@ -56,7 +56,7 @@ public class ClientTests
         {
             var now = _time.GetUtcNow();
             var client = new ClientBuilder()
-                .WithTimeProvider(_time)
+                .CreatedAt(now)
                 .Build();
             
             var aud = new Audience("api");
@@ -305,7 +305,7 @@ public class ClientTests
         {
             var now = _time.GetUtcNow();
             var client = new ClientBuilder()
-                .WithTimeProvider(_time)
+                .CreatedAt(now)
                 .Build();
             
             _time.Advance(TimeSpan.FromSeconds(1));

@@ -5,8 +5,8 @@ namespace OpenAuth.Test.Common.Builders;
 
 public class ClientBuilder
 {
-    private ClientName _name = new ClientName("Client");
-    private TimeProvider _timeProvider = TimeProvider.System;
+    private ClientName _name = new("Client");
+    private DateTimeOffset _createdAt = DateTimeOffset.UtcNow;
     
     public ClientBuilder WithName(string name)
     {
@@ -20,12 +20,12 @@ public class ClientBuilder
         return this;
     }
 
-    public ClientBuilder WithTimeProvider(TimeProvider timeProvider)
+    public ClientBuilder CreatedAt(DateTimeOffset createdAt)
     {
-        _timeProvider = timeProvider;
+        _createdAt = createdAt;
         return this;
     }
     
     public Client Build()
-    => Client.Create(_name, _timeProvider);
+        => Client.Create(_name, _createdAt);
 }
