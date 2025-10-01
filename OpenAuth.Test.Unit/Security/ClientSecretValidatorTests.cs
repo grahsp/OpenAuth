@@ -3,6 +3,7 @@ using OpenAuth.Application.Clients;
 using OpenAuth.Application.Security;
 using OpenAuth.Domain.Entities;
 using OpenAuth.Domain.ValueObjects;
+using OpenAuth.Test.Common.Builders;
 using OpenAuth.Test.Common.Fakes;
 
 namespace OpenAuth.Test.Unit.Security;
@@ -15,7 +16,7 @@ public class ClientSecretValidatorTests
     [Fact]
     public void Verify_ReturnsTrue_WhenPlainMatchesActiveSecret()
     {
-        var client = new Client(new ClientName("test"), _time.GetUtcNow());
+        var client = new ClientBuilder().Build();
         var hasher = new FakeHasher("secret1");
         var validator = new ClientSecretValidator(hasher);
 
@@ -28,7 +29,7 @@ public class ClientSecretValidatorTests
     [Fact]
     public void Verify_ReturnsFalse_WhenPlainDoesNotMatch()
     {
-        var client = new Client(new ClientName("test"), _time.GetUtcNow());
+        var client = new ClientBuilder().Build();
         var hasher = new FakeHasher("secret1");
         var validator = new ClientSecretValidator(hasher);
 
@@ -41,7 +42,7 @@ public class ClientSecretValidatorTests
     [Fact]
     public void Verify_ReturnsFalse_WhenSecretIsRevoked()
     {
-        var client = new Client(new ClientName("test"), _time.GetUtcNow());
+        var client = new ClientBuilder().Build();
         var hasher = new FakeHasher("secret1");
         var validator = new ClientSecretValidator(hasher);
 
@@ -55,7 +56,7 @@ public class ClientSecretValidatorTests
     [Fact]
     public void Verify_ReturnsFalse_WhenSecretIsExpired()
     {
-        var client = new Client(new ClientName("test"), _time.GetUtcNow());
+        var client = new ClientBuilder().Build();
         var hasher = new FakeHasher("secret1");
         var validator = new ClientSecretValidator(hasher);
 
@@ -68,7 +69,7 @@ public class ClientSecretValidatorTests
     [Fact]
     public void Verify_ReturnsTrue_WhenClientHasMultipleSecrets_AndOneMatches()
     {
-        var client = new Client(new ClientName("test"), _time.GetUtcNow());
+        var client = new ClientBuilder().Build();
         var hasher = new FakeHasher("secret2");
         var validator = new ClientSecretValidator(hasher);
 
@@ -81,7 +82,7 @@ public class ClientSecretValidatorTests
     [Fact]
     public void Verify_ReturnsFalse_WhenClientHasNoSecrets()
     {
-        var client = new Client(new ClientName("test"), _time.GetUtcNow());
+        var client = new ClientBuilder().Build();
         var hasher = new FakeHasher("secret1");
         var validator = new ClientSecretValidator(hasher);
 
@@ -91,7 +92,7 @@ public class ClientSecretValidatorTests
     [Fact]
     public void Verify_ReturnsFalse_WhenPlainIsEmpty()
     {
-        var client = new Client(new ClientName("test"), _time.GetUtcNow());
+        var client = new ClientBuilder().Build();
         var hasher = new FakeHasher("secret1");
         var validator = new ClientSecretValidator(hasher);
 

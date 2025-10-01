@@ -5,6 +5,7 @@ using OpenAuth.Domain.Configurations;
 using OpenAuth.Domain.Entities;
 using OpenAuth.Domain.ValueObjects;
 using OpenAuth.Infrastructure.Security.Tokens;
+using OpenAuth.Test.Common.Builders;
 using OpenAuth.Test.Common.Fakes;
 using OpenAuth.Test.Common.Helpers;
 
@@ -17,7 +18,9 @@ public class JwtTokenGeneratorTests
     private Client CreateClientWithScopes(string name, Audience audience, params Scope[] scopes)
     {
         var now = _time.GetUtcNow();
-        var client = new Client(new ClientName(name), now);
+        var client = new ClientBuilder()
+            .WithTimeProvider(_time)
+            .Build();
         
         client.TryAddAudience(audience, now);
         client.GrantScopes(audience, scopes, now);
@@ -69,7 +72,7 @@ public class JwtTokenGeneratorTests
     {
         var sut = CreateSut();
         var key = TestSigningKey.CreateRsaSigningKey(_time);
-        var client = new Client(new ClientName("test"), _time.GetUtcNow());
+        var client = new ClientBuilder().Build();
 
         Assert.Throws<InvalidOperationException>(() =>
             sut.GenerateToken(client, new Audience("api"), [new Scope("read")], key));
