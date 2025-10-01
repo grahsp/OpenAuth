@@ -36,6 +36,9 @@ public sealed class Client
     public DateTimeOffset UpdatedAt { get; private set; }
 
 
+    public static Client Create(ClientName name, TimeProvider time)
+        => new Client(name, time.GetUtcNow());
+
     public bool TryAddAudience(Audience audience, DateTimeOffset now)
     {
         ArgumentNullException.ThrowIfNull(audience);

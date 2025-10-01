@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Time.Testing;
 using OpenAuth.Domain.Entities;
 using OpenAuth.Domain.ValueObjects;
+using OpenAuth.Test.Common.Builders;
 using OpenAuth.Test.Integration.Fixtures;
 
 namespace OpenAuth.Test.Integration.Persistence;
@@ -27,9 +28,11 @@ public class ClientMappingTests : IAsyncLifetime
     public async Task Client_RoundTrips_AllFields()
     {
         var clientName = new ClientName("client");
-        var client = new Client(clientName, _time.GetUtcNow());
+        var client = new ClientBuilder()
+            .WithName(clientName)
+            .Build();
+        
         var api = new Audience("api");
-
         client.TryAddAudience(api, _time.GetUtcNow());
         client.GrantScopes(api, [Read, Write], _time.GetUtcNow());
         
@@ -61,13 +64,12 @@ public class ClientMappingTests : IAsyncLifetime
     public async Task Client_Name_Must_Be_Unique()
     {
         await using var ctx = _fx.CreateContext();
+        var client = new ClientBuilder().Build();
 
-        var clientName = new ClientName("client");
-
-        ctx.Add(new Client(clientName, _time.GetUtcNow()));
+        ctx.Add(client);
         await ctx.SaveChangesAsync();
         
-        ctx.Add(new Client(clientName, _time.GetUtcNow()));
+        ctx.Add(client);
         await Assert.ThrowsAnyAsync<DbUpdateException>(() => ctx.SaveChangesAsync());
     }
 
@@ -76,7 +78,7 @@ public class ClientMappingTests : IAsyncLifetime
     {
         await using var ctx = _fx.CreateContext();
         
-        var client = new Client(new ClientName("client"), _time.GetUtcNow());
+        var client = new ClientBuilder().Build();
         var secret = new ClientSecret(new SecretHash("secret"));
 
         client.AddSecret(secret, _time.GetUtcNow());

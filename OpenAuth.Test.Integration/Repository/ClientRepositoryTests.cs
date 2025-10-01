@@ -3,6 +3,7 @@ using OpenAuth.Domain.Entities;
 using OpenAuth.Domain.ValueObjects;
 using OpenAuth.Infrastructure.Persistence;
 using OpenAuth.Infrastructure.Repositories;
+using OpenAuth.Test.Common.Builders;
 using OpenAuth.Test.Integration.Fixtures;
 
 namespace OpenAuth.Test.Integration.Repository;
@@ -27,7 +28,7 @@ public class ClientRepositoryTests : IAsyncLifetime
         await using var context = _fx.CreateContext();
         
         var repo = CreateRepository(context);
-        var client = new Client(new ClientName("client"), _time.GetUtcNow());
+        var client = new ClientBuilder().Build();
         
         repo.Add(client);
         await context.SaveChangesAsync();
@@ -54,7 +55,9 @@ public class ClientRepositoryTests : IAsyncLifetime
         var repo = CreateRepository(context);
 
         var clientName = new ClientName("client");
-        var client = new Client(clientName, _time.GetUtcNow());
+        var client = new ClientBuilder()
+            .WithName(clientName)
+            .Build();
         
         repo.Add(client);
         await context.SaveChangesAsync();
@@ -80,7 +83,7 @@ public class ClientRepositoryTests : IAsyncLifetime
         await using var context = _fx.CreateContext();
         var repo = CreateRepository(context);
 
-        var client = new Client(new ClientName("client"), _time.GetUtcNow());
+        var client = new ClientBuilder().Build();
         client.AddSecret(new ClientSecret(new SecretHash("secret-hash")), _time.GetUtcNow());
         
         repo.Add(client);
