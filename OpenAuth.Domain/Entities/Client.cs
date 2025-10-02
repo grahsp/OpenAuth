@@ -7,6 +7,8 @@ namespace OpenAuth.Domain.Entities;
 
 public sealed class Client
 {
+    public const int MaxSecrets = 3;
+    
     private Client() { }
 
     private Client(ClientName name, DateTimeOffset utcNow)
@@ -129,35 +131,40 @@ public sealed class Client
         TokenLifetime = value;
         Touch(utcNow);
     }
-
-    public void AddSecret(ClientSecret secret, DateTimeOffset utcNow)
+    
+    
+    public SecretId AddSecret(SecretHash hash, DateTimeOffset utcNow)
     {
-        ArgumentNullException.ThrowIfNull(secret);
-
+        var secret = ClientSecret.Create(hash, utcNow, TimeSpan.FromDays(7));
+        
+        if (!secret.IsActive(utcNow))
+            throw new InvalidOperationException("Cannot add expired secret.");
+        
         if (Secrets.Any(x => x.Id == secret.Id))
-            throw new InvalidOperationException("Secret already exists under client.");
+            throw new InvalidOperationException("Secret with same ID exist.");
+        
+        if (Secrets.Count(x => x.IsActive(utcNow)) >= MaxSecrets)
+            throw new InvalidOperationException($"Client cannot have more than { MaxSecrets } secrets.");
         
         Secrets.Add(secret);
         Touch(utcNow);
+
+        return secret.Id;
     }
     
     public void RevokeSecret(SecretId secretId, DateTimeOffset utcNow)
     {
-        var secret = Secrets.FirstOrDefault(x => x.Id == secretId);
-        if (secret is null)
+        var secret = Secrets.FirstOrDefault(x => x.Id == secretId)
+            ?? throw new InvalidOperationException($"Secret { secretId } not found.");
+
+        if (!secret.IsActive(utcNow))
             return;
+
+        var activeSecrets = Secrets.Count(s => s.IsActive(utcNow));
+        if (activeSecrets <= 1)
+            throw new InvalidOperationException("Cannot revoke last secret.");
         
         secret.Revoke(utcNow);
-        Touch(utcNow);
-    }
-
-    public void RemoveSecret(SecretId secretId, DateTimeOffset utcNow)
-    {
-        var secret = Secrets.FirstOrDefault(x => x.Id == secretId);
-        if (secret is null)
-            return;
-        
-        Secrets.Remove(secret);
         Touch(utcNow);
     }
 

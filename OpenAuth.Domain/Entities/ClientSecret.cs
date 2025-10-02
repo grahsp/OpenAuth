@@ -1,7 +1,5 @@
-using System.Runtime.CompilerServices;
 using OpenAuth.Domain.ValueObjects;
 
-[assembly: InternalsVisibleTo("OpenAuth.Test.Common")]
 namespace OpenAuth.Domain.Entities;
 
 public class ClientSecret

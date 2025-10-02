@@ -141,46 +141,4 @@ public class ClientService : IClientService
 
         return client;
     }
-
-
-    public async Task<ClientSecret?> GetSecretAsync(SecretId id, CancellationToken cancellationToken = default)
-        => await _repository.GetSecretAsync(id, cancellationToken);
-    
-    public async Task<SecretCreationResult> AddSecretAsync(ClientId id, DateTime? expiresAt = null, CancellationToken cancellationToken = default)
-    {
-        // var client = await _repository.GetByIdAsync(id, cancellationToken)
-        //              ?? throw new InvalidOperationException("Client not found.");
-        //
-        // var creationResult = _secretFactory.Create(expiresAt);
-        // client.AddSecret(creationResult.Secret, _time.GetUtcNow());
-        //
-        // await _repository.SaveChangesAsync(cancellationToken);
-        // return creationResult;
-        
-        throw new NotImplementedException();
-    }
-
-    public async Task<bool> RevokeSecretAsync(SecretId secretId, CancellationToken cancellationToken = default)
-    {
-        var client = await _repository.GetBySecretIdAsync(secretId, cancellationToken);
-        if (client is null)
-            return false;
-        
-        client.RevokeSecret(secretId, _time.GetUtcNow());
-        await _repository.SaveChangesAsync(cancellationToken);
-        
-        return true;
-    }
-
-    public async Task<bool> RemoveSecretAsync(SecretId secretId, CancellationToken cancellationToken = default)
-    {
-        var client = await _repository.GetBySecretIdAsync(secretId, cancellationToken);
-        if (client is null)
-            return false;
-        
-        client.RemoveSecret(secretId, _time.GetUtcNow());
-        await _repository.SaveChangesAsync(cancellationToken);
-
-        return true;
-    }
 }
