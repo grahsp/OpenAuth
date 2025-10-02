@@ -1,5 +1,4 @@
 using Microsoft.Extensions.Time.Testing;
-using OpenAuth.Domain.Entities;
 using OpenAuth.Domain.ValueObjects;
 using OpenAuth.Infrastructure.Persistence;
 using OpenAuth.Infrastructure.Repositories;
@@ -83,9 +82,9 @@ public class ClientRepositoryTests : IAsyncLifetime
         await using var context = _fx.CreateContext();
         var repo = CreateRepository(context);
 
-        var client = new ClientBuilder().Build();
-        var secret = new ClientSecretBuilder().Build();
-        client.AddSecret(secret, _time.GetUtcNow());
+        var client = new ClientBuilder()
+            .WithSecret("hash")
+            .Build();
         
         repo.Add(client);
         await context.SaveChangesAsync();

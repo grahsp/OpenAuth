@@ -365,211 +365,148 @@ public class ClientTests
     public class AddSecret : ClientTests
     {
         [Fact]
-        public void AddSecret_Adds_Secret_To_Client()
+        public void AddsSecret_WhenValid()
         {
             var client = new ClientBuilder().Build();
-            var secret = new ClientSecretBuilder().Build();
-
-            client.AddSecret(secret, _time.GetUtcNow());
-
-            Assert.Contains(secret, client.Secrets);
-        }
-
-        [Fact]
-        public void AddSecret_Updates_Timestamp()
-        {
-            var client = new ClientBuilder().Build();
-            var secret = new ClientSecretBuilder().Build();
+            var hash = new SecretHash("hash");
             
-            _time.Advance(TimeSpan.FromSeconds(1));
-            var expected = _time.GetUtcNow();
-            client.AddSecret(secret, expected);
+            var utcNow = _time.GetUtcNow();
+            var secretId = client.AddSecret(hash, utcNow);
 
+            Assert.Contains(client.Secrets, s => s.Id == secretId && s.IsActive(utcNow));
+        }
+        
+        [Fact]
+        public void UpdateTimestamp_WhenSuccess()
+        {
+            var client = new ClientBuilder().Build();
+            var hash = new SecretHash("hash");
+            
+            _time.Advance(TimeSpan.FromHours(1));
+            var expected = _time.GetUtcNow();
+            
+            client.AddSecret(hash, expected);
             Assert.Equal(expected, client.UpdatedAt);
         }
 
         [Fact]
-        public void AddSecret_DoesNot_Update_After_Exception()
+        public void Throws_WhenExceedsMaxSecrets()
         {
             var client = new ClientBuilder().Build();
-            var secret = new ClientSecretBuilder().Build();
-            client.AddSecret(secret, _time.GetUtcNow());
+            var hash = new SecretHash("hash");
+            
+            var utcNow = _time.GetUtcNow();
 
-            var before = client.UpdatedAt;
-            Assert.Throws<InvalidOperationException>(() => client.AddSecret(secret, _time.GetUtcNow()));
-            Assert.Equal(client.UpdatedAt, before);           
-        }
-        
-        [Fact]
-        public void AddSecret_Throws_When_Null()
-        {
-            var client = new ClientBuilder().Build();
-            Assert.Throws<ArgumentNullException>(() => client.AddSecret(null!, _time.GetUtcNow()));
-        }
-        
-        [Fact]
-        public void AddSecret_Throws_When_Duplicate_Id()
-        {
-            var client = new ClientBuilder().Build();
-            var secret = new ClientSecretBuilder().Build();
-
-            client.AddSecret(secret, _time.GetUtcNow());
-
+            for (var i = 0; i < Client.MaxSecrets; i++)
+                client.AddSecret(hash, utcNow);
+            
             Assert.Throws<InvalidOperationException>(()
-                => client.AddSecret(secret, _time.GetUtcNow()));
+                => client.AddSecret(hash, utcNow));
         }
     }
 
     public class RevokeSecret : ClientTests
     {
         [Fact]
-        public void RevokeSecret_Revokes_If_Exists()
+        public void Throws_WhenSecretNotFound()
         {
             var client = new ClientBuilder().Build();
-            var secret = new ClientSecretBuilder().Build();
-            client.AddSecret(secret, _time.GetUtcNow());
 
-            client.RevokeSecret(secret.Id, _time.GetUtcNow());
-
-            Assert.Contains(secret, client.Secrets);
-            Assert.False(secret.IsActive(_time.GetUtcNow()));
+            Assert.Throws<InvalidOperationException>(()
+                => client.RevokeSecret(SecretId.New(), _time.GetUtcNow()));
         }
 
         [Fact]
-        public void RevokeSecret_DoesNothing_If_NotFound()
+        public void DoesNothing_WhenSecretIsInactive()
         {
-            var client = new ClientBuilder().Build();
-            var secret = new ClientSecretBuilder().Build();
+            var client = new ClientBuilder()
+                .WithSecret("hash")
+                .WithSecret("hash")
+                .Build();
 
-            client.RevokeSecret(secret.Id, _time.GetUtcNow());
-            Assert.Empty(client.Secrets);
-        }
-        
-        [Fact]
-        public void RevokeSecret_Updates_Timestamp_If_Exists()
-        {
-            var now = _time.GetUtcNow();
-            var client = new ClientBuilder().Build();
-            
-            var secret = new ClientSecretBuilder().Build();
-            client.AddSecret(secret, now);
-            
-            _time.Advance(TimeSpan.FromSeconds(1));
+            _time.Advance(TimeSpan.FromMinutes(30));
             var expected = _time.GetUtcNow();
+            
+            var secret = client.Secrets.First();
             client.RevokeSecret(secret.Id, expected);
 
             Assert.Equal(expected, client.UpdatedAt);
         }
-        
+
         [Fact]
-        public void RevokeSecret_DoesNot_Update_Timestamp_If_NotFound()
+        public void Throws_WhenRevokingLastSecret()
         {
-            var client = new ClientBuilder().Build();
+            var client = new ClientBuilder()
+                .WithSecret("hash")
+                .Build();
 
-            var before = client.UpdatedAt;
-            client.RevokeSecret(SecretId.New(), _time.GetUtcNow());
-
-            Assert.Equal(client.UpdatedAt, before);
-        }
-    }
-
-    public class RemoveSecret : ClientTests
-    {
-        [Fact]
-        public void RemoveSecret_Removes_If_Exists()
-        {
-            var client = new ClientBuilder().Build();
-            var secret = new ClientSecretBuilder().Build();
-            client.AddSecret(secret, _time.GetUtcNow());
-
-            client.RemoveSecret(secret.Id, _time.GetUtcNow());
-
-            Assert.DoesNotContain(secret, client.Secrets);
+            var secret = client.Secrets.First();
+            Assert.Throws<InvalidOperationException>(()
+                => client.RevokeSecret(secret.Id, _time.GetUtcNow()));           
         }
 
         [Fact]
-        public void RemoveSecret_DoesNothing_If_NotFound()
+        public void MarksSecretAsInactive_WhenValid()
         {
-            var client = new ClientBuilder().Build();
-            var secret = new ClientSecretBuilder().Build();
-
-            client.RemoveSecret(secret.Id, _time.GetUtcNow());
-
-            Assert.Empty(client.Secrets);
+            var client = new ClientBuilder()
+                .WithSecret("hash")
+                .WithSecret("hash")
+                .Build();
+            
+            var secret = client.Secrets.First();
+            client.RevokeSecret(secret.Id, _time.GetUtcNow());
+            
+            Assert.False(secret.IsActive(_time.GetUtcNow()));
         }
         
         [Fact]
-        public void RemoveSecret_Updates_Timestamp_If_Exists()
+        public void UpdateTimestamp_WhenSuccessful()
         {
-            var now = _time.GetUtcNow();
-            var client = new ClientBuilder().Build();
+            var client = new ClientBuilder()
+                .WithSecret("hash")
+                .WithSecret("hash")
+                .Build();
             
-            var secret = new ClientSecretBuilder().Build();
-            client.AddSecret(secret, now);
-            
-            _time.Advance(TimeSpan.FromSeconds(1));
+            _time.Advance(TimeSpan.FromHours(1));
             var expected = _time.GetUtcNow();
-            client.RemoveSecret(secret.Id, expected);
+            
+            var secret = client.Secrets.First();
+            client.RevokeSecret(secret.Id, expected);
 
             Assert.Equal(expected, client.UpdatedAt);
-        }
-        
-        [Fact]
-        public void RemoveSecret_DoesNot_Update_Timestamp_If_NotFound()
-        {
-            var client = new ClientBuilder().Build();
-
-            var before = client.UpdatedAt;
-            client.RemoveSecret(SecretId.New(), _time.GetUtcNow());
-
-            Assert.Equal(client.UpdatedAt, before);
         }
     }
 
     public class GetActiveSecrets : ClientTests
     {
         [Fact]
-        public void ActiveSecrets_Only_Returns_NonRevoked_And_NonExpired()
+        public void ReturnOnlyActiveSecrets()
         {
             var client = new ClientBuilder().Build();
+            var expired = new SecretHash("expired");
+            var revoked = new SecretHash("revoked");
+            var active = new SecretHash("active");
             
-            var active = new ClientSecretBuilder()
-                .WithCreatedAt(_time.GetUtcNow())
-                .WithLifetime(TimeSpan.FromDays(30)).Build();
-            var expired = new ClientSecretBuilder()
-                .WithCreatedAt(_time.GetUtcNow())
-                .WithLifetime(TimeSpan.FromMinutes(10))
-                .Build();
-            var revoked = new ClientSecretBuilder()
-                .WithCreatedAt(_time.GetUtcNow())
-                .Build();
-            revoked.Revoke(_time.GetUtcNow());
-
-            client.AddSecret(active, _time.GetUtcNow());
+            // Advance time to expire token immediately.
             client.AddSecret(expired, _time.GetUtcNow());
+            _time.Advance(TimeSpan.FromDays(365));
+            
+            // Revoke secret immediately.
             client.AddSecret(revoked, _time.GetUtcNow());
-
-            _time.Advance(TimeSpan.FromDays(10));
-            var result = client.ActiveSecrets(_time.GetUtcNow()).ToList();
-
-            Assert.Contains(active, result);
-            Assert.DoesNotContain(expired, result);
-            Assert.DoesNotContain(revoked, result);
+            client.Secrets.First(s => s.Hash == revoked)
+                .Revoke(_time.GetUtcNow());
+            
+            // Add active secret.
+            client.AddSecret(active, _time.GetUtcNow());
+        
+            var result = client
+                .ActiveSecrets(_time.GetUtcNow())
+                .ToArray();
+        
+            Assert.Contains(result, r => r.Hash == active);
+            Assert.DoesNotContain(result, r => r.Hash == expired);
+            Assert.DoesNotContain(result, r => r.Hash == revoked);
         }
-
-        [Fact]
-        public void Revoke_Secret_Changes_ActiveSecrets_Result()
-        {
-            var client = new ClientBuilder().Build();
-            var secret = new ClientSecretBuilder().Build();
-            client.AddSecret(secret, _time.GetUtcNow());
-
-            Assert.Contains(secret, client.ActiveSecrets(_time.GetUtcNow()));
-
-            secret.Revoke(_time.GetUtcNow());
-
-            Assert.DoesNotContain(secret, client.ActiveSecrets(_time.GetUtcNow()));
-        } 
     }
 
     public class Enabled : ClientTests

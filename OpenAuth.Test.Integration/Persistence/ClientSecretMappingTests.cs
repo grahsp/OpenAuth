@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Time.Testing;
 using OpenAuth.Domain.Entities;
-using OpenAuth.Domain.ValueObjects;
 using OpenAuth.Test.Common.Builders;
 using OpenAuth.Test.Integration.Fixtures;
 
@@ -24,21 +23,20 @@ public class ClientSecretMappingTests : IAsyncLifetime
     {
         await using var ctx = _fx.CreateContext();
         
-        var client = new ClientBuilder().Build();
-        var hash = new SecretHash("secret");
-        var secret = new ClientSecretBuilder()
-            .WithHash(hash)
+        const string hash = "secret";
+        var client = new ClientBuilder()
+            .WithSecret(hash)
             .Build();
-
-        client.AddSecret(secret, _time.GetUtcNow());
+        
         ctx.Add(client);
         await ctx.SaveChangesAsync();
 
+        var secret = client.Secrets.First();
         var loaded = await ctx.Set<ClientSecret>().SingleAsync(x => x.Id == secret.Id);
 
         Assert.Equal(secret.Id, loaded.Id);
         Assert.Equal(client.Id, loaded.ClientId);
-        Assert.Equal(hash, loaded.Hash);
+        Assert.Equal(hash, loaded.Hash.Value);
         Assert.Equal(secret.CreatedAt, loaded.CreatedAt);
         Assert.Equal(secret.ExpiresAt, loaded.ExpiresAt);
         Assert.Equal(secret.RevokedAt, loaded.RevokedAt);
