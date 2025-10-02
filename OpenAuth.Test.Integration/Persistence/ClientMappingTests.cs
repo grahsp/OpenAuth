@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Time.Testing;
-using OpenAuth.Domain.Entities;
 using OpenAuth.Domain.ValueObjects;
 using OpenAuth.Test.Common.Builders;
 using OpenAuth.Test.Integration.Fixtures;
@@ -78,10 +77,9 @@ public class ClientMappingTests : IAsyncLifetime
     {
         await using var ctx = _fx.CreateContext();
         
-        var client = new ClientBuilder().Build();
-        var secret = new ClientSecretBuilder().Build();
-
-        client.AddSecret(secret, _time.GetUtcNow());
+        var client = new ClientBuilder()
+            .WithSecret("hash")
+            .Build();
         
         ctx.Add(client);
         await ctx.SaveChangesAsync();
