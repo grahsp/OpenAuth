@@ -1,5 +1,9 @@
-using OpenAuth.Domain.Entities;
-
 namespace OpenAuth.Domain.ValueObjects;
 
-public record SecretCreationResult(ClientSecret Secret, string Plain);
+public record SecretCreationResult
+(
+    string PlainTextSecret,
+    string SecretId,
+    DateTimeOffset CreatedAt,
+    DateTimeOffset ExpiresAt
+);

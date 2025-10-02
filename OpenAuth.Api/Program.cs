@@ -44,7 +44,8 @@ public class Program
         builder.Services.AddScoped<IClientService, ClientService>();
         builder.Services.AddScoped<IClientFactory, ClientFactory>();
         
-        // Client Secret
+        // Secret Services
+        builder.Services.AddScoped<ISecretService, SecretService>();
         builder.Services.AddScoped<ISecretHasher, Pbkdf2Hasher>();
         builder.Services.AddScoped<ISecretGenerator, SecretGenerator>();
 
