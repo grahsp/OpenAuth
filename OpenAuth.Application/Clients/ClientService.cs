@@ -6,14 +6,12 @@ namespace OpenAuth.Application.Clients;
 public class ClientService : IClientService
 {
     private readonly IClientRepository _repository;
-    private readonly IClientSecretFactory _secretFactory;
     private readonly IClientFactory _clientFactory;
     private readonly TimeProvider _time;
     
-    public ClientService(IClientRepository repository, IClientSecretFactory secretFactory, IClientFactory clientFactory, TimeProvider time)
+    public ClientService(IClientRepository repository, IClientFactory clientFactory, TimeProvider time)
     {
         _repository = repository;
-        _secretFactory = secretFactory;
         _clientFactory = clientFactory;
         _time = time;
     }
@@ -150,14 +148,16 @@ public class ClientService : IClientService
     
     public async Task<SecretCreationResult> AddSecretAsync(ClientId id, DateTime? expiresAt = null, CancellationToken cancellationToken = default)
     {
-        var client = await _repository.GetByIdAsync(id, cancellationToken)
-                     ?? throw new InvalidOperationException("Client not found.");
+        // var client = await _repository.GetByIdAsync(id, cancellationToken)
+        //              ?? throw new InvalidOperationException("Client not found.");
+        //
+        // var creationResult = _secretFactory.Create(expiresAt);
+        // client.AddSecret(creationResult.Secret, _time.GetUtcNow());
+        //
+        // await _repository.SaveChangesAsync(cancellationToken);
+        // return creationResult;
         
-        var creationResult = _secretFactory.Create(expiresAt);
-        client.AddSecret(creationResult.Secret, _time.GetUtcNow());
-
-        await _repository.SaveChangesAsync(cancellationToken);
-        return creationResult;
+        throw new NotImplementedException();
     }
 
     public async Task<bool> RevokeSecretAsync(SecretId secretId, CancellationToken cancellationToken = default)

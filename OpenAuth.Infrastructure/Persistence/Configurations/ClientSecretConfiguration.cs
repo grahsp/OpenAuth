@@ -39,7 +39,7 @@ public class ClientSecretConfiguration : IEntityTypeConfiguration<ClientSecret>
             .IsRequired();
         
         builder.Property(x => x.ExpiresAt)
-            .IsRequired(false);
+            .IsRequired();
         
         builder.Property(x => x.RevokedAt)
             .IsRequired(false);

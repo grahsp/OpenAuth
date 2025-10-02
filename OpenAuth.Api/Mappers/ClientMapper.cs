@@ -25,7 +25,6 @@ public static class ClientMapper
         => new ClientSecretResponse(
             secret.Id.Value,
             secret.ClientId.Value,
-            secret.IsActive(),
             secret.CreatedAt,
             secret.ExpiresAt,
             secret.RevokedAt

@@ -9,7 +9,6 @@ namespace OpenAuth.Test.Unit.Clients;
 public class ClientServiceTests
 {
     private FakeClientRepository _repo;
-    private IClientSecretFactory _secretFactory;
     private IClientFactory _clientFactory;
     private TimeProvider _time;
 
@@ -19,13 +18,12 @@ public class ClientServiceTests
     public ClientServiceTests()
     {
         _repo = new FakeClientRepository();
-        _secretFactory = new FakeClientSecretFactory();
         _time = new FakeTimeProvider();
         _clientFactory = new ClientFactory(_time);
     }
 
     private ClientService CreateSut()
-        => new(_repo, _secretFactory, new ClientFactory(_time), _time);
+        => new(_repo, _clientFactory, _time);
 
     
     public class Queries : ClientServiceTests
@@ -206,75 +204,4 @@ public class ClientServiceTests
         }
     }
 
-    
-    public class Secrets : ClientServiceTests
-    {
-        [Fact]
-        public async Task AddSecretAsync_PersistsSecretWithProperties()
-        {
-            var service = CreateSut();
-            var client = await service.RegisterAsync(new ClientName("test"));
-
-            var creationResult = await service.AddSecretAsync(client.Id);
-
-            var updated = await service.GetByIdAsync(client.Id);
-            Assert.Single(updated!.Secrets);
-            Assert.Equal("plain-secret-1", creationResult.Plain);
-        }
-
-        [Fact]
-        public async Task AddSecretAsync_Throws_WhenClientNotFound()
-        {
-            var service = CreateSut();
-            await Assert.ThrowsAsync<InvalidOperationException>(
-                () => service.AddSecretAsync(ClientId.New()));
-        }
-
-        [Fact]
-        public async Task RevokeSecretAsync_RevokesSecret_WhenClientAndSecretExist()
-        {
-            var service = CreateSut();
-            var client = await service.RegisterAsync(new ClientName("test"));
-            _ = await service.AddSecretAsync(client.Id);
-            var secret = client.Secrets.First();
-
-            var result = await service.RevokeSecretAsync(secret.Id);
-
-            Assert.True(result);
-            Assert.True(secret.RevokedAt.HasValue);
-        }
-
-        [Fact]
-        public async Task RevokeSecretAsync_ReturnsFalse_WhenClientNotFound()
-        {
-            var service = CreateSut();
-            var result = await service.RevokeSecretAsync(SecretId.New());
-            Assert.False(result);
-        }
-        
-        [Fact]
-        public async Task RemoveSecretAsync_RemovesSecret_WhenClientAndSecretExist()
-        {
-            var service = CreateSut();
-            var client = await service.RegisterAsync(new ClientName("test"));
-            
-            await service.AddSecretAsync(client.Id);
-            var secret = client.Secrets.First();
-
-            var result = await service.RemoveSecretAsync(secret.Id);
-            var updated = await _repo.GetByIdAsync(client.Id);
-
-            Assert.True(result);
-            Assert.Empty(updated!.Secrets);
-        }
-
-        [Fact]
-        public async Task RemoveSecretAsync_ReturnsFalse_WhenClientNotFound()
-        {
-            var service = CreateSut();
-
-            var result = await service.RemoveSecretAsync(SecretId.New());
-            Assert.False(result);
-        }
-    }
 }

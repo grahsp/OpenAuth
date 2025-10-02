@@ -9,10 +9,10 @@ public sealed class Client
 {
     private Client() { }
 
-    private Client(ClientName name, DateTimeOffset now)
+    private Client(ClientName name, DateTimeOffset utcNow)
     {
         Name = name;
-        CreatedAt = UpdatedAt = now;
+        CreatedAt = UpdatedAt = utcNow;
     }
     
 
@@ -39,32 +39,32 @@ public sealed class Client
     public DateTimeOffset UpdatedAt { get; private set; }
 
 
-    internal static Client Create(ClientName name, DateTimeOffset now)
-        => new(name, now);
+    internal static Client Create(ClientName name, DateTimeOffset utcNow)
+        => new(name, utcNow);
 
-    public bool TryAddAudience(Audience audience, DateTimeOffset now)
+    public bool TryAddAudience(Audience audience, DateTimeOffset utcNow)
     {
         ArgumentNullException.ThrowIfNull(audience);
         
         if (!_audiences.Add(audience))
             return false;
         
-        Touch(now);
+        Touch(utcNow);
         return true;
     }
 
-    public bool TryRemoveAudience(Audience audience, DateTimeOffset now)
+    public bool TryRemoveAudience(Audience audience, DateTimeOffset utcNow)
     {
         ArgumentNullException.ThrowIfNull(audience);
         
         if (!_audiences.Remove(audience))
             return false;
         
-        Touch(now);
+        Touch(utcNow);
         return true;
     }
     
-    public void SetScopes(Audience audience, IEnumerable<Scope> scopes, DateTimeOffset now)
+    public void SetScopes(Audience audience, IEnumerable<Scope> scopes, DateTimeOffset utcNow)
     {
         if (!_audiences.TryGetValue(audience, out var aud))
             throw new InvalidOperationException("Audience not found.");
@@ -75,10 +75,10 @@ public sealed class Client
         foreach (var scope in scopes)
             aud.GrantScope(scope);
         
-        Touch(now);
+        Touch(utcNow);
     }
 
-    public void GrantScopes(Audience audience, IEnumerable<Scope> scopes, DateTimeOffset now)
+    public void GrantScopes(Audience audience, IEnumerable<Scope> scopes, DateTimeOffset utcNow)
     {
         if (!_audiences.TryGetValue(audience, out var aud))
             throw new InvalidOperationException("Audience not found.");
@@ -89,10 +89,10 @@ public sealed class Client
                 updated = true;
 
         if (updated)
-            Touch(now);
+            Touch(utcNow);
     }
 
-    public void RevokeScopes(Audience audience, IEnumerable<Scope> scopes, DateTimeOffset now)
+    public void RevokeScopes(Audience audience, IEnumerable<Scope> scopes, DateTimeOffset utcNow)
     {
         if (!_audiences.TryGetValue(audience, out var aud))
             throw new InvalidOperationException("Audience not found.");
@@ -103,11 +103,11 @@ public sealed class Client
                 updated = true;
         
         if (updated)
-            Touch(now);
+            Touch(utcNow);
     }
 
 
-    public void Rename(ClientName newName, DateTimeOffset now)
+    public void Rename(ClientName newName, DateTimeOffset utcNow)
     {
         ArgumentNullException.ThrowIfNull(newName);
         
@@ -115,10 +115,10 @@ public sealed class Client
             return;
         
         Name = newName;
-        Touch(now);
+        Touch(utcNow);
     }
 
-    public void SetTokenLifetime(TimeSpan value, DateTimeOffset now)
+    public void SetTokenLifetime(TimeSpan value, DateTimeOffset utcNow)
     {
         if (value <= TimeSpan.Zero)
             throw new ArgumentOutOfRangeException(nameof(value), "TokenLifetime must be positive.");
@@ -127,10 +127,10 @@ public sealed class Client
             return;
         
         TokenLifetime = value;
-        Touch(now);
+        Touch(utcNow);
     }
 
-    public void AddSecret(ClientSecret secret, DateTimeOffset now)
+    public void AddSecret(ClientSecret secret, DateTimeOffset utcNow)
     {
         ArgumentNullException.ThrowIfNull(secret);
 
@@ -138,51 +138,51 @@ public sealed class Client
             throw new InvalidOperationException("Secret already exists under client.");
         
         Secrets.Add(secret);
-        Touch(now);
+        Touch(utcNow);
     }
     
-    public void RevokeSecret(SecretId secretId, DateTimeOffset now)
+    public void RevokeSecret(SecretId secretId, DateTimeOffset utcNow)
     {
         var secret = Secrets.FirstOrDefault(x => x.Id == secretId);
         if (secret is null)
             return;
         
-        secret.Revoke();
-        Touch(now);
+        secret.Revoke(utcNow);
+        Touch(utcNow);
     }
 
-    public void RemoveSecret(SecretId secretId, DateTimeOffset now)
+    public void RemoveSecret(SecretId secretId, DateTimeOffset utcNow)
     {
         var secret = Secrets.FirstOrDefault(x => x.Id == secretId);
         if (secret is null)
             return;
         
         Secrets.Remove(secret);
-        Touch(now);
+        Touch(utcNow);
     }
 
-    public IEnumerable<ClientSecret> ActiveSecrets() =>
-        Secrets.Where(x => x.IsActive())
+    public IEnumerable<ClientSecret> ActiveSecrets(DateTimeOffset utcNow) =>
+        Secrets.Where(x => x.IsActive(utcNow))
             .OrderByDescending(x => x.CreatedAt);
 
-    public void Enable(DateTimeOffset now)
+    public void Enable(DateTimeOffset utcNow)
     {
         if (Enabled)
             return;
         
         Enabled = true;
-        Touch(now);
+        Touch(utcNow);
     }
 
-    public void Disable(DateTimeOffset now)
+    public void Disable(DateTimeOffset utcNow)
     {
         if (!Enabled)
             return;
         
         Enabled = false;
-        Touch(now);
+        Touch(utcNow);
     }
     
-    private void Touch(DateTimeOffset now)
-        => UpdatedAt = now;
+    private void Touch(DateTimeOffset utcNow)
+        => UpdatedAt = utcNow;
 }

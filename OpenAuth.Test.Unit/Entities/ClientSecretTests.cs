@@ -1,62 +1,76 @@
-using OpenAuth.Domain.Entities;
+using Microsoft.Extensions.Time.Testing;
 using OpenAuth.Domain.ValueObjects;
+using OpenAuth.Test.Common.Builders;
 
 namespace OpenAuth.Test.Unit.Entities;
 
 public class ClientSecretTests
 {
+    private readonly FakeTimeProvider _time = new ();
+    
+    
     [Fact]
     public void Ctor_Sets_Hash_And_OptionalExpiry()
     {
         var hash = new SecretHash("v1$1$abc$xyz");
         var now = DateTime.UtcNow;
-        var exp = now.AddHours(1);
+        var lifetime = TimeSpan.FromHours(1);
 
-        var s = new ClientSecret(hash, exp);
+        var secret = new ClientSecretBuilder()
+            .WithHash(hash)
+            .WithCreatedAt(now)
+            .WithLifetime(lifetime)
+            .Build();
 
-        Assert.NotEqual(Guid.Empty, s.Id.Value);
-        Assert.Equal(hash, s.Hash);
-        Assert.Equal(exp, s.ExpiresAt);
-        Assert.Null(s.RevokedAt);
+        Assert.NotEqual(Guid.Empty, secret.Id.Value);
+        Assert.Equal(hash, secret.Hash);
+        Assert.Equal(now.Add(lifetime), secret.ExpiresAt);
+        Assert.Null(secret.RevokedAt);
         
         // CreatedAt should be near now
-        Assert.InRange(s.CreatedAt, now.AddSeconds(-5), now.AddSeconds(5));
+        Assert.InRange(secret.CreatedAt, now.AddSeconds(-5), now.AddSeconds(5));
     }
 
     [Fact]
     public void IsActive_True_When_NoExpiryAndNotRevoked()
     {
-        var s = new ClientSecret(new SecretHash("v1$1$abc$xyz"));
-        Assert.True(s.IsActive());
+        var secret = new ClientSecretBuilder().Build();
+        Assert.True(secret.IsActive(_time.GetUtcNow()));
     }
 
     [Fact]
     public void IsActive_False_When_Expired()
     {
-        var s = new ClientSecret(new SecretHash("v1$1$abc$xyz"), DateTime.UtcNow.AddSeconds(-1));
-        Assert.False(s.IsActive());
+        var lifetime = TimeSpan.FromDays(1);
+        var secret = new ClientSecretBuilder()
+            .WithCreatedAt(_time.GetUtcNow())
+            .WithLifetime(lifetime)
+            .Build();
+        
+        _time.Advance(lifetime);
+        Assert.False(secret.IsActive(_time.GetUtcNow()));
     }
 
     [Fact]
     public void IsActive_True_When_ExpiresInFuture()
     {
-        var s = new ClientSecret(new SecretHash("v1$1$abc$xyz"), DateTime.UtcNow.AddMinutes(5));
-        Assert.True(s.IsActive());
+        var secret = new ClientSecretBuilder().Build();
+        Assert.True(secret.IsActive(_time.GetUtcNow()));
     }
 
     [Fact]
     public void Revoke_IsIdempotent_And_Disables()
     {
-        var s = new ClientSecret(new SecretHash("v1$1$abc$xyz"), DateTime.UtcNow.AddHours(1));
-        Assert.True(s.IsActive());
+        var secret = new ClientSecretBuilder().Build();
+        Assert.True(secret.IsActive(_time.GetUtcNow()));
 
-        s.Revoke();
-        var first = s.RevokedAt;
-        Assert.False(s.IsActive());
+        secret.Revoke(_time.GetUtcNow());
+        var first = secret.RevokedAt;
+        Assert.False(secret.IsActive(_time.GetUtcNow()));
         Assert.NotNull(first);
 
         // Calling again does not change the timestamp
-        s.Revoke();
-        Assert.Equal(first, s.RevokedAt);
+        secret.Revoke(_time.GetUtcNow());
+        Assert.Equal(first, secret.RevokedAt);
     }
 }
