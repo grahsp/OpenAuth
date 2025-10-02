@@ -84,7 +84,8 @@ public class ClientRepositoryTests : IAsyncLifetime
         var repo = CreateRepository(context);
 
         var client = new ClientBuilder().Build();
-        client.AddSecret(new ClientSecret(new SecretHash("secret-hash")), _time.GetUtcNow());
+        var secret = new ClientSecretBuilder().Build();
+        client.AddSecret(secret, _time.GetUtcNow());
         
         repo.Add(client);
         await context.SaveChangesAsync();

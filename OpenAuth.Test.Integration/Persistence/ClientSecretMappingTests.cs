@@ -26,7 +26,9 @@ public class ClientSecretMappingTests : IAsyncLifetime
         
         var client = new ClientBuilder().Build();
         var hash = new SecretHash("secret");
-        var secret = new ClientSecret(hash, DateTime.UtcNow.AddDays(7));
+        var secret = new ClientSecretBuilder()
+            .WithHash(hash)
+            .Build();
 
         client.AddSecret(secret, _time.GetUtcNow());
         ctx.Add(client);
@@ -46,9 +48,7 @@ public class ClientSecretMappingTests : IAsyncLifetime
     public async Task ClientSecret_Requires_Client()
     {
         await using var ctx = _fx.CreateContext();
-
-        var hash = new SecretHash("secret");
-        var secret = new ClientSecret(hash);
+        var secret = new ClientSecretBuilder().Build();
         
         ctx.Add(secret);
         await Assert.ThrowsAnyAsync<DbUpdateException>(() => ctx.SaveChangesAsync());

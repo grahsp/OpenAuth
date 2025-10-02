@@ -5,13 +5,16 @@ namespace OpenAuth.Application.Clients;
 
 public class ClientSecretValidator : IClientSecretValidator
 {
-    public ClientSecretValidator(ISecretHasher hasher)
+    private readonly ISecretHasher _hasher;
+    private readonly TimeProvider _time;
+
+    public ClientSecretValidator(ISecretHasher hasher, TimeProvider time)
     {
         _hasher = hasher;
+        _time = time;
     }
     
-    private readonly ISecretHasher _hasher;
-
+    
     public bool Verify(string plain, Client client)
     {
         ArgumentNullException.ThrowIfNull(client);
@@ -19,6 +22,6 @@ public class ClientSecretValidator : IClientSecretValidator
         if (string.IsNullOrWhiteSpace(plain))
             return false;
         
-        return client.ActiveSecrets().Any(secret => _hasher.Verify(plain, secret.Hash));
+        return client.ActiveSecrets(_time.GetUtcNow()).Any(secret => _hasher.Verify(plain, secret.Hash));
     }
 }

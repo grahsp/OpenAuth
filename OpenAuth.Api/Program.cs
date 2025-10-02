@@ -7,6 +7,7 @@ using OpenAuth.Application.Security.Signing;
 using OpenAuth.Application.Security.Tokens;
 using OpenAuth.Application.SigningKeys;
 using OpenAuth.Domain.Configurations;
+using OpenAuth.Infrastructure.Clients;
 using OpenAuth.Infrastructure.Persistence;
 using OpenAuth.Infrastructure.Repositories;
 using OpenAuth.Infrastructure.Security.Jwks;
@@ -39,9 +40,9 @@ public class Program
 
         // Client Services
         builder.Services.AddScoped<IClientRepository, ClientRepository>();
-        builder.Services.AddScoped<IClientSecretFactory, ClientSecretFactory>();
         builder.Services.AddScoped<IClientSecretValidator, ClientSecretValidator>();
         builder.Services.AddScoped<IClientService, ClientService>();
+        builder.Services.AddScoped<IClientFactory, ClientFactory>();
         
         // Client Secret
         builder.Services.AddScoped<ISecretHasher, Pbkdf2Hasher>();

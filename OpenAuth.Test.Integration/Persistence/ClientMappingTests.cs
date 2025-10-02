@@ -79,7 +79,7 @@ public class ClientMappingTests : IAsyncLifetime
         await using var ctx = _fx.CreateContext();
         
         var client = new ClientBuilder().Build();
-        var secret = new ClientSecret(new SecretHash("secret"));
+        var secret = new ClientSecretBuilder().Build();
 
         client.AddSecret(secret, _time.GetUtcNow());
         

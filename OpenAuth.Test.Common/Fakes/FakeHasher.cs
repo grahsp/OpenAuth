@@ -8,8 +8,8 @@ public class FakeHasher : ISecretHasher
     private readonly string _expected;
     public FakeHasher(string expected) => _expected = expected;
 
-    public SecretHash Hash(string plain) => new SecretHash($"hash:{plain}");
+    public SecretHash Hash(string plain) => new SecretHash("plain");
 
     public bool Verify(string plain, SecretHash encoded)
-        => encoded.Value == $"hash:{plain}" && plain == _expected;
+        => encoded.Value == plain && plain == _expected;
 }
