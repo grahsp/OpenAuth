@@ -153,4 +153,63 @@ public class SecretServiceTests
             Assert.True(_repo.Saved);
         }
     }
+
+    public class RevokeSecretAsync : SecretServiceTests
+    {
+        [Fact]
+        public async Task ClientNotFound_ThrowsException()
+        {
+            // Arrange
+            var service = CreateSut();
+
+            // Act & Assert
+            Assert.False(_repo.Saved);
+            await Assert.ThrowsAsync<InvalidOperationException>(()
+                => service.RevokeSecretAsync(ClientId.New(), SecretId.New()));
+        }
+
+        [Fact]
+        public async Task Success_RevokeSecret()
+        {
+            // Arrange
+            var service = CreateSut();
+            
+            // Add additional secret because the last active secret cannot be revoked.
+            var client = new ClientBuilder()
+                .WithSecret("hash")
+                .WithSecret("hash")
+                .Build();
+            
+            _repo.Add(client);
+            var expected = _time.GetUtcNow();
+            
+            // Act
+            var secret = client.Secrets.First();
+            await service.RevokeSecretAsync(client.Id, secret.Id);
+
+            // Assert
+            Assert.Equal(expected, secret.RevokedAt);
+        }
+        
+        [Fact]
+        public async Task Success_SaveChanges()
+        {
+            // Arrange
+            var service = CreateSut();
+            
+            // Add additional secret because the last active secret cannot be revoked.
+            var client = new ClientBuilder()
+                .WithSecret("hash")
+                .WithSecret("hash")
+                .Build();
+            
+            _repo.Add(client);
+            
+            // Act
+            await service.RevokeSecretAsync(client.Id, client.Secrets.First().Id);
+            
+            // Assert
+            Assert.True(_repo.Saved);
+        }
+    }
 }
