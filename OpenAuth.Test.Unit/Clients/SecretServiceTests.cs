@@ -1,0 +1,156 @@
+using Microsoft.Extensions.Time.Testing;
+using NSubstitute;
+using OpenAuth.Application.Clients;
+using OpenAuth.Application.Security.Secrets;
+using OpenAuth.Domain.ValueObjects;
+using OpenAuth.Test.Common.Builders;
+using OpenAuth.Test.Common.Fakes;
+
+namespace OpenAuth.Test.Unit.Clients;
+
+public class SecretServiceTests
+{
+    private FakeClientRepository _repo;
+    private ISecretGenerator _generator;
+    private ISecretHasher _hasher;
+    private FakeTimeProvider _time;
+
+    public SecretServiceTests()
+    {
+        _repo = new FakeClientRepository();
+        _generator = Substitute.For<ISecretGenerator>();
+        _hasher = Substitute.For<ISecretHasher>();
+        _time = new FakeTimeProvider();
+        
+        _generator.Generate().Returns("secret");
+        _hasher.Hash(Arg.Any<string>()).Returns(new SecretHash("$2a$10$hash"));
+    }
+
+    private SecretService CreateSut()
+        => new(_repo, _generator, _hasher, _time);
+
+
+    public class AddSecretAsync : SecretServiceTests
+    {
+        [Fact]
+        public async Task Success_AddsSecretToClient()
+        {
+            // Arrange
+            var service = CreateSut();
+            var client = new ClientBuilder().Build();
+            _repo.Add(client);
+            
+            // Act
+            await service.AddSecretAsync(client.Id);
+            
+            // Assert
+            Assert.Single(client.Secrets);
+        }
+
+        [Fact]
+        public async Task Success_ReturnsCorrectResponse()
+        {
+            // Arrange
+            var service = CreateSut();
+            var client = new ClientBuilder().Build();
+            _repo.Add(client);
+
+            var expectedPlain = "secret";
+            var expectedHash = new SecretHash("$2a$10$hash");
+            _generator.Generate().Returns(expectedPlain);
+            _hasher.Hash(Arg.Any<string>()).Returns(expectedHash);
+            
+            _time.Advance(TimeSpan.FromHours(1));
+            var expectedUtcNow = _time.GetUtcNow();
+            
+            // Act
+            var result = await service.AddSecretAsync(client.Id);
+            
+            // Assert
+            Assert.Equal(expectedPlain, result.PlainTextSecret);
+            Assert.Equal(expectedUtcNow, result.CreatedAt);
+            
+            var secret = client.Secrets.Single();
+            Assert.Equal(expectedHash, secret.Hash);
+            Assert.Equal(secret.Id, result.SecretId);
+        }
+        
+        [Fact]
+        public async Task ClientNotFound_ThrowsException()
+        {
+            // Arrange
+            var service = CreateSut();
+
+            // Act & Assert
+            await Assert.ThrowsAsync<InvalidOperationException>(()
+                => service.AddSecretAsync(ClientId.New()));
+        }
+
+        [Fact]
+        public async Task CallsSecretGenerator()
+        {
+            // Arrange
+            var service = CreateSut();
+            var client = new ClientBuilder().Build();
+            _repo.Add(client);
+
+            // Act
+            await service.AddSecretAsync(client.Id);
+            
+            // Assert
+            _generator.Received(1).Generate();
+        }
+
+        [Fact]
+        public async Task Success_PassGeneratedSecretToHasher()
+        {
+            // Arrange
+            var service = CreateSut();
+            var client = new ClientBuilder().Build();
+            _repo.Add(client);
+            
+            var expected = "generated-secret";
+            _generator.Generate().Returns(expected);
+            
+            // Act
+            await service.AddSecretAsync(client.Id);
+            
+            // Assert
+            _hasher.Received(1).Hash(expected);
+        }
+
+        [Fact]
+        public async Task UsesCurrentTimeOfTimeProvider()
+        {
+            // Arrange
+            var service = CreateSut();
+            var client = new ClientBuilder().Build();
+            _repo.Add(client);
+            
+            _time.Advance(TimeSpan.FromHours(5));
+            var expected = _time.GetUtcNow();
+            
+            // Act
+            await service.AddSecretAsync(client.Id);
+            
+            // Assert
+            var secret = client.Secrets.Single();
+            Assert.Equal(expected, secret.CreatedAt);
+        }
+
+        [Fact]
+        public async Task SaveChanges()
+        {
+            // Arrange
+            var service = CreateSut();
+            var client = new ClientBuilder().Build();
+            _repo.Add(client);
+            
+            // Act
+            await service.AddSecretAsync(client.Id);
+            
+            // Assert
+            Assert.True(_repo.Saved);
+        }
+    }
+}
