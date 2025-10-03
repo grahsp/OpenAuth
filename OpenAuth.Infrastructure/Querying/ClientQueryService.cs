@@ -41,12 +41,14 @@ public class ClientQueryService : IClientQueryService
                 c.Id,
                 c.Name,
                 c.CreatedAt,
-                c.Secrets.Select(s => new ClientSecretDto(
-                    s.Id,
-                    s.CreatedAt,
-                    s.ExpiresAt,
-                    s.RevokedAt
-                )),
+                c.Secrets
+                    .OrderByDescending(s => s.CreatedAt)
+                    .Select(s => new ClientSecretDto(
+                        s.Id,
+                        s.CreatedAt,
+                        s.ExpiresAt,
+                        s.RevokedAt
+                    )),
                 c.Audiences.Select(a => new AudienceSummary(
                     a.Value,
                     a.Scopes.Select(s => s.Value)))
