@@ -40,7 +40,7 @@ public class SecretService : ISecretService
         
         return new SecretCreationResult(
             plainSecret,
-            secret.Id.ToString(),
+            secret.Id,
             secret.CreatedAt,
             secret.ExpiresAt
         );
