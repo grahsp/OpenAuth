@@ -5,6 +5,8 @@ namespace OpenAuth.Infrastructure.Persistence.QuerySpecifications;
 
 public static class SigningKeyQuerySpecifications
 {
-    public static Expression<Func<SigningKey, bool>> IsActive(DateTimeOffset now)
-        => k => k.RevokedAt == null && k.ExpiresAt > now;
+    public static IQueryable<SigningKey> WhereActive(
+        this IQueryable<SigningKey> query,
+        DateTimeOffset now)
+        => query.Where(k => k.RevokedAt == null && k.ExpiresAt > now);
 }
