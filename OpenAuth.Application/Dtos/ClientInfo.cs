@@ -2,8 +2,9 @@ using OpenAuth.Domain.ValueObjects;
 
 namespace OpenAuth.Application.Dtos;
 
-public record ClientSummary(
+public record ClientInfo(
     ClientId Id,
     ClientName Name,
-    DateTimeOffset CreatedAt
+    DateTimeOffset CreatedAt,
+    DateTimeOffset UpdatedAt
 );

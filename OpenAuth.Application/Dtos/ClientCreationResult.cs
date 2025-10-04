@@ -2,11 +2,11 @@ using OpenAuth.Domain.ValueObjects;
 
 namespace OpenAuth.Application.Dtos;
 
-public record ClientDetails(
+public class ClientCreationResult
+(
     ClientId Id,
     ClientName Name,
     DateTimeOffset CreatedAt,
     DateTimeOffset UpdatedAt,
-    IEnumerable<SecretInfo> Secrets,
-    IEnumerable<AudienceInfo> Audiences
+    SecretCreationResult InitialSecret
 );
