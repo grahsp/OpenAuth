@@ -41,7 +41,7 @@ public class ClientTests
             var read = new Scope("read");
             var write = new Scope("write");
 
-            client.TryAddAudience(aud, _time.GetUtcNow());
+            client.AddAudience(aud, _time.GetUtcNow());
             client.GrantScopes(aud, [read, write, write], _time.GetUtcNow());
 
             var scopes = client.GetAllowedScopes(aud);
@@ -61,7 +61,7 @@ public class ClientTests
             
             var aud = new Audience("api");
             var read = new Scope("read");
-            client.TryAddAudience(aud, now);
+            client.AddAudience(aud, now);
             
             _time.Advance(TimeSpan.FromSeconds(1));
             var expected = _time.GetUtcNow();
@@ -81,7 +81,7 @@ public class ClientTests
             var read = new Scope("read");
             var write = new Scope("write");
             
-            client.TryAddAudience(aud, _time.GetUtcNow());
+            client.AddAudience(aud, _time.GetUtcNow());
             client.GrantScopes(aud, [read, write], _time.GetUtcNow());
 
             client.RevokeScopes(aud, [read], _time.GetUtcNow());
@@ -98,7 +98,7 @@ public class ClientTests
             var aud = new Audience("api");
             var read = new Scope("read");
             
-            client.TryAddAudience(aud, _time.GetUtcNow());
+            client.AddAudience(aud, _time.GetUtcNow());
             client.GrantScopes(aud, [read], _time.GetUtcNow());
         
             _time.Advance(TimeSpan.FromSeconds(1));
@@ -113,7 +113,7 @@ public class ClientTests
         {
             var client = new ClientBuilder().Build();
             var aud = new Audience("unknown");
-            client.TryAddAudience(aud, _time.GetUtcNow());
+            client.AddAudience(aud, _time.GetUtcNow());
 
             var before = client.UpdatedAt;
             client.RevokeScopes(aud, [new Scope("does-not-exist")], _time.GetUtcNow());
@@ -130,7 +130,7 @@ public class ClientTests
             var client = new ClientBuilder().Build();
             var api = new Audience("api");
 
-            var result = client.TryAddAudience(api, _time.GetUtcNow());
+            var result = client.AddAudience(api, _time.GetUtcNow());
             
             Assert.True(result);
             Assert.Contains(api, client.Audiences);
@@ -145,8 +145,8 @@ public class ClientTests
             var apiA = new Audience("api");
             var apiB = new Audience("api");
 
-            client.TryAddAudience(apiA, _time.GetUtcNow());
-            var result = client.TryAddAudience(apiB, _time.GetUtcNow());
+            client.AddAudience(apiA, _time.GetUtcNow());
+            var result = client.AddAudience(apiB, _time.GetUtcNow());
             
             Assert.False(result);
             Assert.Single(client.Audiences);
@@ -161,8 +161,8 @@ public class ClientTests
             var apiA = new Audience("api");
             var apiB = new Audience("API");
 
-            client.TryAddAudience(apiA, _time.GetUtcNow());
-            var result = client.TryAddAudience(apiB, _time.GetUtcNow());
+            client.AddAudience(apiA, _time.GetUtcNow());
+            var result = client.AddAudience(apiB, _time.GetUtcNow());
             
             Assert.False(result);
             Assert.Single(client.Audiences);
@@ -174,7 +174,7 @@ public class ClientTests
             var client = new ClientBuilder().Build();
             
             Assert.Throws<ArgumentNullException>(()
-                => client.TryAddAudience(null!, _time.GetUtcNow()));
+                => client.AddAudience(null!, _time.GetUtcNow()));
         }
 
         [Fact]
@@ -185,7 +185,7 @@ public class ClientTests
 
             _time.Advance(TimeSpan.FromSeconds(1));
             var expected = _time.GetUtcNow();
-            var result = client.TryAddAudience(api, expected);
+            var result = client.AddAudience(api, expected);
             
             Assert.True(result);
             Assert.Equal(expected, client.UpdatedAt);
@@ -198,11 +198,11 @@ public class ClientTests
             var client = new ClientBuilder().Build();
             var api = new Audience("api");
             
-            client.TryAddAudience(api, now);
+            client.AddAudience(api, now);
             
             _time.Advance(TimeSpan.FromSeconds(1));
             var before = _time.GetUtcNow();
-            var result = client.TryAddAudience(api, before);
+            var result = client.AddAudience(api, before);
             
             Assert.False(result);
             Assert.NotEqual(before, client.UpdatedAt);
@@ -218,7 +218,7 @@ public class ClientTests
             var aud = new Audience("api");
             var read = new Scope("read");
             var write = new Scope("write");
-            client.TryAddAudience(aud, _time.GetUtcNow());
+            client.AddAudience(aud, _time.GetUtcNow());
             client.GrantScopes(aud, [read, write], _time.GetUtcNow());
             
             var isRemoved = client.TryRemoveAudience(aud, _time.GetUtcNow());
@@ -243,7 +243,7 @@ public class ClientTests
             var client = new ClientBuilder().Build();
             
             var aud = new Audience("api");
-            client.TryAddAudience(aud, now);
+            client.AddAudience(aud, now);
             
             _time.Advance(TimeSpan.FromSeconds(1));
             var expected = _time.GetUtcNow();

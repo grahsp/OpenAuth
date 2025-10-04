@@ -12,9 +12,6 @@ public class ClientServiceTests
     private IClientFactory _clientFactory;
     private TimeProvider _time;
 
-    private readonly Scope _read = new("read");
-    private readonly Scope _write = new("write");
-
     public ClientServiceTests()
     {
         _repo = new FakeClientRepository();
@@ -114,55 +111,4 @@ public class ClientServiceTests
                 () => service.DisableAsync(ClientId.New()));
         }
     }
-
-    
-    public class Scopes : ClientServiceTests
-    {
-        [Fact]
-        public async Task GrantAndRevokeScopes_ModifiesClientScopes()
-        {
-            var service = CreateSut();
-            var clientInfo = await service.RegisterAsync(new ClientName("test"));
-            var client = _repo.Clients.Single();
-            
-            var aud = new Audience("api");
-            client.TryAddAudience(aud, _time.GetUtcNow());
-
-            var afterGrant = await service.GrantScopesAsync(clientInfo.Id, aud, [_read, _write]);
-            Assert.Contains(_read, afterGrant.GetAllowedScopes(aud));
-            Assert.Contains(_write, afterGrant.GetAllowedScopes(aud));
-
-            var afterRevoke = await service.RevokeScopesAsync(clientInfo.Id, aud, [_read]);
-            Assert.DoesNotContain(_read, afterRevoke.GetAllowedScopes(aud));
-            Assert.Contains(_write, afterRevoke.GetAllowedScopes(aud));
-        }
-
-        [Fact]
-        public async Task GrantScopes_Throws_WhenClientNotFound()
-        {
-            var service = CreateSut();
-            var aud = new Audience("api");
-            
-            await Assert.ThrowsAsync<InvalidOperationException>(
-                () => service.GrantScopesAsync(ClientId.New(), aud, [_write]));
-        }
-
-        [Fact]
-        public async Task RemoveAudience_RemovesAllScopes()
-        {
-            var service = CreateSut();
-            var clientInfo = await service.RegisterAsync(new ClientName("test"));
-            var client = _repo.Clients.Single();
-            
-            var aud = new Audience("api");
-            client.TryAddAudience(aud, _time.GetUtcNow());
-            
-            await service.GrantScopesAsync(clientInfo.Id, aud, [_read]);
-
-            var afterRemove = await service.TryRemoveAudienceAsync(clientInfo.Id, aud);
-            Assert.NotNull(afterRemove);
-            Assert.Empty(afterRemove.Audiences);
-        }
-    }
-
 }
