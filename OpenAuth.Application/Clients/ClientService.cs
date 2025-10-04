@@ -1,3 +1,5 @@
+using OpenAuth.Application.Dtos;
+using OpenAuth.Application.Dtos.Mappings;
 using OpenAuth.Domain.Entities;
 using OpenAuth.Domain.ValueObjects;
 
@@ -16,22 +18,18 @@ public class ClientService : IClientService
         _time = time;
     }
     
-    public async Task<Client?> GetByIdAsync(ClientId id, CancellationToken cancellationToken = default) =>
-        await _repository.GetByIdAsync(id, cancellationToken);
     
-    public async Task<Client?> GetByNameAsync(ClientName name, CancellationToken cancellationToken = default) =>
-        await _repository.GetByNameAsync(name, cancellationToken);
-
-    public async Task<Client> RegisterAsync(ClientName name, CancellationToken cancellationToken = default)
+    public async Task<ClientInfo> RegisterAsync(ClientName name, CancellationToken cancellationToken = default)
     {
         var client = _clientFactory.Create(name);
+        
         _repository.Add(client);
         await _repository.SaveChangesAsync(cancellationToken);
 
-        return client;
+        return client.ToClientInfo();
     }
     
-    public async Task<Client> RenameAsync(ClientId id, ClientName name, CancellationToken cancellationToken = default)
+    public async Task<ClientInfo> RenameAsync(ClientId id, ClientName name, CancellationToken cancellationToken = default)
     {
         var client = await _repository.GetByIdAsync(id, cancellationToken)
                      ?? throw new InvalidOperationException("Client not found.");
@@ -39,42 +37,35 @@ public class ClientService : IClientService
         client.Rename(name, _time.GetUtcNow());
         await _repository.SaveChangesAsync(cancellationToken);
 
-        return client;
+        return client.ToClientInfo();
     }
     
-    public async Task<bool> DeleteAsync(ClientId id, CancellationToken cancellationToken = default)
+    public async Task DeleteAsync(ClientId id, CancellationToken cancellationToken = default)
     {
-        var client = await _repository.GetByIdAsync(id, cancellationToken);
-        if (client is null)
-            return false;
+        var client = await _repository.GetByIdAsync(id, cancellationToken)
+            ?? throw new InvalidOperationException("Client not found.");;
 
         _repository.Remove(client);
         await _repository.SaveChangesAsync(cancellationToken);
-
-        return true;
     }
     
     
-    public async Task<Client> EnableAsync(ClientId id, CancellationToken cancellationToken = default)
+    public async Task EnableAsync(ClientId id, CancellationToken cancellationToken = default)
     {
         var client = await _repository.GetByIdAsync(id, cancellationToken)
                      ?? throw new InvalidOperationException("Client not found.");
         
         client.Enable(_time.GetUtcNow());
         await _repository.SaveChangesAsync(cancellationToken);
-
-        return client;
     }
     
-    public async Task<Client> DisableAsync(ClientId id, CancellationToken cancellationToken = default)
+    public async Task DisableAsync(ClientId id, CancellationToken cancellationToken = default)
     {
         var client = await _repository.GetByIdAsync(id, cancellationToken)
                      ?? throw new InvalidOperationException("Client not found.");
         
         client.Disable(_time.GetUtcNow());
         await _repository.SaveChangesAsync(cancellationToken);
-
-        return client;
     }
 
     // TODO: Replace nullable Client with explicit result type
