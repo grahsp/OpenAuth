@@ -39,10 +39,6 @@ public class SecretQueryService : ISecretQueryService
     public Task<List<SecretInfo>> GetActiveSecretsAsync(ClientId clientId, CancellationToken ct = default)
         => _context.ClientSecrets
             .WhereActive(_time.GetUtcNow())
-            .Select(s => new SecretInfo(
-                s.Id,
-                s.CreatedAt,
-                s.ExpiresAt,
-                s.RevokedAt
-            )).ToListAsync(ct);
+            .ToSecretInfo()
+            .ToListAsync(ct);
 }
