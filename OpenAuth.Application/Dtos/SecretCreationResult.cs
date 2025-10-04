@@ -1,4 +1,6 @@
-namespace OpenAuth.Domain.ValueObjects;
+using OpenAuth.Domain.ValueObjects;
+
+namespace OpenAuth.Application.Dtos;
 
 public record SecretCreationResult
 (

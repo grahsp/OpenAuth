@@ -36,10 +36,10 @@ public class SecretQueryService : ISecretQueryService
         return hashes.Any(hash => _hasher.Verify(plainSecret, hash));
     }
     
-    public Task<List<ClientSecretDto>> GetActiveSecretsAsync(ClientId clientId, CancellationToken ct = default)
+    public Task<List<SecretInfo>> GetActiveSecretsAsync(ClientId clientId, CancellationToken ct = default)
         => _context.ClientSecrets
             .WhereActive(_time.GetUtcNow())
-            .Select(s => new ClientSecretDto(
+            .Select(s => new SecretInfo(
                 s.Id,
                 s.CreatedAt,
                 s.ExpiresAt,

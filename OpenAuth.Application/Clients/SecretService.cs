@@ -1,3 +1,4 @@
+using OpenAuth.Application.Dtos;
 using OpenAuth.Application.Security.Secrets;
 using OpenAuth.Domain.ValueObjects;
 

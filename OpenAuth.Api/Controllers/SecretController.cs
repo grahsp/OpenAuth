@@ -18,13 +18,13 @@ public class SecretController : ControllerBase
 
     
     [HttpGet("{secretId:guid}")]
-    public async Task<ActionResult<ClientSecretResponse>> GetClientSecret(Guid secretId)
+    public async Task<ActionResult<SecretSummaryResponse>> GetClientSecret(Guid secretId)
     {
         return Ok();
     }
     
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<ClientSecretResponse>>> GetClientSecrets(Guid clientId)
+    public async Task<ActionResult<IEnumerable<SecretSummaryResponse>>> GetClientSecrets(Guid clientId)
     {
         return Ok();
     }
