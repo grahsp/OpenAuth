@@ -26,61 +26,15 @@ public class ClientServiceTests
         => new(_repo, _clientFactory, _time);
 
     
-    public class Queries : ClientServiceTests
-    {
-        [Fact]
-        public async Task GetByIdAsync_ReturnsClient_WhenExists()
-        {
-            var service = CreateSut();
-            var created = await service.RegisterAsync(new ClientName("test"));
-
-            var result = await service.GetByIdAsync(created.Id);
-
-            Assert.NotNull(result);
-            Assert.Equal(created.Id, result.Id);
-        }
-
-        [Fact]
-        public async Task GetByIdAsync_ReturnsNull_WhenNotExists()
-        {
-            var service = CreateSut();
-            var result = await service.GetByIdAsync(ClientId.New());
-            Assert.Null(result);
-        }
-
-        [Fact]
-        public async Task GetByNameAsync_ReturnsClient_WhenExists()
-        {
-            var service = CreateSut();
-            
-            var clientName = new ClientName("test");
-            
-            var created = await service.RegisterAsync(clientName);
-            var result = await service.GetByNameAsync(clientName);
-
-            Assert.NotNull(result);
-            Assert.Equal(created.Id, result.Id);
-        }
-
-        [Fact]
-        public async Task GetByNameAsync_ReturnsNull_WhenNotExists()
-        {
-            var service = CreateSut();
-            var result = await service.GetByNameAsync(new ClientName("missing"));
-            Assert.Null(result);
-        }
-    }
-
-    
     public class Registration : ClientServiceTests
     {
         [Fact]
         public async Task RegisterAsync_AddsClient()
         {
             var service = CreateSut();
-            var client = await service.RegisterAsync(new ClientName("test"));
+            await service.RegisterAsync(new ClientName("test"));
 
-            Assert.NotNull(await service.GetByIdAsync(client.Id));
+            Assert.NotEmpty(_repo.Clients);
             Assert.True(_repo.Saved);
         }
 
@@ -110,18 +64,18 @@ public class ClientServiceTests
             var service = CreateSut();
             var client = await service.RegisterAsync(new ClientName("test"));
 
-            var result = await service.DeleteAsync(client.Id);
-
-            Assert.True(result);
-            Assert.Null(await service.GetByIdAsync(client.Id));
+            await service.DeleteAsync(client.Id);
+            
+            Assert.Empty(_repo.Clients);
         }
 
         [Fact]
-        public async Task DeleteAsync_ReturnsFalse_WhenClientNotFound()
+        public async Task DeleteAsync_ThrowsException_WhenClientNotFound()
         {
             var service = CreateSut();
-            var result = await service.DeleteAsync(ClientId.New());
-            Assert.False(result);
+            
+            await Assert.ThrowsAnyAsync<InvalidOperationException>(()
+                => service.DeleteAsync(ClientId.New()));
         }
     }
 
@@ -132,19 +86,21 @@ public class ClientServiceTests
         public async Task EnableDisable_TogglesEnabled()
         {
             var service = CreateSut();
-            var client = await service.RegisterAsync(new ClientName("test"));
+            var clientInfo = await service.RegisterAsync(new ClientName("test"));
+            var client = _repo.Clients.Single();
 
-            var disabled = await service.DisableAsync(client.Id);
-            Assert.False(disabled.Enabled);
+            await service.DisableAsync(clientInfo.Id);
+            Assert.False(client.Enabled);
 
-            var enabled = await service.EnableAsync(client.Id);
-            Assert.True(enabled.Enabled);
+            await service.EnableAsync(client.Id);
+            Assert.True(client.Enabled);
         }
 
         [Fact]
         public async Task EnableAsync_Throws_WhenClientNotFound()
         {
             var service = CreateSut();
+            
             await Assert.ThrowsAsync<InvalidOperationException>(
                 () => service.EnableAsync(ClientId.New()));
         }
@@ -153,6 +109,7 @@ public class ClientServiceTests
         public async Task DisableAsync_Throws_WhenClientNotFound()
         {
             var service = CreateSut();
+            
             await Assert.ThrowsAsync<InvalidOperationException>(
                 () => service.DisableAsync(ClientId.New()));
         }
@@ -165,15 +122,17 @@ public class ClientServiceTests
         public async Task GrantAndRevokeScopes_ModifiesClientScopes()
         {
             var service = CreateSut();
-            var client = await service.RegisterAsync(new ClientName("test"));
+            var clientInfo = await service.RegisterAsync(new ClientName("test"));
+            var client = _repo.Clients.Single();
+            
             var aud = new Audience("api");
             client.TryAddAudience(aud, _time.GetUtcNow());
 
-            var afterGrant = await service.GrantScopesAsync(client.Id, aud, [_read, _write]);
+            var afterGrant = await service.GrantScopesAsync(clientInfo.Id, aud, [_read, _write]);
             Assert.Contains(_read, afterGrant.GetAllowedScopes(aud));
             Assert.Contains(_write, afterGrant.GetAllowedScopes(aud));
 
-            var afterRevoke = await service.RevokeScopesAsync(client.Id, aud, [_read]);
+            var afterRevoke = await service.RevokeScopesAsync(clientInfo.Id, aud, [_read]);
             Assert.DoesNotContain(_read, afterRevoke.GetAllowedScopes(aud));
             Assert.Contains(_write, afterRevoke.GetAllowedScopes(aud));
         }
@@ -192,13 +151,15 @@ public class ClientServiceTests
         public async Task RemoveAudience_RemovesAllScopes()
         {
             var service = CreateSut();
-            var client = await service.RegisterAsync(new ClientName("test"));
+            var clientInfo = await service.RegisterAsync(new ClientName("test"));
+            var client = _repo.Clients.Single();
+            
             var aud = new Audience("api");
             client.TryAddAudience(aud, _time.GetUtcNow());
             
-            await service.GrantScopesAsync(client.Id, aud, [_read]);
+            await service.GrantScopesAsync(clientInfo.Id, aud, [_read]);
 
-            var afterRemove = await service.TryRemoveAudienceAsync(client.Id, aud);
+            var afterRemove = await service.TryRemoveAudienceAsync(clientInfo.Id, aud);
             Assert.NotNull(afterRemove);
             Assert.Empty(afterRemove.Audiences);
         }
