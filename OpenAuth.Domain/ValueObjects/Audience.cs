@@ -2,7 +2,7 @@ namespace OpenAuth.Domain.ValueObjects;
 
 public sealed class Audience : IEquatable<Audience>
 {
-    public const int Min = 3, Max = 16;
+    public const int Min = 3, Max = 128;
 
     public string Value => _value;
     private readonly string _value;
