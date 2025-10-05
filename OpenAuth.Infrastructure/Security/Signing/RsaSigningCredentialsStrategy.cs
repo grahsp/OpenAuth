@@ -1,8 +1,8 @@
 using System.Security.Cryptography;
 using Microsoft.IdentityModel.Tokens;
+using OpenAuth.Application.Dtos;
 using OpenAuth.Application.Security.Signing;
 using OpenAuth.Domain.Enums;
-using OpenAuth.Domain.ValueObjects;
 using OpenAuth.Infrastructure.Security.Extensions;
 
 namespace OpenAuth.Infrastructure.Security.Signing;
@@ -18,16 +18,18 @@ public class RsaSigningCredentialsStrategy : ISigningCredentialsStrategy
     public KeyType KeyType => KeyType.RSA;
 
     /// <inheritdoc />
-    public SigningCredentials GetSigningCredentials(string kid, KeyMaterial keyMaterial)
+    public SigningCredentials GetSigningCredentials(SigningKeyData keyData)
     {
-        if (keyMaterial.Kty != KeyType)
+        ArgumentNullException.ThrowIfNull(keyData);
+        
+        if (keyData.Kty != KeyType)
             throw new InvalidOperationException(
-                $"Expected { KeyType } key material but got {keyMaterial.Kty} (alg: {keyMaterial.Alg}).");
+                $"Expected { KeyType } key material but got { keyData.Kty } (alg: { keyData.Alg }).");
         
-        using var privateRsa = RSA.Create();
-        privateRsa.ImportFromPem(keyMaterial.Key.Value);
-        var securityKey = new RsaSecurityKey(privateRsa) { KeyId = kid };
+        var privateRsa = RSA.Create();
+        privateRsa.ImportFromPem(keyData.Key.Value);
+        var securityKey = new RsaSecurityKey(privateRsa) { KeyId = keyData.Kid.Value.ToString() };
         
-        return new SigningCredentials(securityKey,keyMaterial.Alg.ToSecurityString());
+        return new SigningCredentials(securityKey, keyData.Alg.ToSecurityString());
     }
 }

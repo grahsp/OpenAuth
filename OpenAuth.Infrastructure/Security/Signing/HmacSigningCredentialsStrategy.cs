@@ -1,8 +1,8 @@
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
+using OpenAuth.Application.Dtos;
 using OpenAuth.Application.Security.Signing;
 using OpenAuth.Domain.Enums;
-using OpenAuth.Domain.ValueObjects;
 using OpenAuth.Infrastructure.Security.Extensions;
 
 namespace OpenAuth.Infrastructure.Security.Signing;
@@ -18,15 +18,17 @@ public class HmacSigningCredentialsStrategy : ISigningCredentialsStrategy
     public KeyType KeyType => KeyType.HMAC;
 
     /// <inheritdoc />
-    public SigningCredentials GetSigningCredentials(string kid, KeyMaterial keyMaterial)
+    public SigningCredentials GetSigningCredentials(SigningKeyData keyData)
     {
-        if (keyMaterial.Kty != KeyType)
+        ArgumentNullException.ThrowIfNull(keyData);
+        
+        if (keyData.Kty != KeyType)
             throw new InvalidOperationException(
-                $"Expected { KeyType } key material but got { keyMaterial.Kty } (alg: { keyMaterial.Alg }).");
+                $"Expected { KeyType } key material but got { keyData.Kty } (alg: { keyData.Alg }).");
         
-        var bytes= Encoding.UTF8.GetBytes(keyMaterial.Key.Value);
-        var securityKey = new SymmetricSecurityKey(bytes) { KeyId = kid };
+        var bytes= Encoding.UTF8.GetBytes(keyData.Key.Value);
+        var securityKey = new SymmetricSecurityKey(bytes) { KeyId = keyData.Kid.Value.ToString() };
         
-        return new SigningCredentials(securityKey, keyMaterial.Alg.ToSecurityString());
+        return new SigningCredentials(securityKey, keyData.Alg.ToSecurityString());
     }
 }

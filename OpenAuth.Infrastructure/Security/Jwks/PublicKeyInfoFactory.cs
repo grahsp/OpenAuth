@@ -1,6 +1,6 @@
+using OpenAuth.Application.Dtos;
 using OpenAuth.Application.Security.Jwks;
 using OpenAuth.Domain.Enums;
-using OpenAuth.Domain.ValueObjects;
 
 namespace OpenAuth.Infrastructure.Security.Jwks;
 
@@ -15,13 +15,13 @@ public class PublicKeyInfoFactory : IPublicKeyInfoFactory
     }
     
     
-    public PublicKeyInfo Create(SigningKeyId kid, KeyMaterial keyMaterial)
+    public PublicKeyInfo Create(SigningKeyData keyData)
     {
-        if (!_extractors.TryGetValue(keyMaterial.Kty, out var exporter))
+        if (!_extractors.TryGetValue(keyData.Kty, out var exporter))
             throw new InvalidOperationException(
-                $"No JWK factory registered for key type '{ keyMaterial.Kty }'. kid: { kid }."
+                $"No JWK factory registered for key type '{ keyData.Kty }'. kid: { keyData.Kid }."
             );
         
-        return exporter.Extract(kid, keyMaterial);
+        return exporter.Extract(keyData);
     }
 }

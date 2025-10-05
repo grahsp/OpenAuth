@@ -1,4 +1,5 @@
 using Microsoft.IdentityModel.Tokens;
+using OpenAuth.Application.Dtos;
 using OpenAuth.Domain.Entities;
 
 namespace OpenAuth.Application.Security.Signing;
@@ -10,21 +11,18 @@ namespace OpenAuth.Application.Security.Signing;
 public interface ISigningCredentialsFactory
 {
     /// <summary>
-    /// Creates <see cref="SigningCredentials"/> for the specified domain signing key.
+    /// Creates <see cref="SigningCredentials"/> from signing key data.
     /// </summary>
-    /// <param name="signingKey">
-    /// The domain <see cref="SigningKey"/> containing the key material, algorithm,
-    /// and metadata required to construct credentials.
-    /// </param>
+    /// <param name="keyData">The signing key data containing the key material and algorithm information.</param>
     /// <returns>
-    /// A <see cref="SigningCredentials"/> instance usable by the
-    /// <see cref="System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler"/> and related APIs.
+    /// A <see cref="SigningCredentials"/> instance configured with the appropriate cryptographic key
+    /// and algorithm for JWT token signing.
     /// </returns>
     /// <exception cref="ArgumentNullException">
-    /// Thrown if <paramref name="signingKey"/> is <c>null</c>.
+    /// Thrown when <paramref name="keyData"/> is <c>null</c>.
     /// </exception>
-    /// <exception cref="InvalidOperationException">
-    /// Thrown if no strategy exists for the key type of <paramref name="signingKey"/>.
+    /// <exception cref="NotSupportedException">
+    /// Thrown when the key type specified in <paramref name="keyData"/> is not supported.
     /// </exception>
-    SigningCredentials Create(SigningKey signingKey);
+    SigningCredentials Create(SigningKeyData keyData);
 }

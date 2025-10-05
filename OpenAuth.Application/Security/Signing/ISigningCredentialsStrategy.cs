@@ -1,5 +1,5 @@
 using Microsoft.IdentityModel.Tokens;
-using OpenAuth.Domain.Entities;
+using OpenAuth.Application.Dtos;
 using OpenAuth.Domain.Enums;
 using OpenAuth.Domain.ValueObjects;
 
@@ -17,22 +17,19 @@ public interface ISigningCredentialsStrategy
     KeyType KeyType { get; }
     
     /// <summary>
-    /// Creates <see cref="SigningCredentials"/> for the specified key material.
+    /// Creates signing credentials from the provided key data.
     /// </summary>
-    /// <param name="kid">
-    /// The key identifier (<c>kid</c>) to assign to the resulting security key.
-    /// Typically the <see cref="SigningKey.Id"/> from the domain model.
-    /// </param>
-    /// <param name="keyMaterial">
-    /// The domain <see cref="KeyMaterial"/> containing the raw key, algorithm, and metadata.
-    /// Must match the <see cref="KeyType"/> supported by this strategy.
+    /// <param name="keyData">
+    /// The signing key data. The key type must match this strategy's supported <see cref="KeyType"/>.
     /// </param>
     /// <returns>
-    /// A <see cref="SigningCredentials"/> instance configured for the specified algorithm and key.
+    /// A <see cref="SigningCredentials"/> instance configured with the key material and algorithm.
     /// </returns>
-    /// <exception cref="InvalidOperationException">
-    /// Thrown if <paramref name="keyMaterial"/> has a <see cref="KeyMaterial.Kty"/> 
-    /// that does not match the strategy’s <see cref="KeyType"/>.
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="keyData"/> is null.
     /// </exception>
-    SigningCredentials GetSigningCredentials(string kid, KeyMaterial keyMaterial);
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when the key type in <paramref name="keyData"/> does not match this strategy's supported type.
+    /// </exception>
+    SigningCredentials GetSigningCredentials(SigningKeyData keyData);
 }
