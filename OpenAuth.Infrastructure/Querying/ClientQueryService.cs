@@ -49,6 +49,23 @@ public class ClientQueryService : IClientQueryService
         return client?.ToClientDetails() ?? null;
     }
 
+    public async Task<ClientTokenData?> GetTokenDataAsync(ClientId id, AudienceName audienceName, CancellationToken ct = default)
+    {
+        var data = await _context.Clients
+            .AsNoTracking()
+            .Where(c => c.Id == id)
+            .Where(c => c.Audiences.Any(a => a.Name == audienceName))
+            .Select(c => new ClientTokenData(
+                c.Audiences
+                    .Where(a => a.Name == audienceName)
+                    .Select(a => a.Scopes.ToArray())
+                    .Single(),
+                c.TokenLifetime))
+            .SingleOrDefaultAsync(ct);
+
+        return data;
+    }
+
     public async Task<PagedResult<ClientInfo>> GetPagedAsync(int page, int pageSize,
         CancellationToken ct = default)
     {
