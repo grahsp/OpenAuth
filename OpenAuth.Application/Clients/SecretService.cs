@@ -4,12 +4,6 @@ using OpenAuth.Domain.ValueObjects;
 
 namespace OpenAuth.Application.Clients;
 
-public interface ISecretService
-{
-    Task<SecretCreationResult> AddSecretAsync(ClientId clientId, CancellationToken cancellationToken = default);
-    Task RevokeSecretAsync(ClientId clientId, SecretId secretId, CancellationToken cancellationToken = default);
-}
-
 public class SecretService : ISecretService
 {
     private readonly IClientRepository _repository;
