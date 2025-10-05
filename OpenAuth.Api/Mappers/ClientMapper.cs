@@ -17,7 +17,7 @@ public static class ClientMapper
 
     public static AudienceResponse ToResponse(Audience audience)
         => new AudienceResponse(
-            audience.Value,
+            audience.Name.Value,
             audience.Scopes.Select(x => x.Value)
         );
 
