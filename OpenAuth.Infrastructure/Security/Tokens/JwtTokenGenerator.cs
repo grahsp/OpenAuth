@@ -26,7 +26,7 @@ public class JwtTokenGenerator : IJwtTokenGenerator
 
     public string GenerateToken(Client client, Audience audience, IEnumerable<Scope> scopes, SigningKey signingKey)
     {
-        var now = _time.GetUtcNow().DateTime;
+        var now = _time.GetUtcNow().UtcDateTime;
         
         // TODO: Inject TimeProvider
         if (!signingKey.IsActive(now))
@@ -43,10 +43,10 @@ public class JwtTokenGenerator : IJwtTokenGenerator
             new(JwtRegisteredClaimNames.Sub, client.Id.ToString()),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             new(JwtRegisteredClaimNames.Iat, EpochTime.GetIntDate(now).ToString()),
-            new(JwtRegisteredClaimNames.Aud, audience.ToString())
+            new(JwtRegisteredClaimNames.Aud, audience.Name.Value)
         };
 
-        var allowedScopes = client.GetAllowedScopes(audience).ToImmutableHashSet();
+        var allowedScopes = audience.Scopes.ToImmutableHashSet();
         var invalidScopes = new List<string>();
         foreach (var scope in scopes)
         {
