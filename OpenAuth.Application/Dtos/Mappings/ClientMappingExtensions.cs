@@ -19,6 +19,7 @@ public static class ClientMappingExtensions
             client.CreatedAt,
             client.UpdatedAt,
             client.Secrets
+                .OrderByDescending(s => s.CreatedAt)
                 .Select(s => s.ToSecretInfo()),
             client.Audiences
                 .Select(a => a.ToAudienceInfo())

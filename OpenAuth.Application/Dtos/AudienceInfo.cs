@@ -1,3 +1,5 @@
+using OpenAuth.Domain.ValueObjects;
+
 namespace OpenAuth.Application.Dtos;
 
-public record AudienceInfo(string Name, IEnumerable<string> Scopes);
+public record AudienceInfo(AudienceName Name, IEnumerable<Scope> Scopes);
