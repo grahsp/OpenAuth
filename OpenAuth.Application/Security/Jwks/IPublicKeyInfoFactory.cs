@@ -1,8 +1,8 @@
-using OpenAuth.Domain.ValueObjects;
+using OpenAuth.Application.Dtos;
 
 namespace OpenAuth.Application.Security.Jwks;
 
 public interface IPublicKeyInfoFactory
 {
-    PublicKeyInfo Create(SigningKeyId kid, KeyMaterial keyMaterial);
+    PublicKeyInfo Create(SigningKeyData keyData);
 }

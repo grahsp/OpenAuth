@@ -1,4 +1,5 @@
 using Microsoft.IdentityModel.Tokens;
+using OpenAuth.Application.Dtos;
 using OpenAuth.Application.Security.Signing;
 using OpenAuth.Domain.Entities;
 using OpenAuth.Domain.Enums;
@@ -45,17 +46,14 @@ public class SigningCredentialsFactory : ISigningCredentialsFactory
     }
     
     /// <inheritdoc />
-    public SigningCredentials Create(SigningKey signingKey)
+    public SigningCredentials Create(SigningKeyData keyData)
     {
-        ArgumentNullException.ThrowIfNull(signingKey);
+        ArgumentNullException.ThrowIfNull(keyData);
         
-        if (!_strategies.TryGetValue(signingKey.KeyMaterial.Kty, out var strategy))
+        if (!_strategies.TryGetValue(keyData.Kty, out var strategy))
             throw new InvalidOperationException(
-                $"""
-                 No signing credentials strategy found for key type '{signingKey.KeyMaterial.Kty}'
-                                 (algorithm: {signingKey.KeyMaterial.Alg}).
-                 """);
+                $"No signing credentials strategy found for key type '{ keyData.Kty }' (algorithm: { keyData.Alg }).");
 
-        return strategy.GetSigningCredentials(signingKey.Id.ToString(), signingKey.KeyMaterial);
+        return strategy.GetSigningCredentials(keyData);
     }
 }
