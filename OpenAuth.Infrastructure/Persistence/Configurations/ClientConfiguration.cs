@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using OpenAuth.Domain.Entities;
 using OpenAuth.Domain.ValueObjects;
@@ -27,35 +28,8 @@ public class ClientConfiguration : IEntityTypeConfiguration<Client>
             .HasConversion(
                 name => name.Value,
                 value => new ClientName(value))
-            .ValueGeneratedNever()
             .IsRequired();
 
-        // Audience & Scopes
-        builder.OwnsMany(client => client.Audiences,
-            audienceBuilder =>
-            {
-                audienceBuilder.Property(a => a.Value)
-                    .HasColumnName("Audience")
-                    .HasField("_value")
-                    .UsePropertyAccessMode(PropertyAccessMode.Field);
-                
-                audienceBuilder.OwnsMany(audience => audience.Scopes,
-                    scopeBuilder =>
-                    {
-                        scopeBuilder.Property(s => s.Value)
-                            .HasColumnName("Scope")
-                            .IsRequired();
-                    });
-                
-                audienceBuilder.Navigation(a => a.Scopes)
-                    .HasField("_scopes")
-                    .UsePropertyAccessMode(PropertyAccessMode.Field);
-            });
-
-        builder.Navigation(c => c.Audiences)
-            .HasField("_audiences")
-            .UsePropertyAccessMode(PropertyAccessMode.Field);
-        
         // Properties
         builder.Property(x => x.TokenLifetime)
             .HasConversion(
@@ -65,11 +39,54 @@ public class ClientConfiguration : IEntityTypeConfiguration<Client>
             
         builder.Property(x => x.Enabled)
             .IsRequired();
-
-        builder.Property(x => x.CreatedAt)
-            .IsRequired();
+        
+        // Audience
+        builder.OwnsMany(c => c.Audiences, a =>
+        {
+            a.ToTable("Audiences");
             
-        builder.Property(x => x.UpdatedAt)
-            .IsRequired();
+            a.WithOwner()
+                .HasForeignKey("ClientId"); // Shadow property
+            
+            a.HasKey(nameof(Audience.Id));
+            
+            a.Property(aud => aud.Id)
+                .HasConversion(
+                    id => id.Value,
+                    value => new AudienceId(value));
+            
+            a.Property(aud => aud.Name)
+                .HasConversion(
+                    name => name.Value,
+                    value => new AudienceName(value))
+                .HasMaxLength(100);
+            
+            // Scopes configuration
+            a.Property<HashSet<Scope>>("_scopes")
+                .HasConversion(
+                    scopes => string.Join(' ', scopes.Select(s => s.Value)),
+                    value => string.IsNullOrWhiteSpace(value)
+                        ? new HashSet<Scope>()
+                        : value.Split(' ', StringSplitOptions.RemoveEmptyEntries)
+                            .Select(v => new Scope(v))
+                            .ToHashSet(),
+                    new ValueComparer<HashSet<Scope>>(
+                        (c1, c2) => c1!.SequenceEqual(c2!),
+                        c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
+                        c => c.ToHashSet()
+                    )
+                )
+                .HasColumnName("Scopes")
+                .HasMaxLength(2000);
+            
+            a.Ignore(aud => aud.Scopes);
+            
+            a.Property(aud => aud.CreatedAt).IsRequired();
+            a.Property(aud => aud.UpdatedAt).IsRequired();
+        });
+        
+        builder.Property(c => c.CreatedAt).IsRequired();
+        builder.Property(c => c.UpdatedAt).IsRequired();
+        builder.Property(c => c.Enabled).IsRequired();
     }
 }
