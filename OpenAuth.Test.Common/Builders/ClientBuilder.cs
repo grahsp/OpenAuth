@@ -9,7 +9,6 @@ public class ClientBuilder
     private DateTimeOffset? _createdAt;
     
     private List<SecretHash> _secrets = [];
-    private List<Audience> _audiences = [];
     
     public ClientBuilder WithName(string name)
     {
@@ -35,20 +34,6 @@ public class ClientBuilder
         return this;
     }
 
-    public ClientBuilder WithAudience(string audience, params string[] scopes)
-    {
-        var aud = new Audience(audience);
-        foreach (var s in scopes)
-        {
-            var scope = new Scope(s);
-            aud.GrantScope(scope);
-        }
-        
-        _audiences.Add(aud);
-        
-        return this;
-    }
-
     public ClientBuilder CreatedAt(DateTimeOffset createdAt)
     {
         _createdAt = createdAt;
@@ -64,9 +49,6 @@ public class ClientBuilder
         
         foreach (var secret in _secrets)
             client.AddSecret(secret, createdAt);
-
-        foreach (var audience in _audiences)
-            client.TryAddAudience(audience, createdAt);
 
         return client;
     }
