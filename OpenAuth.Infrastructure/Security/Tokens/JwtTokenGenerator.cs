@@ -47,6 +47,8 @@ public class JwtTokenGenerator : IJwtTokenGenerator
             signingCredentials: signingCredentials
         );
         
+        token.Header.Add("kid", request.KeyData.Kid.Value.ToString());
+        
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 }
