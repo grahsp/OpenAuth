@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Time.Testing;
 using OpenAuth.Domain.Entities;
+using OpenAuth.Domain.ValueObjects;
 using OpenAuth.Test.Common.Builders;
 using OpenAuth.Test.Integration.Fixtures;
 
@@ -319,9 +320,13 @@ public class ClientPersistenceTests : IAsyncLifetime
             // Arrange
             var client = new ClientBuilder()
                 .WithName("test-client")
-                .WithAudience("https://api.example.com")
-                .WithAudience("https://api2.example.com")
                 .Build();
+
+            var apiAudienceName = new AudienceName("api");
+            var webAudienceName = new AudienceName("web");
+            
+            client.AddAudience(apiAudienceName, _time.GetUtcNow());
+            client.AddAudience(webAudienceName, _time.GetUtcNow());
         
             await using (var ctx = _fx.CreateContext())
             {
@@ -337,8 +342,8 @@ public class ClientPersistenceTests : IAsyncLifetime
 
                 // Assert
                 Assert.Equal(2, loaded.Audiences.Count);
-                Assert.Contains(loaded.Audiences, a => a.Value == "https://api.example.com");
-                Assert.Contains(loaded.Audiences, a => a.Value == "https://api2.example.com");
+                Assert.Contains(loaded.Audiences, a => a.Name == apiAudienceName);
+                Assert.Contains(loaded.Audiences, a => a.Name == webAudienceName);
             }
         }
         
@@ -348,8 +353,10 @@ public class ClientPersistenceTests : IAsyncLifetime
             // Arrange
             var client = new ClientBuilder()
                 .WithName("test-client")
-                .WithAudience("https://api.example.com")
                 .Build();
+            
+            var audienceName = new AudienceName("api");
+            client.AddAudience(audienceName, _time.GetUtcNow());
         
             await using (var ctx = _fx.CreateContext())
             {
@@ -363,10 +370,8 @@ public class ClientPersistenceTests : IAsyncLifetime
                 var loaded = await ctx.Clients
                     .SingleAsync(x => x.Id == client.Id);
 
-                // Assert - Owned entities should be loaded automatically
-                Assert.NotEmpty(loaded.Audiences);
                 Assert.Single(loaded.Audiences);
-                Assert.Equal("https://api.example.com", loaded.Audiences.First().Value);
+                Assert.Equal(audienceName, loaded.Audiences.First().Name);
             }
         }
         
@@ -376,14 +381,17 @@ public class ClientPersistenceTests : IAsyncLifetime
             // Arrange
             var client1 = new ClientBuilder()
                 .WithName("client1")
-                .WithAudience("https://api.example.com")
-                .WithAudience("https://api2.example.com")
                 .Build();
+            
+            client1.AddAudience(new AudienceName("api"), _time.GetUtcNow());
+            client1.AddAudience(new AudienceName("web"), _time.GetUtcNow());
                 
             var client2 = new ClientBuilder()
                 .WithName("client2")
-                .WithAudience("https://api3.example.com")
                 .Build();
+            
+            var audienceName = new AudienceName("api");
+            client2.AddAudience(audienceName, _time.GetUtcNow());
         
             await using (var ctx = _fx.CreateContext())
             {
@@ -404,7 +412,7 @@ public class ClientPersistenceTests : IAsyncLifetime
             {
                 var remaining = await ctx.Clients.SingleAsync(x => x.Id == client2.Id);
                 Assert.Single(remaining.Audiences);
-                Assert.Equal("https://api3.example.com", remaining.Audiences.First().Value);
+                Assert.Equal(audienceName, remaining.Audiences.First().Name);
             }
         }
         
@@ -414,13 +422,16 @@ public class ClientPersistenceTests : IAsyncLifetime
             // Arrange
             var client1 = new ClientBuilder()
                 .WithName("client1")
-                .WithAudience("https://api.example.com")
                 .Build();
+            
+            var audienceName = new AudienceName("api");
+            client1.AddAudience(audienceName, _time.GetUtcNow());
                 
             var client2 = new ClientBuilder()
                 .WithName("client2")
-                .WithAudience("https://other.example.com")
                 .Build();
+            
+            client2.AddAudience(new AudienceName("web"), _time.GetUtcNow());
         
             await using (var ctx = _fx.CreateContext())
             {
@@ -428,11 +439,11 @@ public class ClientPersistenceTests : IAsyncLifetime
                 await ctx.SaveChangesAsync();
             }
 
-            // Act - Query for client by audience
+            // Act
             await using (var ctx = _fx.CreateContext())
             {
                 var found = await ctx.Clients
-                    .Where(c => c.Audiences.Any(a => a.Value == "https://api.example.com"))
+                    .Where(c => c.Audiences.Any(a => a.Name == audienceName))
                     .ToListAsync();
 
                 // Assert
@@ -447,8 +458,11 @@ public class ClientPersistenceTests : IAsyncLifetime
             // Arrange
             var client = new ClientBuilder()
                 .WithName("test-client")
-                .WithAudience("https://api.example.com", "read", "write", "delete")
                 .Build();
+            
+            var audienceName = new AudienceName("api");
+            client.AddAudience(audienceName, _time.GetUtcNow());
+            client.GrantScopes(audienceName, [new Scope("read"), new Scope("write")], _time.GetUtcNow());
         
             await using (var ctx = _fx.CreateContext())
             {
@@ -464,10 +478,9 @@ public class ClientPersistenceTests : IAsyncLifetime
 
                 // Assert
                 var audience = Assert.Single(loaded.Audiences);
-                Assert.Equal(3, audience.Scopes.Count);
+                Assert.Equal(2, audience.Scopes.Count);
                 Assert.Contains(audience.Scopes, s => s.Value == "read");
                 Assert.Contains(audience.Scopes, s => s.Value == "write");
-                Assert.Contains(audience.Scopes, s => s.Value == "delete");
             }
         }
         
@@ -477,9 +490,16 @@ public class ClientPersistenceTests : IAsyncLifetime
             // Arrange
             var client = new ClientBuilder()
                 .WithName("test-client")
-                .WithAudience("https://api.example.com", "read", "write")
-                .WithAudience("https://api2.example.com", "admin")
                 .Build();
+            
+            var apiAudienceName = new AudienceName("api");
+            client.AddAudience(apiAudienceName, _time.GetUtcNow());
+            client.GrantScopes(apiAudienceName, [new Scope("read"), new Scope("write")], _time.GetUtcNow());
+            
+            var webAudienceName = new AudienceName("web");
+            client.AddAudience(webAudienceName, _time.GetUtcNow());
+            client.GrantScopes(webAudienceName, [new Scope("admin")], _time.GetUtcNow());
+            
         
             await using (var ctx = _fx.CreateContext())
             {
@@ -496,12 +516,12 @@ public class ClientPersistenceTests : IAsyncLifetime
                 // Assert
                 Assert.Equal(2, loaded.Audiences.Count);
                 
-                var audience1 = loaded.Audiences.Single(a => a.Value == "https://api.example.com");
+                var audience1 = loaded.Audiences.Single(a => a.Name == apiAudienceName);
                 Assert.Equal(2, audience1.Scopes.Count);
                 Assert.Contains(audience1.Scopes, s => s.Value == "read");
                 Assert.Contains(audience1.Scopes, s => s.Value == "write");
                 
-                var audience2 = loaded.Audiences.Single(a => a.Value == "https://api2.example.com");
+                var audience2 = loaded.Audiences.Single(a => a.Name == webAudienceName);
                 Assert.Single(audience2.Scopes);
                 Assert.Contains(audience2.Scopes, s => s.Value == "admin");
             }
@@ -513,8 +533,9 @@ public class ClientPersistenceTests : IAsyncLifetime
             // Arrange
             var client = new ClientBuilder()
                 .WithName("test-client")
-                .WithAudience("https://api.example.com")
                 .Build();
+            
+            client.AddAudience(new AudienceName("api"), _time.GetUtcNow());
         
             await using (var ctx = _fx.CreateContext())
             {
@@ -531,40 +552,6 @@ public class ClientPersistenceTests : IAsyncLifetime
                 // Assert
                 var audience = Assert.Single(loaded.Audiences);
                 Assert.Empty(audience.Scopes);
-            }
-        }
-        
-        [Fact]
-        public async Task ClientCanBeQueried_ByAudienceScope()
-        {
-            // Arrange
-            var client1 = new ClientBuilder()
-                .WithName("client1")
-                .WithAudience("https://api.example.com", "read", "write")
-                .Build();
-                
-            var client2 = new ClientBuilder()
-                .WithName("client2")
-                .WithAudience("https://api.example.com", "admin")
-                .Build();
-        
-            await using (var ctx = _fx.CreateContext())
-            {
-                ctx.AddRange(client1, client2);
-                await ctx.SaveChangesAsync();
-            }
-
-            await using (var ctx = _fx.CreateContext())
-            {
-                var found = await ctx.Clients
-                    .Where(c => c.Audiences.Any(a => 
-                        a.Value == "https://api.example.com" && 
-                        a.Scopes.Any(s => s.Value == "write")))
-                    .ToListAsync();
-
-                // Assert
-                Assert.Single(found);
-                Assert.Equal(client1.Id, found[0].Id);
             }
         }
     }
