@@ -266,10 +266,10 @@ public class SecretQueryServiceTests : IAsyncLifetime
             }
 
             // Act
-            var secrets = await _sut.GetActiveSecretsAsync(client.Id);
+            var secrets = (await _sut.GetActiveSecretsAsync(client.Id)).ToArray();
 
             // Assert
-            Assert.Equal(3, secrets.Count);
+            Assert.Equal(3, secrets.Length);
             Assert.All(secrets, s =>
             {
                 Assert.Equal(utcNow, s.CreatedAt);
@@ -368,7 +368,7 @@ public class SecretQueryServiceTests : IAsyncLifetime
             }
 
             // Act
-            var secrets = await _sut.GetActiveSecretsAsync(client.Id);
+            var secrets = (await _sut.GetActiveSecretsAsync(client.Id)).ToArray();
 
             // Assert
             Assert.Single(secrets);
@@ -416,7 +416,7 @@ public class SecretQueryServiceTests : IAsyncLifetime
             }
 
             // Act - Time hasn't advanced, so only the new secret should be active
-            var secrets = await _sut.GetActiveSecretsAsync(client.Id);
+            var secrets = (await _sut.GetActiveSecretsAsync(client.Id)).ToArray();
 
             // Assert
             Assert.Single(secrets);
