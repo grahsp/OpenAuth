@@ -2,6 +2,7 @@ using System.Runtime.CompilerServices;
 using OpenAuth.Domain.ValueObjects;
 
 [assembly: InternalsVisibleTo("OpenAuth.Test.Common")]
+[assembly: InternalsVisibleTo("OpenAuth.Test.Unit")]
 [assembly: InternalsVisibleTo("OpenAuth.Infrastructure")]
 namespace OpenAuth.Domain.Entities;
 
@@ -32,8 +33,6 @@ public sealed class Client
     
     private readonly HashSet<Audience> _audiences = [];
     public IReadOnlyCollection<Audience> Audiences => _audiences;
-    public IReadOnlyCollection<Scope> GetAllowedScopes(Audience audience)
-        => Audiences.FirstOrDefault(x => x.Value == audience.Value)?.Scopes ?? [];
     
     
     // Metadata
@@ -44,68 +43,57 @@ public sealed class Client
     internal static Client Create(ClientName name, DateTimeOffset utcNow)
         => new(name, utcNow);
 
-    public bool TryAddAudience(Audience audience, DateTimeOffset utcNow)
-    {
-        ArgumentNullException.ThrowIfNull(audience);
-        
-        if (!_audiences.Add(audience))
-            return false;
-        
-        Touch(utcNow);
-        return true;
-    }
-
-    public bool TryRemoveAudience(Audience audience, DateTimeOffset utcNow)
-    {
-        ArgumentNullException.ThrowIfNull(audience);
-        
-        if (!_audiences.Remove(audience))
-            return false;
-        
-        Touch(utcNow);
-        return true;
-    }
     
-    public void SetScopes(Audience audience, IEnumerable<Scope> scopes, DateTimeOffset utcNow)
+    public Audience GetAudience(AudienceName name)
+        => _audiences.SingleOrDefault(a => a.Name == name) ??
+           throw new InvalidOperationException($"Audience {name.Value} not found.");
+    
+    public Audience AddAudience(AudienceName name, DateTimeOffset utcNow)
     {
-        if (!_audiences.TryGetValue(audience, out var aud))
-            throw new InvalidOperationException("Audience not found.");
+        if (_audiences.Any(a => a.Name == name))
+            throw new InvalidOperationException($"Audience {name.Value} already exists.");
 
-        foreach (var scope in aud.Scopes)
-            aud.RevokeScope(scope);
+        var audience = Audience.Create(name, utcNow);
+        _audiences.Add(audience);
         
-        foreach (var scope in scopes)
-            aud.GrantScope(scope);
+        Touch(utcNow);
+        return audience;
+    }
+
+    public void RemoveAudience(AudienceName name, DateTimeOffset utcNow)
+    {
+        var audience = GetAudience(name);
+        _audiences.Remove(audience);
         
         Touch(utcNow);
     }
 
-    public void GrantScopes(Audience audience, IEnumerable<Scope> scopes, DateTimeOffset utcNow)
+    
+    public Audience SetScopes(AudienceName name, IEnumerable<Scope> scopes, DateTimeOffset utcNow)
     {
-        if (!_audiences.TryGetValue(audience, out var aud))
-            throw new InvalidOperationException("Audience not found.");
-
-        var updated = false;
-        foreach (var scope in scopes)
-            if (aud.GrantScope(scope))
-                updated = true;
-
-        if (updated)
-            Touch(utcNow);
+        var audience = GetAudience(name);
+        audience.SetScopes(scopes, utcNow);
+        
+        Touch(utcNow);
+        return audience;
     }
 
-    public void RevokeScopes(Audience audience, IEnumerable<Scope> scopes, DateTimeOffset utcNow)
+    public Audience GrantScopes(AudienceName name, IEnumerable<Scope> scopes, DateTimeOffset utcNow)
     {
-        if (!_audiences.TryGetValue(audience, out var aud))
-            throw new InvalidOperationException("Audience not found.");
-
-        var updated = false;
-        foreach (var scope in scopes)
-            if (aud.RevokeScope(scope))
-                updated = true;
+        var audience = GetAudience(name);
+        audience.GrantScopes(scopes, utcNow);
         
-        if (updated)
-            Touch(utcNow);
+        Touch(utcNow);
+        return audience;
+    }
+
+    public Audience RevokeScopes(AudienceName name, IEnumerable<Scope> scopes, DateTimeOffset utcNow)
+    {
+        var audience = GetAudience(name);
+        audience.RevokeScope(scopes, utcNow);
+        
+        Touch(utcNow);
+        return audience;
     }
 
 
@@ -155,7 +143,7 @@ public sealed class Client
     public void RevokeSecret(SecretId secretId, DateTimeOffset utcNow)
     {
         var secret = Secrets.FirstOrDefault(x => x.Id == secretId)
-            ?? throw new InvalidOperationException($"Secret { secretId } not found.");
+                     ?? throw new InvalidOperationException($"Secret { secretId } not found.");
 
         if (!secret.IsActive(utcNow))
             return;

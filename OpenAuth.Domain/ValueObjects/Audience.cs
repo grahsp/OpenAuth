@@ -1,46 +1,52 @@
 namespace OpenAuth.Domain.ValueObjects;
 
-public sealed class Audience : IEquatable<Audience>
+public sealed class Audience
 {
-    public const int Min = 3, Max = 128;
+    public AudienceId Id { get; private init; } = null!;
+    public AudienceName Name { get; private init; } = null!;
+    public DateTimeOffset CreatedAt { get; private init; }
+    public DateTimeOffset UpdatedAt { get; private set; }
 
-    public string Value => _value;
-    private readonly string _value;
-    
     public IReadOnlyCollection<Scope> Scopes => _scopes;
     private readonly HashSet<Scope> _scopes = [];
 
-    public Audience()
-    { }
+    private Audience() { }
     
-    public Audience(string value)
-    {
-        ArgumentNullException.ThrowIfNull(value);
-        ArgumentException.ThrowIfNullOrWhiteSpace(value);
-
-        var normalized = value.Trim().ToLowerInvariant();
-        _value = normalized.Length switch
+    
+    internal static Audience Create(AudienceName name, DateTimeOffset utcNow)
+        => new()
         {
-            < Min => throw new ArgumentOutOfRangeException(nameof(value), $"Value must be greater than {Min} characters long."),
-            > Max => throw new ArgumentOutOfRangeException(nameof(value), $"Value must be less than {Max} characters long."),
-            _ => normalized
+            Id = AudienceId.New(),
+            Name = name,
+            CreatedAt = utcNow,
+            UpdatedAt = utcNow
         };
+
+    internal void SetScopes(IEnumerable<Scope> scopes, DateTimeOffset utcNow)
+    {
+        _scopes.Clear();
+        foreach (var scope in scopes)
+            _scopes.Add(scope);
+        
+        Touch(utcNow);
     }
 
-    public bool GrantScope(Scope scope)
-        => _scopes.Add(scope);
+    internal void GrantScopes(IEnumerable<Scope> scopes, DateTimeOffset utcNow)
+    {
+        foreach (var scope in scopes)
+            _scopes.Add(scope);
+        
+        Touch(utcNow);
+    }
 
-    public bool RevokeScope(Scope scope)
-        => _scopes.Remove(scope);
+    internal void RevokeScope(IEnumerable<Scope> scopes, DateTimeOffset utcNow)
+    {
+        foreach (var scope in scopes)
+            _scopes.Remove(scope);
+        
+        Touch(utcNow);
+    }
     
-    public override string ToString() => Value;
-
-    public bool Equals(Audience? other)
-        => other is not null && Value == other.Value;
-
-    public override bool Equals(object? obj)
-        => obj is Audience other && Equals(other);
-
-    public override int GetHashCode()
-        => HashCode.Combine(Value);
+    private void Touch(DateTimeOffset utcNow)
+        => UpdatedAt = utcNow;
 }
