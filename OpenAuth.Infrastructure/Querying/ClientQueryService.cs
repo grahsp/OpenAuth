@@ -1,9 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using OpenAuth.Application.Dtos;
+using OpenAuth.Application.Dtos.Mappings;
 using OpenAuth.Application.Queries;
 using OpenAuth.Domain.ValueObjects;
 using OpenAuth.Infrastructure.Persistence;
-using OpenAuth.Infrastructure.Persistence.QuerySpecifications;
 
 namespace OpenAuth.Infrastructure.Querying;
 
@@ -17,38 +17,53 @@ public class ClientQueryService : IClientQueryService
     }
 
 
-    public Task<ClientInfo?> GetByIdAsync(ClientId id, CancellationToken ct = default)
-        => _context.Clients
+    public async Task<ClientInfo?> GetByIdAsync(ClientId id, CancellationToken ct = default)
+    {
+        var client = await _context.Clients
+            .AsNoTracking()
             .Where(x => x.Id == id)
-            .ToClientInfo()
             .SingleOrDefaultAsync(ct);
 
-    public Task<ClientInfo?> GetByNameAsync(ClientName name, CancellationToken ct = default)
-        => _context.Clients
+        return client?.ToClientInfo() ?? null;
+    }
+
+    public async Task<ClientInfo?> GetByNameAsync(ClientName name, CancellationToken ct = default)
+    {
+        var client = await _context.Clients
+            .AsNoTracking()
             .Where(x => x.Name == name)
-            .ToClientInfo()
             .SingleOrDefaultAsync(ct);
 
-    public Task<ClientDetails?> GetDetailsAsync(ClientId id, CancellationToken ct = default)
-        => _context.Clients
+        return client?.ToClientInfo() ?? null;
+    }
+
+    public async Task<ClientDetails?> GetDetailsAsync(ClientId id, CancellationToken ct = default)
+    {
+        var client = await _context.Clients
+            .AsNoTracking()
             .Where(x => x.Id == id)
-            .ToClientDetails()
+            .Include(c => c.Audiences)
+            .Include(c => c.Secrets)
             .SingleOrDefaultAsync(ct);
+        
+        return client?.ToClientDetails() ?? null;
+    }
 
     public async Task<PagedResult<ClientInfo>> GetPagedAsync(int page, int pageSize,
         CancellationToken ct = default)
     {
         var query = _context.Clients
+            .AsNoTracking()
             .OrderBy(x => x.Name);
 
         var totalCount = await query.CountAsync(ct);
         
-        var items = await query
+        var clients = await query
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
-            .ToClientInfo()
             .ToListAsync(ct);
 
+        var items = clients.Select(c => c.ToClientInfo()).ToArray();
         return new PagedResult<ClientInfo>(items, totalCount, page, pageSize);
     }
 

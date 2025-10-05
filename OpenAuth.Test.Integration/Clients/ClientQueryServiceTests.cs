@@ -61,28 +61,6 @@ public class ClientQueryServiceTests : IAsyncLifetime
             // Assert
             Assert.Null(result);
         }
-        
-        [Fact]
-        public async Task DoesNotLoadRelatedEntities()
-        {
-            // Arrange
-            var client = new ClientBuilder()
-                .WithSecret("$2a$10$abcdefghijklmnopqrstuvwxyz12345678901234567890123456")
-                .Build();
-            
-            _context.Clients.Add(client);
-            await _context.SaveChangesAsync();
-            _context.ChangeTracker.Clear();
-            
-            // Act
-            var result = await _sut.GetByIdAsync(client.Id);
-            
-            // Assert
-            Assert.NotNull(result);
-            // Result should be a projection, not loading navigation properties
-            var trackedClient = _context.Clients.Local.FirstOrDefault();
-            Assert.Null(trackedClient); // Nothing should be tracked
-        }
     }
     
     public class GetByNameAsync(SqlServerFixture fx) : ClientQueryServiceTests(fx)

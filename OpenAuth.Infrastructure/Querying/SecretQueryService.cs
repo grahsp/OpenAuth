@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using OpenAuth.Application.Dtos;
+using OpenAuth.Application.Dtos.Mappings;
 using OpenAuth.Application.Queries;
 using OpenAuth.Application.Security.Secrets;
 using OpenAuth.Domain.ValueObjects;
@@ -28,6 +29,7 @@ public class SecretQueryService : ISecretQueryService
         CancellationToken ct = default)
     {
         var hashes = await _context.ClientSecrets
+            .AsNoTracking()
             .Where(s => s.ClientId == clientId)
             .WhereActive(_time.GetUtcNow())
             .Select(s => s.Hash)
@@ -35,10 +37,14 @@ public class SecretQueryService : ISecretQueryService
 
         return hashes.Any(hash => _hasher.Verify(plainSecret, hash));
     }
-    
-    public Task<List<SecretInfo>> GetActiveSecretsAsync(ClientId clientId, CancellationToken ct = default)
-        => _context.ClientSecrets
+
+    public async Task<IEnumerable<SecretInfo>> GetActiveSecretsAsync(ClientId clientId, CancellationToken ct = default)
+    {
+        var secrets = await _context.ClientSecrets
+            .AsNoTracking()
             .WhereActive(_time.GetUtcNow())
-            .ToSecretInfo()
             .ToListAsync(ct);
+
+        return secrets.Select(s => s.ToSecretInfo());
+    }
 }
