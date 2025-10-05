@@ -1,3 +1,4 @@
+using OpenAuth.Application.Dtos;
 using OpenAuth.Application.Security.Jwks;
 using OpenAuth.Domain.Enums;
 using OpenAuth.Domain.ValueObjects;
@@ -17,10 +18,10 @@ public class RsaPublicKeyInfoExtractorTests
     {
         // Arrange
         var kid = new SigningKeyId(Guid.NewGuid());
-        var keyMaterial = new KeyMaterial(_privateKey, SigningAlgorithm.RS256, KeyType.RSA);
+        var keyData = new SigningKeyData(SigningKeyId.New(), KeyType.RSA, SigningAlgorithm.RS256, _privateKey);
 
         // Act
-        var result = _exporter.Extract(kid, keyMaterial);
+        var result = _exporter.Extract(keyData);
 
         // Assert
         var info = Assert.IsType<RsaPublicKeyInfo>(result);
@@ -33,14 +34,14 @@ public class RsaPublicKeyInfoExtractorTests
     {
         // Arrange
         var kid = new SigningKeyId(Guid.NewGuid());
-        var privateMaterial = new KeyMaterial(_privateKey, SigningAlgorithm.RS256, KeyType.RSA);
-        var fromPrivate = (RsaPublicKeyInfo)_exporter.Extract(kid, privateMaterial);
+        var privateKeyData = new SigningKeyData(SigningKeyId.New(), KeyType.RSA, SigningAlgorithm.RS256, _privateKey);
+        var fromPrivate = (RsaPublicKeyInfo)_exporter.Extract(privateKeyData);
 
         var publicPem = CryptoTestUtils.RsaPublicKeyInfoToPem(fromPrivate);
-        var publicMaterial = new KeyMaterial(publicPem, SigningAlgorithm.RS256, KeyType.RSA);
+        var publicKeyData = new SigningKeyData(kid, KeyType.RSA, SigningAlgorithm.RS256, publicPem);
 
         // Act
-        var fromPublic = (RsaPublicKeyInfo)_exporter.Extract(kid, publicMaterial);
+        var fromPublic = (RsaPublicKeyInfo)_exporter.Extract(publicKeyData);
 
         // Assert
         Assert.Equal(fromPrivate.N, fromPublic.N);
@@ -48,31 +49,13 @@ public class RsaPublicKeyInfoExtractorTests
     }
 
     [Fact]
-    public void Extract_RoundTripsPublicKeyInfo()
-    {
-        // Arrange
-        var kid = new SigningKeyId(Guid.NewGuid());
-        var keyMaterial = new KeyMaterial(_privateKey, SigningAlgorithm.RS256, KeyType.RSA);
-        var info = (RsaPublicKeyInfo)_exporter.Extract(kid, keyMaterial);
-
-        // Act
-        var pem = CryptoTestUtils.RsaPublicKeyInfoToPem(info);
-        var roundtripMaterial = new KeyMaterial(pem, SigningAlgorithm.RS256, KeyType.RSA);
-        var roundtripped = (RsaPublicKeyInfo)_exporter.Extract(kid, roundtripMaterial);
-
-        // Assert
-        Assert.Equal(info.N, roundtripped.N);
-        Assert.Equal(info.E, roundtripped.E);
-    }
-
-    [Fact]
     public void Extract_Throws_WhenInvalidKey()
     {
         // Arrange
         var key = new Key("not-a-valid-pem");
-        var keyMaterial = new KeyMaterial(key, SigningAlgorithm.RS256, KeyType.RSA);
+        var keyData = new SigningKeyData(SigningKeyId.New(), KeyType.RSA, SigningAlgorithm.RS256, key);
 
         // Act & Assert
-        Assert.Throws<ArgumentException>(() => _exporter.Extract(new SigningKeyId(Guid.NewGuid()), keyMaterial));
+        Assert.Throws<ArgumentException>(() => _exporter.Extract(keyData));
     }
 }
