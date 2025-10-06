@@ -38,13 +38,14 @@ public class SecretQueryService : ISecretQueryService
         return hashes.Any(hash => _hasher.Verify(plainSecret, hash));
     }
 
-    public async Task<IEnumerable<SecretInfo>> GetActiveSecretsAsync(ClientId clientId, CancellationToken ct = default)
+    public async Task<IReadOnlyCollection<SecretInfo>> GetActiveSecretsAsync(ClientId clientId, CancellationToken ct = default)
     {
         var secrets = await _context.ClientSecrets
             .AsNoTracking()
+            .Where(s => s.ClientId == clientId)
             .WhereActive(_time.GetUtcNow())
             .ToListAsync(ct);
 
-        return secrets.Select(s => s.ToSecretInfo());
+        return secrets.Select(s => s.ToSecretInfo()).ToList();
     }
 }
