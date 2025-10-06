@@ -68,8 +68,8 @@ public class SigningKeyServiceTests : IAsyncLifetime
             var key = await sut.CreateAsync(SigningAlgorithm.RS256);
 
             // Assert
-            Assert.Equal(SigningAlgorithm.RS256, key.KeyMaterial.Alg);
-            Assert.Equal(KeyType.RSA, key.KeyMaterial.Kty);
+            Assert.Equal(SigningAlgorithm.RS256, key.Algorithm);
+            Assert.Equal(KeyType.RSA, key.KeyType);
         }
 
         [Fact]
@@ -128,8 +128,8 @@ public class SigningKeyServiceTests : IAsyncLifetime
             var hmacKey = await sut.CreateAsync(SigningAlgorithm.HS256);
 
             // Assert
-            Assert.Equal(KeyType.RSA, rsaKey.KeyMaterial.Kty);
-            Assert.Equal(KeyType.HMAC, hmacKey.KeyMaterial.Kty);
+            Assert.Equal(KeyType.RSA, rsaKey.KeyType);
+            Assert.Equal(KeyType.HMAC, hmacKey.KeyType);
         }
     }
 
