@@ -3,7 +3,6 @@ using OpenAuth.Application.SigningKeys;
 using OpenAuth.Domain.Entities;
 using OpenAuth.Domain.ValueObjects;
 using OpenAuth.Infrastructure.Persistence;
-using OpenAuth.Infrastructure.Persistence.QuerySpecifications;
 
 namespace OpenAuth.Infrastructure.Repositories;
 
@@ -19,26 +18,6 @@ public class SigningKeyRepository : ISigningKeyRepository
     public async Task<SigningKey?> GetByIdAsync(SigningKeyId id, CancellationToken cancellationToken = default)
         => await _context.SigningKeys
             .SingleOrDefaultAsync(x => x.Id == id, cancellationToken);
-    
-    public async Task<SigningKey?> GetCurrentAsync(DateTimeOffset now, CancellationToken cancellationToken = default)
-        => await _context.SigningKeys
-            .WhereActive(now)
-            .OrderByDescending(k => k.CreatedAt)
-            .ThenBy(k => k.Id)
-            .FirstOrDefaultAsync(cancellationToken);
-
-    public async Task<IEnumerable<SigningKey>> GetAllAsync(CancellationToken cancellationToken = default)
-        => await _context.SigningKeys
-            .OrderByDescending(k => k.CreatedAt)
-            .ThenBy(k => k.Id)
-            .ToListAsync(cancellationToken);
-
-    public async Task<IEnumerable<SigningKey>> GetActiveAsync(DateTimeOffset now, CancellationToken cancellationToken = default)
-        => await _context.SigningKeys
-            .WhereActive(now)
-            .OrderByDescending(k => k.CreatedAt)
-            .ThenBy(k => k.Id)
-            .ToListAsync(cancellationToken);
 
     public void Add(SigningKey key)
         => _context.SigningKeys.Add(key);
@@ -46,6 +25,6 @@ public class SigningKeyRepository : ISigningKeyRepository
     public void Remove(SigningKey key)
         => _context.SigningKeys.Remove(key);
     
-    public async Task SaveChangesAsync(CancellationToken cancellationToken = default)
-        => await _context.SaveChangesAsync(cancellationToken);
+    public async Task SaveChangesAsync(CancellationToken ct = default)
+        => await _context.SaveChangesAsync(ct);
 }
