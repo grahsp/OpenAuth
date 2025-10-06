@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using OpenAuth.Application.Clients;
+using OpenAuth.Application.Queries;
 using OpenAuth.Application.Security.Jwks;
 using OpenAuth.Application.Security.Keys;
 using OpenAuth.Application.Security.Secrets;
@@ -9,6 +10,7 @@ using OpenAuth.Application.SigningKeys;
 using OpenAuth.Domain.Configurations;
 using OpenAuth.Infrastructure.Clients;
 using OpenAuth.Infrastructure.Persistence;
+using OpenAuth.Infrastructure.Querying;
 using OpenAuth.Infrastructure.Repositories;
 using OpenAuth.Infrastructure.Security.Jwks;
 using OpenAuth.Infrastructure.Security.Keys;
@@ -40,19 +42,24 @@ public class Program
 
         // Client Services
         builder.Services.AddScoped<IClientRepository, ClientRepository>();
-        builder.Services.AddScoped<IClientSecretValidator, ClientSecretValidator>();
         builder.Services.AddScoped<IClientService, ClientService>();
+        builder.Services.AddScoped<IClientQueryService, ClientQueryService>();
+        builder.Services.AddScoped<IClientSecretValidator, ClientSecretValidator>();
         builder.Services.AddScoped<IClientFactory, ClientFactory>();
+        
+        // Audience Services
+        builder.Services.AddScoped<IAudienceService, AudienceService>();
         
         // Secret Services
         builder.Services.AddScoped<ISecretService, SecretService>();
+        builder.Services.AddScoped<ISecretQueryService, SecretQueryService>();
         builder.Services.AddScoped<ISecretHasher, Pbkdf2Hasher>();
         builder.Services.AddScoped<ISecretGenerator, SecretGenerator>();
 
         // Signing Keys
         builder.Services.AddScoped<ISigningKeyService, SigningKeyService>();
+        builder.Services.AddScoped<ISigningKeyQueryService, SigningKeyQueryService>();
         builder.Services.AddScoped<ISigningKeyRepository, SigningKeyRepository>();
-        builder.Services.AddScoped<IPublicKeyInfoExtractor, RsaPublicKeyInfoExtractor>();
         
         builder.Services.AddScoped<IKeyMaterialGenerator, HmacKeyMaterialGenerator>();
         builder.Services.AddScoped<IKeyMaterialGenerator, RsaKeyMaterialGenerator>();
@@ -61,6 +68,14 @@ public class Program
         builder.Services.AddScoped<ISigningCredentialsStrategy, HmacSigningCredentialsStrategy>();
         builder.Services.AddScoped<ISigningCredentialsStrategy, RsaSigningCredentialsStrategy>();
         builder.Services.AddScoped<ISigningCredentialsFactory, SigningCredentialsFactory>();
+        
+        // Token Services
+        builder.Services.AddScoped<ITokenService, TokenService>();
+        
+        // Jwks
+        builder.Services.AddScoped<IJwksService, JwksService>();
+        builder.Services.AddScoped<IPublicKeyInfoFactory, PublicKeyInfoFactory>();
+        builder.Services.AddScoped<IPublicKeyInfoExtractor, RsaPublicKeyInfoExtractor>();
         
         // Token Generator
         builder.Services.Configure<Auth>(builder.Configuration.GetSection("Auth"));

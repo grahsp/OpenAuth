@@ -5,7 +5,6 @@ using OpenAuth.Application.Security.Keys;
 using OpenAuth.Application.SigningKeys;
 using OpenAuth.Domain.Entities;
 using OpenAuth.Domain.Enums;
-using OpenAuth.Domain.ValueObjects;
 using OpenAuth.Test.Common.Helpers;
 
 namespace OpenAuth.Test.Unit.SigningKeys;
