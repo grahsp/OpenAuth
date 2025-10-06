@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using OpenAuth.Api.Dtos;
+using OpenAuth.Api.Mappers;
 using OpenAuth.Application.Clients;
 using OpenAuth.Application.Queries;
 using OpenAuth.Domain.ValueObjects;
@@ -23,20 +24,13 @@ public class AudienceController : ControllerBase
     // ==================== Audience Operations ==================== //
     
     [HttpGet]
-    public async Task<ActionResult<AudienceResponse>> GetAudience(Guid clientId, string name)
+    public async Task<ActionResult<AudienceResponse>> GetAudiences(Guid clientId)
     {
         var client = await _queryService.GetDetailsAsync(new ClientId(clientId));
         if (client is null)
             return NotFound();
 
-        var audience =
-            client.Audiences
-                .SingleOrDefault(a =>
-                    a.Name.Value.Equals(name, StringComparison.OrdinalIgnoreCase));
-        if (audience is null)
-            return NotFound();
-
-        return Ok(audience);
+        return Ok(client.Audiences.Select(ClientMapper.ToResponse));
     }
     
     [HttpPost]
@@ -47,11 +41,7 @@ public class AudienceController : ControllerBase
         var audienceName = new AudienceName(request.Name);
         var response = await _commandService.AddAudienceAsync(new ClientId(clientId), audienceName);
 
-        return CreatedAtAction(
-            nameof(GetAudience),
-            new { clientId, audienceName },
-            response
-        );
+        return Created(string.Empty, response);
     }
     
     [HttpDelete("{name}")]
