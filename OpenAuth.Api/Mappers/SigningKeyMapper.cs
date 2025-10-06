@@ -1,14 +1,14 @@
 using OpenAuth.Api.Dtos;
-using OpenAuth.Domain.Entities;
+using OpenAuth.Application.Dtos;
 
 namespace OpenAuth.Api.Mappers;
 
 public static class SigningKeyMapper
 {
-    public static SigningKeyResponse ToResponse(SigningKey key)
-        => new SigningKeyResponse(
+    public static SigningKeyResponse ToResponse(SigningKeyInfo key)
+        => new(
             key.Id.Value,
-            key.KeyMaterial.Alg.ToString(),
+            key.Algorithm.ToString(),
             key.CreatedAt,
             key.ExpiresAt,
             key.RevokedAt
