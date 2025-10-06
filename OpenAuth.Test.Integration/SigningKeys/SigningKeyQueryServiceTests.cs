@@ -47,7 +47,7 @@ public class SigningKeyQueryServiceTests : IAsyncLifetime
             await context.SaveChangesAsync();
 
             // Act
-            var result = await _sut.GetCurrentAsync();
+            var result = await _sut.GetCurrentKeyDataAsync();
 
             // Assert
             Assert.NotNull(result);
@@ -74,7 +74,7 @@ public class SigningKeyQueryServiceTests : IAsyncLifetime
             await context.SaveChangesAsync();
 
             // Act
-            var result = await _sut.GetCurrentAsync();
+            var result = await _sut.GetCurrentKeyDataAsync();
 
             // Assert
             Assert.Null(result);
@@ -99,7 +99,7 @@ public class SigningKeyQueryServiceTests : IAsyncLifetime
             await context.SaveChangesAsync();
 
             // Act
-            var result = await _sut.GetCurrentAsync();
+            var result = await _sut.GetCurrentKeyDataAsync();
 
             // Assert
             Assert.Null(result);
@@ -128,7 +128,7 @@ public class SigningKeyQueryServiceTests : IAsyncLifetime
             await context.SaveChangesAsync();
 
             // Act
-            var result = await _sut.GetCurrentAsync();
+            var result = await _sut.GetCurrentKeyDataAsync();
 
             // Assert
             Assert.NotNull(result);

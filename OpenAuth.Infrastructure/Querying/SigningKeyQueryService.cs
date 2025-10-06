@@ -19,7 +19,7 @@ public class SigningKeyQueryService : ISigningKeyQueryService
     }
     
     
-    public Task<SigningKeyData?> GetCurrentAsync(CancellationToken ct = default)
+    public Task<SigningKeyData?> GetCurrentKeyDataAsync(CancellationToken ct = default)
         => _context.SigningKeys
             .AsNoTracking()
             .WhereActive(_time.GetUtcNow())
@@ -31,6 +31,19 @@ public class SigningKeyQueryService : ISigningKeyQueryService
                 k.KeyMaterial.Key
             ))
             .FirstOrDefaultAsync(ct);
+
+    public async Task<IReadOnlyCollection<SigningKeyData>> GetActiveKeyDataAsync(CancellationToken ct = default)
+        => await _context.SigningKeys
+            .AsNoTracking()
+            .WhereActive(_time.GetUtcNow())
+            .OrderByDescending(k => k.CreatedAt)
+            .Select(k => new SigningKeyData(
+                k.Id,
+                k.KeyMaterial.Kty,
+                k.KeyMaterial.Alg,
+                k.KeyMaterial.Key
+            ))
+            .ToListAsync(ct);
 
     public Task<SigningKeyInfo?> GetByIdAsync(SigningKeyId id, CancellationToken ct = default)
         => _context.SigningKeys
