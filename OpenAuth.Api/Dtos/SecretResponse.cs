@@ -1,6 +1,6 @@
 namespace OpenAuth.Api.Dtos;
 
-public record ClientSecretResponse(
+public record SecretResponse(
     Guid Id,
     Guid ClientId,
     DateTimeOffset CreatedAt,
