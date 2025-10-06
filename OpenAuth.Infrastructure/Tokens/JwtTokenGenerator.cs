@@ -7,7 +7,7 @@ using OpenAuth.Application.Security.Signing;
 using OpenAuth.Application.Security.Tokens;
 using OpenAuth.Domain.Configurations;
 
-namespace OpenAuth.Infrastructure.Security.Tokens;
+namespace OpenAuth.Infrastructure.Tokens;
 
 public class JwtTokenGenerator : IJwtTokenGenerator
 {

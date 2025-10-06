@@ -1,7 +1,6 @@
-using OpenAuth.Application.Dtos;
 using OpenAuth.Domain.Entities;
 
-namespace OpenAuth.Infrastructure.Persistence.QuerySpecifications;
+namespace OpenAuth.Infrastructure.Clients.Secrets.Persistence;
 
 public static class SecretQuerySpecifications
 {

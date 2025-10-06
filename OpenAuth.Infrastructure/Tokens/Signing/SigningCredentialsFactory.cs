@@ -4,7 +4,7 @@ using OpenAuth.Application.Security.Signing;
 using OpenAuth.Domain.Entities;
 using OpenAuth.Domain.Enums;
 
-namespace OpenAuth.Infrastructure.Security.Signing;
+namespace OpenAuth.Infrastructure.Tokens.SigningCredentials;
 
 /// <summary>
 /// Default implementation of <see cref="ISigningCredentialsFactory"/>.
@@ -46,7 +46,7 @@ public class SigningCredentialsFactory : ISigningCredentialsFactory
     }
     
     /// <inheritdoc />
-    public SigningCredentials Create(SigningKeyData keyData)
+    public Microsoft.IdentityModel.Tokens.SigningCredentials Create(SigningKeyData keyData)
     {
         ArgumentNullException.ThrowIfNull(keyData);
         

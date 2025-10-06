@@ -1,8 +1,7 @@
-using OpenAuth.Application.Clients;
 using OpenAuth.Domain.Entities;
 using OpenAuth.Domain.ValueObjects;
 
-namespace OpenAuth.Infrastructure.Clients;
+namespace OpenAuth.Application.Clients;
 
 public class ClientFactory : IClientFactory
 {

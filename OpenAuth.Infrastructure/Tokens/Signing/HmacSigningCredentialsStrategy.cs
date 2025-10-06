@@ -5,7 +5,7 @@ using OpenAuth.Application.Security.Signing;
 using OpenAuth.Domain.Enums;
 using OpenAuth.Infrastructure.Security.Extensions;
 
-namespace OpenAuth.Infrastructure.Security.Signing;
+namespace OpenAuth.Infrastructure.Tokens.SigningCredentials;
 
 /// <summary>
 /// Provides signing credentials extraction for HMAC key material.
@@ -18,7 +18,7 @@ public class HmacSigningCredentialsStrategy : ISigningCredentialsStrategy
     public KeyType KeyType => KeyType.HMAC;
 
     /// <inheritdoc />
-    public SigningCredentials GetSigningCredentials(SigningKeyData keyData)
+    public Microsoft.IdentityModel.Tokens.SigningCredentials GetSigningCredentials(SigningKeyData keyData)
     {
         ArgumentNullException.ThrowIfNull(keyData);
         
@@ -29,6 +29,6 @@ public class HmacSigningCredentialsStrategy : ISigningCredentialsStrategy
         var bytes= Encoding.UTF8.GetBytes(keyData.Key.Value);
         var securityKey = new SymmetricSecurityKey(bytes) { KeyId = keyData.Kid.Value.ToString() };
         
-        return new SigningCredentials(securityKey, keyData.Alg.ToSecurityString());
+        return new Microsoft.IdentityModel.Tokens.SigningCredentials(securityKey, keyData.Alg.ToSecurityString());
     }
 }

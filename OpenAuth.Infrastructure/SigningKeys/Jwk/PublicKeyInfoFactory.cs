@@ -2,7 +2,7 @@ using OpenAuth.Application.Dtos;
 using OpenAuth.Application.Security.Jwks;
 using OpenAuth.Domain.Enums;
 
-namespace OpenAuth.Infrastructure.Security.Jwks;
+namespace OpenAuth.Infrastructure.SigningKeys.Jwk;
 
 public class PublicKeyInfoFactory : IPublicKeyInfoFactory
 {

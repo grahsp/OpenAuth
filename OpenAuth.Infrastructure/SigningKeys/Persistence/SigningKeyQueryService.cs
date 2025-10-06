@@ -3,9 +3,8 @@ using OpenAuth.Application.Dtos;
 using OpenAuth.Application.Queries;
 using OpenAuth.Domain.ValueObjects;
 using OpenAuth.Infrastructure.Persistence;
-using OpenAuth.Infrastructure.Persistence.QuerySpecifications;
 
-namespace OpenAuth.Infrastructure.Querying;
+namespace OpenAuth.Infrastructure.SigningKeys.Persistence;
 
 public class SigningKeyQueryService : ISigningKeyQueryService
 {

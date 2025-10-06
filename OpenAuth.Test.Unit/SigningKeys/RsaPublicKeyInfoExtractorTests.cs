@@ -2,7 +2,7 @@ using OpenAuth.Application.Dtos;
 using OpenAuth.Application.Security.Jwks;
 using OpenAuth.Domain.Enums;
 using OpenAuth.Domain.ValueObjects;
-using OpenAuth.Infrastructure.Security.Jwks;
+using OpenAuth.Infrastructure.Keys.Jwks;
 using OpenAuth.Test.Common.Helpers;
 
 namespace OpenAuth.Test.Unit.SigningKeys;

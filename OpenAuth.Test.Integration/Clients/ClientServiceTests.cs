@@ -3,8 +3,8 @@ using Microsoft.Extensions.Time.Testing;
 using OpenAuth.Application.Clients;
 using OpenAuth.Domain.ValueObjects;
 using OpenAuth.Infrastructure.Clients;
+using OpenAuth.Infrastructure.Clients.Persistence;
 using OpenAuth.Infrastructure.Persistence;
-using OpenAuth.Infrastructure.Repositories;
 using OpenAuth.Test.Integration.Fixtures;
 
 namespace OpenAuth.Test.Integration.Clients;

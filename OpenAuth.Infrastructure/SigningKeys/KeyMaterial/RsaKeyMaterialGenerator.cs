@@ -3,7 +3,7 @@ using OpenAuth.Application.Security.Keys;
 using OpenAuth.Domain.Enums;
 using OpenAuth.Domain.ValueObjects;
 
-namespace OpenAuth.Infrastructure.Security.Keys;
+namespace OpenAuth.Infrastructure.SigningKeys.KeyMaterial;
 
 public class RsaKeyMaterialGenerator : IKeyMaterialGenerator
 {
@@ -24,12 +24,12 @@ public class RsaKeyMaterialGenerator : IKeyMaterialGenerator
     }
     
     
-    public KeyMaterial Create(SigningAlgorithm algorithm)
+    public Domain.ValueObjects.KeyMaterial Create(SigningAlgorithm algorithm)
     {
         using var rsa = RSA.Create(_size);
         var key = new Key(ExportPrivateKeyPem(rsa));
 
-        return new KeyMaterial(key, algorithm, KeyType);
+        return new Domain.ValueObjects.KeyMaterial(key, algorithm, KeyType);
     }
     
     private static string ExportPrivateKeyPem(RSA rsa)

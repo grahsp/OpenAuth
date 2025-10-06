@@ -1,7 +1,6 @@
-using System.Linq.Expressions;
 using OpenAuth.Domain.Entities;
 
-namespace OpenAuth.Infrastructure.Persistence.QuerySpecifications;
+namespace OpenAuth.Infrastructure.SigningKeys.Persistence;
 
 public static class SigningKeyQuerySpecifications
 {

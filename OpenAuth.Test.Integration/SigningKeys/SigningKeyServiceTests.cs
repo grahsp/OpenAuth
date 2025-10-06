@@ -3,8 +3,9 @@ using Microsoft.Extensions.Time.Testing;
 using OpenAuth.Application.SigningKeys;
 using OpenAuth.Domain.Enums;
 using OpenAuth.Domain.ValueObjects;
-using OpenAuth.Infrastructure.Repositories;
-using OpenAuth.Infrastructure.Security.Keys;
+using OpenAuth.Infrastructure.SigningKeys;
+using OpenAuth.Infrastructure.SigningKeys.KeyMaterial;
+using OpenAuth.Infrastructure.SigningKeys.Persistence;
 using OpenAuth.Test.Integration.Fixtures;
 
 namespace OpenAuth.Test.Integration.SigningKeys;

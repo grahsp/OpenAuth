@@ -1,4 +1,5 @@
 using OpenAuth.Application.Security.Secrets;
+using OpenAuth.Infrastructure.Clients.Secrets;
 using OpenAuth.Infrastructure.Security;
 using OpenAuth.Infrastructure.Security.Secrets;
 

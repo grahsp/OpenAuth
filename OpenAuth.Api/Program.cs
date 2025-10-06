@@ -9,14 +9,18 @@ using OpenAuth.Application.Security.Tokens;
 using OpenAuth.Application.SigningKeys;
 using OpenAuth.Domain.Configurations;
 using OpenAuth.Infrastructure.Clients;
+using OpenAuth.Infrastructure.Clients.Persistence;
+using OpenAuth.Infrastructure.Clients.Secrets;
+using OpenAuth.Infrastructure.Clients.Secrets.Persistence;
+using OpenAuth.Infrastructure.Keys.Jwks;
 using OpenAuth.Infrastructure.Persistence;
-using OpenAuth.Infrastructure.Querying;
-using OpenAuth.Infrastructure.Repositories;
-using OpenAuth.Infrastructure.Security.Jwks;
-using OpenAuth.Infrastructure.Security.Keys;
 using OpenAuth.Infrastructure.Security.Secrets;
-using OpenAuth.Infrastructure.Security.Signing;
-using OpenAuth.Infrastructure.Security.Tokens;
+using OpenAuth.Infrastructure.SigningKeys;
+using OpenAuth.Infrastructure.SigningKeys.Jwk;
+using OpenAuth.Infrastructure.SigningKeys.KeyMaterial;
+using OpenAuth.Infrastructure.SigningKeys.Persistence;
+using OpenAuth.Infrastructure.Tokens;
+using OpenAuth.Infrastructure.Tokens.SigningCredentials;
 
 namespace OpenAuth.Api;
 

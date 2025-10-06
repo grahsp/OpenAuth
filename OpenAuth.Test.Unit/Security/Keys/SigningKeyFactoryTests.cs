@@ -1,7 +1,9 @@
 using Microsoft.Extensions.Time.Testing;
 using OpenAuth.Application.Security.Keys;
+using OpenAuth.Application.SigningKeys;
 using OpenAuth.Domain.Enums;
-using OpenAuth.Infrastructure.Security.Keys;
+using OpenAuth.Infrastructure.SigningKeys;
+using OpenAuth.Infrastructure.SigningKeys.KeyMaterial;
 
 namespace OpenAuth.Test.Unit.Security.Keys;
 

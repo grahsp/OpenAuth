@@ -4,7 +4,7 @@ using OpenAuth.Application.Dtos;
 using OpenAuth.Application.Security.Jwks;
 using OpenAuth.Domain.Enums;
 
-namespace OpenAuth.Infrastructure.Security.Jwks;
+namespace OpenAuth.Infrastructure.Keys.Jwks;
 
 public class RsaPublicKeyInfoExtractor : IPublicKeyInfoExtractor
 {

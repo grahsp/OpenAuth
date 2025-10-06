@@ -4,7 +4,7 @@ using OpenAuth.Domain.Entities;
 using OpenAuth.Domain.ValueObjects;
 using OpenAuth.Infrastructure.Persistence;
 
-namespace OpenAuth.Infrastructure.Repositories;
+namespace OpenAuth.Infrastructure.SigningKeys.Persistence;
 
 public class SigningKeyRepository : ISigningKeyRepository
 {
