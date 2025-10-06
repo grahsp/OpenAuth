@@ -1,5 +1,5 @@
 ﻿using OpenAuth.Application.Security.Secrets;
-using OpenAuth.Domain.Entities;
+using OpenAuth.Domain.Clients;
 
 namespace OpenAuth.Application.Clients;
 

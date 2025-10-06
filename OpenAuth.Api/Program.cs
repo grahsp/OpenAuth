@@ -7,11 +7,11 @@ using OpenAuth.Application.Security.Secrets;
 using OpenAuth.Application.Security.Signing;
 using OpenAuth.Application.Security.Tokens;
 using OpenAuth.Application.SigningKeys;
-using OpenAuth.Domain.Configurations;
 using OpenAuth.Infrastructure.Clients;
 using OpenAuth.Infrastructure.Clients.Persistence;
 using OpenAuth.Infrastructure.Clients.Secrets;
 using OpenAuth.Infrastructure.Clients.Secrets.Persistence;
+using OpenAuth.Infrastructure.Configurations;
 using OpenAuth.Infrastructure.Keys.Jwks;
 using OpenAuth.Infrastructure.Persistence;
 using OpenAuth.Infrastructure.Security.Secrets;
@@ -82,7 +82,7 @@ public class Program
         builder.Services.AddScoped<IPublicKeyInfoExtractor, RsaPublicKeyInfoExtractor>();
         
         // Token Generator
-        builder.Services.Configure<Auth>(builder.Configuration.GetSection("Auth"));
+        builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("Auth"));
         builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
         
 

@@ -1,4 +1,4 @@
-using OpenAuth.Domain.ValueObjects;
+using OpenAuth.Domain.Clients.Audiences;
 
 namespace OpenAuth.Application.Dtos.Mappings;
 

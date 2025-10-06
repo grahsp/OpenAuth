@@ -1,8 +1,8 @@
 using Microsoft.IdentityModel.Tokens;
 using OpenAuth.Application.Dtos;
 using OpenAuth.Application.Security.Signing;
-using OpenAuth.Domain.Entities;
-using OpenAuth.Domain.Enums;
+using OpenAuth.Domain.SigningKeys;
+using OpenAuth.Domain.SigningKeys.Enums;
 
 namespace OpenAuth.Infrastructure.Tokens.SigningCredentials;
 

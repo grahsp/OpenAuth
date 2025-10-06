@@ -1,4 +1,4 @@
-namespace OpenAuth.Domain.ValueObjects;
+namespace OpenAuth.Domain.Clients.Audiences.ValueObjects;
 
 public sealed record Scope
 {

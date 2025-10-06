@@ -1,8 +1,9 @@
 using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 using OpenAuth.Application.Clients;
-using OpenAuth.Domain.Entities;
-using OpenAuth.Domain.ValueObjects;
+using OpenAuth.Domain.Clients;
+using OpenAuth.Domain.Clients.Audiences.ValueObjects;
+using OpenAuth.Domain.Clients.ValueObjects;
 using OpenAuth.Test.Common.Builders;
 
 namespace OpenAuth.Test.Unit.Clients;

@@ -1,7 +1,7 @@
-using OpenAuth.Domain.Enums;
-using OpenAuth.Domain.Extensions;
+using OpenAuth.Domain.SigningKeys.Enums;
+using OpenAuth.Domain.SigningKeys.Extensions;
 
-namespace OpenAuth.Domain.ValueObjects;
+namespace OpenAuth.Domain.SigningKeys.ValueObjects;
 
 public sealed record KeyMaterial
 {

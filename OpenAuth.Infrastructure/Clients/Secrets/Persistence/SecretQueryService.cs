@@ -3,7 +3,7 @@ using OpenAuth.Application.Dtos;
 using OpenAuth.Application.Dtos.Mappings;
 using OpenAuth.Application.Queries;
 using OpenAuth.Application.Security.Secrets;
-using OpenAuth.Domain.ValueObjects;
+using OpenAuth.Domain.Clients.ValueObjects;
 using OpenAuth.Infrastructure.Persistence;
 
 namespace OpenAuth.Infrastructure.Clients.Secrets.Persistence;

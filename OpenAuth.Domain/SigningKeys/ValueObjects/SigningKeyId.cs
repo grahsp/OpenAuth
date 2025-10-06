@@ -1,4 +1,4 @@
-namespace OpenAuth.Domain.ValueObjects;
+namespace OpenAuth.Domain.SigningKeys.ValueObjects;
 
 public readonly record struct SigningKeyId(Guid Value)
 {

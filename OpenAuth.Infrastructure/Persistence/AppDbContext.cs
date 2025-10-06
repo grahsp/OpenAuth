@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
-using OpenAuth.Domain.Entities;
+using OpenAuth.Domain.Clients;
+using OpenAuth.Domain.Clients.Secrets;
+using OpenAuth.Domain.SigningKeys;
 
 namespace OpenAuth.Infrastructure.Persistence;
 

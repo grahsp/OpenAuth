@@ -1,6 +1,7 @@
-using OpenAuth.Domain.ValueObjects;
+using OpenAuth.Domain.Clients.Secrets.ValueObjects;
+using OpenAuth.Domain.Clients.ValueObjects;
 
-namespace OpenAuth.Domain.Entities;
+namespace OpenAuth.Domain.Clients.Secrets;
 
 public class ClientSecret
 {

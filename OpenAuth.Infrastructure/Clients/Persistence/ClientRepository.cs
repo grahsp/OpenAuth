@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using OpenAuth.Application.Clients;
-using OpenAuth.Domain.Entities;
-using OpenAuth.Domain.ValueObjects;
+using OpenAuth.Domain.Clients;
+using OpenAuth.Domain.Clients.ValueObjects;
 using OpenAuth.Infrastructure.Persistence;
 
 namespace OpenAuth.Infrastructure.Clients.Persistence;

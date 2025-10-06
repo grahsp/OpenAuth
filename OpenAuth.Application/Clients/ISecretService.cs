@@ -1,5 +1,6 @@
 using OpenAuth.Application.Dtos;
-using OpenAuth.Domain.ValueObjects;
+using OpenAuth.Domain.Clients.Secrets.ValueObjects;
+using OpenAuth.Domain.Clients.ValueObjects;
 
 namespace OpenAuth.Application.Clients;
 

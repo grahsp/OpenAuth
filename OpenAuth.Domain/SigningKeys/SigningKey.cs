@@ -1,6 +1,6 @@
-using OpenAuth.Domain.ValueObjects;
+using OpenAuth.Domain.SigningKeys.ValueObjects;
 
-namespace OpenAuth.Domain.Entities;
+namespace OpenAuth.Domain.SigningKeys;
 
 /// <summary>
 /// Represents a cryptographic signing key used to sign tokens.

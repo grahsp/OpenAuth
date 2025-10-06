@@ -1,7 +1,7 @@
 using System.Globalization;
 using System.Security.Cryptography;
 using OpenAuth.Application.Security.Secrets;
-using OpenAuth.Domain.ValueObjects;
+using OpenAuth.Domain.Clients.Secrets.ValueObjects;
 
 namespace OpenAuth.Infrastructure.Security.Secrets;
 

@@ -1,4 +1,4 @@
-using OpenAuth.Domain.Entities;
+using OpenAuth.Domain.Clients;
 
 namespace OpenAuth.Application.Clients;
 

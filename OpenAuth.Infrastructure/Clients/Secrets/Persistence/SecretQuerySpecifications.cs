@@ -1,4 +1,4 @@
-using OpenAuth.Domain.Entities;
+using OpenAuth.Domain.Clients.Secrets;
 
 namespace OpenAuth.Infrastructure.Clients.Secrets.Persistence;
 

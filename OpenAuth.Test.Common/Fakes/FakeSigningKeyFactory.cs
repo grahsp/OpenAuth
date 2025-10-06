@@ -1,6 +1,6 @@
 using OpenAuth.Application.Security.Keys;
-using OpenAuth.Domain.Entities;
-using OpenAuth.Domain.Enums;
+using OpenAuth.Domain.SigningKeys;
+using OpenAuth.Domain.SigningKeys.Enums;
 using OpenAuth.Test.Common.Helpers;
 
 namespace OpenAuth.Test.Common.Fakes;

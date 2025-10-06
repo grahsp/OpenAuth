@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Time.Testing;
-using OpenAuth.Domain.ValueObjects;
+using OpenAuth.Domain.Clients.Secrets.ValueObjects;
+using OpenAuth.Domain.Clients.ValueObjects;
 using OpenAuth.Infrastructure.Clients.Persistence;
 using OpenAuth.Infrastructure.Persistence;
 using OpenAuth.Test.Common.Builders;

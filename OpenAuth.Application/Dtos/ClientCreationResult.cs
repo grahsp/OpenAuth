@@ -1,4 +1,4 @@
-using OpenAuth.Domain.ValueObjects;
+using OpenAuth.Domain.Clients.ValueObjects;
 
 namespace OpenAuth.Application.Dtos;
 

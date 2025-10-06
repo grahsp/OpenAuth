@@ -7,9 +7,11 @@ using NSubstitute;
 using OpenAuth.Application.Dtos;
 using OpenAuth.Application.Security.Signing;
 using OpenAuth.Application.Security.Tokens;
-using OpenAuth.Domain.Configurations;
-using OpenAuth.Domain.Enums;
-using OpenAuth.Domain.ValueObjects;
+using OpenAuth.Domain.Clients.Audiences.ValueObjects;
+using OpenAuth.Domain.Clients.ValueObjects;
+using OpenAuth.Domain.SigningKeys.Enums;
+using OpenAuth.Domain.SigningKeys.ValueObjects;
+using OpenAuth.Infrastructure.Configurations;
 using OpenAuth.Infrastructure.Tokens;
 
 namespace OpenAuth.Test.Unit.Security.Tokens;
@@ -27,7 +29,7 @@ public class JwtTokenGeneratorTests
         _credentialsFactory = Substitute.For<ISigningCredentialsFactory>();
         
         _sut = new JwtTokenGenerator(
-            Options.Create(new Auth { Issuer = "test-issuer" }),
+            Options.Create(new JwtOptions { Issuer = "test-issuer" }),
             _credentialsFactory,
             _time);
         

@@ -1,5 +1,5 @@
 using Microsoft.IdentityModel.Tokens;
-using OpenAuth.Domain.Enums;
+using OpenAuth.Domain.SigningKeys.Enums;
 
 namespace OpenAuth.Infrastructure.Security.Extensions;
 

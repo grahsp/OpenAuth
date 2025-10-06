@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Time.Testing;
 using OpenAuth.Application.Clients;
-using OpenAuth.Domain.ValueObjects;
+using OpenAuth.Domain.Clients.ValueObjects;
 using OpenAuth.Infrastructure.Clients;
 using OpenAuth.Infrastructure.Clients.Persistence;
 using OpenAuth.Infrastructure.Persistence;

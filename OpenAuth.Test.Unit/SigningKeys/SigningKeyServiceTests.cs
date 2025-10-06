@@ -3,8 +3,8 @@ using NSubstitute;
 using OpenAuth.Application.Dtos.Mappings;
 using OpenAuth.Application.Security.Keys;
 using OpenAuth.Application.SigningKeys;
-using OpenAuth.Domain.Entities;
-using OpenAuth.Domain.Enums;
+using OpenAuth.Domain.SigningKeys;
+using OpenAuth.Domain.SigningKeys.Enums;
 using OpenAuth.Test.Common.Helpers;
 
 namespace OpenAuth.Test.Unit.SigningKeys;

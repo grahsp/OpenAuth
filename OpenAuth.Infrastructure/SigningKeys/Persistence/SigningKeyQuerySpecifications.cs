@@ -1,4 +1,4 @@
-using OpenAuth.Domain.Entities;
+using OpenAuth.Domain.SigningKeys;
 
 namespace OpenAuth.Infrastructure.SigningKeys.Persistence;
 

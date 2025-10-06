@@ -1,5 +1,5 @@
-using OpenAuth.Domain.Entities;
-using OpenAuth.Domain.ValueObjects;
+using OpenAuth.Domain.SigningKeys;
+using OpenAuth.Domain.SigningKeys.ValueObjects;
 
 namespace OpenAuth.Application.SigningKeys;
 

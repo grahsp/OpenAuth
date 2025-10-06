@@ -1,4 +1,4 @@
-using OpenAuth.Domain.ValueObjects;
+using OpenAuth.Domain.Clients.Secrets.ValueObjects;
 
 namespace OpenAuth.Application.Security.Secrets;
 

@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Time.Testing;
-using OpenAuth.Domain.ValueObjects;
+using OpenAuth.Domain.Clients.Audiences;
+using OpenAuth.Domain.Clients.Audiences.ValueObjects;
 
 namespace OpenAuth.Test.Unit.ValueObjects;
 

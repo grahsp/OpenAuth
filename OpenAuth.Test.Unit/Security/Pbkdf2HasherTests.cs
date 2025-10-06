@@ -1,5 +1,5 @@
 using OpenAuth.Application.Security.Secrets;
-using OpenAuth.Domain.ValueObjects;
+using OpenAuth.Domain.Clients.Secrets.ValueObjects;
 using OpenAuth.Infrastructure.Security;
 using OpenAuth.Infrastructure.Security.Secrets;
 

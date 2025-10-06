@@ -2,7 +2,7 @@ using System.Security.Cryptography;
 using Microsoft.IdentityModel.Tokens;
 using OpenAuth.Application.Dtos;
 using OpenAuth.Application.Security.Jwks;
-using OpenAuth.Domain.Enums;
+using OpenAuth.Domain.SigningKeys.Enums;
 
 namespace OpenAuth.Infrastructure.Keys.Jwks;
 
