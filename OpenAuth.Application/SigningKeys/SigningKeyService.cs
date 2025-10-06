@@ -1,5 +1,6 @@
+using OpenAuth.Application.Dtos;
+using OpenAuth.Application.Dtos.Mappings;
 using OpenAuth.Application.Security.Keys;
-using OpenAuth.Domain.Entities;
 using OpenAuth.Domain.Enums;
 using OpenAuth.Domain.ValueObjects;
 
@@ -19,14 +20,14 @@ public class SigningKeyService : ISigningKeyService
     private readonly TimeProvider _time;
 
 
-    public async Task<SigningKey> CreateAsync(SigningAlgorithm algorithm, TimeSpan? lifetime = null, CancellationToken ct = default)
+    public async Task<SigningKeyInfo> CreateAsync(SigningAlgorithm algorithm, TimeSpan? lifetime = null, CancellationToken ct = default)
     {
         var key = _keyFactory.Create(algorithm, _time.GetUtcNow(), lifetime);
         
         _repository.Add(key);
         await _repository.SaveChangesAsync(ct);
 
-        return key;
+        return key.ToSigningKeyInfo();
     }
 
     public async Task RevokeAsync(SigningKeyId id, CancellationToken ct = default)
