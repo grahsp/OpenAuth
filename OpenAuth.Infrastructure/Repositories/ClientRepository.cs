@@ -11,23 +11,11 @@ public class ClientRepository : IClientRepository
     private readonly AppDbContext _context;
     public ClientRepository(AppDbContext context) => _context = context;
     
-    public Task<Client?> GetByIdAsync(ClientId id, CancellationToken cancellationToken = default)
+    public Task<Client?> GetByIdAsync(ClientId id, CancellationToken ct = default)
         => _context.Clients
-            .Include(x => x.Secrets)
-            .SingleOrDefaultAsync(x => x.Id == id, cancellationToken);
-
-    public Task<Client?> GetByNameAsync(ClientName name, CancellationToken cancellationToken = default)
-        => _context.Clients
-            .Include(x => x.Secrets)
-            .SingleOrDefaultAsync(x => x.Name == name, cancellationToken);
-
-    public Task<Client?> GetBySecretIdAsync(SecretId id, CancellationToken cancellationToken = default)
-        => _context.Clients
-            .Include(x => x.Secrets)
-            .SingleOrDefaultAsync(x => x.Secrets.Any(s => s.Id == id), cancellationToken);
-
-    public Task<ClientSecret?> GetSecretAsync(SecretId id, CancellationToken cancellationToken = default)
-        => _context.ClientSecrets.SingleOrDefaultAsync(x => x.Id == id, cancellationToken);
+            .Include(c => c.Audiences)
+            .Include(c => c.Secrets)
+            .SingleOrDefaultAsync(c => c.Id == id, ct);
 
     public void Add(Client client)
         => _context.Clients.Add(client);
@@ -35,6 +23,6 @@ public class ClientRepository : IClientRepository
     public void Remove(Client client)
         => _context.Clients.Remove(client);
     
-    public async Task SaveChangesAsync(CancellationToken cancellationToken = default)
-        => await _context.SaveChangesAsync(cancellationToken);
+    public async Task SaveChangesAsync(CancellationToken ct = default)
+        => await _context.SaveChangesAsync(ct);
 }
