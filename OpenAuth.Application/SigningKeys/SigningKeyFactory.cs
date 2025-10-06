@@ -3,7 +3,7 @@ using OpenAuth.Domain.Entities;
 using OpenAuth.Domain.Enums;
 using OpenAuth.Domain.Extensions;
 
-namespace OpenAuth.Infrastructure.Security.Keys;
+namespace OpenAuth.Application.SigningKeys;
 
 public class SigningKeyFactory : ISigningKeyFactory
 {

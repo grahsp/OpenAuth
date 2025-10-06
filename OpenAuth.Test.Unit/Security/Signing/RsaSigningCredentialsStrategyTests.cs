@@ -3,7 +3,7 @@ using Microsoft.IdentityModel.Tokens;
 using OpenAuth.Application.Dtos;
 using OpenAuth.Domain.Enums;
 using OpenAuth.Domain.ValueObjects;
-using OpenAuth.Infrastructure.Security.Signing;
+using OpenAuth.Infrastructure.Tokens.SigningCredentials;
 
 namespace OpenAuth.Test.Unit.Security.Signing;
 

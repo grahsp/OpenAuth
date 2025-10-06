@@ -5,7 +5,7 @@ using OpenAuth.Application.Security.Signing;
 using OpenAuth.Domain.Enums;
 using OpenAuth.Infrastructure.Security.Extensions;
 
-namespace OpenAuth.Infrastructure.Security.Signing;
+namespace OpenAuth.Infrastructure.Tokens.SigningCredentials;
 
 /// <summary>
 /// Provides signing credentials extraction for RSA key material.
@@ -18,7 +18,7 @@ public class RsaSigningCredentialsStrategy : ISigningCredentialsStrategy
     public KeyType KeyType => KeyType.RSA;
 
     /// <inheritdoc />
-    public SigningCredentials GetSigningCredentials(SigningKeyData keyData)
+    public Microsoft.IdentityModel.Tokens.SigningCredentials GetSigningCredentials(SigningKeyData keyData)
     {
         ArgumentNullException.ThrowIfNull(keyData);
         
@@ -30,6 +30,6 @@ public class RsaSigningCredentialsStrategy : ISigningCredentialsStrategy
         privateRsa.ImportFromPem(keyData.Key.Value);
         var securityKey = new RsaSecurityKey(privateRsa) { KeyId = keyData.Kid.Value.ToString() };
         
-        return new SigningCredentials(securityKey, keyData.Alg.ToSecurityString());
+        return new Microsoft.IdentityModel.Tokens.SigningCredentials(securityKey, keyData.Alg.ToSecurityString());
     }
 }

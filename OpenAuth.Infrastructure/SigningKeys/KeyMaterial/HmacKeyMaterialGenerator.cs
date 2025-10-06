@@ -1,10 +1,9 @@
 using System.Security.Cryptography;
 using OpenAuth.Application.Security.Keys;
-using OpenAuth.Domain.Entities;
 using OpenAuth.Domain.Enums;
 using OpenAuth.Domain.ValueObjects;
 
-namespace OpenAuth.Infrastructure.Security.Keys;
+namespace OpenAuth.Infrastructure.SigningKeys.KeyMaterial;
 
 public class HmacKeyMaterialGenerator : IKeyMaterialGenerator
 {
@@ -21,10 +20,10 @@ public class HmacKeyMaterialGenerator : IKeyMaterialGenerator
         _size = size;
     }
 
-    public KeyMaterial Create(SigningAlgorithm algorithm)
+    public Domain.ValueObjects.KeyMaterial Create(SigningAlgorithm algorithm)
     {
         var key = new Key(GenerateKey());
-        return new KeyMaterial(key, algorithm, KeyType);
+        return new Domain.ValueObjects.KeyMaterial(key, algorithm, KeyType);
     }
 
     private string GenerateKey()

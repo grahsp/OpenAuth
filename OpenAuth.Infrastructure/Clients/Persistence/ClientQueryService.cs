@@ -5,7 +5,7 @@ using OpenAuth.Application.Queries;
 using OpenAuth.Domain.ValueObjects;
 using OpenAuth.Infrastructure.Persistence;
 
-namespace OpenAuth.Infrastructure.Querying;
+namespace OpenAuth.Infrastructure.Clients.Persistence;
 
 public class ClientQueryService : IClientQueryService
 {

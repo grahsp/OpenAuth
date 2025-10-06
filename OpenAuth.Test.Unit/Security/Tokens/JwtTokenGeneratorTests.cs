@@ -10,7 +10,7 @@ using OpenAuth.Application.Security.Tokens;
 using OpenAuth.Domain.Configurations;
 using OpenAuth.Domain.Enums;
 using OpenAuth.Domain.ValueObjects;
-using OpenAuth.Infrastructure.Security.Tokens;
+using OpenAuth.Infrastructure.Tokens;
 
 namespace OpenAuth.Test.Unit.Security.Tokens;
 

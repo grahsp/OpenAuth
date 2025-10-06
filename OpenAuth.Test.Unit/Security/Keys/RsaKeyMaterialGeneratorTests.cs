@@ -1,6 +1,6 @@
 using System.Security.Cryptography;
 using OpenAuth.Domain.Enums;
-using OpenAuth.Infrastructure.Security.Keys;
+using OpenAuth.Infrastructure.SigningKeys.KeyMaterial;
 
 namespace OpenAuth.Test.Unit.Security.Keys;
 

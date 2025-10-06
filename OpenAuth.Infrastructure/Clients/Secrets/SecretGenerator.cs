@@ -2,7 +2,7 @@ using System.Buffers.Text;
 using System.Security.Cryptography;
 using OpenAuth.Application.Security.Secrets;
 
-namespace OpenAuth.Infrastructure.Security.Secrets;
+namespace OpenAuth.Infrastructure.Clients.Secrets;
 
 public class SecretGenerator : ISecretGenerator
 {

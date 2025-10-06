@@ -5,9 +5,8 @@ using OpenAuth.Application.Queries;
 using OpenAuth.Application.Security.Secrets;
 using OpenAuth.Domain.ValueObjects;
 using OpenAuth.Infrastructure.Persistence;
-using OpenAuth.Infrastructure.Persistence.QuerySpecifications;
 
-namespace OpenAuth.Infrastructure.Querying;
+namespace OpenAuth.Infrastructure.Clients.Secrets.Persistence;
 
 public class SecretQueryService : ISecretQueryService
 {
