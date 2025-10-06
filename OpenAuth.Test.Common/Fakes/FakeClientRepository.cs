@@ -30,7 +30,7 @@ public class FakeClientRepository : IClientRepository
     public void Remove(Client client)
         => _store.Remove(client.Id);
 
-    public Task SaveChangesAsync(CancellationToken cancellationToken = default)
+    public Task SaveChangesAsync(CancellationToken ct = default)
     {
         Saved = true;
         return Task.CompletedTask;
