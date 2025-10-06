@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
+using OpenAuth.Application.Dtos.Mappings;
 using OpenAuth.Application.Security.Keys;
 using OpenAuth.Application.SigningKeys;
 using OpenAuth.Domain.Entities;
@@ -42,6 +43,12 @@ public class SigningKeyServiceTests
         [Fact]
         public async Task AddKeyToRepository_AndSaveChanges()
         {
+            var expected = TestSigningKey.CreateRsaSigningKey(_time);
+            
+            _keyFactory
+                .Create(Arg.Any<SigningAlgorithm>(), Arg.Any<DateTimeOffset>())
+                .Returns(expected);
+            
             await _service.CreateAsync(SigningAlgorithm.RS256);
 
             _repository.Received(1).Add(Arg.Any<SigningKey>());
@@ -58,7 +65,7 @@ public class SigningKeyServiceTests
                 .Returns(expected);
             
             var created = await _service.CreateAsync(SigningAlgorithm.RS256);
-            Assert.Same(expected, created);
+            Assert.Equal(expected.ToSigningKeyInfo(), created);
         }
     }
 }
