@@ -1,30 +1,40 @@
 using OpenAuth.Api.Dtos;
-using OpenAuth.Domain.Entities;
-using OpenAuth.Domain.ValueObjects;
+using OpenAuth.Application.Dtos;
 
 namespace OpenAuth.Api.Mappers;
 
 public static class ClientMapper
 {
-    public static ClientResponse ToResponse(Client client)
+    public static ClientResponse ToResponse(ClientInfo client)
         => new ClientResponse(
-            client.Id.ToString(),
-            client.Name.ToString(),
-            client.Enabled,
-            client.Audiences.Select(ToResponse),
-            client.Secrets.Select(x => new ClientSecretSummaryResponse(x.Id.Value, x.CreatedAt, x.ExpiresAt))
+            client.Id.Value.ToString(),
+            client.Name.Value,
+            [],
+            [],
+            client.CreatedAt,
+            client.UpdatedAt
         );
 
-    public static AudienceResponse ToResponse(Audience audience)
+    public static ClientResponse ToResponse(ClientDetails client)
+        => new ClientResponse(
+            client.Id.Value.ToString(),
+            client.Name.Value,
+            client.Audiences.Select(ToResponse),
+            client.Secrets.Select(ToResponse),
+            client.CreatedAt,
+            client.UpdatedAt
+        );
+    
+     public static AudienceResponse ToResponse(AudienceInfo audience)
         => new AudienceResponse(
             audience.Name.Value,
             audience.Scopes.Select(x => x.Value)
         );
 
-    public static ClientSecretResponse ToResponse(ClientSecret secret)
-        => new ClientSecretResponse(
+    public static SecretResponse ToResponse(SecretInfo secret)
+        => new SecretResponse(
             secret.Id.Value,
-            secret.ClientId.Value,
+            Guid.NewGuid(),
             secret.CreatedAt,
             secret.ExpiresAt,
             secret.RevokedAt
