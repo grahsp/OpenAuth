@@ -32,7 +32,7 @@ public class TokenService : ITokenService
         if (request.RequestedScopes.Except(tokenData.AllowedScopes).Any())
             throw new InvalidOperationException($"Invalid scopes requested for audience '{request.AudienceName.Value}'.");
     
-        var keyData = await _signingKeyQueryService.GetCurrentAsync(ct);
+        var keyData = await _signingKeyQueryService.GetCurrentKeyDataAsync(ct);
         if (keyData is null)
             throw new InvalidOperationException("No active signing key found.");
 
