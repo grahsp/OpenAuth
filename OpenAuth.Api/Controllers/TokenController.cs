@@ -1,8 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using OpenAuth.Api.Dtos;
-using OpenAuth.Application.Clients;
+using OpenAuth.Application.Dtos;
 using OpenAuth.Application.Security.Tokens;
-using OpenAuth.Application.SigningKeys;
 using OpenAuth.Domain.ValueObjects;
 
 namespace OpenAuth.Api.Controllers;
@@ -11,49 +10,25 @@ namespace OpenAuth.Api.Controllers;
 [Route("connect")]
 public class TokenController : ControllerBase
 {
-    public TokenController(IClientService clientService, IClientSecretValidator secretValidator, ISigningKeyService signingKeyService, IJwtTokenGenerator tokenGenerator)
+    private readonly ITokenService _tokenService;
+    
+    public TokenController(ITokenService tokenService)
     {
-        _clientService = clientService;
-        _secretValidator = secretValidator;
-        _signingKeyService = signingKeyService;
-        _tokenGenerator = tokenGenerator;
+        _tokenService = tokenService;
     }
 
-    private readonly IClientService _clientService;
-    private readonly IClientSecretValidator _secretValidator;
-    private readonly ISigningKeyService _signingKeyService;
-    private readonly IJwtTokenGenerator _tokenGenerator;
     
-    // Tokens
     [HttpPost("token")]
-    public async Task<ActionResult<string>> IssueToken([FromBody] ClientCredentialsRequest request)
+    public async Task<ActionResult<TokenResponse>> IssueToken([FromBody] ClientCredentialsRequest request)
     {
-        if (!request.GrantType.Equals("client_credentials", StringComparison.OrdinalIgnoreCase))
-            return BadRequest(new TokenErrorResponse("unsupported_grant_type", "Unsupported grant type used.", ""));
+        var tokenRequest = new IssueTokenRequest(
+            new ClientId(Guid.Parse(request.ClientId)),
+            request.ClientSecret,
+            new AudienceName(request.Audience),
+            request.Scopes.Select(s => new Scope(s)).ToArray()
+        );
         
-        var client = await _clientService.GetByIdAsync(new ClientId(Guid.Parse(request.ClientId)));
-        if (client is null)
-            return BadRequest(new TokenErrorResponse("invalid_client", "Authentication failed.", ""));
-
-        var valid = _secretValidator.Verify(request.ClientSecret, client);
-        if (!valid)
-            return BadRequest(new TokenErrorResponse("invalid_client", "Authentication failed.", ""));
-
-        var signingKey = await _signingKeyService.GetCurrentAsync();
-        if (signingKey is null)
-            return BadRequest(new TokenErrorResponse("server_error", "No active signing key found.", ""));
-        
-        var audience = client.Audiences.SingleOrDefault(x => x.Value == request.Audience);
-        if (audience is null)
-            return Unauthorized(new TokenErrorResponse("invalid_request", "Unknown audience.", ""));
-
-        var scopes = request.Scopes?.Select(x => new Scope(x)).ToArray() ?? [];
-        if (scopes.Any(x => !audience.Scopes.Contains(x)))
-            return Unauthorized(new TokenErrorResponse("invalid_scope", "One or more scopes are invalid.", ""));
-        
-        var token = _tokenGenerator.GenerateToken(client, audience, scopes, signingKey);
-        var response = new TokenResponse(token, "Bearer", client.TokenLifetime.Seconds);
-        
-        return Ok(response);
+        var result = await _tokenService.IssueToken(tokenRequest);
+        return Ok(new TokenResponse(result.Token, result.TokenType, result.ExpiresIn));
     }
 }
