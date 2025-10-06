@@ -19,50 +19,22 @@ public class SigningKeyService : ISigningKeyService
     private readonly TimeProvider _time;
 
 
-    public async Task<SigningKey?> GetByIdAsync(SigningKeyId id, CancellationToken cancellationToken = default)
-        => await _repository.GetByIdAsync(id, cancellationToken);
-    
-    public async Task<SigningKey?> GetCurrentAsync(CancellationToken cancellationToken = default)
-        => await _repository.GetCurrentAsync(_time.GetUtcNow(), cancellationToken);
-
-    public async Task<IEnumerable<SigningKey>> GetAllAsync(CancellationToken cancellationToken = default)
-        => await _repository.GetAllAsync(cancellationToken);
-
-    public async Task<IEnumerable<SigningKey>> GetActiveAsync(CancellationToken cancellationToken = default)
-        => await _repository.GetActiveAsync(_time.GetUtcNow(), cancellationToken);
-
-    public async Task<SigningKey> CreateAsync(SigningAlgorithm algorithm, TimeSpan? lifetime = null, CancellationToken cancellationToken = default)
+    public async Task<SigningKey> CreateAsync(SigningAlgorithm algorithm, TimeSpan? lifetime = null, CancellationToken ct = default)
     {
-        var now = _time.GetUtcNow();
-        var key = _keyFactory.Create(algorithm, now, lifetime);
+        var key = _keyFactory.Create(algorithm, _time.GetUtcNow(), lifetime);
         
         _repository.Add(key);
-        await _repository.SaveChangesAsync(cancellationToken);
+        await _repository.SaveChangesAsync(ct);
 
         return key;
     }
 
-    public async Task<bool> RevokeAsync(SigningKeyId id, CancellationToken cancellationToken = default)
+    public async Task RevokeAsync(SigningKeyId id, CancellationToken ct = default)
     {
-        var key = await GetByIdAsync(id, cancellationToken);
-        if (key is null)
-            return false;
+        var key = await _repository.GetByIdAsync(id, ct) ??
+                  throw new InvalidOperationException("Signing key not found.");
         
         key.Revoke(_time.GetUtcNow());
-        await _repository.SaveChangesAsync(cancellationToken);
-
-        return true;
-    }
-
-    public async Task<bool> RemoveAsync(SigningKeyId id, CancellationToken cancellationToken = default)
-    {
-        var key = await GetByIdAsync(id, cancellationToken);
-        if (key is null)
-            return false;
-        
-        _repository.Remove(key);
-        await _repository.SaveChangesAsync(cancellationToken);
-
-        return true;
+        await _repository.SaveChangesAsync(ct);
     }
 }
