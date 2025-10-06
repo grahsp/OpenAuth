@@ -1,6 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using OpenAuth.Api.Dtos;
+using OpenAuth.Api.Mappers;
 using OpenAuth.Application.Clients;
+using OpenAuth.Application.Dtos;
+using OpenAuth.Application.Queries;
 using OpenAuth.Domain.ValueObjects;
 
 namespace OpenAuth.Api.Controllers;
@@ -9,42 +12,49 @@ namespace OpenAuth.Api.Controllers;
 [Route("clients/{clientId:guid}/secrets/")]
 public class SecretController : ControllerBase
 {
-    private readonly ISecretService _secretService;
+    private readonly ISecretService _commandService;
+    private readonly ISecretQueryService _queryService;
     
-    public SecretController(ISecretService secretService)
+    public SecretController(ISecretService commandService, ISecretQueryService queryService)
     {
-        _secretService = secretService;
+        _commandService = commandService;
+        _queryService = queryService;
     }
 
     
-    [HttpGet("{secretId:guid}")]
-    public async Task<ActionResult<SecretSummaryResponse>> GetClientSecret(Guid secretId)
-    {
-        return Ok();
-    }
-    
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<SecretSummaryResponse>>> GetClientSecrets(Guid clientId)
+    public async Task<ActionResult<IEnumerable<SecretInfo>>> GetSecret(Guid clientId)
     {
-        return Ok();
+        var secrets =
+            await _queryService.GetActiveSecretsAsync(new ClientId(clientId));
+        return Ok(secrets.Select(ClientMapper.ToResponse));
     }
 
     [HttpPost]
-    public async Task<ActionResult<RegisterClientSecretResponse>> AddClientSecret(Guid clientId)
+    public async Task<ActionResult<CreatedSecretResponse>> AddSecret(Guid clientId)
     {
-        var creationResult = await _secretService.AddSecretAsync(new ClientId(clientId));
+        var result = await _commandService.AddSecretAsync(new ClientId(clientId));
 
-        return CreatedAtAction(
-            nameof(GetClientSecret), 
-            new { secretId = creationResult.SecretId },
-            creationResult
+        var secret = new SecretResponse(
+            result.SecretId.Value,
+            clientId,
+            result.CreatedAt,
+            result.ExpiresAt,
+            result.ExpiresAt
         );
+        
+        var response = new CreatedSecretResponse(
+            secret,
+            result.PlainTextSecret
+        );
+        
+        return Created(string.Empty, response);
     }
     
     [HttpDelete("{secretId:guid}")]
-    public async Task<ActionResult> DeleteClientSecret(Guid clientId, Guid secretId)
+    public async Task<ActionResult> RevokeSecret(Guid clientId, Guid secretId)
     {
-        await _secretService.RevokeSecretAsync(new ClientId(clientId), new SecretId(secretId));
+        await _commandService.RevokeSecretAsync(new ClientId(clientId), new SecretId(secretId));
         return NoContent();
     }
 }
