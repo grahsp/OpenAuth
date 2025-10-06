@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Time.Testing;
 using OpenAuth.Domain.ValueObjects;
 using OpenAuth.Infrastructure.Persistence;
@@ -11,86 +12,272 @@ namespace OpenAuth.Test.Integration.Repository;
 public class ClientRepositoryTests : IAsyncLifetime
 {
     private readonly SqlServerFixture _fx;
-    private readonly TimeProvider _time = new FakeTimeProvider();
+    private readonly FakeTimeProvider _time;
     
-    public ClientRepositoryTests(SqlServerFixture fx) => _fx = fx;
+    public ClientRepositoryTests(SqlServerFixture fx)
+    {
+        _fx = fx;
+        _time = new FakeTimeProvider();
+    }
 
     public async Task InitializeAsync() => await _fx.ResetAsync();
     public Task DisposeAsync() => Task.CompletedTask;
-    
+
     private static ClientRepository CreateRepository(AppDbContext context)
         => new(context);
 
-    [Fact]
-    public async Task GetByIdAsync_ReturnsClient_WhenExists()
+    
+    public class GetByIdAsync(SqlServerFixture fx) : ClientRepositoryTests(fx)
     {
-        await using var context = _fx.CreateContext();
-        
-        var repo = CreateRepository(context);
-        var client = new ClientBuilder().Build();
-        
-        repo.Add(client);
-        await context.SaveChangesAsync();
+        [Fact]
+        public async Task ReturnsClient_WhenExists()
+        {
+            // Arrange
+            await using var context = _fx.CreateContext();
+            var repo = CreateRepository(context);
+            
+            var client = new ClientBuilder().Build();
+            repo.Add(client);
+            await repo.SaveChangesAsync();
 
-        var fetched = await repo.GetByIdAsync(client.Id);
-        Assert.NotNull(fetched);
-        Assert.Same(client, fetched);
+            // Act
+            var fetched = await repo.GetByIdAsync(client.Id);
+
+            // Assert
+            Assert.NotNull(fetched);
+            Assert.Equal(client.Id, fetched.Id);
+            Assert.Equal(client.Name, fetched.Name);
+        }
+
+        [Fact]
+        public async Task ReturnsNull_WhenNotFound()
+        {
+            // Arrange
+            await using var context = _fx.CreateContext();
+            var repo = CreateRepository(context);
+
+            // Act
+            var fetched = await repo.GetByIdAsync(ClientId.New());
+
+            // Assert
+            Assert.Null(fetched);
+        }
+
+        [Fact]
+        public async Task IncludesSecrets()
+        {
+            // Arrange
+            await using var context = _fx.CreateContext();
+            var repo = CreateRepository(context);
+
+            var client = new ClientBuilder()
+                .WithSecret("hash1")
+                .WithSecret("hash2")
+                .Build();
+            
+            repo.Add(client);
+            await repo.SaveChangesAsync();
+
+            // Act
+            var fetched = await repo.GetByIdAsync(client.Id);
+
+            // Assert
+            Assert.NotNull(fetched);
+            Assert.Equal(2, fetched.Secrets.Count);
+        }
+
+        [Fact]
+        public async Task IncludesAudiences()
+        {
+            // Arrange
+            await using var context = _fx.CreateContext();
+            var repo = CreateRepository(context);
+
+            var client = new ClientBuilder().Build();
+            var audience1 = client.AddAudience(new AudienceName("api"), _time.GetUtcNow());
+            var audience2 = client.AddAudience(new AudienceName("web"), _time.GetUtcNow());
+            
+            repo.Add(client);
+            await repo.SaveChangesAsync();
+
+            // Act
+            var fetched = await repo.GetByIdAsync(client.Id);
+
+            // Assert
+            Assert.NotNull(fetched);
+            Assert.Equal(2, fetched.Audiences.Count);
+            Assert.Contains(fetched.Audiences, a => a.Name == audience1.Name);
+            Assert.Contains(fetched.Audiences, a => a.Name == audience2.Name);
+        }
+
+        [Fact]
+        public async Task IncludesAudiencesWithScopes()
+        {
+            // Arrange
+            await using var context = _fx.CreateContext();
+            var repo = CreateRepository(context);
+
+            var client = new ClientBuilder().Build();
+            var audienceName = new AudienceName("api");
+            client.AddAudience(audienceName, _time.GetUtcNow());
+            
+            var scopes = new[] { new Scope("read"), new Scope("write") };
+            client.GrantScopes(audienceName, scopes, _time.GetUtcNow());
+            
+            repo.Add(client);
+            await repo.SaveChangesAsync();
+
+            // Act
+            var fetched = await repo.GetByIdAsync(client.Id);
+
+            // Assert
+            Assert.NotNull(fetched);
+            var fetchedAudience = fetched.Audiences.Single();
+            Assert.Equal(2, fetchedAudience.Scopes.Count);
+        }
     }
 
-    [Fact]
-    public async Task GetByIdAsync_ReturnsNull_WhenNotFound()
+    public class Add(SqlServerFixture fx) : ClientRepositoryTests(fx)
     {
-        await using var context = _fx.CreateContext();
-        var repo = CreateRepository(context);
+        [Fact]
+        public async Task AddsClientToContext()
+        {
+            // Arrange
+            await using var context = _fx.CreateContext();
+            var repo = CreateRepository(context);
+            var client = new ClientBuilder().Build();
 
-        var fetched = await repo.GetByIdAsync(new ClientId(Guid.NewGuid()));
-        Assert.Null(fetched);
+            // Act
+            repo.Add(client);
+            await repo.SaveChangesAsync();
+
+            // Assert
+            var persisted = await context.Clients.FindAsync(client.Id);
+            Assert.NotNull(persisted);
+        }
+
+        [Fact]
+        public async Task PersistsClientProperties()
+        {
+            // Arrange
+            await using var context = _fx.CreateContext();
+            var repo = CreateRepository(context);
+            
+            var name = new ClientName("test-client");
+            var client = new ClientBuilder()
+                .WithName(name)
+                .Build();
+
+            // Act
+            repo.Add(client);
+            await repo.SaveChangesAsync();
+
+            // Assert
+            var persisted = await context.Clients.FindAsync(client.Id);
+            Assert.NotNull(persisted);
+            Assert.Equal(name, persisted.Name);
+        }
     }
 
-    [Fact]
-    public async Task GetByNameAsync_ReturnsClient_WhenExists()
+    public class Remove(SqlServerFixture fx) : ClientRepositoryTests(fx)
     {
-        await using var context = _fx.CreateContext();
-        var repo = CreateRepository(context);
+        [Fact]
+        public async Task RemovesClientFromDatabase()
+        {
+            // Arrange
+            await using var context = _fx.CreateContext();
+            var repo = CreateRepository(context);
+            
+            var client = new ClientBuilder().Build();
+            repo.Add(client);
+            await repo.SaveChangesAsync();
 
-        var clientName = new ClientName("client");
-        var client = new ClientBuilder()
-            .WithName(clientName)
-            .Build();
-        
-        repo.Add(client);
-        await context.SaveChangesAsync();
+            // Act
+            repo.Remove(client);
+            await repo.SaveChangesAsync();
 
-        var fetched = await repo.GetByNameAsync(clientName);
-        Assert.NotNull(fetched);
-        Assert.Same(client, fetched);
+            // Assert
+            var persisted = await context.Clients.FindAsync(client.Id);
+            Assert.Null(persisted);
+        }
+
+        [Fact]
+        public async Task CascadesDeleteToSecrets()
+        {
+            // Arrange
+            await using var context = _fx.CreateContext();
+            var repo = CreateRepository(context);
+            
+            var client = new ClientBuilder()
+                .WithSecret("hash1")
+                .WithSecret("hash2")
+                .Build();
+            
+            repo.Add(client);
+            await repo.SaveChangesAsync();
+
+            var secretIds = client.Secrets.Select(s => s.Id).ToArray();
+
+            // Act
+            repo.Remove(client);
+            await repo.SaveChangesAsync();
+
+            // Assert
+            foreach (var secretId in secretIds)
+            {
+                var secret = await context.ClientSecrets.FindAsync(secretId);
+                Assert.Null(secret);
+            }
+        }
     }
 
-    [Fact]
-    public async Task GetByNameAsync_ReturnsNull_WhenNotFound()
+    public class SaveChangesAsync(SqlServerFixture fx) : ClientRepositoryTests(fx)
     {
-        await using var context = _fx.CreateContext();
-        var repo = CreateRepository(context);
+        [Fact]
+        public async Task PersistsChangesToDatabase()
+        {
+            // Arrange
+            await using var context = _fx.CreateContext();
+            var repo = CreateRepository(context);
+            
+            var client = new ClientBuilder().Build();
+            repo.Add(client);
 
-        var fetched = await repo.GetByNameAsync(new ClientName("missing-client"));
-        Assert.Null(fetched);
-    }
+            // Act
+            await repo.SaveChangesAsync();
 
-    [Fact]
-    public async Task GetByIdAsync_IncludesSecrets()
-    {
-        await using var context = _fx.CreateContext();
-        var repo = CreateRepository(context);
+            // Assert
+            await using var verifyContext = _fx.CreateContext();
+            var persisted = await verifyContext.Clients.FindAsync(client.Id);
+            Assert.NotNull(persisted);
+        }
 
-        var client = new ClientBuilder()
-            .WithSecret("hash")
-            .Build();
-        
-        repo.Add(client);
-        await context.SaveChangesAsync();
+        [Fact]
+        public async Task PersistsModifications()
+        {
+            // Arrange
+            await using var context = _fx.CreateContext();
+            var repo = CreateRepository(context);
+            
+            var client = new ClientBuilder().Build();
+            repo.Add(client);
+            await repo.SaveChangesAsync();
 
-        var fetched = await repo.GetByIdAsync(client.Id);
-        Assert.NotNull(fetched);
-        Assert.Single(fetched.Secrets);
+            // Modify client
+            var audienceName = new AudienceName("api");
+            client.AddAudience(audienceName, _time.GetUtcNow());
+
+            // Act
+            await repo.SaveChangesAsync();
+
+            // Assert
+            await using var verifyContext = _fx.CreateContext();
+            var persisted = await verifyContext.Clients
+                .Include(c => c.Audiences)
+                .FirstOrDefaultAsync(c => c.Id == client.Id);
+            
+            Assert.NotNull(persisted);
+            Assert.Single(persisted.Audiences);
+        }
     }
 }
