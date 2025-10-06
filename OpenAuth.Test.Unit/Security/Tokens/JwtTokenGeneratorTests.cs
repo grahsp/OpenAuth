@@ -40,7 +40,10 @@ public class JwtTokenGeneratorTests
         
         // Setup mock to return valid signing credentials
         _credentialsFactory.Create(Arg.Any<SigningKeyData>())
-            .Returns(TestSigningCredentials.CreateRsa());
+            .Returns(info => {
+                var keyData = info.Arg<SigningKeyData>();
+                return TestSigningCredentials.CreateRsa(keyData.Kid.Value.ToString());
+            });
     }
 
     public class GenerateToken : JwtTokenGeneratorTests
@@ -254,10 +257,10 @@ public class JwtTokenGeneratorTests
 // Test helper for creating signing credentials
 public static class TestSigningCredentials
 {
-    public static SigningCredentials CreateRsa()
+    public static SigningCredentials CreateRsa(string kid)
     {
         var rsa = RSA.Create(2048);
-        var key = new RsaSecurityKey(rsa);
+        var key = new RsaSecurityKey(rsa) { KeyId = kid };
         return new SigningCredentials(key, SecurityAlgorithms.RsaSha256);
     }
 }
