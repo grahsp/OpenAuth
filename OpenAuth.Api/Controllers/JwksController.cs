@@ -1,8 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
-using OpenAuth.Api.Dtos;
 using OpenAuth.Api.Mappers;
 using OpenAuth.Application.Security.Jwks;
-using OpenAuth.Application.SigningKeys;
 
 namespace OpenAuth.Api.Controllers;
 
@@ -10,27 +8,19 @@ namespace OpenAuth.Api.Controllers;
 [Route(".well-known")]
 public class JwksController : ControllerBase
 {
-    public JwksController(ISigningKeyService service, IPublicKeyInfoFactory publicKeyInfoFactory)
+    private readonly IJwksService _service;
+    
+    public JwksController(IJwksService service)
     {
         _service = service;
-        _publicKeyInfoFactory = publicKeyInfoFactory;
     }
-    
-    private readonly ISigningKeyService _service;
-    private readonly IPublicKeyInfoFactory _publicKeyInfoFactory;
     
     
     [HttpGet("jwks.json")]
     public async Task<IActionResult> Get()
     {
-        var keys = await _service.GetActiveAsync();
-        var response = new JwksResponse(
-            keys.Select(k =>
-                {
-                    var publicKeyInfo = _publicKeyInfoFactory.Create(k.Id, k.KeyMaterial);
-                    return publicKeyInfo.ToJwk();
-                }
-            ));
+        var publicKeyInfo = await _service.GetJwksAsync();
+        var response = publicKeyInfo.Select(k => k.ToJwk());
         
         return Ok(response);
     }
