@@ -1,6 +1,6 @@
 using OpenAuth.Application.Dtos;
 using OpenAuth.Application.Security.Jwks;
-using OpenAuth.Domain.Enums;
+using OpenAuth.Domain.SigningKeys.Enums;
 
 namespace OpenAuth.Infrastructure.SigningKeys.Jwk;
 

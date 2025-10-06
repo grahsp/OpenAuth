@@ -1,6 +1,6 @@
-using OpenAuth.Domain.Enums;
+using OpenAuth.Domain.SigningKeys.Enums;
 
-namespace OpenAuth.Domain.Extensions;
+namespace OpenAuth.Domain.SigningKeys.Extensions;
 
 public static class SigningAlgorithmExtensions
 {

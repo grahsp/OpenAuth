@@ -1,6 +1,8 @@
 using OpenAuth.Application.Clients;
-using OpenAuth.Domain.Entities;
-using OpenAuth.Domain.ValueObjects;
+using OpenAuth.Domain.Clients;
+using OpenAuth.Domain.Clients.Secrets;
+using OpenAuth.Domain.Clients.Secrets.ValueObjects;
+using OpenAuth.Domain.Clients.ValueObjects;
 
 namespace OpenAuth.Test.Common.Fakes;
 

@@ -1,4 +1,6 @@
-namespace OpenAuth.Domain.ValueObjects;
+using OpenAuth.Domain.Clients.Audiences.ValueObjects;
+
+namespace OpenAuth.Domain.Clients.Audiences;
 
 public sealed class Audience
 {

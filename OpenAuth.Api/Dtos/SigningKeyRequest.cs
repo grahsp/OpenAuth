@@ -1,4 +1,4 @@
-using OpenAuth.Domain.Enums;
+using OpenAuth.Domain.SigningKeys.Enums;
 
 namespace OpenAuth.Api.Dtos;
 

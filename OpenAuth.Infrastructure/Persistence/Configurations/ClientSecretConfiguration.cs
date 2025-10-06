@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using OpenAuth.Domain.Entities;
-using OpenAuth.Domain.ValueObjects;
+using OpenAuth.Domain.Clients.Secrets;
+using OpenAuth.Domain.Clients.Secrets.ValueObjects;
 
 namespace OpenAuth.Infrastructure.Persistence.Configurations;
 

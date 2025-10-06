@@ -1,7 +1,7 @@
 using System.Security.Cryptography;
 using Microsoft.IdentityModel.Tokens;
 using OpenAuth.Application.Security.Jwks;
-using OpenAuth.Domain.ValueObjects;
+using OpenAuth.Domain.SigningKeys.ValueObjects;
 
 namespace OpenAuth.Test.Common.Helpers;
 

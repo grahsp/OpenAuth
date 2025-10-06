@@ -1,10 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Time.Testing;
-using OpenAuth.Domain.Entities;
-using OpenAuth.Domain.Enums;
 using OpenAuth.Test.Common.Helpers;
 using OpenAuth.Test.Integration.Fixtures;
-using Key = OpenAuth.Domain.ValueObjects.Key;
+using Key = OpenAuth.Domain.SigningKeys.ValueObjects.Key;
 
 namespace OpenAuth.Test.Integration.Persistence;
 

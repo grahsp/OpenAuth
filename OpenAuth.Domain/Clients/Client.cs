@@ -1,6 +1,10 @@
-using OpenAuth.Domain.ValueObjects;
+using OpenAuth.Domain.Clients.Audiences;
+using OpenAuth.Domain.Clients.Audiences.ValueObjects;
+using OpenAuth.Domain.Clients.Secrets;
+using OpenAuth.Domain.Clients.Secrets.ValueObjects;
+using OpenAuth.Domain.Clients.ValueObjects;
 
-namespace OpenAuth.Domain.Entities;
+namespace OpenAuth.Domain.Clients;
 
 public sealed class Client
 {

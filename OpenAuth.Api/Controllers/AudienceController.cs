@@ -3,7 +3,8 @@ using OpenAuth.Api.Dtos;
 using OpenAuth.Api.Mappers;
 using OpenAuth.Application.Clients;
 using OpenAuth.Application.Queries;
-using OpenAuth.Domain.ValueObjects;
+using OpenAuth.Domain.Clients.Audiences.ValueObjects;
+using OpenAuth.Domain.Clients.ValueObjects;
 
 namespace OpenAuth.Api.Controllers;
 

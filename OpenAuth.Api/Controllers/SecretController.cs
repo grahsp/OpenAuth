@@ -4,7 +4,8 @@ using OpenAuth.Api.Mappers;
 using OpenAuth.Application.Clients;
 using OpenAuth.Application.Dtos;
 using OpenAuth.Application.Queries;
-using OpenAuth.Domain.ValueObjects;
+using OpenAuth.Domain.Clients.Secrets.ValueObjects;
+using OpenAuth.Domain.Clients.ValueObjects;
 
 namespace OpenAuth.Api.Controllers;
 

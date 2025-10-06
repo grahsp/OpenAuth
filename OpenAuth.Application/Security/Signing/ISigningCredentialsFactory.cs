@@ -1,6 +1,6 @@
 using Microsoft.IdentityModel.Tokens;
 using OpenAuth.Application.Dtos;
-using OpenAuth.Domain.Entities;
+using OpenAuth.Domain.SigningKeys;
 
 namespace OpenAuth.Application.Security.Signing;
 

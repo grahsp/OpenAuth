@@ -1,4 +1,4 @@
-namespace OpenAuth.Domain.ValueObjects;
+namespace OpenAuth.Domain.Clients.ValueObjects;
 
 public readonly record struct ClientId(Guid Value)
 {

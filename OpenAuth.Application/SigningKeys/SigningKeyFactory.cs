@@ -1,7 +1,7 @@
 using OpenAuth.Application.Security.Keys;
-using OpenAuth.Domain.Entities;
-using OpenAuth.Domain.Enums;
-using OpenAuth.Domain.Extensions;
+using OpenAuth.Domain.SigningKeys;
+using OpenAuth.Domain.SigningKeys.Enums;
+using OpenAuth.Domain.SigningKeys.Extensions;
 
 namespace OpenAuth.Application.SigningKeys;
 

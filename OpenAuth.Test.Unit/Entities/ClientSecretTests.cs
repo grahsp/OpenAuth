@@ -1,5 +1,5 @@
 using Microsoft.Extensions.Time.Testing;
-using OpenAuth.Domain.ValueObjects;
+using OpenAuth.Domain.Clients.Secrets.ValueObjects;
 using OpenAuth.Test.Common.Builders;
 
 namespace OpenAuth.Test.Unit.Entities;

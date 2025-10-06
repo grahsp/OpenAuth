@@ -2,7 +2,7 @@ using System.Security.Cryptography;
 using Microsoft.IdentityModel.Tokens;
 using OpenAuth.Application.Dtos;
 using OpenAuth.Application.Security.Signing;
-using OpenAuth.Domain.Enums;
+using OpenAuth.Domain.SigningKeys.Enums;
 using OpenAuth.Infrastructure.Security.Extensions;
 
 namespace OpenAuth.Infrastructure.Tokens.SigningCredentials;

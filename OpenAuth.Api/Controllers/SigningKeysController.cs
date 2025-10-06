@@ -3,7 +3,7 @@ using OpenAuth.Api.Dtos;
 using OpenAuth.Api.Mappers;
 using OpenAuth.Application.Queries;
 using OpenAuth.Application.SigningKeys;
-using OpenAuth.Domain.ValueObjects;
+using OpenAuth.Domain.SigningKeys.ValueObjects;
 
 namespace OpenAuth.Api.Controllers;
 

@@ -1,4 +1,4 @@
-namespace OpenAuth.Domain.Enums;
+namespace OpenAuth.Domain.SigningKeys.Enums;
 
 public enum SigningAlgorithm
 {

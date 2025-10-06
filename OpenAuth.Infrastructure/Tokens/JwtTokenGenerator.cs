@@ -5,17 +5,17 @@ using Microsoft.IdentityModel.Tokens;
 using OpenAuth.Application.Dtos;
 using OpenAuth.Application.Security.Signing;
 using OpenAuth.Application.Security.Tokens;
-using OpenAuth.Domain.Configurations;
+using OpenAuth.Infrastructure.Configurations;
 
 namespace OpenAuth.Infrastructure.Tokens;
 
 public class JwtTokenGenerator : IJwtTokenGenerator
 {
-    private readonly Auth _config;
+    private readonly JwtOptions _config;
     private readonly ISigningCredentialsFactory _factory;
     private readonly TimeProvider _time;
     
-    public JwtTokenGenerator(IOptions<Auth> config, ISigningCredentialsFactory factory, TimeProvider time)
+    public JwtTokenGenerator(IOptions<JwtOptions> config, ISigningCredentialsFactory factory, TimeProvider time)
     {
         _config = config.Value;
         _factory = factory;

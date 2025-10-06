@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Time.Testing;
-using OpenAuth.Domain.Entities;
-using OpenAuth.Domain.Enums;
-using OpenAuth.Domain.ValueObjects;
+using OpenAuth.Domain.SigningKeys;
+using OpenAuth.Domain.SigningKeys.Enums;
+using OpenAuth.Domain.SigningKeys.ValueObjects;
 using OpenAuth.Infrastructure.SigningKeys.Persistence;
 using OpenAuth.Test.Integration.Fixtures;
 

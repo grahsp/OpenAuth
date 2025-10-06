@@ -1,5 +1,5 @@
 using OpenAuth.Application.Dtos;
-using OpenAuth.Domain.ValueObjects;
+using OpenAuth.Domain.SigningKeys.ValueObjects;
 
 namespace OpenAuth.Application.Queries;
 

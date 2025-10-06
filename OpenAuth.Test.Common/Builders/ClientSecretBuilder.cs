@@ -1,5 +1,5 @@
-using OpenAuth.Domain.Entities;
-using OpenAuth.Domain.ValueObjects;
+using OpenAuth.Domain.Clients.Secrets;
+using OpenAuth.Domain.Clients.Secrets.ValueObjects;
 
 namespace OpenAuth.Test.Common.Builders;
 

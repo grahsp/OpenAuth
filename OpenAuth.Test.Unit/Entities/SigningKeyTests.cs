@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Time.Testing;
-using OpenAuth.Domain.Enums;
-using OpenAuth.Domain.ValueObjects;
+using OpenAuth.Domain.SigningKeys.Enums;
+using OpenAuth.Domain.SigningKeys.ValueObjects;
 using OpenAuth.Test.Common.Helpers;
 
 namespace OpenAuth.Test.Unit.Entities;

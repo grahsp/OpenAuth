@@ -1,6 +1,7 @@
 using OpenAuth.Application.Dtos;
 using OpenAuth.Application.Dtos.Mappings;
-using OpenAuth.Domain.ValueObjects;
+using OpenAuth.Domain.Clients.Audiences.ValueObjects;
+using OpenAuth.Domain.Clients.ValueObjects;
 
 namespace OpenAuth.Application.Clients;
 
