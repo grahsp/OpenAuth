@@ -1,7 +1,8 @@
 using Microsoft.EntityFrameworkCore;
-using OpenAuth.Application.Dtos;
-using OpenAuth.Application.Dtos.Mappings;
-using OpenAuth.Application.Queries;
+using OpenAuth.Application.Clients.Dtos;
+using OpenAuth.Application.Clients.Interfaces;
+using OpenAuth.Application.Clients.Mappings;
+using OpenAuth.Application.Shared.Models;
 using OpenAuth.Domain.Clients.Audiences.ValueObjects;
 using OpenAuth.Domain.Clients.ValueObjects;
 using OpenAuth.Infrastructure.Persistence;

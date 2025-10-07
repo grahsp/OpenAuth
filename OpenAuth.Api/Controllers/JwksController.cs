@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using OpenAuth.Api.Mappers;
-using OpenAuth.Application.Security.Jwks;
+using OpenAuth.Application.Jwks;
+using OpenAuth.Application.Jwks.Services;
 
 namespace OpenAuth.Api.Controllers;
 

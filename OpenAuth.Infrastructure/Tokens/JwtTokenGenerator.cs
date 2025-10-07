@@ -2,9 +2,11 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using OpenAuth.Application.Dtos;
 using OpenAuth.Application.Security.Signing;
-using OpenAuth.Application.Security.Tokens;
+using OpenAuth.Application.SigningKeys.Interfaces;
+using OpenAuth.Application.Tokens;
+using OpenAuth.Application.Tokens.Dtos;
+using OpenAuth.Application.Tokens.Interfaces;
 using OpenAuth.Infrastructure.Configurations;
 
 namespace OpenAuth.Infrastructure.Tokens;

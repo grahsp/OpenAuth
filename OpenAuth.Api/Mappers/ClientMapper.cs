@@ -1,5 +1,9 @@
 using OpenAuth.Api.Dtos;
-using OpenAuth.Application.Dtos;
+using OpenAuth.Application.Audiences;
+using OpenAuth.Application.Audiences.Dtos;
+using OpenAuth.Application.Clients.Dtos;
+using OpenAuth.Application.Secrets;
+using OpenAuth.Application.Secrets.Dtos;
 
 namespace OpenAuth.Api.Mappers;
 

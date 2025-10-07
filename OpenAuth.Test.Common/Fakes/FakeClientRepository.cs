@@ -1,4 +1,5 @@
 using OpenAuth.Application.Clients;
+using OpenAuth.Application.Clients.Interfaces;
 using OpenAuth.Domain.Clients;
 using OpenAuth.Domain.Clients.Secrets;
 using OpenAuth.Domain.Clients.Secrets.ValueObjects;

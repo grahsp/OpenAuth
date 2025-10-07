@@ -1,7 +1,7 @@
-using OpenAuth.Application.Security.Secrets;
+using OpenAuth.Application.Secrets;
+using OpenAuth.Application.Secrets.Interfaces;
 using OpenAuth.Infrastructure.Clients.Secrets;
 using OpenAuth.Infrastructure.Security;
-using OpenAuth.Infrastructure.Security.Secrets;
 
 namespace OpenAuth.Test.Unit.Security;
 

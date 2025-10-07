@@ -1,4 +1,4 @@
-using OpenAuth.Application.Security.Secrets;
+using OpenAuth.Application.Security.Hashing;
 using OpenAuth.Domain.Clients.Secrets.ValueObjects;
 
 namespace OpenAuth.Test.Common.Fakes;

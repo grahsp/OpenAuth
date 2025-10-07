@@ -1,5 +1,6 @@
 using OpenAuth.Api.Dtos;
-using OpenAuth.Application.Security.Jwks;
+using OpenAuth.Application.Jwks;
+using OpenAuth.Application.Jwks.Dtos;
 
 namespace OpenAuth.Api.Mappers;
 
