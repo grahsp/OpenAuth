@@ -1,9 +1,9 @@
 using System.Globalization;
 using System.Security.Cryptography;
-using OpenAuth.Application.Security.Secrets;
+using OpenAuth.Application.Security.Hashing;
 using OpenAuth.Domain.Clients.Secrets.ValueObjects;
 
-namespace OpenAuth.Infrastructure.Security.Secrets;
+namespace OpenAuth.Infrastructure.Security.Hashing;
 
 public class Pbkdf2Hasher : ISecretHasher
 {

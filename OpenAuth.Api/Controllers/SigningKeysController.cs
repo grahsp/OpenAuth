@@ -1,8 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using OpenAuth.Api.Dtos;
 using OpenAuth.Api.Mappers;
-using OpenAuth.Application.Queries;
 using OpenAuth.Application.SigningKeys;
+using OpenAuth.Application.SigningKeys.Interfaces;
+using OpenAuth.Application.SigningKeys.Services;
 using OpenAuth.Domain.SigningKeys.ValueObjects;
 
 namespace OpenAuth.Api.Controllers;

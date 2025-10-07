@@ -2,8 +2,10 @@ using Microsoft.AspNetCore.Mvc;
 using OpenAuth.Api.Dtos;
 using OpenAuth.Api.Mappers;
 using OpenAuth.Application.Clients;
-using OpenAuth.Application.Dtos;
-using OpenAuth.Application.Queries;
+using OpenAuth.Application.Secrets;
+using OpenAuth.Application.Secrets.Dtos;
+using OpenAuth.Application.Secrets.Interfaces;
+using OpenAuth.Application.Secrets.Services;
 using OpenAuth.Domain.Clients.Secrets.ValueObjects;
 using OpenAuth.Domain.Clients.ValueObjects;
 

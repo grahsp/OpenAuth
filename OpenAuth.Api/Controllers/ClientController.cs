@@ -2,7 +2,10 @@ using Microsoft.AspNetCore.Mvc;
 using OpenAuth.Api.Dtos;
 using OpenAuth.Api.Mappers;
 using OpenAuth.Application.Clients;
-using OpenAuth.Application.Queries;
+using OpenAuth.Application.Clients.Interfaces;
+using OpenAuth.Application.Clients.Services;
+using OpenAuth.Application.Secrets;
+using OpenAuth.Application.Secrets.Services;
 using OpenAuth.Domain.Clients.ValueObjects;
 
 namespace OpenAuth.Api.Controllers;

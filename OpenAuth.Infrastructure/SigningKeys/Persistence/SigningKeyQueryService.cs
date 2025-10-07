@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
-using OpenAuth.Application.Dtos;
-using OpenAuth.Application.Queries;
+using OpenAuth.Application.SigningKeys.Dtos;
+using OpenAuth.Application.SigningKeys.Interfaces;
 using OpenAuth.Domain.SigningKeys.ValueObjects;
 using OpenAuth.Infrastructure.Persistence;
 

@@ -1,4 +1,5 @@
-using OpenAuth.Application.Security.Keys;
+using OpenAuth.Application.SigningKeys.Factories;
+using OpenAuth.Application.SigningKeys.Interfaces;
 using OpenAuth.Domain.SigningKeys;
 using OpenAuth.Domain.SigningKeys.Enums;
 using OpenAuth.Test.Common.Helpers;

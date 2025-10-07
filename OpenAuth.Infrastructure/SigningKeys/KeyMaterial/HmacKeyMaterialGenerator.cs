@@ -1,5 +1,5 @@
 using System.Security.Cryptography;
-using OpenAuth.Application.Security.Keys;
+using OpenAuth.Application.SigningKeys.Interfaces;
 using OpenAuth.Domain.SigningKeys.Enums;
 using OpenAuth.Domain.SigningKeys.ValueObjects;
 

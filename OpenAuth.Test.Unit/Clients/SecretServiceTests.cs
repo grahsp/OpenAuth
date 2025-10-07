@@ -1,7 +1,10 @@
 using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 using OpenAuth.Application.Clients;
-using OpenAuth.Application.Security.Secrets;
+using OpenAuth.Application.Secrets;
+using OpenAuth.Application.Secrets.Interfaces;
+using OpenAuth.Application.Secrets.Services;
+using OpenAuth.Application.Security.Hashing;
 using OpenAuth.Domain.Clients.Secrets.ValueObjects;
 using OpenAuth.Domain.Clients.ValueObjects;
 using OpenAuth.Test.Common.Builders;

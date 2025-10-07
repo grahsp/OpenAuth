@@ -1,5 +1,5 @@
 using OpenAuth.Api.Dtos;
-using OpenAuth.Application.Dtos;
+using OpenAuth.Application.SigningKeys.Dtos;
 
 namespace OpenAuth.Api.Mappers;
 

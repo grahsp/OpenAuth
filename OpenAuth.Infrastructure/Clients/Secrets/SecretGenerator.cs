@@ -1,6 +1,7 @@
 using System.Buffers.Text;
 using System.Security.Cryptography;
-using OpenAuth.Application.Security.Secrets;
+using OpenAuth.Application.Secrets;
+using OpenAuth.Application.Secrets.Interfaces;
 
 namespace OpenAuth.Infrastructure.Clients.Secrets;
 
