@@ -1,16 +1,14 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Time.Testing;
-using OpenAuth.Application.SigningKeys;
 using OpenAuth.Application.SigningKeys.Factories;
 using OpenAuth.Application.SigningKeys.Services;
 using OpenAuth.Domain.SigningKeys.Enums;
 using OpenAuth.Domain.SigningKeys.ValueObjects;
-using OpenAuth.Infrastructure.SigningKeys;
 using OpenAuth.Infrastructure.SigningKeys.KeyMaterial;
 using OpenAuth.Infrastructure.SigningKeys.Persistence;
 using OpenAuth.Test.Integration.Fixtures;
 
-namespace OpenAuth.Test.Integration.SigningKeys;
+namespace OpenAuth.Test.Integration.SigningKeys.Application;
 
 [Collection("sqlserver")]
 public class SigningKeyServiceTests : IAsyncLifetime

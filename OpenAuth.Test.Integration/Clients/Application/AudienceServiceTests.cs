@@ -1,15 +1,13 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Time.Testing;
-using OpenAuth.Application.Audiences;
 using OpenAuth.Application.Audiences.Services;
-using OpenAuth.Application.Clients;
 using OpenAuth.Domain.Clients.Audiences.ValueObjects;
 using OpenAuth.Domain.Clients.ValueObjects;
 using OpenAuth.Infrastructure.Clients.Persistence;
 using OpenAuth.Test.Common.Builders;
 using OpenAuth.Test.Integration.Fixtures;
 
-namespace OpenAuth.Test.Integration.Clients;
+namespace OpenAuth.Test.Integration.Clients.Application;
 
 [Collection("sqlserver")]
 public class AudienceServiceTests : IAsyncLifetime

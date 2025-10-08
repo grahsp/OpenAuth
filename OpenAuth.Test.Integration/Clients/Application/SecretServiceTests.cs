@@ -1,8 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Time.Testing;
-using OpenAuth.Application.Clients;
 using OpenAuth.Application.Clients.Interfaces;
-using OpenAuth.Application.Secrets;
 using OpenAuth.Application.Secrets.Interfaces;
 using OpenAuth.Application.Secrets.Services;
 using OpenAuth.Application.Security.Hashing;
@@ -10,12 +8,11 @@ using OpenAuth.Domain.Clients.Secrets.ValueObjects;
 using OpenAuth.Domain.Clients.ValueObjects;
 using OpenAuth.Infrastructure.Clients.Persistence;
 using OpenAuth.Infrastructure.Clients.Secrets;
-using OpenAuth.Infrastructure.Persistence;
 using OpenAuth.Infrastructure.Security.Hashing;
 using OpenAuth.Test.Common.Builders;
 using OpenAuth.Test.Integration.Fixtures;
 
-namespace OpenAuth.Test.Integration.Clients;
+namespace OpenAuth.Test.Integration.Clients.Application;
 
 [Collection("sqlserver")]
 public class SecretServiceTests : IAsyncLifetime
