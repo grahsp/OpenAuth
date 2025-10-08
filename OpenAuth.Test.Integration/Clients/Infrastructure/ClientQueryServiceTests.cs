@@ -6,7 +6,7 @@ using OpenAuth.Infrastructure.Persistence;
 using OpenAuth.Test.Common.Builders;
 using OpenAuth.Test.Integration.Fixtures;
 
-namespace OpenAuth.Test.Integration.Clients;
+namespace OpenAuth.Test.Integration.Clients.Infrastructure;
 
 [Collection("sqlserver")]
 public class ClientQueryServiceTests : IAsyncLifetime

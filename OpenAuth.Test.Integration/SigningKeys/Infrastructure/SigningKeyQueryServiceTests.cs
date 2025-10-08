@@ -5,7 +5,7 @@ using OpenAuth.Domain.SigningKeys.ValueObjects;
 using OpenAuth.Infrastructure.SigningKeys.Persistence;
 using OpenAuth.Test.Integration.Fixtures;
 
-namespace OpenAuth.Test.Integration.SigningKeys;
+namespace OpenAuth.Test.Integration.SigningKeys.Infrastructure;
 
 [Collection("sqlserver")]
 public class SigningKeyQueryServiceTests : IAsyncLifetime
