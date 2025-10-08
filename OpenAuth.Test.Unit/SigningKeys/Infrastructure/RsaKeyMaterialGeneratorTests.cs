@@ -2,7 +2,7 @@ using System.Security.Cryptography;
 using OpenAuth.Domain.SigningKeys.Enums;
 using OpenAuth.Infrastructure.SigningKeys.KeyMaterial;
 
-namespace OpenAuth.Test.Unit.Security.Keys;
+namespace OpenAuth.Test.Unit.SigningKeys.Infrastructure;
 
 public class RsaKeyMaterialGeneratorTests
 {

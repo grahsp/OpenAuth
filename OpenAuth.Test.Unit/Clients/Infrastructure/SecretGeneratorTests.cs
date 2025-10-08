@@ -1,9 +1,7 @@
-using OpenAuth.Application.Secrets;
 using OpenAuth.Application.Secrets.Interfaces;
 using OpenAuth.Infrastructure.Clients.Secrets;
-using OpenAuth.Infrastructure.Security;
 
-namespace OpenAuth.Test.Unit.Security;
+namespace OpenAuth.Test.Unit.Clients.Infrastructure;
 
 public class SecretGeneratorTests
 {
