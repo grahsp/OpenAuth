@@ -237,7 +237,7 @@ public class ClientPersistenceTests : IAsyncLifetime
             // Act - Query secrets directly (not through Client)
             await using (var ctx = _fx.CreateContext())
             {
-                var loadedSecret = await ctx.Set<ClientSecret>()
+                var loadedSecret = await ctx.Set<Secret>()
                     .SingleAsync(s => s.Id == secret.Id);
 
                 // Assert
@@ -274,7 +274,7 @@ public class ClientPersistenceTests : IAsyncLifetime
             // Assert - No secrets should remain
             await using (var ctx = _fx.CreateContext())
             {
-                var remainingSecrets = await ctx.Set<ClientSecret>().CountAsync();
+                var remainingSecrets = await ctx.Set<Secret>().CountAsync();
                 Assert.Equal(0, remainingSecrets);
             }
         }

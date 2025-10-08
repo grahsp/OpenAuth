@@ -4,7 +4,7 @@ using OpenAuth.Test.Common.Builders;
 
 namespace OpenAuth.Test.Unit.Clients.Domain;
 
-public class ClientSecretTests
+public class SecretTests
 {
     private readonly FakeTimeProvider _time = new ();
     
@@ -16,7 +16,7 @@ public class ClientSecretTests
         var now = DateTime.UtcNow;
         var lifetime = TimeSpan.FromHours(1);
 
-        var secret = new ClientSecretBuilder()
+        var secret = new SecretBuilder()
             .WithHash(hash)
             .WithCreatedAt(now)
             .WithLifetime(lifetime)
@@ -34,7 +34,7 @@ public class ClientSecretTests
     [Fact]
     public void IsActive_True_When_NoExpiryAndNotRevoked()
     {
-        var secret = new ClientSecretBuilder().Build();
+        var secret = new SecretBuilder().Build();
         Assert.True(secret.IsActive(_time.GetUtcNow()));
     }
 
@@ -42,7 +42,7 @@ public class ClientSecretTests
     public void IsActive_False_When_Expired()
     {
         var lifetime = TimeSpan.FromDays(1);
-        var secret = new ClientSecretBuilder()
+        var secret = new SecretBuilder()
             .WithCreatedAt(_time.GetUtcNow())
             .WithLifetime(lifetime)
             .Build();
@@ -54,14 +54,14 @@ public class ClientSecretTests
     [Fact]
     public void IsActive_True_When_ExpiresInFuture()
     {
-        var secret = new ClientSecretBuilder().Build();
+        var secret = new SecretBuilder().Build();
         Assert.True(secret.IsActive(_time.GetUtcNow()));
     }
 
     [Fact]
     public void Revoke_IsIdempotent_And_Disables()
     {
-        var secret = new ClientSecretBuilder().Build();
+        var secret = new SecretBuilder().Build();
         Assert.True(secret.IsActive(_time.GetUtcNow()));
 
         secret.Revoke(_time.GetUtcNow());

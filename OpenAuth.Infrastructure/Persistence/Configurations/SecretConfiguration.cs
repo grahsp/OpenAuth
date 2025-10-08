@@ -5,9 +5,9 @@ using OpenAuth.Domain.Clients.Secrets.ValueObjects;
 
 namespace OpenAuth.Infrastructure.Persistence.Configurations;
 
-public class ClientSecretConfiguration : IEntityTypeConfiguration<ClientSecret>
+public class SecretConfiguration : IEntityTypeConfiguration<Secret>
 {
-    public void Configure(EntityTypeBuilder<ClientSecret> builder)
+    public void Configure(EntityTypeBuilder<Secret> builder)
     {
         // ID
         builder.HasKey(x => x.Id);

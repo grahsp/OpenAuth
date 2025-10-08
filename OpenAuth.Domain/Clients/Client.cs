@@ -28,7 +28,7 @@ public sealed class Client
     // Settings
     public TimeSpan TokenLifetime { get; private set; } = TimeSpan.FromMinutes(10);
 
-    public List<ClientSecret> Secrets { get; private set; } = [];
+    public List<Secret> Secrets { get; private set; } = [];
 
     
     private readonly HashSet<Audience> _audiences = [];
@@ -123,7 +123,7 @@ public sealed class Client
     
     public SecretId AddSecret(SecretHash hash, DateTimeOffset utcNow)
     {
-        var secret = ClientSecret.Create(hash, utcNow, TimeSpan.FromDays(7));
+        var secret = Secret.Create(hash, utcNow, TimeSpan.FromDays(7));
         
         if (!secret.IsActive(utcNow))
             throw new InvalidOperationException("Cannot add expired secret.");
@@ -156,7 +156,7 @@ public sealed class Client
         Touch(utcNow);
     }
 
-    public IEnumerable<ClientSecret> ActiveSecrets(DateTimeOffset utcNow) =>
+    public IEnumerable<Secret> ActiveSecrets(DateTimeOffset utcNow) =>
         Secrets.Where(x => x.IsActive(utcNow))
             .OrderByDescending(x => x.CreatedAt);
 

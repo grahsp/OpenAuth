@@ -7,12 +7,12 @@ using OpenAuth.Test.Integration.Fixtures;
 namespace OpenAuth.Test.Integration.Clients.Persistence;
 
 [Collection("sqlserver")]
-public class ClientSecretMappingTests : IAsyncLifetime
+public class SecretMappingTests : IAsyncLifetime
 {
     private readonly SqlServerFixture _fx;
     private readonly TimeProvider _time = new FakeTimeProvider();
     
-    public ClientSecretMappingTests(SqlServerFixture fx) => _fx = fx;
+    public SecretMappingTests(SqlServerFixture fx) => _fx = fx;
 
     public Task InitializeAsync() => _fx.ResetAsync();
     public Task DisposeAsync() => Task.CompletedTask;
@@ -32,7 +32,7 @@ public class ClientSecretMappingTests : IAsyncLifetime
         await ctx.SaveChangesAsync();
 
         var secret = client.Secrets.First();
-        var loaded = await ctx.Set<ClientSecret>().SingleAsync(x => x.Id == secret.Id);
+        var loaded = await ctx.Set<Secret>().SingleAsync(x => x.Id == secret.Id);
 
         Assert.Equal(secret.Id, loaded.Id);
         Assert.Equal(client.Id, loaded.ClientId);
@@ -46,7 +46,7 @@ public class ClientSecretMappingTests : IAsyncLifetime
     public async Task ClientSecret_Requires_Client()
     {
         await using var ctx = _fx.CreateContext();
-        var secret = new ClientSecretBuilder().Build();
+        var secret = new SecretBuilder().Build();
         
         ctx.Add(secret);
         await Assert.ThrowsAnyAsync<DbUpdateException>(() => ctx.SaveChangesAsync());
