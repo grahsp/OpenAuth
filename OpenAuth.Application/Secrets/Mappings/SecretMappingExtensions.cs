@@ -5,7 +5,7 @@ namespace OpenAuth.Application.Secrets.Mappings;
 
 public static class SecretMappingExtensions
 {
-    public static SecretInfo ToSecretInfo(this ClientSecret secret)
+    public static SecretInfo ToSecretInfo(this Secret secret)
         => new SecretInfo(
             secret.Id,
             secret.CreatedAt,

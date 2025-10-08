@@ -3,11 +3,11 @@ using OpenAuth.Domain.Clients.ValueObjects;
 
 namespace OpenAuth.Domain.Clients.Secrets;
 
-public class ClientSecret
+public class Secret
 {
-    private ClientSecret() { }
+    private Secret() { }
 
-    private ClientSecret(SecretHash hash, DateTimeOffset utcNow, TimeSpan lifetime)
+    private Secret(SecretHash hash, DateTimeOffset utcNow, TimeSpan lifetime)
     {
         Hash = hash;
         CreatedAt = utcNow;
@@ -25,7 +25,7 @@ public class ClientSecret
     public DateTimeOffset? RevokedAt { get; private set; }
 
 
-    internal static ClientSecret Create(SecretHash hash, DateTimeOffset createdAt, TimeSpan lifetime)
+    internal static Secret Create(SecretHash hash, DateTimeOffset createdAt, TimeSpan lifetime)
     {
         if (lifetime <= TimeSpan.Zero)
             throw new ArgumentOutOfRangeException(nameof(lifetime), "Lifetime must be positive.");
@@ -33,7 +33,7 @@ public class ClientSecret
         if (lifetime > TimeSpan.FromDays(365))
             throw new ArgumentOutOfRangeException(nameof(lifetime), "Lifetime cannot exceed 1 year.");
         
-        return new ClientSecret(hash, createdAt, lifetime);
+        return new Secret(hash, createdAt, lifetime);
     }
     
     public bool IsActive(DateTimeOffset utcNow) =>
