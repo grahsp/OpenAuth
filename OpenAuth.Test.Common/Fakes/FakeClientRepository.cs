@@ -1,4 +1,3 @@
-using OpenAuth.Application.Clients;
 using OpenAuth.Application.Clients.Interfaces;
 using OpenAuth.Domain.Clients;
 using OpenAuth.Domain.Clients.Secrets;
@@ -14,18 +13,6 @@ public class FakeClientRepository : IClientRepository
 
     public Task<Client?> GetByIdAsync(ClientId id, CancellationToken ct = default)
         => Task.FromResult(_store.GetValueOrDefault(id));
-
-    public Task<Client?> GetByNameAsync(ClientName name, CancellationToken ct = default)
-        => Task.FromResult(_store.Values.FirstOrDefault(c => c.Name == name));
-    
-    public Task<Client?> GetBySecretIdAsync(SecretId id, CancellationToken ct = default)
-        => Task.FromResult(_store.Values.FirstOrDefault(c => c.Secrets.Any(s => s.Id == id)));
-
-    public Task<ClientSecret?> GetSecretAsync(SecretId id, CancellationToken cancellationToken = default)
-    {
-        var client = _store.Values.FirstOrDefault(c => c.Secrets.Any(s => s.Id == id));
-        return Task.FromResult(client?.Secrets.FirstOrDefault(s => s.Id == id));
-    }
 
     public void Add(Client client)
         => _store[client.Id] = client;
