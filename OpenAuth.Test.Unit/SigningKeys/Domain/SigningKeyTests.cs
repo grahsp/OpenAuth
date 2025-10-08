@@ -3,7 +3,7 @@ using OpenAuth.Domain.SigningKeys.Enums;
 using OpenAuth.Domain.SigningKeys.ValueObjects;
 using OpenAuth.Test.Common.Helpers;
 
-namespace OpenAuth.Test.Unit.Entities;
+namespace OpenAuth.Test.Unit.SigningKeys.Domain;
 
 public class SigningKeyTests
 {

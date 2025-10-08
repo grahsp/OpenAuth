@@ -1,7 +1,5 @@
 using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
-using OpenAuth.Application.Clients;
-using OpenAuth.Application.Secrets;
 using OpenAuth.Application.Secrets.Interfaces;
 using OpenAuth.Application.Secrets.Services;
 using OpenAuth.Application.Security.Hashing;
@@ -10,7 +8,7 @@ using OpenAuth.Domain.Clients.ValueObjects;
 using OpenAuth.Test.Common.Builders;
 using OpenAuth.Test.Common.Fakes;
 
-namespace OpenAuth.Test.Unit.Clients;
+namespace OpenAuth.Test.Unit.Clients.Application;
 
 public class SecretServiceTests
 {

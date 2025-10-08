@@ -1,9 +1,8 @@
 using OpenAuth.Application.Security.Hashing;
 using OpenAuth.Domain.Clients.Secrets.ValueObjects;
-using OpenAuth.Infrastructure.Security;
 using OpenAuth.Infrastructure.Security.Hashing;
 
-namespace OpenAuth.Test.Unit.Security;
+namespace OpenAuth.Test.Unit.Security.Hashing;
 
 public class Pbkdf2HasherTests
 {

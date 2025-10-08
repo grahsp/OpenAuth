@@ -1,6 +1,6 @@
 using OpenAuth.Domain.Clients.Audiences.ValueObjects;
 
-namespace OpenAuth.Test.Unit.ValueObjects;
+namespace OpenAuth.Test.Unit.Clients.Domain.ValueObjects;
 
 public class ScopeTests
 {

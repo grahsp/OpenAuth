@@ -2,7 +2,7 @@ using Microsoft.Extensions.Time.Testing;
 using OpenAuth.Domain.Clients.Audiences;
 using OpenAuth.Domain.Clients.Audiences.ValueObjects;
 
-namespace OpenAuth.Test.Unit.ValueObjects;
+namespace OpenAuth.Test.Unit.Clients.Domain;
 
 public class AudienceTests
 {

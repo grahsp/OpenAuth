@@ -6,8 +6,6 @@ using Microsoft.IdentityModel.Tokens;
 using NSubstitute;
 using OpenAuth.Application.Security.Signing;
 using OpenAuth.Application.SigningKeys.Dtos;
-using OpenAuth.Application.SigningKeys.Interfaces;
-using OpenAuth.Application.Tokens;
 using OpenAuth.Application.Tokens.Dtos;
 using OpenAuth.Application.Tokens.Interfaces;
 using OpenAuth.Domain.Clients.Audiences.ValueObjects;
@@ -17,7 +15,7 @@ using OpenAuth.Domain.SigningKeys.ValueObjects;
 using OpenAuth.Infrastructure.Configurations;
 using OpenAuth.Infrastructure.Tokens;
 
-namespace OpenAuth.Test.Unit.Security.Tokens;
+namespace OpenAuth.Test.Unit.Clients.Infrastructure;
 
 public class JwtTokenGeneratorTests
 {
