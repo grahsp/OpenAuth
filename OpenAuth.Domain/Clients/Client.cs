@@ -118,7 +118,21 @@ public sealed class Client
         if (_allowedGrantTypes.Remove(grantType))
             Touch(utcNow);
     }
+    
+    
+    // RedirectUris
+    public void AddRedirectUri(RedirectUri uri, DateTimeOffset utcNow)
+    {
+        if (_redirectUris.Add(uri))
+            Touch(utcNow);
+    }
 
+    public void RemoveRedirectUri(RedirectUri uri, DateTimeOffset utcNow)
+    {
+        if (_redirectUris.Remove(uri))
+            Touch(utcNow);
+    }
+    
     
     // Audiences
     public Audience GetAudience(AudienceName name)
