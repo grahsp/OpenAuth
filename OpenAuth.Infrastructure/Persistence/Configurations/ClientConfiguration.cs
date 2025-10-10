@@ -13,9 +13,9 @@ public class ClientConfiguration : IEntityTypeConfiguration<Client>
     public void Configure(EntityTypeBuilder<Client> builder)
     {
         // ID
-        builder.HasKey(x => x.Id);
+        builder.HasKey(c => c.Id);
 
-        builder.Property(x => x.Id)
+        builder.Property(c => c.Id)
             .HasConversion(
                 id => id.Value,
                 value => new ClientId(value))
@@ -23,48 +23,93 @@ public class ClientConfiguration : IEntityTypeConfiguration<Client>
             .IsRequired();
             
         // Name
-        builder.HasIndex(x => x.Name)
+        builder.HasIndex(c => c.Name)
             .IsUnique();
             
-        builder.Property(x => x.Name)
+        builder.Property(c => c.Name)
             .HasConversion(
                 name => name.Value,
                 value => new ClientName(value))
             .IsRequired();
 
         // Properties
-        builder.Property(x => x.TokenLifetime)
+        builder.Property(c => c.TokenLifetime)
             .HasConversion(
                 t => t.Ticks,
                 ticks => TimeSpan.FromTicks(ticks))
             .IsRequired();
             
-        builder.Property(x => x.Enabled)
-            .IsRequired();
+        builder.Property(c => c.CreatedAt).IsRequired();
+        builder.Property(c => c.UpdatedAt).IsRequired();
+        builder.Property(c => c.Enabled).IsRequired();
+
+        builder.Property(c => c.IsPublic).IsRequired();
+        builder.Property(c => c.RequirePkce).IsRequired();
+        
+        builder.Ignore(c => c.AllowedGrantTypes);
+        builder.Property<HashSet<GrantType>>("_allowedGrantTypes")
+            .HasConversion(
+                grants => string.Join(' ', grants.Select(g => g.Value)),
+                value => string.IsNullOrWhiteSpace(value)
+                    ? new HashSet<GrantType>()
+                    : value.Split(' ', StringSplitOptions.RemoveEmptyEntries)
+                        .Select(GrantType.Create)
+                        .ToHashSet(),
+                new ValueComparer<HashSet<GrantType>>(
+                    (c1, c2) => c1!.SequenceEqual(c2!),
+                    c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
+                    c => c.ToHashSet()
+                )
+            )
+            .HasColumnName("AllowedGrantTypes")
+            .HasMaxLength(2000);
+
+        builder.Ignore(c => c.RedirectUris);;
+        builder.Property<HashSet<RedirectUri>>("_redirectUris")
+            .HasConversion(
+                uris => string.Join(' ', uris.Select(u => u.Value)),
+                value => string.IsNullOrWhiteSpace(value)
+                    ? new HashSet<RedirectUri>()
+                    : value.Split(' ', StringSplitOptions.RemoveEmptyEntries)
+                        .Select(RedirectUri.Create)
+                        .ToHashSet(),
+                new ValueComparer<HashSet<RedirectUri>>(
+                    (c1, c2) => c1!.SequenceEqual(c2!),
+                    c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
+                    c => c.ToHashSet()
+                )
+            )
+            .HasColumnName("RedirectUris")
+            .HasMaxLength(2000);
         
         // Audience
-        builder.OwnsMany(c => c.Audiences, a =>
+        builder.Ignore(c => c.AllowedAudiences);
+        builder.OwnsMany(c => c.AllowedAudiences, aud =>
         {
-            a.ToTable("Audiences");
+            aud.ToTable("AllowedAudiences");
             
-            a.WithOwner()
+            aud.WithOwner()
                 .HasForeignKey("ClientId"); // Shadow property
             
-            a.HasKey(nameof(Audience.Id));
+            aud.HasKey(nameof(Audience.Id));
             
-            a.Property(aud => aud.Id)
+            aud.Property(a => a.Id)
                 .HasConversion(
                     id => id.Value,
                     value => new AudienceId(value));
             
-            a.Property(aud => aud.Name)
+            aud.Property(a => a.Name)
                 .HasConversion(
                     name => name.Value,
                     value => new AudienceName(value))
                 .HasMaxLength(100);
             
+            aud.Property(a => a.CreatedAt).IsRequired();
+            aud.Property(a => a.UpdatedAt).IsRequired();
+            
             // Scopes configuration
-            a.Property<HashSet<Scope>>("_scopes")
+            aud.Ignore(a => a.AllowedScopes);
+            aud.Property<HashSet<Scope>>("_allowedScopes")
                 .HasConversion(
                     scopes => string.Join(' ', scopes.Select(s => s.Value)),
                     value => string.IsNullOrWhiteSpace(value)
@@ -78,17 +123,8 @@ public class ClientConfiguration : IEntityTypeConfiguration<Client>
                         c => c.ToHashSet()
                     )
                 )
-                .HasColumnName("Scopes")
+                .HasColumnName("AllowedScopes")
                 .HasMaxLength(2000);
-            
-            a.Ignore(aud => aud.Scopes);
-            
-            a.Property(aud => aud.CreatedAt).IsRequired();
-            a.Property(aud => aud.UpdatedAt).IsRequired();
         });
-        
-        builder.Property(c => c.CreatedAt).IsRequired();
-        builder.Property(c => c.UpdatedAt).IsRequired();
-        builder.Property(c => c.Enabled).IsRequired();
     }
 }
