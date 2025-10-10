@@ -32,8 +32,126 @@ public class ClientTests
         Assert.Equal(now, client.CreatedAt);
         Assert.Equal(now, client.UpdatedAt);
     }
+    
+    public class SetPublic : ClientTests
+    {
+        [Fact]
+        public void SetClientToPublic_WithPkceRequired()
+        {
+            // Arrange
+            var client = new ClientBuilder().Build();
+            
+            // Act
+            client.SetPublic(_time.GetUtcNow());
+            
+            // Assert
+            Assert.True(client.IsPublic);
+            Assert.True(client.RequirePkce);
+        }
+        
+        [Fact]
+        public void UpdateTimestamp_WhenUpdated()
+        {
+            // Arrange
+            var client = new ClientBuilder()
+                .CreatedAt(_time.GetUtcNow()).Build();
+            
+            _time.Advance(TimeSpan.FromMinutes(5));
+            var expected = _time.GetUtcNow();
+            
+            // Act
+            client.SetPublic(expected);
+            
+            // Assert
+            Assert.Equal(expected, client.UpdatedAt);
+        }
 
-   public class AddAudience : ClientTests
+        [Fact]
+        public void DoesNotUpdateTimestamp_WhenNotUpdated()
+        {
+            // Arrange
+            var expected = _time.GetUtcNow();
+            var client = new ClientBuilder().Build();
+            
+            client.SetPublic(expected);
+            _time.Advance(TimeSpan.FromMinutes(5));
+            
+            // Act
+            client.SetPublic(_time.GetUtcNow());
+            
+            // Assert
+            Assert.Equal(expected, client.UpdatedAt);           
+        }
+    }
+    
+    public class SetConfidential : ClientTests
+    {
+        [Fact]
+        public void RequirePkceByDefault()
+        {
+            // Arrange
+            var now = _time.GetUtcNow();
+            var client = new ClientBuilder().Build();
+            client.SetPublic(now);
+            
+            // Act
+            client.SetConfidential(now);
+            
+            // Assert
+            Assert.False(client.IsPublic);
+            Assert.True(client.RequirePkce);
+        }
+        
+        [Fact]
+        public void RequirePkceOverride()
+        {
+            // Arrange
+            var client = new ClientBuilder().Build();
+            
+            // Act
+            client.SetConfidential(_time.GetUtcNow(), requirePkce: false);
+            
+            // Assert
+            Assert.False(client.IsPublic);
+            Assert.False(client.RequirePkce);
+        }
+        
+        [Fact]
+        public void UpdateTimestamp_WhenUpdated()
+        {
+            // Arrange
+            var client = new ClientBuilder().Build();
+            client.SetPublic(_time.GetUtcNow());
+            
+            _time.Advance(TimeSpan.FromMinutes(5));
+            var expected = _time.GetUtcNow();
+            
+            // Act
+            client.SetConfidential(expected);
+            
+            // Assert
+            Assert.Equal(expected, client.UpdatedAt);
+        }
+        
+        [Fact]
+        public void DoesNotUpdateTimestamp_WhenNotUpdated()
+        {
+            // Arrange
+            var expected = _time.GetUtcNow();
+            var client = new ClientBuilder().Build();
+            client.SetPublic(expected);
+            
+            _time.Advance(TimeSpan.FromMinutes(5));
+            
+            // Act
+            client.SetConfidential(_time.GetUtcNow());
+            
+            // Assert
+            Assert.Equal(expected, client.UpdatedAt);
+        }
+    }
+
+    public class AddAudience : ClientTests
     {
         [Fact]
         public void AddAudience_WithNewName_AddsAudienceToCollection()

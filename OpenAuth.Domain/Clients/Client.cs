@@ -51,6 +51,62 @@ public sealed class Client
         => new(name, utcNow);
 
     
+    // Client
+    public void Rename(ClientName newName, DateTimeOffset utcNow)
+    {
+        ArgumentNullException.ThrowIfNull(newName);
+        
+        if (newName == Name)
+            return;
+        
+        Name = newName;
+        Touch(utcNow);
+    }
+
+    public void Enable(DateTimeOffset utcNow)
+    {
+        if (Enabled)
+            return;
+        
+        Enabled = true;
+        Touch(utcNow);
+    }
+
+    public void Disable(DateTimeOffset utcNow)
+    {
+        if (!Enabled)
+            return;
+        
+        Enabled = false;
+        Touch(utcNow);
+    }
+    
+    
+    // Public
+    public void SetPublic(DateTimeOffset utcNow)
+    {
+        var changed = !IsPublic || !RequirePkce;
+        
+        IsPublic = true;
+        RequirePkce = true;
+        
+        if (changed)
+            Touch(utcNow);
+    }
+
+    public void SetConfidential(DateTimeOffset utcNow, bool requirePkce = true)
+    {
+        var changed = IsPublic || RequirePkce != requirePkce;
+        
+        IsPublic = false;
+        RequirePkce = requirePkce;
+        
+        if (changed)
+            Touch(utcNow);
+    }
+    
+
+    // Audiences
     public Audience GetAudience(AudienceName name)
         => _allowedAudiences.SingleOrDefault(a => a.Name == name) ??
            throw new InvalidOperationException($"Audience {name.Value} not found.");
@@ -76,6 +132,7 @@ public sealed class Client
     }
 
     
+    // Scopes
     public Audience SetScopes(AudienceName name, IEnumerable<Scope> scopes, DateTimeOffset utcNow)
     {
         var audience = GetAudience(name);
@@ -104,17 +161,7 @@ public sealed class Client
     }
 
 
-    public void Rename(ClientName newName, DateTimeOffset utcNow)
-    {
-        ArgumentNullException.ThrowIfNull(newName);
-        
-        if (newName == Name)
-            return;
-        
-        Name = newName;
-        Touch(utcNow);
-    }
-
+    // Token
     public void SetTokenLifetime(TimeSpan value, DateTimeOffset utcNow)
     {
         if (value <= TimeSpan.Zero)
@@ -128,6 +175,7 @@ public sealed class Client
     }
     
     
+    // Secrets
     public SecretId AddSecret(SecretHash hash, DateTimeOffset utcNow)
     {
         var secret = Secret.Create(hash, utcNow, TimeSpan.FromDays(7));
@@ -166,24 +214,7 @@ public sealed class Client
     public IEnumerable<Secret> ActiveSecrets(DateTimeOffset utcNow) =>
         Secrets.Where(x => x.IsActive(utcNow))
             .OrderByDescending(x => x.CreatedAt);
-
-    public void Enable(DateTimeOffset utcNow)
-    {
-        if (Enabled)
-            return;
-        
-        Enabled = true;
-        Touch(utcNow);
-    }
-
-    public void Disable(DateTimeOffset utcNow)
-    {
-        if (!Enabled)
-            return;
-        
-        Enabled = false;
-        Touch(utcNow);
-    }
+    
     
     private void Touch(DateTimeOffset utcNow)
         => UpdatedAt = utcNow;
