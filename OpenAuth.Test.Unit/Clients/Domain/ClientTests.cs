@@ -273,6 +273,130 @@ public class ClientTests
         }
     }
     
+    public class AddRedirectUri : ClientTests
+    {
+        [Fact]
+        public void UpdateTimestamp_OnSuccess()
+        {
+            // Arrange
+            var client = new ClientBuilder()
+                .CreatedAt(_time.GetUtcNow())
+                .Build();
+            var uri = RedirectUri.Create("https://app.com/callback");
+            
+            _time.Advance(TimeSpan.FromMinutes(5));
+            var expectedTime = _time.GetUtcNow();
+            
+            // Act
+            client.AddRedirectUri(uri, expectedTime);
+            
+            // Assert
+            var actualUri = Assert.Single(client.RedirectUris);
+            Assert.Equal(uri, actualUri);
+            Assert.Equal(expectedTime, client.UpdatedAt);
+        }
+        
+        [Fact]
+        public void DoesNotUpdate_OnFailure()
+        {
+            // Arrange
+            var expectedTime = _time.GetUtcNow();
+            var client = new ClientBuilder()
+                .CreatedAt(expectedTime)
+                .Build();
+            var uri = RedirectUri.Create("https://app.com/callback");
+            client.AddRedirectUri(uri, expectedTime);
+            
+            _time.Advance(TimeSpan.FromMinutes(5));
+            
+            // Act
+            client.AddRedirectUri(uri, _time.GetUtcNow());
+            
+            // Assert
+            Assert.Single(client.RedirectUris);
+            Assert.Equal(expectedTime, client.UpdatedAt);
+        }
+        
+        [Fact]
+        public void AddMultipleDifferentUris()
+        {
+            // Arrange
+            var now = _time.GetUtcNow();
+            var client = new ClientBuilder().Build();
+            
+            // Act
+            client.AddRedirectUri(RedirectUri.Create("https://app.com/callback"), now);
+            client.AddRedirectUri(RedirectUri.Create("https://app.com/silent"), now);
+            client.AddRedirectUri(RedirectUri.Create("http://localhost:3000/auth"), now);
+            
+            // Assert
+            Assert.Equal(3, client.RedirectUris.Count);
+        }
+    }
+    
+    public class RemoveRedirectUri : ClientTests
+    {
+        [Fact]
+        public void UpdateTimestamp_OnSuccess()
+        {
+            // Arrange
+            var client = new ClientBuilder()
+                .CreatedAt(_time.GetUtcNow())
+                .Build();
+            
+            var uri = RedirectUri.Create("https://app.com/callback");
+            client.AddRedirectUri(uri, _time.GetUtcNow());
+            
+            _time.Advance(TimeSpan.FromMinutes(10));
+            var expected = _time.GetUtcNow();
+            
+            // Act
+            client.RemoveRedirectUri(uri, expected);
+            
+            // Assert
+            Assert.Empty(client.RedirectUris);
+            Assert.Equal(expected, client.UpdatedAt);
+        }
+        
+        [Fact]
+        public void DoesNotUpdateTimestamp_OnFailure()
+        {
+            // Arrange
+            var expectedTime = _time.GetUtcNow();
+            var client = new ClientBuilder()
+                .CreatedAt(expectedTime)
+                .Build();
+            var uri = RedirectUri.Create("https://app.com/callback");
+            
+            // Act
+            client.RemoveRedirectUri(uri, _time.GetUtcNow());
+            
+            // Assert
+            Assert.Empty(client.RedirectUris);
+            Assert.Equal(expectedTime, client.UpdatedAt);
+        }
+        
+        [Fact]
+        public void RemovesCorrectUri()
+        {
+            // Arrange
+            var now = _time.GetUtcNow();
+            var client = new ClientBuilder().Build();
+            
+            var uri1 = RedirectUri.Create("https://app.com/callback");
+            var uri2 = RedirectUri.Create("https://app.com/silent");
+            client.AddRedirectUri(uri1, now);
+            client.AddRedirectUri(uri2, now);
+            
+            // Act
+            client.RemoveRedirectUri(uri1, now);
+            
+            // Assert
+            var actual = Assert.Single(client.RedirectUris);
+            Assert.Equal(uri2, actual);
+        }
+    }
+
     public class AddAudience : ClientTests
     {
         [Fact]
