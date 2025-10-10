@@ -24,7 +24,7 @@ public static class ClientMappingExtensions
             client.Secrets
                 .OrderByDescending(s => s.CreatedAt)
                 .Select(s => s.ToSecretInfo()),
-            client.Audiences
+            client.AllowedAudiences
                 .Select(a => a.ToAudienceInfo())
         );
 }

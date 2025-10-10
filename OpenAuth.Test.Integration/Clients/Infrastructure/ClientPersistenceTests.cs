@@ -75,7 +75,7 @@ public class ClientPersistenceTests : IAsyncLifetime
                 Assert.NotNull(loaded);
                 Assert.Equal(client.Name, loaded.Name);
                 Assert.Empty(loaded.Secrets);
-                Assert.Empty(loaded.Audiences);
+                Assert.Empty(loaded.AllowedAudiences);
             }
         }
         
@@ -341,9 +341,9 @@ public class ClientPersistenceTests : IAsyncLifetime
                     .SingleAsync(x => x.Id == client.Id);
 
                 // Assert
-                Assert.Equal(2, loaded.Audiences.Count);
-                Assert.Contains(loaded.Audiences, a => a.Name == apiAudienceName);
-                Assert.Contains(loaded.Audiences, a => a.Name == webAudienceName);
+                Assert.Equal(2, loaded.AllowedAudiences.Count);
+                Assert.Contains(loaded.AllowedAudiences, a => a.Name == apiAudienceName);
+                Assert.Contains(loaded.AllowedAudiences, a => a.Name == webAudienceName);
             }
         }
         
@@ -370,8 +370,8 @@ public class ClientPersistenceTests : IAsyncLifetime
                 var loaded = await ctx.Clients
                     .SingleAsync(x => x.Id == client.Id);
 
-                Assert.Single(loaded.Audiences);
-                Assert.Equal(audienceName, loaded.Audiences.First().Name);
+                Assert.Single(loaded.AllowedAudiences);
+                Assert.Equal(audienceName, loaded.AllowedAudiences.First().Name);
             }
         }
         
@@ -411,8 +411,8 @@ public class ClientPersistenceTests : IAsyncLifetime
             await using (var ctx = _fx.CreateContext())
             {
                 var remaining = await ctx.Clients.SingleAsync(x => x.Id == client2.Id);
-                Assert.Single(remaining.Audiences);
-                Assert.Equal(audienceName, remaining.Audiences.First().Name);
+                Assert.Single(remaining.AllowedAudiences);
+                Assert.Equal(audienceName, remaining.AllowedAudiences.First().Name);
             }
         }
         
@@ -443,7 +443,7 @@ public class ClientPersistenceTests : IAsyncLifetime
             await using (var ctx = _fx.CreateContext())
             {
                 var found = await ctx.Clients
-                    .Where(c => c.Audiences.Any(a => a.Name == audienceName))
+                    .Where(c => c.AllowedAudiences.Any(a => a.Name == audienceName))
                     .ToListAsync();
 
                 // Assert
@@ -477,10 +477,10 @@ public class ClientPersistenceTests : IAsyncLifetime
                     .SingleAsync(x => x.Id == client.Id);
 
                 // Assert
-                var audience = Assert.Single(loaded.Audiences);
-                Assert.Equal(2, audience.Scopes.Count);
-                Assert.Contains(audience.Scopes, s => s.Value == "read");
-                Assert.Contains(audience.Scopes, s => s.Value == "write");
+                var audience = Assert.Single(loaded.AllowedAudiences);
+                Assert.Equal(2, audience.AllowedScopes.Count);
+                Assert.Contains(audience.AllowedScopes, s => s.Value == "read");
+                Assert.Contains(audience.AllowedScopes, s => s.Value == "write");
             }
         }
         
@@ -514,16 +514,16 @@ public class ClientPersistenceTests : IAsyncLifetime
                     .SingleAsync(x => x.Id == client.Id);
 
                 // Assert
-                Assert.Equal(2, loaded.Audiences.Count);
+                Assert.Equal(2, loaded.AllowedAudiences.Count);
                 
-                var audience1 = loaded.Audiences.Single(a => a.Name == apiAudienceName);
-                Assert.Equal(2, audience1.Scopes.Count);
-                Assert.Contains(audience1.Scopes, s => s.Value == "read");
-                Assert.Contains(audience1.Scopes, s => s.Value == "write");
+                var audience1 = loaded.AllowedAudiences.Single(a => a.Name == apiAudienceName);
+                Assert.Equal(2, audience1.AllowedScopes.Count);
+                Assert.Contains(audience1.AllowedScopes, s => s.Value == "read");
+                Assert.Contains(audience1.AllowedScopes, s => s.Value == "write");
                 
-                var audience2 = loaded.Audiences.Single(a => a.Name == webAudienceName);
-                Assert.Single(audience2.Scopes);
-                Assert.Contains(audience2.Scopes, s => s.Value == "admin");
+                var audience2 = loaded.AllowedAudiences.Single(a => a.Name == webAudienceName);
+                Assert.Single(audience2.AllowedScopes);
+                Assert.Contains(audience2.AllowedScopes, s => s.Value == "admin");
             }
         }
         
@@ -550,8 +550,8 @@ public class ClientPersistenceTests : IAsyncLifetime
                     .SingleAsync(x => x.Id == client.Id);
 
                 // Assert
-                var audience = Assert.Single(loaded.Audiences);
-                Assert.Empty(audience.Scopes);
+                var audience = Assert.Single(loaded.AllowedAudiences);
+                Assert.Empty(audience.AllowedScopes);
             }
         }
     }

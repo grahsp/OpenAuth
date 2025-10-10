@@ -107,7 +107,7 @@ public class AudienceServiceTests
             await _sut.RemoveAudienceAsync(clientId, audienceName);
 
             // Assert
-            Assert.DoesNotContain(client.Audiences, a => a.Name == audienceName);
+            Assert.DoesNotContain(client.AllowedAudiences, a => a.Name == audienceName);
             await _repo.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
         }
 

@@ -25,7 +25,7 @@ public class AudienceTests
             Assert.NotEqual(Guid.Empty, audience.Id.Value);
             Assert.Equal(now, audience.CreatedAt);
             Assert.Equal(now, audience.UpdatedAt);
-            Assert.Empty(audience.Scopes);
+            Assert.Empty(audience.AllowedScopes);
         }
 
         [Fact]
@@ -57,9 +57,9 @@ public class AudienceTests
             audience.GrantScopes(scopes, _time.GetUtcNow());
 
             // Assert
-            Assert.Equal(2, audience.Scopes.Count);
-            Assert.Contains(audience.Scopes, s => s.Value == "read");
-            Assert.Contains(audience.Scopes, s => s.Value == "write");
+            Assert.Equal(2, audience.AllowedScopes.Count);
+            Assert.Contains(audience.AllowedScopes, s => s.Value == "read");
+            Assert.Contains(audience.AllowedScopes, s => s.Value == "write");
         }
 
         [Fact]
@@ -73,7 +73,7 @@ public class AudienceTests
             audience.GrantScopes(scopes, _time.GetUtcNow());
 
             // Assert
-            Assert.Equal(2, audience.Scopes.Count);
+            Assert.Equal(2, audience.AllowedScopes.Count);
         }
 
         [Fact]
@@ -87,8 +87,8 @@ public class AudienceTests
             audience.GrantScopes([new Scope("read")], _time.GetUtcNow());
 
             // Assert
-            Assert.Single(audience.Scopes);
-            Assert.Contains(audience.Scopes, s => s.Value == "read");
+            Assert.Single(audience.AllowedScopes);
+            Assert.Contains(audience.AllowedScopes, s => s.Value == "read");
         }
 
         [Fact]
@@ -120,7 +120,7 @@ public class AudienceTests
             audience.GrantScopes([], _time.GetUtcNow());
 
             // Assert
-            Assert.Empty(audience.Scopes);
+            Assert.Empty(audience.AllowedScopes);
             // UpdatedAt still changes (Touch is called)
             Assert.NotEqual(originalUpdateTime, audience.UpdatedAt);
         }
@@ -136,10 +136,10 @@ public class AudienceTests
             audience.GrantScopes([new Scope("write"), new Scope("delete")], _time.GetUtcNow());
 
             // Assert
-            Assert.Equal(3, audience.Scopes.Count);
-            Assert.Contains(audience.Scopes, s => s.Value == "read");
-            Assert.Contains(audience.Scopes, s => s.Value == "write");
-            Assert.Contains(audience.Scopes, s => s.Value == "delete");
+            Assert.Equal(3, audience.AllowedScopes.Count);
+            Assert.Contains(audience.AllowedScopes, s => s.Value == "read");
+            Assert.Contains(audience.AllowedScopes, s => s.Value == "write");
+            Assert.Contains(audience.AllowedScopes, s => s.Value == "delete");
         }
     }
 
@@ -156,9 +156,9 @@ public class AudienceTests
             audience.RevokeScope([new Scope("read")], _time.GetUtcNow());
 
             // Assert
-            Assert.Single(audience.Scopes);
-            Assert.Contains(audience.Scopes, s => s.Value == "write");
-            Assert.DoesNotContain(audience.Scopes, s => s.Value == "read");
+            Assert.Single(audience.AllowedScopes);
+            Assert.Contains(audience.AllowedScopes, s => s.Value == "write");
+            Assert.DoesNotContain(audience.AllowedScopes, s => s.Value == "read");
         }
 
         [Fact]
@@ -173,7 +173,7 @@ public class AudienceTests
             audience.RevokeScope(scopes, _time.GetUtcNow());
 
             // Assert
-            Assert.Empty(audience.Scopes);
+            Assert.Empty(audience.AllowedScopes);
         }
 
         [Fact]
@@ -187,8 +187,8 @@ public class AudienceTests
             audience.RevokeScope([new Scope("write")], _time.GetUtcNow());
 
             // Assert
-            Assert.Single(audience.Scopes);
-            Assert.Contains(audience.Scopes, s => s.Value == "read");
+            Assert.Single(audience.AllowedScopes);
+            Assert.Contains(audience.AllowedScopes, s => s.Value == "read");
         }
 
         [Fact]
@@ -222,7 +222,7 @@ public class AudienceTests
             audience.RevokeScope([], _time.GetUtcNow());
 
             // Assert
-            Assert.Single(audience.Scopes);
+            Assert.Single(audience.AllowedScopes);
             // UpdatedAt still changes (Touch is called)
             Assert.NotEqual(originalUpdateTime, audience.UpdatedAt);
         }
@@ -242,10 +242,10 @@ public class AudienceTests
                 _time.GetUtcNow());
 
             // Assert
-            Assert.Equal(2, audience.Scopes.Count);
-            Assert.Contains(audience.Scopes, s => s.Value == "write");
-            Assert.Contains(audience.Scopes, s => s.Value == "delete");
-            Assert.DoesNotContain(audience.Scopes, s => s.Value == "read");
+            Assert.Equal(2, audience.AllowedScopes.Count);
+            Assert.Contains(audience.AllowedScopes, s => s.Value == "write");
+            Assert.Contains(audience.AllowedScopes, s => s.Value == "delete");
+            Assert.DoesNotContain(audience.AllowedScopes, s => s.Value == "read");
         }
     }
 
@@ -263,11 +263,11 @@ public class AudienceTests
             audience.SetScopes(newScopes, _time.GetUtcNow());
 
             // Assert
-            Assert.Equal(2, audience.Scopes.Count);
-            Assert.Contains(audience.Scopes, s => s.Value == "admin");
-            Assert.Contains(audience.Scopes, s => s.Value == "delete");
-            Assert.DoesNotContain(audience.Scopes, s => s.Value == "read");
-            Assert.DoesNotContain(audience.Scopes, s => s.Value == "write");
+            Assert.Equal(2, audience.AllowedScopes.Count);
+            Assert.Contains(audience.AllowedScopes, s => s.Value == "admin");
+            Assert.Contains(audience.AllowedScopes, s => s.Value == "delete");
+            Assert.DoesNotContain(audience.AllowedScopes, s => s.Value == "read");
+            Assert.DoesNotContain(audience.AllowedScopes, s => s.Value == "write");
         }
 
         [Fact]
@@ -281,7 +281,7 @@ public class AudienceTests
             audience.SetScopes([], _time.GetUtcNow());
 
             // Assert
-            Assert.Empty(audience.Scopes);
+            Assert.Empty(audience.AllowedScopes);
         }
 
         [Fact]
@@ -295,7 +295,7 @@ public class AudienceTests
             audience.SetScopes(scopes, _time.GetUtcNow());
 
             // Assert
-            Assert.Equal(2, audience.Scopes.Count);
+            Assert.Equal(2, audience.AllowedScopes.Count);
         }
 
         [Fact]
@@ -326,8 +326,8 @@ public class AudienceTests
             audience.SetScopes([new Scope("admin")], _time.GetUtcNow());
 
             // Assert
-            Assert.Single(audience.Scopes);
-            Assert.Contains(audience.Scopes, s => s.Value == "admin");
+            Assert.Single(audience.AllowedScopes);
+            Assert.Contains(audience.AllowedScopes, s => s.Value == "admin");
         }
 
         [Fact]
@@ -342,9 +342,9 @@ public class AudienceTests
             audience.SetScopes(scopes, _time.GetUtcNow());
 
             // Assert
-            Assert.Equal(2, audience.Scopes.Count);
-            Assert.Contains(audience.Scopes, s => s.Value == "read");
-            Assert.Contains(audience.Scopes, s => s.Value == "write");
+            Assert.Equal(2, audience.AllowedScopes.Count);
+            Assert.Contains(audience.AllowedScopes, s => s.Value == "read");
+            Assert.Contains(audience.AllowedScopes, s => s.Value == "write");
         }
     }
 }

@@ -27,7 +27,7 @@ public class ClientTests
         Assert.NotEqual(TimeSpan.Zero, client.TokenLifetime);
 
         Assert.NotEqual(Guid.Empty, client.Id.Value);
-        Assert.Empty(client.Audiences);
+        Assert.Empty(client.AllowedAudiences);
 
         Assert.Equal(now, client.CreatedAt);
         Assert.Equal(now, client.UpdatedAt);
@@ -46,8 +46,8 @@ public class ClientTests
             var audience = client.AddAudience(audienceName, _time.GetUtcNow());
 
             // Assert
-            Assert.Single(client.Audiences);
-            Assert.Contains(client.Audiences, a => a.Name == audienceName);
+            Assert.Single(client.AllowedAudiences);
+            Assert.Contains(client.AllowedAudiences, a => a.Name == audienceName);
             Assert.Equal(audienceName, audience.Name);
         }
 
@@ -113,7 +113,7 @@ public class ClientTests
             Assert.Equal(audienceName, audience.Name);
             Assert.Equal(now, audience.CreatedAt);
             Assert.Equal(now, audience.UpdatedAt);
-            Assert.Empty(audience.Scopes);
+            Assert.Empty(audience.AllowedScopes);
         }
     }
 
@@ -131,7 +131,7 @@ public class ClientTests
             client.RemoveAudience(audienceName, _time.GetUtcNow());
 
             // Assert
-            Assert.Empty(client.Audiences);
+            Assert.Empty(client.AllowedAudiences);
         }
 
         [Fact]
@@ -181,7 +181,7 @@ public class ClientTests
             client.RemoveAudience(audienceName, _time.GetUtcNow());
 
             // Assert
-            Assert.Empty(client.Audiences);
+            Assert.Empty(client.AllowedAudiences);
         }
     }
 
@@ -202,11 +202,11 @@ public class ClientTests
             var audience = client.SetScopes(audienceName, newScopes, _time.GetUtcNow());
 
             // Assert
-            Assert.Equal(2, audience.Scopes.Count);
-            Assert.Contains(audience.Scopes, s => s.Value == "admin");
-            Assert.Contains(audience.Scopes, s => s.Value == "delete");
-            Assert.DoesNotContain(audience.Scopes, s => s.Value == "read");
-            Assert.DoesNotContain(audience.Scopes, s => s.Value == "write");
+            Assert.Equal(2, audience.AllowedScopes.Count);
+            Assert.Contains(audience.AllowedScopes, s => s.Value == "admin");
+            Assert.Contains(audience.AllowedScopes, s => s.Value == "delete");
+            Assert.DoesNotContain(audience.AllowedScopes, s => s.Value == "read");
+            Assert.DoesNotContain(audience.AllowedScopes, s => s.Value == "write");
         }
 
         [Fact]
@@ -223,7 +223,7 @@ public class ClientTests
             var audience = client.SetScopes(audienceName, Array.Empty<Scope>(), _time.GetUtcNow());
 
             // Assert
-            Assert.Empty(audience.Scopes);
+            Assert.Empty(audience.AllowedScopes);
         }
 
         [Fact]
@@ -275,9 +275,9 @@ public class ClientTests
             var audience = client.GrantScopes(audienceName, scopes, _time.GetUtcNow());
 
             // Assert
-            Assert.Equal(2, audience.Scopes.Count);
-            Assert.Contains(audience.Scopes, s => s.Value == "read");
-            Assert.Contains(audience.Scopes, s => s.Value == "write");
+            Assert.Equal(2, audience.AllowedScopes.Count);
+            Assert.Contains(audience.AllowedScopes, s => s.Value == "read");
+            Assert.Contains(audience.AllowedScopes, s => s.Value == "write");
         }
 
         [Fact]
@@ -294,7 +294,7 @@ public class ClientTests
             var audience = client.GrantScopes(audienceName, scopes, _time.GetUtcNow());
 
             // Assert - HashSet prevents duplicates
-            Assert.Equal(2, audience.Scopes.Count);
+            Assert.Equal(2, audience.AllowedScopes.Count);
         }
 
         [Fact]
@@ -311,7 +311,7 @@ public class ClientTests
             var audience = client.GrantScopes(audienceName, new[] { new Scope("read") }, _time.GetUtcNow());
 
             // Assert
-            Assert.Single(audience.Scopes);
+            Assert.Single(audience.AllowedScopes);
         }
 
         [Fact]
@@ -382,9 +382,9 @@ public class ClientTests
             var audience = client.RevokeScopes(audienceName, new[] { new Scope("read") }, _time.GetUtcNow());
 
             // Assert
-            Assert.Single(audience.Scopes);
-            Assert.Contains(audience.Scopes, s => s.Value == "write");
-            Assert.DoesNotContain(audience.Scopes, s => s.Value == "read");
+            Assert.Single(audience.AllowedScopes);
+            Assert.Contains(audience.AllowedScopes, s => s.Value == "write");
+            Assert.DoesNotContain(audience.AllowedScopes, s => s.Value == "read");
         }
 
         [Fact]
@@ -402,8 +402,8 @@ public class ClientTests
             var audience = client.RevokeScopes(audienceName, scopes, _time.GetUtcNow());
 
             // Assert
-            Assert.Empty(audience.Scopes);
-            Assert.Contains(client.Audiences, a => a.Name == audienceName); // Audience still exists
+            Assert.Empty(audience.AllowedScopes);
+            Assert.Contains(client.AllowedAudiences, a => a.Name == audienceName); // Audience still exists
         }
 
         [Fact]
@@ -420,8 +420,8 @@ public class ClientTests
             var audience = client.RevokeScopes(audienceName, new[] { new Scope("write") }, _time.GetUtcNow());
 
             // Assert - no error, scope count unchanged
-            Assert.Single(audience.Scopes);
-            Assert.Contains(audience.Scopes, s => s.Value == "read");
+            Assert.Single(audience.AllowedScopes);
+            Assert.Contains(audience.AllowedScopes, s => s.Value == "read");
         }
 
         [Fact]
