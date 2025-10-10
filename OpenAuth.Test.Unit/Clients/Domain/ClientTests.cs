@@ -150,7 +150,129 @@ public class ClientTests
             Assert.Equal(expected, client.UpdatedAt);
         }
     }
-
+    
+    public class AddGrantType : ClientTests
+    {
+        [Fact]
+        public void UpdateTimestamp_OnSuccess()
+        {
+            // Arrange
+            var client = new ClientBuilder()
+                .CreatedAt(_time.GetUtcNow())
+                .Build();
+            var grantType = GrantType.AuthorizationCode();
+            
+            _time.Advance(TimeSpan.FromMinutes(5));
+            var expected = _time.GetUtcNow();
+            
+            // Act
+            client.AddGrantType(grantType, expected);
+            
+            // Assert
+            var actual = Assert.Single(client.AllowedGrantTypes);
+            Assert.Equal(grantType, actual);
+            Assert.Equal(expected, client.UpdatedAt);
+        }
+        
+        [Fact]
+        public void DoesNotUpdateTimestamp_OnFailure()
+        {
+            // Arrange
+            var expectedTime = _time.GetUtcNow();
+            var client = new ClientBuilder().Build();
+            
+            client.AddGrantType(GrantType.AuthorizationCode(), _time.GetUtcNow());
+            _time.Advance(TimeSpan.FromMinutes(5));
+            
+            // Act
+            client.AddGrantType(GrantType.AuthorizationCode(), _time.GetUtcNow());
+            
+            // Assert
+            Assert.Single(client.AllowedGrantTypes);
+            Assert.Equal(expectedTime, client.UpdatedAt);
+        }
+        
+        [Fact]
+        public void CanAddMultipleGrantTypes()
+        {
+            // Arrange
+            var now = _time.GetUtcNow();
+            var client = new ClientBuilder().Build();
+            
+            // Act
+            client.AddGrantType(GrantType.AuthorizationCode(), now);
+            client.AddGrantType(GrantType.ClientCredentials(), now);
+            
+            // Assert
+            Assert.Equal(2, client.AllowedGrantTypes.Count);
+            Assert.Contains(client.AllowedGrantTypes, g => g == GrantType.AuthorizationCode());
+            Assert.Contains(client.AllowedGrantTypes, g => g == GrantType.ClientCredentials());
+        }
+    }
+    
+    public class RemoveGrantType : ClientTests
+    {
+        [Fact]
+        public void UpdateTimestamp_OnSuccess()
+        {
+            // Arrange
+            var client = new ClientBuilder().Build();
+            
+            var grantType = GrantType.AuthorizationCode();
+            client.AddGrantType(grantType, _time.GetUtcNow());
+            
+            _time.Advance(TimeSpan.FromMinutes(5));
+            var expectedTime = _time.GetUtcNow();
+            
+            // Act
+            client.RemoveGrantType(grantType, expectedTime);
+            
+            // Assert
+            Assert.Empty(client.AllowedGrantTypes);
+            Assert.Equal(expectedTime, client.UpdatedAt);
+        }
+        
+        [Fact]
+        public void DoesNotUpdateTimestamp_OnFailure()
+        {
+            // Arrange
+            var expectedTime = _time.GetUtcNow();
+            var client = new ClientBuilder()
+                .CreatedAt(expectedTime)
+                .Build();
+            
+            _time.Advance(TimeSpan.FromMinutes(5));
+            
+            // Act
+            client.RemoveGrantType(GrantType.AuthorizationCode(), _time.GetUtcNow());
+            
+            // Assert
+            Assert.Empty(client.AllowedGrantTypes);
+            Assert.Equal(expectedTime, client.UpdatedAt);
+        }
+        
+        [Fact]
+        public void RemovesCorrectGrantType()
+        {
+            // Arrange
+            var now = _time.GetUtcNow();
+            var client = new ClientBuilder().Build();
+            
+            var authorizationCode = GrantType.AuthorizationCode();
+            var clientCredentials = GrantType.ClientCredentials();
+            
+            client.AddGrantType(authorizationCode, now);
+            client.AddGrantType(clientCredentials, now);
+            
+            // Act
+            client.RemoveGrantType(authorizationCode, now);
+            
+            // Assert
+            var grant = Assert.Single(client.AllowedGrantTypes);
+            Assert.Equal(grant, clientCredentials);
+        }
+    }
+    
     public class AddAudience : ClientTests
     {
         [Fact]

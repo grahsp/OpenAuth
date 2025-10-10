@@ -105,7 +105,21 @@ public sealed class Client
             Touch(utcNow);
     }
     
+    
+    // GrantTypes
+    public void AddGrantType(GrantType grantType, DateTimeOffset utcNow)
+    {
+        if (_allowedGrantTypes.Add(grantType))
+            Touch(utcNow);
+    }
 
+    public void RemoveGrantType(GrantType grantType, DateTimeOffset utcNow)
+    {
+        if (_allowedGrantTypes.Remove(grantType))
+            Touch(utcNow);
+    }
+
+    
     // Audiences
     public Audience GetAudience(AudienceName name)
         => _allowedAudiences.SingleOrDefault(a => a.Name == name) ??
