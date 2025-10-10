@@ -44,7 +44,7 @@ public class ClientQueryService : IClientQueryService
         var client = await _context.Clients
             .AsNoTracking()
             .Where(x => x.Id == id)
-            .Include(c => c.Audiences)
+            .Include(c => c.AllowedAudiences)
             .Include(c => c.Secrets)
             .SingleOrDefaultAsync(ct);
         
@@ -56,11 +56,11 @@ public class ClientQueryService : IClientQueryService
         var data = await _context.Clients
             .AsNoTracking()
             .Where(c => c.Id == id)
-            .Where(c => c.Audiences.Any(a => a.Name == audienceName))
+            .Where(c => c.AllowedAudiences.Any(a => a.Name == audienceName))
             .Select(c => new ClientTokenData(
-                c.Audiences
+                c.AllowedAudiences
                     .Where(a => a.Name == audienceName)
-                    .Select(a => a.Scopes.ToArray())
+                    .Select(a => a.AllowedScopes.ToArray())
                     .Single(),
                 c.TokenLifetime))
             .SingleOrDefaultAsync(ct);

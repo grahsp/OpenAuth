@@ -6,14 +6,15 @@ public sealed class Audience
 {
     public AudienceId Id { get; private init; } = null!;
     public AudienceName Name { get; private init; } = null!;
+
+    private readonly HashSet<Scope> _allowedScopes = [];
+    public IReadOnlyCollection<Scope> AllowedScopes => _allowedScopes;
+    
     public DateTimeOffset CreatedAt { get; private init; }
     public DateTimeOffset UpdatedAt { get; private set; }
-
-    public IReadOnlyCollection<Scope> Scopes => _scopes;
-    private readonly HashSet<Scope> _scopes = [];
+    
 
     private Audience() { }
-    
     
     internal static Audience Create(AudienceName name, DateTimeOffset utcNow)
         => new()
@@ -23,12 +24,13 @@ public sealed class Audience
             CreatedAt = utcNow,
             UpdatedAt = utcNow
         };
+    
 
     internal void SetScopes(IEnumerable<Scope> scopes, DateTimeOffset utcNow)
     {
-        _scopes.Clear();
+        _allowedScopes.Clear();
         foreach (var scope in scopes)
-            _scopes.Add(scope);
+            _allowedScopes.Add(scope);
         
         Touch(utcNow);
     }
@@ -36,7 +38,7 @@ public sealed class Audience
     internal void GrantScopes(IEnumerable<Scope> scopes, DateTimeOffset utcNow)
     {
         foreach (var scope in scopes)
-            _scopes.Add(scope);
+            _allowedScopes.Add(scope);
         
         Touch(utcNow);
     }
@@ -44,7 +46,7 @@ public sealed class Audience
     internal void RevokeScope(IEnumerable<Scope> scopes, DateTimeOffset utcNow)
     {
         foreach (var scope in scopes)
-            _scopes.Remove(scope);
+            _allowedScopes.Remove(scope);
         
         Touch(utcNow);
     }

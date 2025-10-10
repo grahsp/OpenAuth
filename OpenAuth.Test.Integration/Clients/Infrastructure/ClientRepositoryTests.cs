@@ -106,9 +106,9 @@ public class ClientRepositoryTests : IAsyncLifetime
 
             // Assert
             Assert.NotNull(fetched);
-            Assert.Equal(2, fetched.Audiences.Count);
-            Assert.Contains(fetched.Audiences, a => a.Name == audience1.Name);
-            Assert.Contains(fetched.Audiences, a => a.Name == audience2.Name);
+            Assert.Equal(2, fetched.AllowedAudiences.Count);
+            Assert.Contains(fetched.AllowedAudiences, a => a.Name == audience1.Name);
+            Assert.Contains(fetched.AllowedAudiences, a => a.Name == audience2.Name);
         }
 
         [Fact]
@@ -133,8 +133,8 @@ public class ClientRepositoryTests : IAsyncLifetime
 
             // Assert
             Assert.NotNull(fetched);
-            var fetchedAudience = fetched.Audiences.Single();
-            Assert.Equal(2, fetchedAudience.Scopes.Count);
+            var fetchedAudience = fetched.AllowedAudiences.Single();
+            Assert.Equal(2, fetchedAudience.AllowedScopes.Count);
         }
     }
 
@@ -274,11 +274,11 @@ public class ClientRepositoryTests : IAsyncLifetime
             // Assert
             await using var verifyContext = _fx.CreateContext();
             var persisted = await verifyContext.Clients
-                .Include(c => c.Audiences)
+                .Include(c => c.AllowedAudiences)
                 .FirstOrDefaultAsync(c => c.Id == client.Id);
             
             Assert.NotNull(persisted);
-            Assert.Single(persisted.Audiences);
+            Assert.Single(persisted.AllowedAudiences);
         }
     }
 }

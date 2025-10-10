@@ -8,7 +8,36 @@ namespace OpenAuth.Domain.Clients;
 
 public sealed class Client
 {
+    public ClientId Id { get; init; } = ClientId.New();
+    public ClientName Name { get; private set; } = null!;
+    
     public const int MaxSecrets = 3;
+    public List<Secret> Secrets { get; private set; } = [];
+    
+    
+    // Authorization
+    public bool IsPublic { get; private set; }
+    public bool RequirePkce { get; private set; }
+    
+    private readonly HashSet<GrantType> _allowedGrantTypes = [];
+    public IReadOnlyCollection<GrantType> AllowedGrantTypes => _allowedGrantTypes;
+
+    private readonly HashSet<RedirectUri> _redirectUris = [];
+    public IReadOnlyCollection<RedirectUri> RedirectUris => _redirectUris;
+    
+    private readonly HashSet<Audience> _allowedAudiences = [];
+    public IReadOnlyCollection<Audience> AllowedAudiences => _allowedAudiences;
+    
+    
+    // Token
+    public TimeSpan TokenLifetime { get; private set; } = TimeSpan.FromMinutes(10);
+    
+    
+    // Metadata
+    public bool Enabled { get; private set; } = true;
+    public DateTimeOffset CreatedAt { get; private set; }
+    public DateTimeOffset UpdatedAt { get; private set; }
+    
     
     private Client() { }
 
@@ -17,44 +46,22 @@ public sealed class Client
         Name = name;
         CreatedAt = UpdatedAt = utcNow;
     }
-    
-
-    // General
-    public ClientId Id { get; init; } = ClientId.New();
-    public ClientName Name { get; private set; } = null!;
-    public bool Enabled { get; private set; } = true;
-    
-    
-    // Settings
-    public TimeSpan TokenLifetime { get; private set; } = TimeSpan.FromMinutes(10);
-
-    public List<Secret> Secrets { get; private set; } = [];
-
-    
-    private readonly HashSet<Audience> _audiences = [];
-    public IReadOnlyCollection<Audience> Audiences => _audiences;
-    
-    
-    // Metadata
-    public DateTimeOffset CreatedAt { get; private set; }
-    public DateTimeOffset UpdatedAt { get; private set; }
-
 
     internal static Client Create(ClientName name, DateTimeOffset utcNow)
         => new(name, utcNow);
 
     
     public Audience GetAudience(AudienceName name)
-        => _audiences.SingleOrDefault(a => a.Name == name) ??
+        => _allowedAudiences.SingleOrDefault(a => a.Name == name) ??
            throw new InvalidOperationException($"Audience {name.Value} not found.");
     
     public Audience AddAudience(AudienceName name, DateTimeOffset utcNow)
     {
-        if (_audiences.Any(a => a.Name == name))
+        if (_allowedAudiences.Any(a => a.Name == name))
             throw new InvalidOperationException($"Audience {name.Value} already exists.");
 
         var audience = Audience.Create(name, utcNow);
-        _audiences.Add(audience);
+        _allowedAudiences.Add(audience);
         
         Touch(utcNow);
         return audience;
@@ -63,7 +70,7 @@ public sealed class Client
     public void RemoveAudience(AudienceName name, DateTimeOffset utcNow)
     {
         var audience = GetAudience(name);
-        _audiences.Remove(audience);
+        _allowedAudiences.Remove(audience);
         
         Touch(utcNow);
     }

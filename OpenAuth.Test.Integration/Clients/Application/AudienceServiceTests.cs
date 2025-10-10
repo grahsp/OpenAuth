@@ -57,7 +57,7 @@ public class AudienceServiceTests : IAsyncLifetime
             await using (var context = _fx.CreateContext())
             {
                 var retrievedClient = await context.Clients.SingleAsync(c => c.Id == client.Id);
-                Assert.Contains(retrievedClient.Audiences, a => a.Name == audienceName);
+                Assert.Contains(retrievedClient.AllowedAudiences, a => a.Name == audienceName);
             }
         }
 
@@ -98,9 +98,9 @@ public class AudienceServiceTests : IAsyncLifetime
             await using (var context = _fx.CreateContext())
             {
                 var retrievedClient = await context.Clients.SingleAsync(c => c.Id == client.Id);
-                Assert.Equal(2, retrievedClient.Audiences.Count);
-                Assert.Contains(retrievedClient.Audiences, a => a.Name == audience1);
-                Assert.Contains(retrievedClient.Audiences, a => a.Name == audience2);
+                Assert.Equal(2, retrievedClient.AllowedAudiences.Count);
+                Assert.Contains(retrievedClient.AllowedAudiences, a => a.Name == audience1);
+                Assert.Contains(retrievedClient.AllowedAudiences, a => a.Name == audience2);
             }
         }
 
@@ -146,7 +146,7 @@ public class AudienceServiceTests : IAsyncLifetime
             await using (var context = _fx.CreateContext())
             {
                 var retrievedClient = await context.Clients.SingleAsync(c => c.Id == client.Id);
-                Assert.DoesNotContain(retrievedClient.Audiences, a => a.Name == audienceName);
+                Assert.DoesNotContain(retrievedClient.AllowedAudiences, a => a.Name == audienceName);
             }
         }
 
@@ -185,8 +185,8 @@ public class AudienceServiceTests : IAsyncLifetime
             await using (var context = _fx.CreateContext())
             {
                 var retrievedClient = await context.Clients.SingleAsync(c => c.Id == client.Id);
-                Assert.DoesNotContain(retrievedClient.Audiences, a => a.Name == audience1);
-                Assert.Contains(retrievedClient.Audiences, a => a.Name == audience2);
+                Assert.DoesNotContain(retrievedClient.AllowedAudiences, a => a.Name == audience1);
+                Assert.Contains(retrievedClient.AllowedAudiences, a => a.Name == audience2);
             }
         }
 
@@ -240,9 +240,9 @@ public class AudienceServiceTests : IAsyncLifetime
             {
                 var retrievedClient = await context.Clients.SingleAsync(c => c.Id == client.Id);
                 var retrievedAudience = retrievedClient.GetAudience(audienceName);
-                Assert.Equal(2, retrievedAudience.Scopes.Count);
-                Assert.Contains(retrievedAudience.Scopes, s => s.Value == "admin");
-                Assert.Contains(retrievedAudience.Scopes, s => s.Value == "delete");
+                Assert.Equal(2, retrievedAudience.AllowedScopes.Count);
+                Assert.Contains(retrievedAudience.AllowedScopes, s => s.Value == "admin");
+                Assert.Contains(retrievedAudience.AllowedScopes, s => s.Value == "delete");
             }
         }
 
@@ -270,7 +270,7 @@ public class AudienceServiceTests : IAsyncLifetime
             {
                 var retrievedClient = await context.Clients.SingleAsync(c => c.Id == client.Id);
                 var retrievedAudience = retrievedClient.GetAudience(audienceName);
-                Assert.Empty(retrievedAudience.Scopes);
+                Assert.Empty(retrievedAudience.AllowedScopes);
             }
         }
 
@@ -343,7 +343,7 @@ public class AudienceServiceTests : IAsyncLifetime
             {
                 var retrievedClient = await context.Clients.SingleAsync(c => c.Id == client.Id);
                 var retrievedAudience = retrievedClient.GetAudience(audienceName);
-                Assert.Equal(3, retrievedAudience.Scopes.Count);
+                Assert.Equal(3, retrievedAudience.AllowedScopes.Count);
             }
         }
 
@@ -462,8 +462,8 @@ public class AudienceServiceTests : IAsyncLifetime
             {
                 var retrievedClient = await context.Clients.SingleAsync(c => c.Id == client.Id);
                 var retrievedAudience = retrievedClient.GetAudience(audienceName);
-                Assert.Single(retrievedAudience.Scopes);
-                Assert.Contains(retrievedAudience.Scopes, s => s.Value == "read");
+                Assert.Single(retrievedAudience.AllowedScopes);
+                Assert.Contains(retrievedAudience.AllowedScopes, s => s.Value == "read");
             }
         }
 
@@ -554,7 +554,7 @@ public class AudienceServiceTests : IAsyncLifetime
             {
                 var retrievedClient = await context.Clients.SingleAsync(c => c.Id == client.Id);
                 var retrievedAudience = retrievedClient.GetAudience(audienceName);
-                Assert.Empty(retrievedAudience.Scopes);
+                Assert.Empty(retrievedAudience.AllowedScopes);
             }
         }
     }

@@ -14,7 +14,7 @@ public class ClientRepository : IClientRepository
     
     public Task<Client?> GetByIdAsync(ClientId id, CancellationToken ct = default)
         => _context.Clients
-            .Include(c => c.Audiences)
+            .Include(c => c.AllowedAudiences)
             .Include(c => c.Secrets)
             .SingleOrDefaultAsync(c => c.Id == id, ct);
 
