@@ -139,8 +139,8 @@ public class ClientTests
             // Arrange
             var expected = _time.GetUtcNow();
             var client = new ClientBuilder().Build();
-            client.SetPublic(expected);
             
+            client.SetConfidential(expected);
             _time.Advance(TimeSpan.FromMinutes(5));
             
             // Act
