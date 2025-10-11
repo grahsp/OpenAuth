@@ -1,5 +1,7 @@
 using Microsoft.Extensions.Time.Testing;
+using NSubstitute;
 using OpenAuth.Application.OAuth.Authorization.Flows;
+using OpenAuth.Domain.AuthorizationGrant;
 using OpenAuth.Domain.Clients;
 using OpenAuth.Domain.Clients.Audiences.ValueObjects;
 using OpenAuth.Domain.Clients.ValueObjects;
@@ -11,6 +13,7 @@ namespace OpenAuth.Test.Unit.OAuth;
 public class AuthorizationHandlerTests
 {
     private readonly FakeClientQueryService _clientQueryService;
+    private readonly IAuthorizationGrantStore _store;
     private readonly FakeTimeProvider _time;
     private readonly IAuthorizationHandler _sut;
 
@@ -20,9 +23,10 @@ public class AuthorizationHandlerTests
     public AuthorizationHandlerTests()
     {
         _clientQueryService = new FakeClientQueryService();
+        _store = Substitute.For<IAuthorizationGrantStore>();
         _time = new FakeTimeProvider();
         
-        _sut = new AuthorizationHandler(_clientQueryService, _time);
+        _sut = new AuthorizationHandler(_clientQueryService, _store, _time);
 
         _defaultClient = new ClientBuilder()
             .WithAudience("api", "read", "write")
@@ -150,5 +154,17 @@ public class AuthorizationHandlerTests
         Assert.Equal(_validRequest.RedirectUri, response.RedirectUri);
         Assert.NotNull(response.Code);
         Assert.NotEmpty(response.Code);
+    }
+
+    [Fact]
+    public async Task AddAuthorizationGrantToRepository()
+    {
+        _clientQueryService.Add(_defaultClient);
+        
+        await _sut.AuthorizeAsync(_validRequest);
+
+        await _store
+            .Received(1)
+            .AddAsync(Arg.Any<AuthorizationGrant>());
     }
 }
