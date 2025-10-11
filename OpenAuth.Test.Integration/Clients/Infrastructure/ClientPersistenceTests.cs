@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Time.Testing;
 using OpenAuth.Domain.Clients.Audiences.ValueObjects;
 using OpenAuth.Domain.Clients.Secrets;
+using OpenAuth.Domain.Clients.ValueObjects;
 using OpenAuth.Test.Common.Builders;
 using OpenAuth.Test.Integration.Fixtures;
 
@@ -97,7 +98,187 @@ public class ClientPersistenceTests : IAsyncLifetime
             Assert.Equal(2, count);
         }
     }
+
+
+    public class AllowedGrantTypes(SqlServerFixture fx) : ClientPersistenceTests(fx)
+    {
+        [Fact]
+        public async Task SerializesAndDeserializesCorrectly()
+        {
+            // Arrange
+            var client = new ClientBuilder()
+                .WithGrantType()
+                .WithGrantType(GrantTypes.AuthorizationCode)
+                .Build();
+        
+            await using (var ctx = _fx.CreateContext())
+            {
+                ctx.Add(client);
+                await ctx.SaveChangesAsync();
+            }
+
+            // Act
+            await using (var ctx = _fx.CreateContext())
+            {
+                var loaded = await ctx.Clients
+                    .SingleAsync(x => x.Id == client.Id);
+
+                // Assert
+                Assert.Equal(2, loaded.AllowedGrantTypes.Count);
+                Assert.Contains(loaded.AllowedGrantTypes, g => g == GrantType.AuthorizationCode);
+                Assert.Contains(loaded.AllowedGrantTypes, g => g == GrantType.ClientCredentials);
+            }
+        }
     
+        [Fact]
+        public async Task EmptyCollection_SerializesCorrectly()
+        {
+            // Arrange
+            var client = new ClientBuilder()
+                .Build();
+    
+            await using (var ctx = _fx.CreateContext())
+            {
+                ctx.Add(client);
+                await ctx.SaveChangesAsync();
+            }
+
+            // Act
+            await using (var ctx = _fx.CreateContext())
+            {
+                var loaded = await ctx.Clients
+                    .SingleAsync(x => x.Id == client.Id);
+
+                // Assert
+                Assert.NotNull(loaded.AllowedGrantTypes);
+                Assert.Empty(loaded.AllowedGrantTypes);
+            }
+        }
+    
+        [Fact]
+        public async Task Mutations_AreTrackedByEF()
+        {
+            // Arrange
+            var client = new ClientBuilder()
+                .Build();
+    
+            await using (var ctx = _fx.CreateContext())
+            {
+                ctx.Add(client);
+                await ctx.SaveChangesAsync();
+            }
+
+            // Act - Add grant type
+            await using (var ctx = _fx.CreateContext())
+            {
+                var loaded = await ctx.Clients
+                    .SingleAsync(x => x.Id == client.Id);
+
+                loaded.AddGrantType(GrantType.AuthorizationCode, _time.GetUtcNow());
+                await ctx.SaveChangesAsync();
+            }
+
+            // Assert
+            await using (var ctx = _fx.CreateContext())
+            {
+                var loaded = await ctx.Clients
+                    .SingleAsync(x => x.Id == client.Id);
+            
+                var grantType = Assert.Single(loaded.AllowedGrantTypes);
+                Assert.Contains(loaded.AllowedGrantTypes, g => g == grantType);
+            }
+        }
+    }
+
+
+    public class RedirectUris(SqlServerFixture fx) : ClientPersistenceTests(fx)
+    {
+        [Fact]
+        public async Task SerializesAndDeserializesCorrectly()
+        {
+            // Arrange
+            var client = new ClientBuilder()
+                .WithRedirectUri("https://example.com/callback")
+                .Build();
+        
+            await using (var ctx = _fx.CreateContext())
+            {
+                ctx.Add(client);
+                await ctx.SaveChangesAsync();
+            }
+
+            // Act
+            await using (var ctx = _fx.CreateContext())
+            {
+                var loaded = await ctx.Clients
+                    .SingleAsync(x => x.Id == client.Id);
+
+                // Assert
+                var actual = Assert.Single(loaded.RedirectUris);
+                Assert.Equal(client.RedirectUris.Single(), actual);
+            }
+        }
+    
+        [Fact]
+        public async Task EmptyCollection_SerializesCorrectly()
+        {
+            // Arrange
+            var client = new ClientBuilder()
+                .Build();
+    
+            await using (var ctx = _fx.CreateContext())
+            {
+                ctx.Add(client);
+                await ctx.SaveChangesAsync();
+            }
+
+            // Act
+            await using (var ctx = _fx.CreateContext())
+            {
+                var loaded = await ctx.Clients
+                    .SingleAsync(x => x.Id == client.Id);
+
+                // Assert
+                Assert.NotNull(loaded.RedirectUris);
+                Assert.Empty(loaded.RedirectUris);
+            }
+        }
+    
+        [Fact]
+        public async Task Mutations_AreTrackedByEF()
+        {
+            // Arrange
+            var client = new ClientBuilder()
+                .Build();
+    
+            await using (var ctx = _fx.CreateContext())
+            {
+                ctx.Add(client);
+                await ctx.SaveChangesAsync();
+            }
+
+            // Act - Add redirect URIs
+            await using (var ctx = _fx.CreateContext())
+            {
+                var loaded = await ctx.Clients
+                    .SingleAsync(x => x.Id == client.Id);
+            
+                loaded.AddRedirectUri(RedirectUri.Create("https://example.com/callback"), _time.GetUtcNow());
+                await ctx.SaveChangesAsync();
+            }
+
+            // Assert
+            await using (var ctx = _fx.CreateContext())
+            {
+                var loaded = await ctx.Clients
+                    .SingleAsync(x => x.Id == client.Id);
+            
+                var actual = Assert.Single(loaded.RedirectUris);
+                Assert.Equal(loaded.RedirectUris.Single(), actual);
+            }
+        }
+    }
+
 
     public class Secrets(SqlServerFixture fx) : ClientPersistenceTests(fx)
     {
@@ -112,7 +293,7 @@ public class ClientPersistenceTests : IAsyncLifetime
                 .CreatedAt(utcNow)
                 .Build();
 
-        
+
             await using (var ctx = _fx.CreateContext())
             {
                 ctx.Add(client);
@@ -133,7 +314,7 @@ public class ClientPersistenceTests : IAsyncLifetime
                 Assert.Null(secret.RevokedAt);
             }
         }
-    
+        
         [Fact]
         public async Task ClientSecret_PersistsAllFields_IncludingHashAndTimestamps()
         {
