@@ -2,17 +2,24 @@ using System.Security.Cryptography;
 using Microsoft.IdentityModel.Tokens;
 using OpenAuth.Application.Clients.Dtos;
 using OpenAuth.Application.Clients.Interfaces;
+using OpenAuth.Domain.AuthorizationGrant;
+using OpenAuth.Domain.AuthorizationGrant.ValueObjects;
 
 namespace OpenAuth.Application.OAuth.Authorization.Flows;
 
 public class AuthorizationHandler : IAuthorizationHandler
 {
     private readonly IClientQueryService _clientQueryService;
+    private readonly IAuthorizationGrantStore _store;
     private readonly TimeProvider _time;
     
-    public AuthorizationHandler(IClientQueryService clientQueryService, TimeProvider time)
+    public AuthorizationHandler(
+        IClientQueryService clientQueryService,
+        IAuthorizationGrantStore store,
+        TimeProvider time)
     {
         _clientQueryService = clientQueryService;
+        _store = store;
         _time = time;
     }
     
@@ -24,10 +31,23 @@ public class AuthorizationHandler : IAuthorizationHandler
         ValidateRequest(authorizationData, request);
 
         var code = GenerateCode();
-        return new AuthorizationResponse(code, request.RedirectUri);
+        var authorizationGrant = AuthorizationGrant.Create(
+            code,
+            request.GrantType,
+            request.ClientId,
+            request.RedirectUri,
+            request.Audience,
+            request.Scopes,
+            _time.GetUtcNow(),
+            new PkceData(request.CodeChallenge, request.CodeChallengeMethod) 
+        );
+        
+        await _store.AddAsync(authorizationGrant);
+        
+        return new AuthorizationResponse(authorizationGrant.Code, authorizationGrant.RedirectUri);
     }
 
-    private void ValidateRequest(ClientAuthorizationData authorizationData, AuthorizationRequest request)
+    private static void ValidateRequest(ClientAuthorizationData authorizationData, AuthorizationRequest request)
     {
         if (!authorizationData.GrantTypes.Contains(request.GrantType))
             throw new InvalidOperationException("Invalid grant type.");
