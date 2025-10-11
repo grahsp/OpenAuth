@@ -68,6 +68,23 @@ public class ClientQueryService : IClientQueryService
         return data;
     }
 
+    public async Task<ClientAuthorizationData?> GetAuthorizationDataAsync(ClientId id, CancellationToken ct = default)
+    {
+        var data = await _context.Clients
+            .AsNoTracking()
+            .Where(c => c.Id == id)
+            .Select(c => new ClientAuthorizationData(
+                c.Id,
+                c.RequirePkce,
+                c.AllowedGrantTypes.ToArray(),
+                c.RedirectUris.ToArray(),
+                c.AllowedAudiences.ToArray()
+            ))
+            .SingleOrDefaultAsync(ct);
+
+        return data;
+    }
+
     public async Task<PagedResult<ClientInfo>> GetPagedAsync(int page, int pageSize,
         CancellationToken ct = default)
     {
