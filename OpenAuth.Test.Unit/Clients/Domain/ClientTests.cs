@@ -160,7 +160,7 @@ public class ClientTests
             var client = new ClientBuilder()
                 .CreatedAt(_time.GetUtcNow())
                 .Build();
-            var grantType = GrantType.AuthorizationCode();
+            var grantType = GrantType.AuthorizationCode;
             
             _time.Advance(TimeSpan.FromMinutes(5));
             var expected = _time.GetUtcNow();
@@ -181,11 +181,11 @@ public class ClientTests
             var expectedTime = _time.GetUtcNow();
             var client = new ClientBuilder().Build();
             
-            client.AddGrantType(GrantType.AuthorizationCode(), _time.GetUtcNow());
+            client.AddGrantType(GrantType.AuthorizationCode, _time.GetUtcNow());
             _time.Advance(TimeSpan.FromMinutes(5));
             
             // Act
-            client.AddGrantType(GrantType.AuthorizationCode(), _time.GetUtcNow());
+            client.AddGrantType(GrantType.AuthorizationCode, _time.GetUtcNow());
             
             // Assert
             Assert.Single(client.AllowedGrantTypes);
@@ -200,13 +200,13 @@ public class ClientTests
             var client = new ClientBuilder().Build();
             
             // Act
-            client.AddGrantType(GrantType.AuthorizationCode(), now);
-            client.AddGrantType(GrantType.ClientCredentials(), now);
+            client.AddGrantType(GrantType.AuthorizationCode, now);
+            client.AddGrantType(GrantType.ClientCredentials, now);
             
             // Assert
             Assert.Equal(2, client.AllowedGrantTypes.Count);
-            Assert.Contains(client.AllowedGrantTypes, g => g == GrantType.AuthorizationCode());
-            Assert.Contains(client.AllowedGrantTypes, g => g == GrantType.ClientCredentials());
+            Assert.Contains(client.AllowedGrantTypes, g => g == GrantType.AuthorizationCode);
+            Assert.Contains(client.AllowedGrantTypes, g => g == GrantType.ClientCredentials);
         }
     }
     
@@ -218,7 +218,7 @@ public class ClientTests
             // Arrange
             var client = new ClientBuilder().Build();
             
-            var grantType = GrantType.AuthorizationCode();
+            var grantType = GrantType.AuthorizationCode;
             client.AddGrantType(grantType, _time.GetUtcNow());
             
             _time.Advance(TimeSpan.FromMinutes(5));
@@ -244,7 +244,7 @@ public class ClientTests
             _time.Advance(TimeSpan.FromMinutes(5));
             
             // Act
-            client.RemoveGrantType(GrantType.AuthorizationCode(), _time.GetUtcNow());
+            client.RemoveGrantType(GrantType.AuthorizationCode, _time.GetUtcNow());
             
             // Assert
             Assert.Empty(client.AllowedGrantTypes);
@@ -258,8 +258,8 @@ public class ClientTests
             var now = _time.GetUtcNow();
             var client = new ClientBuilder().Build();
             
-            var authorizationCode = GrantType.AuthorizationCode();
-            var clientCredentials = GrantType.ClientCredentials();
+            var authorizationCode = GrantType.AuthorizationCode;
+            var clientCredentials = GrantType.ClientCredentials;
             
             client.AddGrantType(authorizationCode, now);
             client.AddGrantType(clientCredentials, now);

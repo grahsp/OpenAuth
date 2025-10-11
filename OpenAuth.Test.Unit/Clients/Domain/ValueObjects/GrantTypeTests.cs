@@ -41,8 +41,8 @@ public class GrantTypeTests
     public void AuthorizationCode_ReturnsSameInstance()
     {
         // Act
-        var grant1 = GrantType.AuthorizationCode();
-        var grant2 = GrantType.AuthorizationCode();
+        var grant1 = GrantType.AuthorizationCode;
+        var grant2 = GrantType.AuthorizationCode;
         
         // Assert
         Assert.Equal(grant1, grant2);
@@ -52,7 +52,7 @@ public class GrantTypeTests
     public void AuthorizationCode_HasCorrectValue()
     {
         // Act
-        var grantType = GrantType.AuthorizationCode();
+        var grantType = GrantType.AuthorizationCode;
         
         // Assert
         Assert.Equal("authorization_code", grantType.Value);
@@ -62,7 +62,7 @@ public class GrantTypeTests
     public void ClientCredentials_HasCorrectValue()
     {
         // Act
-        var grantType = GrantType.ClientCredentials();
+        var grantType = GrantType.ClientCredentials;
         
         // Assert
         Assert.Equal("client_credentials", grantType.Value);
@@ -74,8 +74,8 @@ public class GrantTypeTests
         // Arrange
         var set = new HashSet<GrantType>
         {
-            GrantType.AuthorizationCode(),
-            GrantType.AuthorizationCode() // duplicate
+            GrantType.AuthorizationCode,
+            GrantType.AuthorizationCode // duplicate
         };
         
         // Assert
