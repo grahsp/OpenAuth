@@ -1,6 +1,6 @@
 using OpenAuth.Domain.AuthorizationGrant;
 
-namespace OpenAuth.Application.OAuth.Authorization.Flows;
+namespace OpenAuth.Application.OAuth.Authorization.Interfaces;
 
 public interface IAuthorizationGrantStore
 {
