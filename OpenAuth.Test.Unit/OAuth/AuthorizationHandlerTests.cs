@@ -1,6 +1,8 @@
 using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
-using OpenAuth.Application.OAuth.Authorization.Flows;
+using OpenAuth.Application.OAuth.Authorization.Dtos;
+using OpenAuth.Application.OAuth.Authorization.Handlers;
+using OpenAuth.Application.OAuth.Authorization.Interfaces;
 using OpenAuth.Domain.AuthorizationGrant;
 using OpenAuth.Domain.Clients;
 using OpenAuth.Domain.Clients.Audiences.ValueObjects;

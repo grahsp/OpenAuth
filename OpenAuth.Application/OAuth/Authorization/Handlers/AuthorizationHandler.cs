@@ -2,10 +2,12 @@ using System.Security.Cryptography;
 using Microsoft.IdentityModel.Tokens;
 using OpenAuth.Application.Clients.Dtos;
 using OpenAuth.Application.Clients.Interfaces;
+using OpenAuth.Application.OAuth.Authorization.Dtos;
+using OpenAuth.Application.OAuth.Authorization.Interfaces;
 using OpenAuth.Domain.AuthorizationGrant;
 using OpenAuth.Domain.AuthorizationGrant.ValueObjects;
 
-namespace OpenAuth.Application.OAuth.Authorization.Flows;
+namespace OpenAuth.Application.OAuth.Authorization.Handlers;
 
 public class AuthorizationHandler : IAuthorizationHandler
 {
