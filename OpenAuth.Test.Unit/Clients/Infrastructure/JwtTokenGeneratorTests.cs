@@ -4,6 +4,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Time.Testing;
 using Microsoft.IdentityModel.Tokens;
 using NSubstitute;
+using OpenAuth.Application.Clients.Dtos;
 using OpenAuth.Application.Security.Signing;
 using OpenAuth.Application.SigningKeys.Dtos;
 using OpenAuth.Application.Tokens.Dtos;
@@ -14,6 +15,7 @@ using OpenAuth.Domain.SigningKeys.Enums;
 using OpenAuth.Domain.SigningKeys.ValueObjects;
 using OpenAuth.Infrastructure.Configurations;
 using OpenAuth.Infrastructure.Tokens;
+using TokenContext = OpenAuth.Application.Tokens.Dtos.TokenContext;
 
 namespace OpenAuth.Test.Unit.Clients.Infrastructure;
 
@@ -21,32 +23,43 @@ public class JwtTokenGeneratorTests
 {
     private readonly FakeTimeProvider _time;
     private readonly ISigningCredentialsFactory _credentialsFactory;
-    private readonly IJwtTokenGenerator _sut;
+    private readonly JwtTokenGenerator _sut;
     private readonly SigningKeyData _keyData;
+    private readonly TokenContext _defaultContext;
+    private readonly ClientTokenData _defaultTokenData;
 
     public JwtTokenGeneratorTests()
     {
         _time = new FakeTimeProvider();
         _credentialsFactory = Substitute.For<ISigningCredentialsFactory>();
-        
+
         _sut = new JwtTokenGenerator(
             Options.Create(new JwtOptions { Issuer = "test-issuer" }),
             _credentialsFactory,
             _time);
-        
+
         _keyData = new SigningKeyData(
             SigningKeyId.New(),
             KeyType.RSA,
             SigningAlgorithm.RS256,
-            new Key("test-private-key")
-        );
-        
-        // Setup mock to return valid signing credentials
+            new Key("test-private-key"));
+
         _credentialsFactory.Create(Arg.Any<SigningKeyData>())
-            .Returns(info => {
-                var keyData = info.Arg<SigningKeyData>();
+            .Returns(callInfo =>
+            {
+                var keyData = callInfo.Arg<SigningKeyData>();
                 return TestSigningCredentials.CreateRsa(keyData.Kid.Value.ToString());
             });
+
+        _defaultContext = new TokenContext(
+            ClientId.New(),
+            "test-user",
+            new AudienceName("api"),
+            new[] { new Scope("read"), new Scope("write") });
+
+        _defaultTokenData = new ClientTokenData(
+            new[] { new Scope("read"), new Scope("write") },
+            TimeSpan.FromMinutes(10));
     }
 
     public class GenerateToken : JwtTokenGeneratorTests
@@ -54,36 +67,24 @@ public class JwtTokenGeneratorTests
         [Fact]
         public void ReturnsTokenWithExpectedClaims()
         {
-            // Arrange
-            var clientId = ClientId.New();
-            var audience = new AudienceName("api");
-            var scopes = new[] { new Scope("read"), new Scope("write") };
-            var lifetime = TimeSpan.FromMinutes(10);
-            
-            var request = new TokenGenerationRequest(
-                clientId,
-                audience,
-                scopes,
-                lifetime,
-                _keyData
-            );
-
             // Act
-            var token = _sut.GenerateToken(request);
+            var token = _sut.GenerateToken(_defaultContext, _defaultTokenData, _keyData);
+            var jwt = new JwtSecurityTokenHandler().ReadJwtToken(token);
 
             // Assert
-            var jwt = new JwtSecurityTokenHandler().ReadJwtToken(token);
-            
             Assert.Equal("test-issuer", jwt.Issuer);
-            Assert.Equal(clientId.Value.ToString(), jwt.Subject);
-            Assert.Contains(audience.Value, jwt.Audiences);
+            Assert.Equal(_defaultContext.Subject, jwt.Subject);
+            Assert.Contains(_defaultContext.RequestedAudience.Value, jwt.Audiences);
+
+            var clientIdClaim = jwt.Claims.Single(c => c.Type == "client_id");
+            Assert.Equal(_defaultContext.ClientId.ToString(), clientIdClaim.Value);
 
             var scopeClaims = jwt.Claims
                 .Where(c => c.Type == "scope")
                 .Select(c => c.Value)
                 .OrderBy(s => s)
                 .ToArray();
-            
+
             Assert.Equal(["read", "write"], scopeClaims);
         }
 
@@ -91,144 +92,87 @@ public class JwtTokenGeneratorTests
         public void SetsExpirationBasedOnTokenLifetime()
         {
             // Arrange
-            var now = _time.GetUtcNow();
+            var now = _time.GetUtcNow().UtcDateTime;
             var lifetime = TimeSpan.FromHours(2);
-            
-            var request = new TokenGenerationRequest(
-                ClientId.New(),
-                new AudienceName("api"),
-                [new Scope("read")],
-                lifetime,
-                _keyData
-            );
+            var tokenData = new ClientTokenData(_defaultTokenData.AllowedScopes, lifetime);
 
             // Act
-            var token = _sut.GenerateToken(request);
+            var token = _sut.GenerateToken(_defaultContext, tokenData, _keyData);
+            var jwt = new JwtSecurityTokenHandler().ReadJwtToken(token);
 
             // Assert
-            var jwt = new JwtSecurityTokenHandler().ReadJwtToken(token);
             var expectedExpiration = now.Add(lifetime);
-            
-            Assert.Equal(expectedExpiration.DateTime, jwt.ValidTo, precision: TimeSpan.FromSeconds(1));
+            Assert.Equal(expectedExpiration, jwt.ValidTo, TimeSpan.FromSeconds(1));
         }
 
         [Fact]
-        public void SetsIssuedAtToCurrentTime()
+        public void SetsIssuedAtAndNotBeforeToCurrentTime()
         {
             // Arrange
-            var now = _time.GetUtcNow();
-            
-            var request = new TokenGenerationRequest(
-                ClientId.New(),
-                new AudienceName("api"),
-                [new Scope("read")],
-                TimeSpan.FromHours(1),
-                _keyData
-            );
+            var now = _time.GetUtcNow().UtcDateTime;
 
             // Act
-            var token = _sut.GenerateToken(request);
+            var token = _sut.GenerateToken(_defaultContext, _defaultTokenData, _keyData);
+            var jwt = new JwtSecurityTokenHandler().ReadJwtToken(token);
 
             // Assert
-            var jwt = new JwtSecurityTokenHandler().ReadJwtToken(token);
-            
-            Assert.Equal(now.DateTime, jwt.IssuedAt, precision: TimeSpan.FromSeconds(1));
-            Assert.Equal(now.DateTime, jwt.ValidFrom, precision: TimeSpan.FromSeconds(1));
+            Assert.Equal(now, jwt.IssuedAt, TimeSpan.FromSeconds(1));
+            Assert.Equal(now, jwt.ValidFrom, TimeSpan.FromSeconds(1));
         }
 
         [Fact]
         public void IncludesJtiClaim()
         {
-            // Arrange
-            var request = new TokenGenerationRequest(
-                ClientId.New(),
-                new AudienceName("api"),
-                [new Scope("read")],
-                TimeSpan.FromHours(1),
-                _keyData
-            );
-
             // Act
-            var token = _sut.GenerateToken(request);
-
-            // Assert
+            var token = _sut.GenerateToken(_defaultContext, _defaultTokenData, _keyData);
             var jwt = new JwtSecurityTokenHandler().ReadJwtToken(token);
-            var jti = jwt.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Jti);
-            
-            Assert.NotNull(jti);
-            Assert.NotEmpty(jti.Value);
-            Assert.True(Guid.TryParse(jti.Value, out _));
+
+            var jtiClaim = jwt.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Jti);
+
+            Assert.NotNull(jtiClaim);
+            Assert.True(Guid.TryParse(jtiClaim!.Value, out _));
         }
 
         [Fact]
         public void WithEmptyScopes_ReturnsTokenWithNoScopeClaims()
         {
             // Arrange
-            var request = new TokenGenerationRequest(
-                ClientId.New(),
-                new AudienceName("api"),
-                [],
-                TimeSpan.FromHours(1),
-                _keyData
-            );
+            var context = _defaultContext with { RequestedScopes = Array.Empty<Scope>() };
 
             // Act
-            var token = _sut.GenerateToken(request);
+            var token = _sut.GenerateToken(context, _defaultTokenData, _keyData);
+            var jwt = new JwtSecurityTokenHandler().ReadJwtToken(token);
 
             // Assert
-            var jwt = new JwtSecurityTokenHandler().ReadJwtToken(token);
-            var scopeClaims = jwt.Claims.Where(c => c.Type == "scope");
-            
-            Assert.Empty(scopeClaims);
+            Assert.DoesNotContain(jwt.Claims, c => c.Type == "scope");
         }
 
         [Fact]
         public void WithMultipleScopes_IncludesAllInToken()
         {
             // Arrange
-            var scopes = new[] 
-            { 
-                new Scope("read"), 
-                new Scope("write"), 
-                new Scope("delete") 
-            };
-            
-            var request = new TokenGenerationRequest(
-                ClientId.New(),
-                new AudienceName("api"),
-                scopes,
-                TimeSpan.FromHours(1),
-                _keyData
-            );
+            var scopes = new[] { new Scope("read"), new Scope("write"), new Scope("delete") };
+            var context = _defaultContext with { RequestedScopes = scopes };
 
             // Act
-            var token = _sut.GenerateToken(request);
-
-            // Assert
+            var token = _sut.GenerateToken(context, _defaultTokenData, _keyData);
             var jwt = new JwtSecurityTokenHandler().ReadJwtToken(token);
-            var scopeClaims = jwt.Claims
+
+            var actualScopes = jwt.Claims
                 .Where(c => c.Type == "scope")
                 .Select(c => c.Value)
                 .OrderBy(s => s)
                 .ToArray();
-            
-            Assert.Equal(["delete", "read", "write"], scopeClaims);
+
+            // Assert
+            Assert.Equal(["delete", "read", "write"], actualScopes);
         }
 
         [Fact]
-        public void CallsSigningCredentialsFactoryWithKeyData()
+        public void CallsSigningCredentialsFactoryWithProvidedKeyData()
         {
-            // Arrange
-            var request = new TokenGenerationRequest(
-                ClientId.New(),
-                new AudienceName("api"),
-                [new Scope("read")],
-                TimeSpan.FromHours(1),
-                _keyData
-            );
-
             // Act
-            _sut.GenerateToken(request);
+            _sut.GenerateToken(_defaultContext, _defaultTokenData, _keyData);
 
             // Assert
             _credentialsFactory.Received(1).Create(_keyData);
@@ -237,20 +181,11 @@ public class JwtTokenGeneratorTests
         [Fact]
         public void IncludesKidInHeader()
         {
-            // Arrange
-            var request = new TokenGenerationRequest(
-                ClientId.New(),
-                new AudienceName("api"),
-                [new Scope("read")],
-                TimeSpan.FromHours(1),
-                _keyData
-            );
-
             // Act
-            var token = _sut.GenerateToken(request);
+            var token = _sut.GenerateToken(_defaultContext, _defaultTokenData, _keyData);
+            var jwt = new JwtSecurityTokenHandler().ReadJwtToken(token);
 
             // Assert
-            var jwt = new JwtSecurityTokenHandler().ReadJwtToken(token);
             Assert.True(jwt.Header.ContainsKey("kid"));
             Assert.Equal(_keyData.Kid.Value.ToString(), jwt.Header["kid"]);
         }

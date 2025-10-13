@@ -3,9 +3,9 @@ using OpenAuth.Domain.Clients.ValueObjects;
 
 namespace OpenAuth.Application.Tokens.Dtos;
 
-public record IssueTokenRequest(
+public record TokenContext(
     ClientId ClientId,
-    string ClientSecret,
-    AudienceName AudienceName,
-    Scope[] RequestedScopes
+    string Subject,
+    AudienceName RequestedAudience,
+    IReadOnlyCollection<Scope> RequestedScopes
 );
