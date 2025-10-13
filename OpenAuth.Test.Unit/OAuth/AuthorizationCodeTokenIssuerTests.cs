@@ -28,6 +28,7 @@ public class AuthorizationCodeTokenIssuerTests
         => new() {
             ClientId = DefaultClientId,
             Code = "auth-code",
+            Subject = "Test-Subject",
             RedirectUri = RedirectUri.Create("https://client.app/callback"),
             RequestedAudience = new AudienceName("api.example.com"),
             RequestedScopes = [new Scope("read"), new Scope("write")]
@@ -42,6 +43,7 @@ public class AuthorizationCodeTokenIssuerTests
         return AuthorizationGrant.Create(
             "auth-code",
             GrantType.AuthorizationCode,
+            "Test-Subject",
             DefaultClientId,
             RedirectUri.Create("https://client.app/callback"),
             new AudienceName("api.example.com"),
@@ -142,6 +144,19 @@ public class AuthorizationCodeTokenIssuerTests
         // Act & Assert
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => _sut.IssueToken(request));
         Assert.Equal("Redirect URI mismatch.", ex.Message);
+    }
+    
+    [Fact]
+    public async Task IssueToken_WithSubjectMismatch_ThrowsInvalidOperationException()
+    {
+        // Arrange
+        var request = DefaultRequest() with { Subject = "invalid-subject" };
+        var grant = DefaultGrant();
+        SetupGrantStore(grant);
+    
+        // Act & Assert
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => _sut.IssueToken(request));
+        Assert.Equal("Subject mismatch.", ex.Message);
     }
 
     [Fact]

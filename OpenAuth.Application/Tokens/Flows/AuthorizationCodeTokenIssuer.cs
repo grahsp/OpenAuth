@@ -29,6 +29,9 @@ public class AuthorizationCodeTokenIssuer : TokenIssuerBase<AuthorizationCodeTok
         
         if (grant.RedirectUri != request.RedirectUri)
             throw new InvalidOperationException("Redirect URI mismatch.");
+
+        if (grant.Subject != request.Subject)
+            throw new InvalidOperationException("Subject mismatch.");
         
         if (grant.Pkce is not null && !grant.Pkce.Matches(request.CodeVerifier))
             throw new InvalidOperationException("Invalid PKCE code verifier.");
