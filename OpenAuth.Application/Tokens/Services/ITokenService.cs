@@ -4,5 +4,5 @@ namespace OpenAuth.Application.Tokens.Services;
 
 public interface ITokenService
 {
-    Task<TokenGenerationResponse> IssueToken(IssueTokenRequest request, CancellationToken ct = default);
+    Task<TokenGenerationResponse> IssueToken(TokenRequest request, CancellationToken ct = default);
 }

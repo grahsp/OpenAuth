@@ -1,53 +1,51 @@
 using OpenAuth.Application.Clients.Interfaces;
-using OpenAuth.Application.Secrets.Interfaces;
 using OpenAuth.Application.SigningKeys.Interfaces;
 using OpenAuth.Application.Tokens.Dtos;
+using OpenAuth.Application.Tokens.Flows;
 using OpenAuth.Application.Tokens.Interfaces;
+using OpenAuth.Domain.Clients.ValueObjects;
 
 namespace OpenAuth.Application.Tokens.Services;
 
 public class TokenService : ITokenService
 {
+    private readonly Dictionary<GrantType, ITokenIssuer> _strategies;
     private readonly IClientQueryService _clientQueryService;
-    private readonly ISecretQueryService _secretQueryService;
     private readonly ISigningKeyQueryService _signingKeyQueryService;
     private readonly IJwtTokenGenerator _tokenGenerator;
     
-    public TokenService(IClientQueryService clientQueryService, ISecretQueryService secretQueryService, ISigningKeyQueryService signingKeyQueryService, IJwtTokenGenerator tokenGenerator)
+    public TokenService(IEnumerable<ITokenIssuer> strategies, IClientQueryService clientQueryService, ISigningKeyQueryService signingKeyQueryService, IJwtTokenGenerator tokenGenerator)
     {
+        _strategies = strategies.ToDictionary(i => i.GrantType);
         _clientQueryService = clientQueryService;
-        _secretQueryService = secretQueryService;
         _signingKeyQueryService = signingKeyQueryService;
         _tokenGenerator = tokenGenerator;
+        
+        if (_strategies.Count == 0)
+            throw new ArgumentException("No token issuer strategies registered.", nameof(strategies));
     }
     
     
-    public async Task<TokenGenerationResponse> IssueToken(IssueTokenRequest request, CancellationToken ct = default)
+    public async Task<TokenGenerationResponse> IssueToken(TokenRequest request, CancellationToken ct = default)
     {
-        var isValid = await _secretQueryService.ValidateSecretAsync(request.ClientId, request.ClientSecret, ct);
-        if (!isValid)
-            throw new UnauthorizedAccessException("Invalid client credentials.");
+        if (!_strategies.TryGetValue(request.GrantType, out var issuer))
+            throw new InvalidOperationException("Invalid grant type.");
         
-        var tokenData = await _clientQueryService.GetTokenDataAsync(request.ClientId, request.AudienceName, ct);
+        var tokenData = await _clientQueryService.GetTokenDataAsync(request.ClientId, request.RequestedAudience, ct);
         if (tokenData is null)
             throw new InvalidOperationException("Client not found or does not have access to the requested audience.");
-
+        
         if (request.RequestedScopes.Except(tokenData.AllowedScopes).Any())
-            throw new InvalidOperationException($"Invalid scopes requested for audience '{request.AudienceName.Value}'.");
+            throw new InvalidOperationException($"Invalid scopes requested for audience '{request.RequestedAudience.Value}'.");
+
+
+        var tokenContext = await issuer.IssueToken(request, ct);
     
         var keyData = await _signingKeyQueryService.GetCurrentKeyDataAsync(ct);
         if (keyData is null)
             throw new InvalidOperationException("No active signing key found.");
-
-        var tokenRequest = new TokenGenerationRequest(
-            request.ClientId,
-            request.AudienceName,
-            request.RequestedScopes,
-            tokenData.TokenLifetime,
-            keyData
-        );
         
-        var accessToken = _tokenGenerator.GenerateToken(tokenRequest);
+        var accessToken = _tokenGenerator.GenerateToken(tokenContext, tokenData, keyData);
         return new TokenGenerationResponse(accessToken, "Bearer", (int)tokenData.TokenLifetime.TotalSeconds);
     }
 }
