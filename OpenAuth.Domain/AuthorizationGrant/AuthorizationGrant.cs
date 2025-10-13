@@ -15,7 +15,7 @@ public class AuthorizationGrant
     public DateTimeOffset ExpiresAt { get; }
     
     public string Code { get; }
-    public PkceData? Pkce { get; }
+    public Pkce? Pkce { get; }
     
     public bool Consumed { get; private set; }
 
@@ -27,7 +27,7 @@ public class AuthorizationGrant
         AudienceName audience,
         IEnumerable<Scope> scopes,
         DateTimeOffset utcNow,
-        PkceData? pkce = null)
+        Pkce? pkce = null)
     {
         GrantType = grantType;
         ClientId = clientId;
@@ -50,7 +50,7 @@ public class AuthorizationGrant
         AudienceName audience,
         IEnumerable<Scope> scopes,
         DateTimeOffset utcNow,
-        PkceData? pkce = null)
+        Pkce? pkce = null)
     {
         return new AuthorizationGrant(
             code,

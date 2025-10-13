@@ -5,6 +5,7 @@ using OpenAuth.Application.Clients.Interfaces;
 using OpenAuth.Application.OAuth.Authorization.Dtos;
 using OpenAuth.Application.OAuth.Authorization.Interfaces;
 using OpenAuth.Domain.AuthorizationGrant;
+using OpenAuth.Domain.AuthorizationGrant.Enums;
 using OpenAuth.Domain.AuthorizationGrant.ValueObjects;
 
 namespace OpenAuth.Application.OAuth.Authorization.Handlers;
@@ -41,7 +42,7 @@ public class AuthorizationHandler : IAuthorizationHandler
             request.Audience,
             request.Scopes,
             _time.GetUtcNow(),
-            new PkceData(request.CodeChallenge, request.CodeChallengeMethod) 
+            Pkce.Create(request.CodeChallenge, CodeChallengeMethod.Plain) 
         );
         
         await _store.AddAsync(authorizationGrant);
