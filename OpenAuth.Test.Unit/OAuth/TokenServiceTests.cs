@@ -21,6 +21,7 @@ public class TokenServiceTests
     private readonly ISigningKeyQueryService _signingKeyQueryService;
     private readonly IJwtTokenGenerator _tokenGenerator;
     private readonly ITokenIssuer _clientCredentialsIssuer;
+    private readonly ITokenIssuer _authorizationCodeIssuer;
     private readonly TokenService _tokenService;
 
     public TokenServiceTests()
@@ -29,8 +30,10 @@ public class TokenServiceTests
         _signingKeyQueryService = Substitute.For<ISigningKeyQueryService>();
         _tokenGenerator = Substitute.For<IJwtTokenGenerator>();
         _clientCredentialsIssuer = Substitute.For<ITokenIssuer>();
+        _authorizationCodeIssuer = Substitute.For<ITokenIssuer>();
 
         _clientCredentialsIssuer.GrantType.Returns(GrantType.ClientCredentials);
+        _authorizationCodeIssuer.GrantType.Returns(GrantType.AuthorizationCode);
 
         _tokenService = new TokenService(
             [_clientCredentialsIssuer],
@@ -73,7 +76,7 @@ public class TokenServiceTests
     public async Task IssueToken_WithUnsupportedGrantType_ThrowsInvalidOperationException()
     {
         var tokenService = new TokenService(
-            [new AuthorizationCodeTokenIssuer()],
+            [_authorizationCodeIssuer],
             _clientQueryService,
             _signingKeyQueryService,
             _tokenGenerator);
