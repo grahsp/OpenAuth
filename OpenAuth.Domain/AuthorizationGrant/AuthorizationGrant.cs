@@ -8,6 +8,7 @@ public class AuthorizationGrant
 {
     public GrantType GrantType { get; }
     public ClientId ClientId { get; }
+    public string Subject { get; }
     public RedirectUri RedirectUri { get; }
     public AudienceName Audience { get; }
     public Scope[] Scopes { get; }
@@ -23,6 +24,7 @@ public class AuthorizationGrant
         string code,
         GrantType grantType,
         ClientId clientId,
+        string subject,
         RedirectUri redirectUri,
         AudienceName audience,
         IEnumerable<Scope> scopes,
@@ -31,6 +33,8 @@ public class AuthorizationGrant
     {
         GrantType = grantType;
         ClientId = clientId;
+        Subject = subject;
+        
         RedirectUri = redirectUri;
         Audience = audience;
         Scopes = scopes.ToArray();
@@ -45,6 +49,7 @@ public class AuthorizationGrant
     public static AuthorizationGrant Create(
         string code,
         GrantType grantType,
+        string subject,
         ClientId clientId,
         RedirectUri redirectUri,
         AudienceName audience,
@@ -56,6 +61,7 @@ public class AuthorizationGrant
             code,
             grantType,
             clientId,
+            subject,
             redirectUri,
             audience,
             scopes,

@@ -37,6 +37,7 @@ public class AuthorizationHandler : IAuthorizationHandler
         var authorizationGrant = AuthorizationGrant.Create(
             code,
             request.GrantType,
+            "Test-Subject",
             request.ClientId,
             request.RedirectUri,
             request.Audience,
