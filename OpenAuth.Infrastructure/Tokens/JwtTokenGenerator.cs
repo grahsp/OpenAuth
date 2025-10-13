@@ -2,12 +2,13 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using OpenAuth.Application.Clients.Dtos;
 using OpenAuth.Application.Security.Signing;
-using OpenAuth.Application.SigningKeys.Interfaces;
-using OpenAuth.Application.Tokens;
+using OpenAuth.Application.SigningKeys.Dtos;
 using OpenAuth.Application.Tokens.Dtos;
 using OpenAuth.Application.Tokens.Interfaces;
 using OpenAuth.Infrastructure.Configurations;
+using TokenContext = OpenAuth.Application.Tokens.Dtos.TokenContext;
 
 namespace OpenAuth.Infrastructure.Tokens;
 
@@ -24,22 +25,23 @@ public class JwtTokenGenerator : IJwtTokenGenerator
         _time = time;
     }
 
-    public string GenerateToken(TokenGenerationRequest request)
+    public string GenerateToken(TokenContext context, ClientTokenData tokenData, SigningKeyData keyData)
     {
         var now = _time.GetUtcNow().UtcDateTime;
         
-        var signingCredentials = _factory.Create(request.KeyData);
-        var expires = now.Add(request.TokenLifetime);
+        var signingCredentials = _factory.Create(keyData);
+        var expires = now.Add(tokenData.TokenLifetime);
 
         var claims = new List<Claim>
         {
-            new(JwtRegisteredClaimNames.Sub, request.ClientId.ToString()),
+            new("client_id", context.ClientId.ToString()),
+            new(JwtRegisteredClaimNames.Sub, context.Subject),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             new(JwtRegisteredClaimNames.Iat, EpochTime.GetIntDate(now).ToString()),
-            new(JwtRegisteredClaimNames.Aud, request.AudienceName.Value)
+            new(JwtRegisteredClaimNames.Aud, context.RequestedAudience.Value)
         };
         
-        claims.AddRange(request.Scopes.Select(scope => new Claim("scope", scope.Value)));
+        claims.AddRange(context.RequestedScopes.Select(scope => new Claim("scope", scope.Value)));
 
         var token = new JwtSecurityToken(
             issuer: _config.Issuer,
