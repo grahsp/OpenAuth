@@ -35,7 +35,8 @@ public class AuthorizationCodeTokenIssuer : TokenIssuerBase<AuthorizationCodeTok
         
         if (grant.Pkce is not null && !grant.Pkce.Matches(request.CodeVerifier))
             throw new InvalidOperationException("Invalid PKCE code verifier.");
-        
+
+        await _grantStore.RemoveAsync(grant.Code);
         
         return new TokenContext(
             grant.ClientId,

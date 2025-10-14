@@ -93,6 +93,21 @@ public class AuthorizationCodeTokenIssuerTests
     }
 
     [Fact]
+    public async Task IssueToken_CallsRemoveOfStore()
+    {
+        // Arrange
+        var request = DefaultRequest();
+        var grant = DefaultGrant();
+        SetupGrantStore(grant);
+        
+        // Act
+        await _sut.IssueToken(request);
+
+        // Assert
+        await _grantStore.Received(1).RemoveAsync(grant.Code);
+    }
+
+    [Fact]
     public async Task IssueToken_WithUnknownCode_ThrowsInvalidOperationException()
     {
         // Arrange
