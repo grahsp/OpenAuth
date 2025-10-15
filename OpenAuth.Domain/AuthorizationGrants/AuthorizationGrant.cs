@@ -1,8 +1,8 @@
-using OpenAuth.Domain.AuthorizationGrant.ValueObjects;
+using OpenAuth.Domain.AuthorizationGrants.ValueObjects;
 using OpenAuth.Domain.Clients.Audiences.ValueObjects;
 using OpenAuth.Domain.Clients.ValueObjects;
 
-namespace OpenAuth.Domain.AuthorizationGrant;
+namespace OpenAuth.Domain.AuthorizationGrants;
 
 public class AuthorizationGrant
 {

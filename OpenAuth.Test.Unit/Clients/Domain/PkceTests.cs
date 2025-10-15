@@ -1,8 +1,8 @@
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
-using OpenAuth.Domain.AuthorizationGrant.Enums;
-using OpenAuth.Domain.AuthorizationGrant.ValueObjects;
+using OpenAuth.Domain.AuthorizationGrants.Enums;
+using OpenAuth.Domain.AuthorizationGrants.ValueObjects;
 
 namespace OpenAuth.Test.Unit.Clients.Domain;
 

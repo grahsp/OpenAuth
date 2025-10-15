@@ -2,9 +2,9 @@ using NSubstitute;
 using OpenAuth.Application.OAuth.Authorization.Interfaces;
 using OpenAuth.Application.Tokens.Dtos;
 using OpenAuth.Application.Tokens.Flows;
-using OpenAuth.Domain.AuthorizationGrant;
-using OpenAuth.Domain.AuthorizationGrant.Enums;
-using OpenAuth.Domain.AuthorizationGrant.ValueObjects;
+using OpenAuth.Domain.AuthorizationGrants;
+using OpenAuth.Domain.AuthorizationGrants.Enums;
+using OpenAuth.Domain.AuthorizationGrants.ValueObjects;
 using OpenAuth.Domain.Clients.Audiences.ValueObjects;
 using OpenAuth.Domain.Clients.ValueObjects;
 

@@ -4,9 +4,9 @@ using OpenAuth.Application.Clients.Dtos;
 using OpenAuth.Application.Clients.Interfaces;
 using OpenAuth.Application.OAuth.Authorization.Dtos;
 using OpenAuth.Application.OAuth.Authorization.Interfaces;
-using OpenAuth.Domain.AuthorizationGrant;
-using OpenAuth.Domain.AuthorizationGrant.Enums;
-using OpenAuth.Domain.AuthorizationGrant.ValueObjects;
+using OpenAuth.Domain.AuthorizationGrants;
+using OpenAuth.Domain.AuthorizationGrants.Enums;
+using OpenAuth.Domain.AuthorizationGrants.ValueObjects;
 
 namespace OpenAuth.Application.OAuth.Authorization.Handlers;
 
