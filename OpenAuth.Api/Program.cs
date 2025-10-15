@@ -1,34 +1,32 @@
 using Microsoft.EntityFrameworkCore;
-using OpenAuth.Application.Audiences;
 using OpenAuth.Application.Audiences.Services;
-using OpenAuth.Application.Clients;
 using OpenAuth.Application.Clients.Factories;
 using OpenAuth.Application.Clients.Interfaces;
 using OpenAuth.Application.Clients.Services;
-using OpenAuth.Application.Jwks;
 using OpenAuth.Application.Jwks.Interfaces;
 using OpenAuth.Application.Jwks.Services;
-using OpenAuth.Application.Secrets;
+using OpenAuth.Application.OAuth.Authorization.Handlers;
+using OpenAuth.Application.OAuth.Authorization.Interfaces;
+using OpenAuth.Application.OAuth.Stores;
 using OpenAuth.Application.Secrets.Interfaces;
 using OpenAuth.Application.Secrets.Services;
 using OpenAuth.Application.Security.Hashing;
 using OpenAuth.Application.Security.Signing;
-using OpenAuth.Application.SigningKeys;
 using OpenAuth.Application.SigningKeys.Factories;
 using OpenAuth.Application.SigningKeys.Interfaces;
 using OpenAuth.Application.SigningKeys.Services;
-using OpenAuth.Application.Tokens;
+using OpenAuth.Application.Tokens.Flows;
 using OpenAuth.Application.Tokens.Interfaces;
 using OpenAuth.Application.Tokens.Services;
-using OpenAuth.Infrastructure.Clients;
+using OpenAuth.Domain.AuthorizationGrants;
 using OpenAuth.Infrastructure.Clients.Persistence;
 using OpenAuth.Infrastructure.Clients.Secrets;
 using OpenAuth.Infrastructure.Clients.Secrets.Persistence;
 using OpenAuth.Infrastructure.Configurations;
 using OpenAuth.Infrastructure.Keys.Jwks;
+using OpenAuth.Infrastructure.OAuth.Persistence;
 using OpenAuth.Infrastructure.Persistence;
 using OpenAuth.Infrastructure.Security.Hashing;
-using OpenAuth.Infrastructure.SigningKeys;
 using OpenAuth.Infrastructure.SigningKeys.Jwk;
 using OpenAuth.Infrastructure.SigningKeys.KeyMaterial;
 using OpenAuth.Infrastructure.SigningKeys.Persistence;
@@ -85,8 +83,15 @@ public class Program
         builder.Services.AddScoped<ISigningCredentialsStrategy, RsaSigningCredentialsStrategy>();
         builder.Services.AddScoped<ISigningCredentialsFactory, SigningCredentialsFactory>();
         
-        // Token Services
+        // OAuth Services
         builder.Services.AddScoped<ITokenService, TokenService>();
+        builder.Services.AddScoped<ITokenIssuer, ClientCredentialsTokenIssuer>();
+        builder.Services.AddScoped<ITokenIssuer, AuthorizationCodeTokenIssuer>();
+
+        builder.Services.AddScoped<IAuthorizationHandler, AuthorizationHandler>();
+        
+        builder.Services.AddScoped<IAuthorizationGrantStore, AuthorizationGrantStore>();
+        builder.Services.AddSingleton<ICache<AuthorizationGrant>, AuthorizationGrantCache>();
         
         // Jwks
         builder.Services.AddScoped<IJwksService, JwksService>();
