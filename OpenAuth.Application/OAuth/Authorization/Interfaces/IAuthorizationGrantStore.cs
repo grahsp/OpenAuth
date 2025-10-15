@@ -1,4 +1,4 @@
-using OpenAuth.Domain.AuthorizationGrant;
+using OpenAuth.Domain.AuthorizationGrants;
 
 namespace OpenAuth.Application.OAuth.Authorization.Interfaces;
 

@@ -1,9 +1,9 @@
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
-using OpenAuth.Domain.AuthorizationGrant.Enums;
+using OpenAuth.Domain.AuthorizationGrants.Enums;
 
-namespace OpenAuth.Domain.AuthorizationGrant.ValueObjects;
+namespace OpenAuth.Domain.AuthorizationGrants.ValueObjects;
 
 public sealed record Pkce
 {
@@ -17,30 +17,27 @@ public sealed record Pkce
     }
 
     public static Pkce Create(string codeChallenge, CodeChallengeMethod method)
-    {
-        var challenge = ComputeChallenge(codeChallenge, method);
-        return new Pkce(challenge, method);
-    }
+        => new(codeChallenge, method);
 
-    public bool Matches(string? code)
+    public bool Matches(string? codeVerifier)
     {
-        if (string.IsNullOrWhiteSpace(code))
+        if (string.IsNullOrWhiteSpace(codeVerifier))
             return false;
         
-        return ComputeChallenge(code, CodeChallengeMethod) == CodeChallenge;    
+        return ComputeChallenge(codeVerifier, CodeChallengeMethod) == CodeChallenge;    
     }
 
-    private static string ComputeChallenge(string code, CodeChallengeMethod method)
+    private static string ComputeChallenge(string codeVerifier, CodeChallengeMethod method)
         => method switch
         {
-            CodeChallengeMethod.Plain => code,
-            CodeChallengeMethod.S256 => ComputeS256(code),
+            CodeChallengeMethod.Plain => codeVerifier,
+            CodeChallengeMethod.S256 => ComputeS256(codeVerifier),
             _ => throw new ArgumentOutOfRangeException(nameof(method), method, null)
         };
 
-    private static string ComputeS256(string code)
+    private static string ComputeS256(string codeVerifier)
     {
-        var bytes = Encoding.UTF8.GetBytes(code);
+        var bytes = Encoding.UTF8.GetBytes(codeVerifier);
         var hash = SHA256.HashData(bytes);
         var base64 = Base64UrlEncoder.Encode(hash);
 

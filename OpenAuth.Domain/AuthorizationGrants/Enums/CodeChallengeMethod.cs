@@ -1,4 +1,4 @@
-namespace OpenAuth.Domain.AuthorizationGrant.Enums;
+namespace OpenAuth.Domain.AuthorizationGrants.Enums;
 
 public enum CodeChallengeMethod
 {
