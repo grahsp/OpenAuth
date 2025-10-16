@@ -59,6 +59,9 @@ public class JwtTokenGeneratorTests
 
         _defaultTokenData = new ClientTokenData(
             new[] { new Scope("read"), new Scope("write") },
+            [],
+            false,
+            false,
             TimeSpan.FromMinutes(10));
     }
 
@@ -94,7 +97,7 @@ public class JwtTokenGeneratorTests
             // Arrange
             var now = _time.GetUtcNow().UtcDateTime;
             var lifetime = TimeSpan.FromHours(2);
-            var tokenData = new ClientTokenData(_defaultTokenData.AllowedScopes, lifetime);
+            var tokenData = _defaultTokenData with { TokenLifetime = TimeSpan.FromHours(2) };
 
             // Act
             var token = _sut.GenerateToken(_defaultContext, tokenData, _keyData);
