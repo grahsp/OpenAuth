@@ -10,15 +10,19 @@ public static class GrantTypes
 public record GrantType
 {
     public string Value { get; }
+    public bool SupportsPublicClient { get; }
+    public bool SupportsPkce { get; }
 
-    private GrantType(string value)
+    private GrantType(string value, bool supportsPublicClient, bool supportsPkce)
     {
         Value = value;
+        SupportsPublicClient = supportsPublicClient;
+        SupportsPkce = supportsPkce;
     }
     
-    public static readonly GrantType AuthorizationCode = new(GrantTypes.AuthorizationCode);
-    public static readonly GrantType ClientCredentials = new(GrantTypes.ClientCredentials);
-    public static readonly GrantType RefreshToken = new(GrantTypes.RefreshToken);
+    public static readonly GrantType AuthorizationCode = new(GrantTypes.AuthorizationCode, true, true);
+    public static readonly GrantType ClientCredentials = new(GrantTypes.ClientCredentials, false, false);
+    public static readonly GrantType RefreshToken = new(GrantTypes.RefreshToken, true, true);
     
     public static GrantType Create(string value)
     {
