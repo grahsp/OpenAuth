@@ -1,6 +1,3 @@
-using System.Security.Cryptography;
-using System.Text;
-using Microsoft.IdentityModel.Tokens;
 using OpenAuth.Domain.AuthorizationGrants.Enums;
 using OpenAuth.Domain.AuthorizationGrants.ValueObjects;
 
@@ -8,105 +5,67 @@ namespace OpenAuth.Test.Unit.Clients.Domain;
 
 public class PkceTests
 {
-    public class Create
+    private const string DefaultCodeChallenge = "code";
+
+    private static Pkce CreateDefaultPkce(CodeChallengeMethod method)
+        => Pkce.Create(DefaultCodeChallenge, method);
+    
+    
+    [Theory]
+    [InlineData(CodeChallengeMethod.Plain)]
+    [InlineData(CodeChallengeMethod.S256)]
+    public void Create_WithValidInput_CreatesExpectedPkce(CodeChallengeMethod method)
     {
-        [Fact]
-        public void WithPlainMethod_SetsRawVerifierAsChallenge()
-        {
-            // Arrange
-            const string verifier = "plain-verifier";
+        var pkce = CreateDefaultPkce(method);
 
-            // Act
-            var pkce = Pkce.Create(verifier, CodeChallengeMethod.Plain);
-
-            // Assert
-            Assert.Equal(verifier, pkce.CodeChallenge);
-            Assert.Equal(CodeChallengeMethod.Plain, pkce.CodeChallengeMethod);
-        }
+        Assert.Equal(DefaultCodeChallenge, pkce.CodeChallenge);
+        Assert.Equal(method, pkce.CodeChallengeMethod);
     }
 
-
-    public class Matches
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void Create_WithInvalidCodeChallenge_ThrowsArgumentException(string? codeChallenge)
     {
-        [Fact]
-        public void WithPlainMethod_AndSameVerifier_ReturnsTrue()
-        {
-            // Arrange
-            const string verifier = "same-verifier";
-            var pkce = Pkce.Create(verifier, CodeChallengeMethod.Plain);
+        Assert.ThrowsAny<ArgumentException>(() =>
+            Pkce.Create(codeChallenge!, CodeChallengeMethod.Plain));
+    }
+    
 
-            // Act
-            var result = pkce.Matches(verifier);
+    [Theory]
+    [InlineData(CodeChallengeMethod.Plain)]
+    [InlineData(CodeChallengeMethod.S256)]
+    public void Matches_WithValidInput_ReturnsTrue(CodeChallengeMethod method)
+    {
+        var codeChallenge = Pkce.ComputeChallenge(DefaultCodeChallenge, method);
+        var pkce = Pkce.Create(codeChallenge, method);
+        
+        Assert.True(pkce.Matches(DefaultCodeChallenge));
+    }
+    
+    [Fact]
+    public void Matches_WithIncorrectMethod_ReturnsFalse()
+    {
+        var pkce = Pkce.Create(DefaultCodeChallenge, CodeChallengeMethod.S256);
+        Assert.False(pkce.Matches(DefaultCodeChallenge));
+    }
 
-            // Assert
-            Assert.True(result);
-        }
-
-        [Fact]
-        public void WithPlainMethod_AndDifferentVerifier_ReturnsFalse()
-        {
-            // Arrange
-            var pkce = Pkce.Create("expected", CodeChallengeMethod.Plain);
-
-            // Act
-            var result = pkce.Matches("wrong");
-
-            // Assert
-            Assert.False(result);
-        }
-
-        [Fact]
-        public void WithS256Method_AndCorrectVerifier_ReturnsTrue()
-        {
-            // Arrange
-            const string verifier = "test-verifier";
-            var challenge = Base64UrlEncoder.Encode(SHA256.HashData(Encoding.UTF8.GetBytes(verifier)));
-            var pkce = Pkce.Create(challenge, CodeChallengeMethod.S256);
-
-            // Act
-            var result = pkce.Matches(verifier);
-
-            // Assert
-            Assert.True(result);
-        }
-
-        [Fact]
-        public void WithS256Method_AndIncorrectVerifier_ReturnsFalse()
-        {
-            // Arrange
-            var pkce = Pkce.Create("correct", CodeChallengeMethod.S256);
-
-            // Act
-            var result = pkce.Matches("wrong");
-
-            // Assert
-            Assert.False(result);
-        }
-
-        [Fact]
-        public void WithEmptyVerifier_ReturnsFalse()
-        {
-            // Arrange
-            var pkce = Pkce.Create("something", CodeChallengeMethod.S256);
-
-            // Act
-            var result = pkce.Matches(string.Empty);
-
-            // Assert
-            Assert.False(result);
-        }
-
-        [Fact]
-        public void WithWhitespaceVerifier_ReturnsFalse()
-        {
-            // Arrange
-            var pkce = Pkce.Create("something", CodeChallengeMethod.Plain);
-
-            // Act
-            var result = pkce.Matches("   ");
-
-            // Assert
-            Assert.False(result);
-        }
+    [Fact]
+    public void Matches_WithDifferentCasingCodeChallenge_ReturnsFalse()
+    {
+        var pkce = Pkce.Create(DefaultCodeChallenge.ToUpper(), CodeChallengeMethod.Plain);
+        Assert.False(pkce.Matches(DefaultCodeChallenge));
+    }
+    
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    [InlineData("incorrect-code-verifier")]
+    public void Matches_WithIncorrectCodeVerifier_ReturnsFalse(string? codeVerifier)
+    {
+        var pkce = CreateDefaultPkce(CodeChallengeMethod.Plain);
+        Assert.False(pkce.Matches(codeVerifier));
     }
 }
