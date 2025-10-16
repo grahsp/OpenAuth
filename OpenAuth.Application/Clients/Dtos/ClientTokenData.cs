@@ -6,7 +6,6 @@ namespace OpenAuth.Application.Clients.Dtos;
 public record ClientTokenData(
     IEnumerable<Scope> AllowedScopes,
     IEnumerable<GrantType> AllowedGrantTypes,
-    bool PublicClient,
     bool RequirePkce,
     TimeSpan TokenLifetime
 );
