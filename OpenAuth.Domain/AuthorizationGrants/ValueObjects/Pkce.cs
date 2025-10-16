@@ -17,7 +17,11 @@ public sealed record Pkce
     }
 
     public static Pkce Create(string codeChallenge, CodeChallengeMethod method)
-        => new(codeChallenge, method);
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(codeChallenge);
+        
+        return new Pkce(codeChallenge, method);
+    }
 
     public bool Matches(string? codeVerifier)
     {
@@ -27,7 +31,7 @@ public sealed record Pkce
         return ComputeChallenge(codeVerifier, CodeChallengeMethod) == CodeChallenge;    
     }
 
-    private static string ComputeChallenge(string codeVerifier, CodeChallengeMethod method)
+    public static string ComputeChallenge(string codeVerifier, CodeChallengeMethod method)
         => method switch
         {
             CodeChallengeMethod.Plain => codeVerifier,
