@@ -7,9 +7,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Reference Include="Microsoft.IdentityModel.Tokens">
-        <HintPath>..\..\..\.nuget\packages\microsoft.identitymodel.tokens\8.14.0\lib\net9.0\Microsoft.IdentityModel.Tokens.dll</HintPath>
-      </Reference>
+      <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.14.0"/>
     </ItemGroup>
 
 </Project>
