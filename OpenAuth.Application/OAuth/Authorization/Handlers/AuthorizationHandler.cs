@@ -5,8 +5,6 @@ using OpenAuth.Application.Clients.Interfaces;
 using OpenAuth.Application.OAuth.Authorization.Dtos;
 using OpenAuth.Application.OAuth.Authorization.Interfaces;
 using OpenAuth.Domain.AuthorizationGrants;
-using OpenAuth.Domain.AuthorizationGrants.Enums;
-using OpenAuth.Domain.AuthorizationGrants.ValueObjects;
 
 namespace OpenAuth.Application.OAuth.Authorization.Handlers;
 
@@ -25,12 +23,12 @@ public class AuthorizationHandler : IAuthorizationHandler
         _store = store;
         _time = time;
     }
-    
+
     public async Task<AuthorizationResponse> AuthorizeAsync(AuthorizationRequest request)
     {
         var authorizationData = await _clientQueryService.GetAuthorizationDataAsync(request.ClientId)
                                 ?? throw new InvalidOperationException("Client not found.");
-        
+
         ValidateRequest(authorizationData, request);
 
         var code = GenerateCode();
@@ -43,7 +41,7 @@ public class AuthorizationHandler : IAuthorizationHandler
             request.Audience,
             request.Scopes,
             _time.GetUtcNow(),
-            Pkce.Create(request.CodeChallenge, CodeChallengeMethod.Plain) 
+            request.Pkce
         );
         
         await _store.AddAsync(authorizationGrant);
@@ -57,13 +55,9 @@ public class AuthorizationHandler : IAuthorizationHandler
             throw new InvalidOperationException("Invalid grant type.");
         
 
-        if (authorizationData.RequirePkce)
+        if (authorizationData.RequirePkce && request.Pkce is null)
         {
-            if (string.IsNullOrWhiteSpace(request.CodeChallenge))
-                throw new InvalidOperationException("Code challenge is required for PKCE.");
-            
-            if (string.IsNullOrWhiteSpace(request.CodeChallengeMethod))
-                throw new InvalidOperationException("Code challenge method is required for PKCE.");
+            throw new InvalidOperationException("Pkce is required.");
         }
 
         if (!authorizationData.RedirectUris.Contains(request.RedirectUri))
