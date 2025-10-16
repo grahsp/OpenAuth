@@ -23,33 +23,6 @@ public class PkceTests
             Assert.Equal(verifier, pkce.CodeChallenge);
             Assert.Equal(CodeChallengeMethod.Plain, pkce.CodeChallengeMethod);
         }
-
-        [Fact]
-        public void WithS256Method_ComputesExpectedChallenge()
-        {
-            // Arrange
-            const string verifier = "test-verifier";
-            var expected = Base64UrlEncoder.Encode(SHA256.HashData(Encoding.UTF8.GetBytes(verifier)));
-
-            // Act
-            var pkce = Pkce.Create(verifier, CodeChallengeMethod.S256);
-
-            // Assert
-            Assert.Equal(expected, pkce.CodeChallenge);
-            Assert.Equal(CodeChallengeMethod.S256, pkce.CodeChallengeMethod);
-        }
-
-        [Fact]
-        public void WithUnsupportedMethod_ThrowsArgumentOutOfRangeException()
-        {
-            // Arrange
-            const string verifier = "verifier";
-            const CodeChallengeMethod invalidMethod = (CodeChallengeMethod)99;
-
-            // Act & Assert
-            Assert.Throws<ArgumentOutOfRangeException>(
-                () => Pkce.Create(verifier, invalidMethod));
-        }
     }
 
 
@@ -87,7 +60,8 @@ public class PkceTests
         {
             // Arrange
             const string verifier = "test-verifier";
-            var pkce = Pkce.Create(verifier, CodeChallengeMethod.S256);
+            var challenge = Base64UrlEncoder.Encode(SHA256.HashData(Encoding.UTF8.GetBytes(verifier)));
+            var pkce = Pkce.Create(challenge, CodeChallengeMethod.S256);
 
             // Act
             var result = pkce.Matches(verifier);
