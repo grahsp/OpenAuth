@@ -3,7 +3,7 @@ using OpenAuth.Application.SigningKeys.Interfaces;
 using OpenAuth.Domain.SigningKeys.Enums;
 using OpenAuth.Domain.SigningKeys.ValueObjects;
 
-namespace OpenAuth.Infrastructure.SigningKeys.KeyMaterial;
+namespace OpenAuth.Infrastructure.SigningKeys.KeyMaterials;
 
 public class RsaKeyMaterialGenerator : IKeyMaterialGenerator
 {

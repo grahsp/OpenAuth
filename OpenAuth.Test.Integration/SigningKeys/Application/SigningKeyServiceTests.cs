@@ -4,7 +4,7 @@ using OpenAuth.Application.SigningKeys.Factories;
 using OpenAuth.Application.SigningKeys.Services;
 using OpenAuth.Domain.SigningKeys.Enums;
 using OpenAuth.Domain.SigningKeys.ValueObjects;
-using OpenAuth.Infrastructure.SigningKeys.KeyMaterial;
+using OpenAuth.Infrastructure.SigningKeys.KeyMaterials;
 using OpenAuth.Infrastructure.SigningKeys.Persistence;
 using OpenAuth.Test.Integration.Fixtures;
 

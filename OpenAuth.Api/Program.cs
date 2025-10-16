@@ -28,7 +28,7 @@ using OpenAuth.Infrastructure.OAuth.Persistence;
 using OpenAuth.Infrastructure.Persistence;
 using OpenAuth.Infrastructure.Security.Hashing;
 using OpenAuth.Infrastructure.SigningKeys.Jwk;
-using OpenAuth.Infrastructure.SigningKeys.KeyMaterial;
+using OpenAuth.Infrastructure.SigningKeys.KeyMaterials;
 using OpenAuth.Infrastructure.SigningKeys.Persistence;
 using OpenAuth.Infrastructure.Tokens;
 using OpenAuth.Infrastructure.Tokens.SigningCredentials;
