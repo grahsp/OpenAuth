@@ -4,6 +4,8 @@ using OpenAuth.Application.OAuth.Authorization.Dtos;
 using OpenAuth.Application.OAuth.Authorization.Handlers;
 using OpenAuth.Application.OAuth.Authorization.Interfaces;
 using OpenAuth.Domain.AuthorizationGrants;
+using OpenAuth.Domain.AuthorizationGrants.Enums;
+using OpenAuth.Domain.AuthorizationGrants.ValueObjects;
 using OpenAuth.Domain.Clients;
 using OpenAuth.Domain.Clients.Audiences.ValueObjects;
 using OpenAuth.Domain.Clients.ValueObjects;
@@ -36,15 +38,14 @@ public class AuthorizationHandlerTests
             .WithRedirectUri("https://example.com/callback")
             .Build();
         _defaultClient.SetPublic(_time.GetUtcNow());
-        
+
         _validRequest = new AuthorizationRequest(
             _defaultClient.Id,
             GrantType.AuthorizationCode,
             RedirectUri.Create("https://example.com/callback"),
             new AudienceName("api"),
             [new Scope("read"), new Scope("write")],
-            "code-challenge",
-            "S256"
+            Pkce.Create("code-challenge", CodeChallengeMethod.S256)
         );
     }
     
@@ -97,22 +98,9 @@ public class AuthorizationHandlerTests
     }
 
     [Fact]
-    public async Task MissingCodeChallenge_Throws_WhenPkceEnabled()
+    public async Task MissingPkce_Throws_WhenPkceEnabled()
     {
-        var request = _validRequest with { CodeChallenge = null! };
-        
-        // Set public to enable PCKE.
-        _defaultClient.SetPublic(_time.GetUtcNow());
-        _clientQueryService.Add(_defaultClient);
-        
-        await Assert.ThrowsAnyAsync<InvalidOperationException>(()
-            => _sut.AuthorizeAsync(request));       
-    }
-    
-    [Fact]
-    public async Task MissingCodeChallengeMethod_Throws_WhenPkceEnabled()
-    {
-        var request = _validRequest with { CodeChallengeMethod = null! };
+        var request = _validRequest with { Pkce = null! };
         
         // Set public to enable PCKE.
         _defaultClient.SetPublic(_time.GetUtcNow());
@@ -123,21 +111,9 @@ public class AuthorizationHandlerTests
     }
 
     [Fact]
-    public async Task IgnoreMissingCodeChallenge_WhenPkceDisabled()
+    public async Task IgnoreMissingPkce_WhenPkceDisabled()
     {
-        var request = _validRequest with { CodeChallenge = null! };
-        
-        // Set to confidential and disable PCKE.
-        _defaultClient.SetConfidential(_time.GetUtcNow(), false);
-        _clientQueryService.Add(_defaultClient);
-        
-        await _sut.AuthorizeAsync(request);
-    }
-    
-    [Fact]
-    public async Task IgnoreMissingCodeChallengeMethod_WhenPkceDisabled()
-    {
-        var request = _validRequest with { CodeChallengeMethod = null! };
+        var request = _validRequest with { Pkce = null! };
         
         // Set to confidential and disable PCKE.
         _defaultClient.SetConfidential(_time.GetUtcNow(), false);
