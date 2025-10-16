@@ -63,7 +63,6 @@ public class ClientQueryService : IClientQueryService
                     .Select(a => a.AllowedScopes.ToArray())
                     .Single(),
                 c.AllowedGrantTypes.ToArray(),
-                c.IsPublic,
                 c.RequirePkce,
                 c.TokenLifetime))
             .SingleOrDefaultAsync(ct);

@@ -61,7 +61,6 @@ public class JwtTokenGeneratorTests
             new[] { new Scope("read"), new Scope("write") },
             [],
             false,
-            false,
             TimeSpan.FromMinutes(10));
     }
 

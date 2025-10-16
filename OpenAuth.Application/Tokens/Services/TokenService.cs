@@ -41,9 +41,6 @@ public class TokenService : ITokenService
         if (tokenData.RequirePkce && !request.GrantType.SupportsPkce)
             throw new InvalidOperationException("PKCE is required for this grant type.");
         
-        if (tokenData.PublicClient && !request.GrantType.SupportsPublicClient)
-            throw new InvalidOperationException("Public client is not allowed for this grant type.");
-        
         if (request.RequestedScopes.Except(tokenData.AllowedScopes).Any())
             throw new InvalidOperationException($"Invalid scopes requested for audience '{request.RequestedAudience.Value}'.");
 
