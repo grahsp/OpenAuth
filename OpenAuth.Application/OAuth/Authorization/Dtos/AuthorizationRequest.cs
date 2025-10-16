@@ -1,3 +1,4 @@
+using OpenAuth.Domain.AuthorizationGrants.ValueObjects;
 using OpenAuth.Domain.Clients.Audiences.ValueObjects;
 using OpenAuth.Domain.Clients.ValueObjects;
 
@@ -10,6 +11,5 @@ public record AuthorizationRequest
     RedirectUri RedirectUri,
     AudienceName Audience,
     Scope[] Scopes,
-    string CodeChallenge,
-    string CodeChallengeMethod
+    Pkce? Pkce
 );
