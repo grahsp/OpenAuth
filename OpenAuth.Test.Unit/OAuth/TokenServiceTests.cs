@@ -280,6 +280,9 @@ public class TokenServiceTests
 
     private static ClientTokenData CreateValidTokenData() => new(
         AllowedScopes: [new Scope("read"), new Scope("write"), new Scope("admin")],
+        [GrantType.ClientCredentials, GrantType.AuthorizationCode],
+        false,
+         false,
         TokenLifetime: TimeSpan.FromHours(1));
 
     private static TokenContext CreateValidTokenContext()

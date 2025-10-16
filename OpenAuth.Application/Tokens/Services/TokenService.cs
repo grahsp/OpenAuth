@@ -35,6 +35,15 @@ public class TokenService : ITokenService
         if (tokenData is null)
             throw new InvalidOperationException("Client not found or does not have access to the requested audience.");
         
+        if (!tokenData.AllowedGrantTypes.Contains(request.GrantType))
+            throw new InvalidOperationException($"Grant type '{request.GrantType}' is not allowed for this client.");
+        
+        if (tokenData.RequirePkce && !request.GrantType.SupportsPkce)
+            throw new InvalidOperationException("PKCE is required for this grant type.");
+        
+        if (tokenData.PublicClient && !request.GrantType.SupportsPublicClient)
+            throw new InvalidOperationException("Public client is not allowed for this grant type.");
+        
         if (request.RequestedScopes.Except(tokenData.AllowedScopes).Any())
             throw new InvalidOperationException($"Invalid scopes requested for audience '{request.RequestedAudience.Value}'.");
 
