@@ -1,5 +1,9 @@
+using System.Security.Cryptography;
+using System.Text;
+using Microsoft.IdentityModel.Tokens;
 using NSubstitute;
 using OpenAuth.Application.OAuth.Authorization.Interfaces;
+using OpenAuth.Application.Secrets.Interfaces;
 using OpenAuth.Application.Tokens.Dtos;
 using OpenAuth.Application.Tokens.Flows;
 using OpenAuth.Domain.AuthorizationGrants;
@@ -13,6 +17,7 @@ namespace OpenAuth.Test.Unit.OAuth;
 public class AuthorizationCodeTokenIssuerTests
 {
     private readonly IAuthorizationGrantStore _grantStore;
+    private readonly ISecretQueryService _secretQueryService;
     private readonly AuthorizationCodeTokenIssuer _sut;
 
     private static readonly ClientId DefaultClientId = ClientId.New();
@@ -21,7 +26,8 @@ public class AuthorizationCodeTokenIssuerTests
     public AuthorizationCodeTokenIssuerTests()
     {
         _grantStore = Substitute.For<IAuthorizationGrantStore>();
-        _sut = new AuthorizationCodeTokenIssuer(_grantStore);
+        _secretQueryService = Substitute.For<ISecretQueryService>();
+        _sut = new AuthorizationCodeTokenIssuer(_grantStore, _secretQueryService);
     }
     
     private static AuthorizationCodeTokenRequest DefaultRequest()
@@ -31,12 +37,17 @@ public class AuthorizationCodeTokenIssuerTests
             Subject = "Test-Subject",
             RedirectUri = RedirectUri.Create("https://client.app/callback"),
             RequestedAudience = new AudienceName("api.example.com"),
-            RequestedScopes = [new Scope("read"), new Scope("write")]
+            RequestedScopes = [new Scope("read"), new Scope("write")],
+            CodeVerifier = "secret-code",
+            ClientSecret = "client-secret"
         };
 
-    private static AuthorizationGrant DefaultGrant(string? codeChallenge = null)
+    private static AuthorizationGrant DefaultGrant(string? codeVerifier = null)
     {
-        var pkce = codeChallenge is not null
+        var codeChallenge =
+            Base64UrlEncoder.Encode(SHA256.HashData(Encoding.UTF8.GetBytes(codeVerifier ?? "secret-code")));
+        
+        var pkce = codeVerifier is not null
             ? Pkce.Create(codeChallenge, CodeChallengeMethod.S256)
             : null;
         
@@ -63,6 +74,9 @@ public class AuthorizationCodeTokenIssuerTests
         var request = DefaultRequest();
         var grant = DefaultGrant();
         SetupGrantStore(grant);
+
+        _secretQueryService.ValidateSecretAsync(grant.ClientId, request.ClientSecret!, Arg.Any<CancellationToken>())
+            .Returns(true);
 
         // Act
         var result = await _sut.IssueToken(request);
@@ -96,8 +110,8 @@ public class AuthorizationCodeTokenIssuerTests
     public async Task IssueToken_CallsRemoveOfStore()
     {
         // Arrange
-        var request = DefaultRequest();
-        var grant = DefaultGrant();
+        var request = DefaultRequest() with { CodeVerifier = "secret-code" };
+        var grant = DefaultGrant("secret-code");
         SetupGrantStore(grant);
         
         // Act
@@ -175,7 +189,7 @@ public class AuthorizationCodeTokenIssuerTests
     }
 
     [Fact]
-    public async Task IssueToken_WithMissingCodeChallenge_WhenPkceRequired_ThrowsInvalidOperationException()
+    public async Task IssueToken_WithMissingCodeVerifier_WhenPkceRequired_ThrowsInvalidOperationException()
     {
         // Arrange
         var request = DefaultRequest() with { CodeVerifier = null };
@@ -188,7 +202,7 @@ public class AuthorizationCodeTokenIssuerTests
     }
 
     [Fact]
-    public async Task IssueToken_WithInvalidCodeChallenge_WhenPkceRequired_ThrowsInvalidOperationException()
+    public async Task IssueToken_WithInvalidCodeVerifier_WhenPkceRequired_ThrowsInvalidOperationException()
     {
         // Arrange
         var request = DefaultRequest() with { CodeVerifier = "invalid-code-challenge" };
