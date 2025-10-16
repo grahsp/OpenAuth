@@ -62,6 +62,9 @@ public class ClientQueryService : IClientQueryService
                     .Where(a => a.Name == audienceName)
                     .Select(a => a.AllowedScopes.ToArray())
                     .Single(),
+                c.AllowedGrantTypes.ToArray(),
+                c.IsPublic,
+                c.RequirePkce,
                 c.TokenLifetime))
             .SingleOrDefaultAsync(ct);
 
