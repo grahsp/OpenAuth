@@ -1,5 +1,5 @@
 using OpenAuth.Domain.SigningKeys.Enums;
-using OpenAuth.Infrastructure.SigningKeys.KeyMaterial;
+using OpenAuth.Infrastructure.SigningKeys.KeyMaterials;
 
 namespace OpenAuth.Test.Unit.SigningKeys.Infrastructure;
 
