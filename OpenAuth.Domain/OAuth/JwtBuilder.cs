@@ -29,11 +29,9 @@ public class JwtBuilder
         return this;
     }
 
-    public JwtBuilder WithAudiences(params AudienceName[] audiences)
+    public JwtBuilder WithAudience(AudienceName audience)
     {
-        foreach (var audience in audiences)
-            WithClaim(OAuthClaimTypes.Aud, audience.Value);
-
+        WithClaim(OAuthClaimTypes.Aud, audience.Value);
         return this;
     }
 
@@ -47,6 +45,9 @@ public class JwtBuilder
 
     public JwtBuilder WithClaim(string type, string value)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(type);
+        ArgumentException.ThrowIfNullOrWhiteSpace(value);
+        
         _claims.Add(new Claim(type, value));
         return this;
     }
