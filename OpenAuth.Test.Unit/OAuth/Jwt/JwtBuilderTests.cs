@@ -18,6 +18,83 @@ public class JwtBuilderTests
             .WithAudience(new AudienceName("api"));
 
 
+    public class WithScopes : JwtBuilderTests
+    {
+        [Fact]
+        public void WithScopes_WhenScopeIsNull_ThrowsException()
+        {
+            Assert.ThrowsAny<ArgumentException>(()
+                => CreateValidBuilder()
+                .WithScopes(new Scope("read"), null!));
+        }
+
+        [Fact]
+        public void WithScopes_WhenEmpty_AddsNoScopes()
+        {
+            var descriptor = CreateValidBuilder()
+                .WithScopes()
+                .Build(_time);
+            
+            var scopes = descriptor.Claims
+                .Where(c => c.Type == OAuthClaimTypes.Scope)
+                .ToArray();
+            
+            Assert.Empty(scopes);
+        }
+
+        [Fact]
+        public void WithScopes_SingleScope_AddsScope()
+        {
+            var read = new Scope("read");
+            
+            var descriptor = CreateValidBuilder()
+                .WithScopes(read)
+                .Build(_time);
+            
+            var scope = Assert.Single(descriptor.Claims, s => s.Type == OAuthClaimTypes.Scope);
+            Assert.Equal(read.Value, scope.Value);
+        }
+
+        [Fact]
+        public void WithScopes_MultipleScopes_AddsScopes()
+        {
+            var read = new Scope("read");
+            var write = new Scope("write");
+            
+            var descriptor = CreateValidBuilder()
+                .WithScopes(read, write)
+                .Build(_time);
+            
+            var scopes = descriptor.Claims
+                .Where(c => c.Type == OAuthClaimTypes.Scope)
+                .ToArray();
+            
+            Assert.Equal(2, scopes.Length);
+            Assert.Contains(scopes, c => c.Value == read.Value);
+            Assert.Contains(scopes, c => c.Value == write.Value);
+        }
+        
+        [Fact]
+        public void WithScopes_CalledMultipleTimes_AddsAllScopes()
+        {
+            var read = new Scope("read");
+            var write = new Scope("write");
+            
+            var descriptor = CreateValidBuilder()
+                .WithScopes(read)
+                .WithScopes(write)
+                .Build(_time);
+            
+            var scopes = descriptor.Claims
+                .Where(c => c.Type == OAuthClaimTypes.Scope)
+                .ToArray();
+            
+            Assert.Equal(2, scopes.Length);
+            Assert.Contains(scopes, c => c.Value == read.Value);
+            Assert.Contains(scopes, c => c.Value == write.Value);
+        }
+    }
+
     public class WithClaim : JwtBuilderTests
     {
         [Fact]
@@ -60,7 +137,7 @@ public class JwtBuilderTests
         [InlineData(null)]
         public void WithClaim_InvalidClaimType_ThrowsException(string? type)
         {
-            Assert.ThrowsAny<ArgumentException>(() => new JwtBuilder(Issuer)
+            Assert.ThrowsAny<ArgumentException>(() => CreateValidBuilder()
                 .WithClaim(type!, "value"));
         }
 
@@ -70,7 +147,7 @@ public class JwtBuilderTests
         [InlineData(null)]
         public void WithClaim_InvalidClaimValue_ThrowsException(string? value)
         {
-            Assert.ThrowsAny<ArgumentException>(() => new JwtBuilder(Issuer)
+            Assert.ThrowsAny<ArgumentException>(() => CreateValidBuilder()
                 .WithClaim("type", value!));
         }
     }
