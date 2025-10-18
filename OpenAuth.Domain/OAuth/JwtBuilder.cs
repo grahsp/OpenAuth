@@ -31,6 +31,11 @@ public class JwtBuilder
 
     public JwtBuilder WithAudience(AudienceName audience)
     {
+        ArgumentNullException.ThrowIfNull(audience);
+        
+        if (_claims.Any(c => c.Type == OAuthClaimTypes.Aud))
+            throw new InvalidOperationException("Audience claim already set.");
+        
         WithClaim(OAuthClaimTypes.Aud, audience.Value);
         return this;
     }
