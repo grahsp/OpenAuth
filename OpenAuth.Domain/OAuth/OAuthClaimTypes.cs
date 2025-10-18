@@ -3,6 +3,7 @@ namespace OpenAuth.Domain.OAuth;
 public static class OAuthClaimTypes
 {
     public const string Iss = "iss";
+    public const string Exp = "exp";
     public const string Iat = "iat";
     public const string Jti = "jti";
     public const string Sub = "sub";

@@ -70,6 +70,11 @@ public class JwtBuilder
 
     public JwtBuilder WithLifetime(TimeSpan lifetime)
     {
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(lifetime, TimeSpan.Zero, nameof(lifetime));
+        
+        if (_lifetime is not null)
+            throw new InvalidOperationException("Lifetime already set.");
+        
         _lifetime = lifetime;
         return this;
     }
@@ -84,6 +89,7 @@ public class JwtBuilder
         {
             new(OAuthClaimTypes.Iss, _issuer),
             new(OAuthClaimTypes.Iat, EpochTime.GetIntDate(now.UtcDateTime).ToString()),
+            new(OAuthClaimTypes.Exp, EpochTime.GetIntDate(now.UtcDateTime.Add(_lifetime.Value)).ToString()),
             new(OAuthClaimTypes.Jti, Guid.NewGuid().ToString())
         };
 

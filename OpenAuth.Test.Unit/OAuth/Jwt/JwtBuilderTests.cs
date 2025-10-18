@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Time.Testing;
+using Microsoft.IdentityModel.Tokens;
 using OpenAuth.Domain.Clients.Audiences.ValueObjects;
 using OpenAuth.Domain.Clients.ValueObjects;
 using OpenAuth.Domain.OAuth;
@@ -320,20 +321,56 @@ public class JwtBuilderTests
         }
     }
 
+    public class WithLifetime : JwtBuilderTests
+    {
+        [Fact]
+        public void WithLifetime_WhenZeroLifetime_ThrowsException()
+        {
+            var builder = CreateValidBuilder();
+
+            Assert.Throws<ArgumentOutOfRangeException>(()
+                => builder.WithLifetime(TimeSpan.Zero));
+        }
+        
+        [Fact]
+        public void WithLifetime_WhenNegativeLifetime_ThrowsException()
+        {
+            var builder = CreateValidBuilder();
+
+            Assert.Throws<ArgumentOutOfRangeException>(()
+                => builder.WithLifetime(TimeSpan.FromSeconds(-1)));
+        }
+
+        [Fact]
+        public void WithLifetime_CalledMultipleTimes_ThrowsException()
+        {
+            var builder = CreateValidBuilder()
+                .WithLifetime(TimeSpan.FromSeconds(1));
+
+            Assert.Throws<InvalidOperationException>(()
+                => builder.WithLifetime(TimeSpan.FromSeconds(1)));
+        }
+    }
+
     public class Build : JwtBuilderTests
     {
         [Fact]
         public void Build_WhenValid_AddsSystemClaims()
         {
+            var now = _time.GetUtcNow().UtcDateTime;
+            var lifetime = TimeSpan.FromMinutes(10);
             var descriptor = CreateValidBuilder()
+                .WithLifetime(lifetime)
                 .Build(_time);
         
             var iss = Assert.Single(descriptor.Claims, c => c.Type == OAuthClaimTypes.Iss);
             var iat = Assert.Single(descriptor.Claims, c => c.Type == OAuthClaimTypes.Iat);
+            var exp = Assert.Single(descriptor.Claims, c => c.Type == OAuthClaimTypes.Exp);
             var jti = Assert.Single(descriptor.Claims, c => c.Type == OAuthClaimTypes.Jti);
 
             Assert.Equal(Issuer, iss.Value);
-            Assert.Equal(_time.GetUtcNow().ToUnixTimeSeconds().ToString(), iat.Value);
+            Assert.Equal(EpochTime.GetIntDate(now).ToString(), iat.Value);
+            Assert.Equal(EpochTime.GetIntDate(now.Add(lifetime)).ToString(), exp.Value);
             Assert.NotNull(jti.Value);
         }
 
