@@ -18,6 +18,54 @@ public class JwtBuilderTests
             .WithAudience(new AudienceName("api"));
 
 
+    public class WithSubject : JwtBuilderTests
+    {
+        [Theory]
+        [InlineData("")]
+        [InlineData("   ")]
+        [InlineData(null!)]
+        public void WithSubject_WhenInvalid_ThrowException(string? subject)
+        {
+            var builder = new JwtBuilder(Issuer);
+            
+            Assert.ThrowsAny<ArgumentException>(()
+                => builder.WithSubject(subject!));
+        }
+
+        [Fact]
+        public void WithSubject_WhenSubjectAlreadySet_ThrowsException()
+        {
+            var builder = new JwtBuilder(Issuer)
+                .WithSubject("subject");
+            
+            Assert.Throws<InvalidOperationException>(()
+                => builder.WithSubject("subject"));
+        }
+
+        [Fact]
+        public void WithSubject_AfterWithClaims_ThrowsException()
+        {
+            var builder = new JwtBuilder(Issuer)
+                .WithClaim(OAuthClaimTypes.Sub, "subject");
+
+            Assert.Throws<InvalidOperationException>(()
+                => builder.WithSubject("subject"));
+        }
+        
+        [Fact]
+        public void WithSubject_WhenValid_AddsSubject()
+        {
+            var descriptor = new JwtBuilder(Issuer)
+                .WithClient(ClientId.New())
+                .WithSubject("subject")
+                .WithAudience(new AudienceName("api"))
+                .Build(_time);
+            
+            var sub = Assert.Single(descriptor.Claims, c => c.Type == OAuthClaimTypes.Sub);
+            Assert.Equal("subject", sub.Value);
+        }
+    }
+
     public class WithAudience : JwtBuilderTests
     {
         [Fact]
