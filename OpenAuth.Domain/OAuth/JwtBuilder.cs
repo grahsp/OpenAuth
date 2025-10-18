@@ -38,7 +38,10 @@ public class JwtBuilder
     public JwtBuilder WithScopes(params Scope[] scopes)
     {
         foreach (var scope in scopes)
+        {
+            ArgumentNullException.ThrowIfNull(scope);
             WithClaim(OAuthClaimTypes.Scope, scope.Value);
+        }
         
         return this;
     }
