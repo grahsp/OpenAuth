@@ -19,6 +19,9 @@ public class JwtBuilder
 
     public JwtBuilder WithClient(ClientId id)
     {
+        if (_claims.Any(c => c.Type == OAuthClaimTypes.ClientId))
+            throw new InvalidOperationException("Client ID claim already set.");
+        
         WithClaim(OAuthClaimTypes.ClientId, id.ToString());
         return this;
     }
