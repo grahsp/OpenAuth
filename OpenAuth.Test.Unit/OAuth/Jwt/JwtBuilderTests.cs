@@ -489,5 +489,57 @@ public class JwtBuilderTests
         
             Assert.Contains("subject", ex.Message, StringComparison.OrdinalIgnoreCase);
         }
+
+        [Fact]
+        public void Build_WithMultipleIss_ThrowsException()
+        {
+            var builder = CreateValidBuilder()
+                .WithClaim(OAuthClaimTypes.Iat, "1295983725")
+                .WithClaim(OAuthClaimTypes.Iat, "1295983725");
+            
+            var ex = Assert.Throws<InvalidOperationException>(()
+                => builder.Build(_time));
+            
+            Assert.Contains("issued", ex.Message, StringComparison.OrdinalIgnoreCase);
+        }
+
+        [Fact]
+        public void Build_WithMultipleJti_ThrowsException()
+        {
+            var builder = CreateValidBuilder()
+                .WithClaim(OAuthClaimTypes.Jti, "1295983725")
+                .WithClaim(OAuthClaimTypes.Jti, "1295983725");
+            
+            var ex = Assert.Throws<InvalidOperationException>(()
+                => builder.Build(_time));
+
+            Assert.Contains("jwt id", ex.Message, StringComparison.OrdinalIgnoreCase);
+        }
+
+        [Fact]
+        public void Build_WithMultipleIat_ThrowsException()
+        {
+            var builder = CreateValidBuilder()
+                .WithClaim(OAuthClaimTypes.Iat, "1295983725")
+                .WithClaim(OAuthClaimTypes.Iat, "1295983725");
+            
+            var ex = Assert.Throws<InvalidOperationException>(()
+                => builder.Build(_time));
+            
+            Assert.Contains("issued", ex.Message, StringComparison.OrdinalIgnoreCase);
+        }
+
+        [Fact]
+        public void Build_WithMultipleExp_ThrowsException()
+        {
+            var builder = CreateValidBuilder()
+                .WithClaim(OAuthClaimTypes.Exp, "1295983725")
+                .WithClaim(OAuthClaimTypes.Exp, "1295983725");
+            
+            var ex = Assert.Throws<InvalidOperationException>(()
+                => builder.Build(_time));
+            
+            Assert.Contains("expiration", ex.Message, StringComparison.OrdinalIgnoreCase);
+        }
     }
 }

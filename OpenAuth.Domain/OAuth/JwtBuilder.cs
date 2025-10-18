@@ -88,9 +88,9 @@ public class JwtBuilder
         var claims = new List<Claim>(_claims)
         {
             new(OAuthClaimTypes.Iss, _issuer),
+            new(OAuthClaimTypes.Jti, Guid.NewGuid().ToString()),
             new(OAuthClaimTypes.Iat, EpochTime.GetIntDate(now.UtcDateTime).ToString()),
-            new(OAuthClaimTypes.Exp, EpochTime.GetIntDate(now.UtcDateTime.Add(_lifetime.Value)).ToString()),
-            new(OAuthClaimTypes.Jti, Guid.NewGuid().ToString())
+            new(OAuthClaimTypes.Exp, EpochTime.GetIntDate(now.UtcDateTime.Add(_lifetime.Value)).ToString())
         };
 
         ValidateClaims(claims);
@@ -106,13 +106,17 @@ public class JwtBuilder
 
     private static void ValidateClaims(IReadOnlyCollection<Claim> claims)
     {
-        ValidateSingleClaim(claims, OAuthClaimTypes.Iss, "Issuer");
-        ValidateSingleClaim(claims, OAuthClaimTypes.ClientId, "Client ID");
-        ValidateSingleClaim(claims, OAuthClaimTypes.Aud, "Audience");
-        ValidateSingleClaim(claims, OAuthClaimTypes.Sub, "Subject");
+        ValidateSingletonClaim(claims, OAuthClaimTypes.Iss, "Issuer");
+        ValidateSingletonClaim(claims, OAuthClaimTypes.Jti, "JWT ID");
+        ValidateSingletonClaim(claims, OAuthClaimTypes.Iat, "Issued At");
+        ValidateSingletonClaim(claims, OAuthClaimTypes.Exp, "Expiration");
+        
+        ValidateSingletonClaim(claims, OAuthClaimTypes.ClientId, "Client ID");
+        ValidateSingletonClaim(claims, OAuthClaimTypes.Aud, "Audience");
+        ValidateSingletonClaim(claims, OAuthClaimTypes.Sub, "Subject");
     }
 
-    private static void ValidateSingleClaim(IReadOnlyCollection<Claim> claims, string claimType, string claimName)
+    private static void ValidateSingletonClaim(IReadOnlyCollection<Claim> claims, string claimType, string claimName)
     {
         var count = claims.Count(c => c.Type == claimType);
 
