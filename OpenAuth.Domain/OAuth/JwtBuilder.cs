@@ -90,7 +90,8 @@ public class JwtBuilder
             new(OAuthClaimTypes.Iss, _issuer),
             new(OAuthClaimTypes.Jti, Guid.NewGuid().ToString()),
             new(OAuthClaimTypes.Iat, EpochTime.GetIntDate(now.UtcDateTime).ToString()),
-            new(OAuthClaimTypes.Exp, EpochTime.GetIntDate(now.UtcDateTime.Add(_lifetime.Value)).ToString())
+            new(OAuthClaimTypes.Exp, EpochTime.GetIntDate(now.UtcDateTime.Add(_lifetime.Value)).ToString()),
+            new(OAuthClaimTypes.Nbf, EpochTime.GetIntDate(now.UtcDateTime).ToString())
         };
 
         ValidateClaims(claims);
@@ -110,6 +111,7 @@ public class JwtBuilder
         ValidateSingletonClaim(claims, OAuthClaimTypes.Jti, "JWT ID");
         ValidateSingletonClaim(claims, OAuthClaimTypes.Iat, "Issued At");
         ValidateSingletonClaim(claims, OAuthClaimTypes.Exp, "Expiration");
+        ValidateSingletonClaim(claims, OAuthClaimTypes.Nbf, "Not Before");
         
         ValidateSingletonClaim(claims, OAuthClaimTypes.ClientId, "Client ID");
         ValidateSingletonClaim(claims, OAuthClaimTypes.Aud, "Audience");

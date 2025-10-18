@@ -371,14 +371,16 @@ public class JwtBuilderTests
                 .Build(_time);
         
             var iss = Assert.Single(descriptor.Claims, c => c.Type == OAuthClaimTypes.Iss);
+            var jti = Assert.Single(descriptor.Claims, c => c.Type == OAuthClaimTypes.Jti);
             var iat = Assert.Single(descriptor.Claims, c => c.Type == OAuthClaimTypes.Iat);
             var exp = Assert.Single(descriptor.Claims, c => c.Type == OAuthClaimTypes.Exp);
-            var jti = Assert.Single(descriptor.Claims, c => c.Type == OAuthClaimTypes.Jti);
+            var nbf= Assert.Single(descriptor.Claims, c => c.Type == OAuthClaimTypes.Nbf);
 
             Assert.Equal(Issuer, iss.Value);
+            Assert.NotNull(jti.Value);
             Assert.Equal(EpochTime.GetIntDate(now).ToString(), iat.Value);
             Assert.Equal(EpochTime.GetIntDate(now.Add(lifetime)).ToString(), exp.Value);
-            Assert.NotNull(jti.Value);
+            Assert.Equal(EpochTime.GetIntDate(now).ToString(), nbf.Value);
         }
 
         [Fact]
@@ -547,6 +549,19 @@ public class JwtBuilderTests
                 => builder.Build(_time));
             
             Assert.Contains("expiration", ex.Message, StringComparison.OrdinalIgnoreCase);
+        }
+        
+        [Fact]
+        public void Build_WithMultipleNbf_ThrowsException()
+        {
+            var builder = CreateValidBuilder()
+                .WithClaim(OAuthClaimTypes.Nbf, "1295983725")
+                .WithClaim(OAuthClaimTypes.Nbf, "1295983725");
+            
+            var ex = Assert.Throws<InvalidOperationException>(()
+                => builder.Build(_time));
+            
+            Assert.Contains("not before", ex.Message, StringComparison.OrdinalIgnoreCase);
         }
     }
 }
