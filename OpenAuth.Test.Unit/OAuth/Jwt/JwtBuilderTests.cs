@@ -18,6 +18,44 @@ public class JwtBuilderTests
             .WithAudience(new AudienceName("api"));
 
 
+    public class WithClient : JwtBuilderTests
+    {
+        [Fact]
+        public void WithClient_WhenClientIdAlreadySet_ThrowsException()
+        {
+            var builder = new JwtBuilder(Issuer)
+                .WithClient(ClientId.New());
+            
+            Assert.Throws<InvalidOperationException>(()
+                => builder.WithClient(ClientId.New()));
+        }
+
+        [Fact]
+        public void WithClient_AfterWithClaims_ThrowsException()
+        {
+            var builder = new JwtBuilder(Issuer)
+                .WithClaim(OAuthClaimTypes.ClientId, "client");
+            
+            Assert.Throws<InvalidOperationException>(()
+                => builder.WithClient(ClientId.New()));
+        }
+        
+        [Fact]
+        public void WithClient_WhenValid_AddsClientId()
+        {
+            var clientId = ClientId.New();
+            
+            var descriptor = new JwtBuilder(Issuer)
+                .WithClient(clientId)
+                .WithSubject("subject")
+                .WithAudience(new AudienceName("api"))
+                .Build(_time);
+            
+            var client = Assert.Single(descriptor.Claims, c => c.Type == OAuthClaimTypes.ClientId);
+            Assert.Equal(clientId.ToString(), client.Value);
+        }
+    }
+
     public class WithSubject : JwtBuilderTests
     {
         [Theory]
