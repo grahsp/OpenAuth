@@ -54,6 +54,13 @@ public class JwtBuilderTests
             var client = Assert.Single(descriptor.Claims, c => c.Type == OAuthClaimTypes.ClientId);
             Assert.Equal(clientId.ToString(), client.Value);
         }
+        
+        [Fact]
+        public void WithClient_ReturnsBuilder()
+        {
+            var builder = new JwtBuilder(Issuer);
+            Assert.Same(builder, builder.WithClient(ClientId.New()));
+        }
     }
 
     public class WithSubject : JwtBuilderTests
@@ -102,6 +109,13 @@ public class JwtBuilderTests
             var sub = Assert.Single(descriptor.Claims, c => c.Type == OAuthClaimTypes.Sub);
             Assert.Equal("subject", sub.Value);
         }
+        
+        [Fact]
+        public void WithSubject_ReturnsBuilder()
+        {
+            var builder = new JwtBuilder(Issuer);
+            Assert.Same(builder, builder.WithSubject("subject"));
+        }
     }
 
     public class WithAudience : JwtBuilderTests
@@ -148,6 +162,13 @@ public class JwtBuilderTests
             
             var aud = Assert.Single(descriptor.Claims, c => c.Type == OAuthClaimTypes.Aud);
             Assert.Equal(audience.Value, aud.Value);
+        }
+        
+        [Fact]
+        public void WithAudience_ReturnsBuilder()
+        {
+            var builder = new JwtBuilder(Issuer);
+            Assert.Same(builder, builder.WithAudience(new AudienceName("api")));
         }
     }
 
@@ -226,6 +247,13 @@ public class JwtBuilderTests
             Assert.Contains(scopes, c => c.Value == read.Value);
             Assert.Contains(scopes, c => c.Value == write.Value);
         }
+        
+        [Fact]
+        public void WithScopes_ReturnsBuilder()
+        {
+            var builder = CreateValidBuilder();
+            Assert.Same(builder, builder.WithScopes(new Scope("read")));
+        }
     }
 
     public class WithClaim : JwtBuilderTests
@@ -282,6 +310,13 @@ public class JwtBuilderTests
         {
             Assert.ThrowsAny<ArgumentException>(() => CreateValidBuilder()
                 .WithClaim("type", value!));
+        }
+        
+        [Fact]
+        public void WithClaim_ReturnsBuilder()
+        {
+            var builder = CreateValidBuilder();
+            Assert.Same(builder, builder.WithClaim("type", "value"));
         }
     }
 
