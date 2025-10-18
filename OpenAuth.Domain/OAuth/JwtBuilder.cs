@@ -25,6 +25,11 @@ public class JwtBuilder
 
     public JwtBuilder WithSubject(string subject)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(subject);
+        
+        if (_claims.Any(c => c.Type == OAuthClaimTypes.Sub))
+            throw new InvalidOperationException("Subject claim already set.");
+        
         WithClaim(OAuthClaimTypes.Sub, subject);
         return this;
     }
