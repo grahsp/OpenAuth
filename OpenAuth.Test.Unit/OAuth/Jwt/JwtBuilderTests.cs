@@ -350,6 +350,13 @@ public class JwtBuilderTests
             Assert.Throws<InvalidOperationException>(()
                 => builder.WithLifetime(TimeSpan.FromSeconds(1)));
         }
+        
+        [Fact]
+        public void WithLifetime_ReturnsBuilder()
+        {
+            var builder = CreateValidBuilder();
+            Assert.Same(builder, builder.WithLifetime(TimeSpan.FromSeconds(1)));
+        }
     }
 
     public class Build : JwtBuilderTests
