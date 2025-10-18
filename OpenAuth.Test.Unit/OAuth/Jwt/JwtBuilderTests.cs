@@ -377,37 +377,78 @@ public class JwtBuilderTests
         }
 
         [Fact]
+        public void Build_WithMultipleClients_ThrowsException()
+        {
+            var builder = CreateValidBuilder()
+                .WithClaim(OAuthClaimTypes.Iss, Issuer);
+            
+            var ex = Assert.Throws<InvalidOperationException>(()
+                => builder.Build(_time));
+            
+            Assert.Contains("issuer", ex.Message, StringComparison.OrdinalIgnoreCase);
+        }
+
+        [Fact]
         public void Build_WithoutClientId_ThrowsException()
         {
-            var ex = Assert.Throws<InvalidOperationException>(
-                () => new JwtBuilder(Issuer)
-                    .WithAudience(new AudienceName("api"))
-                    .WithSubject("subject")
-                    .Build(_time));
+            var builder = new JwtBuilder(Issuer)
+                .WithAudience(new AudienceName("api"))
+                .WithSubject("subject");
+                
+            var ex = Assert.Throws<InvalidOperationException>(()
+                => builder.Build(_time));
         
             Assert.Contains("client id", ex.Message, StringComparison.OrdinalIgnoreCase);
         }
 
         [Fact]
+        public void Build_WithMultipleAudiences_ThrowsException()
+        {
+            var builder = CreateValidBuilder()
+                .WithClaim(OAuthClaimTypes.Aud, "api")
+                .WithClaim(OAuthClaimTypes.Aud, "api");
+            
+            var ex = Assert.Throws<InvalidOperationException>(()
+                => builder.Build(_time));
+            
+            Assert.Contains("audience", ex.Message, StringComparison.OrdinalIgnoreCase);
+        }
+
+        [Fact]
         public void Build_WithoutAudience_ThrowsException()
         {
-            var ex = Assert.Throws<InvalidOperationException>(
-                () => new JwtBuilder(Issuer)
-                    .WithClient(ClientId.New())
-                    .WithSubject("subject")
-                    .Build(_time));
+            var builder = new JwtBuilder(Issuer)
+                .WithClient(ClientId.New())
+                .WithSubject("subject");
+            
+            var ex = Assert.Throws<InvalidOperationException>(()
+                => builder.Build(_time));
 
             Assert.Contains("audience", ex.Message, StringComparison.OrdinalIgnoreCase);
+        }
+
+        [Fact]
+        public void Build_WithMultipleSubjects_ThrowsException()
+        {
+            var builder = CreateValidBuilder()
+                .WithClaim(OAuthClaimTypes.Sub, "subject")
+                .WithClaim(OAuthClaimTypes.Sub, "subject");
+            
+            var ex = Assert.Throws<InvalidOperationException>(()
+                => builder.Build(_time));
+            
+            Assert.Contains("subject", ex.Message, StringComparison.OrdinalIgnoreCase);
         }
     
         [Fact]
         public void Build_WithoutSubject_ThrowsException()
         {
-            var ex = Assert.Throws<InvalidOperationException>(
-                () => new JwtBuilder(Issuer)
-                    .WithClient(ClientId.New())
-                    .WithAudience(new AudienceName("api"))
-                    .Build(_time));
+            var builder = new JwtBuilder(Issuer)
+                .WithClient(ClientId.New())
+                .WithAudience(new AudienceName("api"));
+                
+            var ex = Assert.Throws<InvalidOperationException>(()
+                => builder.Build(_time));
         
             Assert.Contains("subject", ex.Message, StringComparison.OrdinalIgnoreCase);
         }

@@ -100,13 +100,24 @@ public class JwtBuilder
 
     private static void ValidateClaims(IReadOnlyCollection<Claim> claims)
     {
-        if (!claims.Any(c => c.Type == OAuthClaimTypes.ClientId))
-            throw new InvalidOperationException("Client ID is required.");
+        ValidateSingleClaim(claims, OAuthClaimTypes.Iss, "Issuer");
+        ValidateSingleClaim(claims, OAuthClaimTypes.ClientId, "Client ID");
+        ValidateSingleClaim(claims, OAuthClaimTypes.Aud, "Audience");
+        ValidateSingleClaim(claims, OAuthClaimTypes.Sub, "Subject");
+    }
+
+    private static void ValidateSingleClaim(IReadOnlyCollection<Claim> claims, string claimType, string claimName)
+    {
+        var count = claims.Count(c => c.Type == claimType);
+
+        var message = count switch
+        {
+            0 => $"Claim '{claimName}' is required.",
+            > 1 => $"Only one '{claimName}' claim is allowed.",
+            _ => null
+        };
         
-        if (!claims.Any(c => c.Type == OAuthClaimTypes.Sub))
-            throw new InvalidOperationException("Subject claim is required.");
-        
-        if (!claims.Any(c => c.Type == OAuthClaimTypes.Aud))
-            throw new InvalidOperationException("At least one audience is required.");
+        if (message is not null)
+            throw new InvalidOperationException(message);
     }
 }
