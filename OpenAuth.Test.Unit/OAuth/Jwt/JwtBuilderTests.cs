@@ -18,6 +18,53 @@ public class JwtBuilderTests
             .WithAudience(new AudienceName("api"));
 
 
+    public class WithAudience : JwtBuilderTests
+    {
+        [Fact]
+        public void WithAudience_AudienceNull_ThrowsException()
+        {
+            var builder = new JwtBuilder(Issuer);
+            
+            Assert.ThrowsAny<ArgumentException>(()
+                => builder.WithAudience(null!));
+        }
+
+        [Fact]
+        public void WithAudience_WhenAudienceAlreadySet_ThrowsException()
+        {
+            var builder = new JwtBuilder(Issuer)
+                .WithAudience(new AudienceName("web"));
+            
+            Assert.Throws<InvalidOperationException>(()
+                => builder.WithAudience(new AudienceName("api")));
+        }
+
+        [Fact]
+        public void WithAudience_AfterWithClaims_ThrowsException()
+        {
+            var builder = new JwtBuilder(Issuer)
+                .WithClaim(OAuthClaimTypes.Aud, "audience");
+            
+            Assert.Throws<InvalidOperationException>(()
+                => builder.WithAudience(new AudienceName("api")));
+        }
+        
+        [Fact]
+        public void WithAudience_WhenValid_AddsAudience()
+        {
+            var audience = new AudienceName("api");
+            
+            var descriptor = new JwtBuilder(Issuer)
+                .WithClient(ClientId.New())
+                .WithSubject("subject")
+                .WithAudience(audience)
+                .Build(_time);
+            
+            var aud = Assert.Single(descriptor.Claims, c => c.Type == OAuthClaimTypes.Aud);
+            Assert.Equal(audience.Value, aud.Value);
+        }
+    }
+
     public class WithScopes : JwtBuilderTests
     {
         [Fact]
@@ -25,7 +72,7 @@ public class JwtBuilderTests
         {
             Assert.ThrowsAny<ArgumentException>(()
                 => CreateValidBuilder()
-                .WithScopes(new Scope("read"), null!));
+                    .WithScopes(new Scope("read"), null!));
         }
 
         [Fact]
