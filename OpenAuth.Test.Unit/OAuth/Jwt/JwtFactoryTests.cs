@@ -1,3 +1,4 @@
+using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using Microsoft.Extensions.Time.Testing;
 using Microsoft.IdentityModel.Tokens;
@@ -49,24 +50,26 @@ public class JwtFactoryTests
         return new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
     }
 
-    private JwtDescriptor CreateValidDescriptor()
+    private JwtBuilder CreateValidBuilder()
     {
         return new JwtBuilder("issuer")
             .WithClient(ClientId.New())
             .WithSubject("subject")
-            .WithAudience(new AudienceName("api"))
+            .WithAudience(new AudienceName("api"));
+    }
+
+    private JwtDescriptor CreateValidDescriptor()
+    {
+        return CreateValidBuilder()
             .Build(_time);
     }
 
 
     [Fact]
-    public async Task Create_WithValidDescriptor_ReturnsAccessTokenResult()
+    public async Task Create_SetsCorrectMetadata()
     {
         var lifetime = TimeSpan.FromMinutes(5);
-        var descriptor = new JwtBuilder("issuer")
-            .WithClient(ClientId.New())
-            .WithSubject("Subject")
-            .WithAudience(new AudienceName("api"))
+        var descriptor = CreateValidBuilder()
             .WithLifetime(lifetime)
             .Build(_time);
 
@@ -75,7 +78,38 @@ public class JwtFactoryTests
         Assert.NotNull(result);
         Assert.NotEmpty(result.Token);
         Assert.Equal(TokenType.Bearer, result.TokenType);
-        Assert.Equal(lifetime.Seconds, result.ExpiresIn);
+        Assert.Equal((int)lifetime.TotalSeconds, result.ExpiresIn);
+    }
+
+    [Fact]
+    public async Task Create_IncludesClaimsFromDescriptor()
+    {
+        var descriptor = CreateValidDescriptor();
+
+        var result = await _sut.Create(descriptor);
+
+        var handler = new JwtSecurityTokenHandler();
+        var jwt = handler.ReadJwtToken(result.Token);
+        
+        Assert.NotEmpty(jwt.Claims);
+        Assert.Equal(descriptor.Claims.Count, jwt.Claims.Count());
+    }
+
+    [Fact]
+    public async Task Create_WithMultipleScopes_IncludesAllScopes()
+    {
+        var descriptor = CreateValidBuilder()
+            .WithScopes(new Scope("read"), new Scope("write"))
+            .Build(_time);
+        
+        var result = await _sut.Create(descriptor);
+        
+        var handler = new JwtSecurityTokenHandler();
+        var jwt = handler.ReadJwtToken(result.Token);
+        
+        var scopes = jwt.Claims.Where(c => c.Type == OAuthClaimTypes.Scope).ToArray();
+        Assert.Contains(scopes, c => c.Value == "read");
+        Assert.Contains(scopes, c => c.Value == "write");
     }
 
     [Fact]
@@ -86,6 +120,18 @@ public class JwtFactoryTests
         await _sut.Create(descriptor);
         
         await _keyService.Received(1).GetCurrentKeyDataAsync(Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Create_PassesCancellationToken()
+    {
+        var cts = new CancellationTokenSource();
+        var token = cts.Token;
+        var descriptor = CreateValidDescriptor();
+        
+        await _sut.Create(descriptor, token);
+        
+        await _keyService.Received(1).GetCurrentKeyDataAsync(token);
     }
 
     [Fact]
