@@ -1,14 +1,11 @@
 using System.IdentityModel.Tokens.Jwt;
+using OpenAuth.Application.OAuth;
+using OpenAuth.Application.OAuth.Jwts;
 using OpenAuth.Application.Security.Signing;
 using OpenAuth.Application.SigningKeys.Interfaces;
 using OpenAuth.Domain.OAuth;
 
 namespace OpenAuth.Infrastructure.OAuth.Jwt;
-
-public interface IJwtFactory
-{
-    Task<AccessTokenResult> Create(JwtDescriptor descriptor, CancellationToken ct = default);
-}
 
 public class JwtFactory : IJwtFactory
 {

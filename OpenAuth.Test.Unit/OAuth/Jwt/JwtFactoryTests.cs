@@ -3,6 +3,8 @@ using System.Text;
 using Microsoft.Extensions.Time.Testing;
 using Microsoft.IdentityModel.Tokens;
 using NSubstitute;
+using OpenAuth.Application.OAuth;
+using OpenAuth.Application.OAuth.Jwts;
 using OpenAuth.Application.Security.Signing;
 using OpenAuth.Application.SigningKeys.Dtos;
 using OpenAuth.Application.SigningKeys.Interfaces;
