@@ -6,7 +6,7 @@ namespace OpenAuth.Test.Unit.Security.Hashing;
 
 public class Pbkdf2HasherTests
 {
-    private readonly ISecretHasher _hasher = new Pbkdf2Hasher(iterations: 60_000); // keep test-time reasonable
+    private readonly IHasher _hasher = new Pbkdf2Hasher(iterations: 60_000); // keep test-time reasonable
 
     [Fact]
     public void Hash_Then_Verify_Succeeds()
@@ -28,7 +28,7 @@ public class Pbkdf2HasherTests
     public void Hash_Format_HasVersionIterationsSaltHash()
     {
         var hash = _hasher.Hash("x");
-        var value = hash.Value;
+        var value = hash;
 
         Assert.StartsWith("v1$", value, StringComparison.Ordinal);
         var parts = value.Split('$');
@@ -41,32 +41,32 @@ public class Pbkdf2HasherTests
     [Fact]
     public void Verify_TamperedIterations_Fails()
     {
-        var h = _hasher.Hash("x").Value;
+        var h = _hasher.Hash("x");
         var parts = h.Split('$');
         parts[1] = "1"; // ridiculous
         var tampered = new SecretHash(string.Join('$', parts));
-        Assert.False(_hasher.Verify("x", tampered));
+        Assert.False(_hasher.Verify("x", tampered.Value));
     }
 
     [Fact]
     public void Verify_TamperedSalt_Fails()
     {
-        var h = _hasher.Hash("x").Value;
+        var h = _hasher.Hash("x");
         var parts = h.Split('$');
         parts[2] = "!!!not-base64!!!";
         var tampered = new SecretHash(string.Join('$', parts));
-        Assert.False(_hasher.Verify("x", tampered));
+        Assert.False(_hasher.Verify("x", tampered.Value));
     }
 
     [Fact]
     public void Verify_TamperedHash_Fails()
     {
-        var h = _hasher.Hash("x").Value;
+        var h = _hasher.Hash("x");
         var parts = h.Split('$');
         // Change last char safely
         parts[3] = parts[3].Substring(0, parts[3].Length - 1) + (parts[3].EndsWith("A") ? "B" : "A");
         var tampered = new SecretHash(string.Join('$', parts));
-        Assert.False(_hasher.Verify("x", tampered));
+        Assert.False(_hasher.Verify("x", tampered.Value));
     }
 
     [Fact]

@@ -14,18 +14,18 @@ public class SecretServiceTests
 {
     private FakeClientRepository _repo;
     private ISecretGenerator _generator;
-    private ISecretHasher _hasher;
+    private IHasher _hasher;
     private FakeTimeProvider _time;
 
     public SecretServiceTests()
     {
         _repo = new FakeClientRepository();
         _generator = Substitute.For<ISecretGenerator>();
-        _hasher = Substitute.For<ISecretHasher>();
+        _hasher = Substitute.For<IHasher>();
         _time = new FakeTimeProvider();
         
         _generator.Generate().Returns("secret");
-        _hasher.Hash(Arg.Any<string>()).Returns(new SecretHash("$2a$10$hash"));
+        _hasher.Hash(Arg.Any<string>()).Returns("$2a$10$hash");
     }
 
     private SecretService CreateSut()
@@ -58,7 +58,7 @@ public class SecretServiceTests
             _repo.Add(client);
 
             var expectedPlain = "secret";
-            var expectedHash = new SecretHash("$2a$10$hash");
+            var expectedHash = "$2a$10$hash";
             _generator.Generate().Returns(expectedPlain);
             _hasher.Hash(Arg.Any<string>()).Returns(expectedHash);
             
@@ -73,7 +73,7 @@ public class SecretServiceTests
             Assert.Equal(expectedUtcNow, result.CreatedAt);
             
             var secret = client.Secrets.Single();
-            Assert.Equal(expectedHash, secret.Hash);
+            Assert.Equal(expectedHash, secret.Hash.Value);
             Assert.Equal(secret.Id, result.SecretId);
         }
         
