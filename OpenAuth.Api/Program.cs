@@ -67,7 +67,7 @@ public class Program
         // Secret Services
         builder.Services.AddScoped<ISecretService, SecretService>();
         builder.Services.AddScoped<ISecretQueryService, SecretQueryService>();
-        builder.Services.AddScoped<ISecretHasher, Pbkdf2Hasher>();
+        builder.Services.AddScoped<IHasher, Pbkdf2Hasher>();
         builder.Services.AddScoped<ISecretGenerator, SecretGenerator>();
 
         // Signing Keys

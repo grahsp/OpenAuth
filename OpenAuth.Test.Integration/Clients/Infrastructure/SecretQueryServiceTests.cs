@@ -15,7 +15,7 @@ public class SecretQueryServiceTests : IAsyncLifetime
 {
     private readonly SqlServerFixture _fx;
     private readonly FakeTimeProvider _time;
-    private readonly ISecretHasher _hasher;
+    private readonly IHasher _hasher;
     private readonly SecretQueryService _sut;
     
     public SecretQueryServiceTests(SqlServerFixture fx)

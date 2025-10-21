@@ -12,10 +12,10 @@ namespace OpenAuth.Infrastructure.Clients.Secrets.Persistence;
 public class SecretQueryService : ISecretQueryService
 {
     private readonly AppDbContext _context;
-    private readonly ISecretHasher _hasher;
+    private readonly IHasher _hasher;
     private readonly TimeProvider _time;
     
-    public SecretQueryService(AppDbContext context, ISecretHasher hasher, TimeProvider time)
+    public SecretQueryService(AppDbContext context, IHasher hasher, TimeProvider time)
     {
         _context = context;
         _hasher = hasher;
@@ -35,7 +35,7 @@ public class SecretQueryService : ISecretQueryService
             .Select(s => s.Hash)
             .ToListAsync(ct);
 
-        return hashes.Any(hash => _hasher.Verify(plainSecret, hash));
+        return hashes.Any(hash => _hasher.Verify(plainSecret, hash.Value));
     }
 
     public async Task<IReadOnlyCollection<SecretInfo>> GetActiveSecretsAsync(ClientId clientId, CancellationToken ct = default)

@@ -20,7 +20,7 @@ public class SecretServiceTests : IAsyncLifetime
     private readonly SqlServerFixture _fx;
     private readonly FakeTimeProvider _time;
     private readonly ISecretGenerator _generator;
-    private readonly ISecretHasher _hasher;
+    private readonly IHasher _hasher;
     private readonly IClientRepository _repository;
     private readonly SecretService _sut;
     
@@ -145,7 +145,7 @@ public class SecretServiceTests : IAsyncLifetime
                 Assert.NotEqual(result.PlainTextSecret, storedHash.Value);
                 
                 // Verify the hash can validate the plain secret
-                Assert.True(_hasher.Verify(result.PlainTextSecret, storedHash));
+                Assert.True(_hasher.Verify(result.PlainTextSecret, storedHash.Value));
             }
         }
 

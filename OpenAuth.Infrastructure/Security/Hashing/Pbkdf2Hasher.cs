@@ -5,7 +5,7 @@ using OpenAuth.Domain.Clients.Secrets.ValueObjects;
 
 namespace OpenAuth.Infrastructure.Security.Hashing;
 
-public class Pbkdf2Hasher : ISecretHasher
+public class Pbkdf2Hasher : IHasher
 {
     private const string Version = "v1";
     private const int SaltSize = 16;
@@ -24,7 +24,7 @@ public class Pbkdf2Hasher : ISecretHasher
         _iterations = iterations;
     }
     
-    public SecretHash Hash(string plain)
+    public string Hash(string plain)
     {
         ArgumentNullException.ThrowIfNull(plain);
         ArgumentException.ThrowIfNullOrWhiteSpace(plain);
@@ -38,17 +38,17 @@ public class Pbkdf2Hasher : ISecretHasher
             Convert.ToBase64String(salt),
             Convert.ToBase64String(key));
 
-        return new SecretHash(encoded);
+        return encoded;
     }
 
-    public bool Verify(string plain, SecretHash encoded)
+    public bool Verify(string plain, string encoded)
     {
-        ArgumentNullException.ThrowIfNull(encoded.Value);
+        ArgumentNullException.ThrowIfNull(encoded);
 
         if (string.IsNullOrWhiteSpace(plain))
             return false;
 
-        var parts = encoded.Value.Split(Separator);
+        var parts = encoded.Split(Separator);
         if (parts is not [Version, _, _, _])
             return false;
 
