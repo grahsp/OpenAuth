@@ -15,6 +15,8 @@ public class User
 
     private User(string username, Email email, HashedPassword hashedPassword, DateTimeOffset utcNow)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(username);
+        
         Id = UserId.New();
         Username = username;
         Email = email;
