@@ -6,14 +6,14 @@ public class User
 {
     public UserId Id { get; private init; }
     public string Username { get; private set; }
-    public string Email { get; private set; }
+    public Email Email { get; private set; }
     public HashedPassword HashedPassword { get; private set; }
     public bool IsActive { get; private set; }
     public DateTimeOffset CreatedAt { get; private set; }
 
     private User() { }
 
-    private User(string email, string username, HashedPassword hashedPassword)
+    private User(string username, Email email, HashedPassword hashedPassword)
     {
         Id = UserId.New();
         Username = username;
@@ -23,8 +23,8 @@ public class User
         CreatedAt = DateTimeOffset.Now;
     }
 
-    internal static User Create(string email, string username, HashedPassword passwordHash)
+    internal static User Create(string username, Email email, HashedPassword passwordHash)
     {
-        return new User(email, username, passwordHash);
+        return new User(username, email, passwordHash);
     }
 }
