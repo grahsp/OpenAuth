@@ -13,18 +13,18 @@ public class User
 
     private User() { }
 
-    private User(string username, Email email, HashedPassword hashedPassword)
+    private User(string username, Email email, HashedPassword hashedPassword, DateTimeOffset utcNow)
     {
         Id = UserId.New();
         Username = username;
         Email = email;
         HashedPassword = hashedPassword;
         IsActive = true;
-        CreatedAt = DateTimeOffset.Now;
+        CreatedAt = utcNow;
     }
 
-    internal static User Create(string username, Email email, HashedPassword passwordHash)
+    internal static User Create(string username, Email email, HashedPassword passwordHash, DateTimeOffset utcNow)
     {
-        return new User(username, email, passwordHash);
+        return new User(username, email, passwordHash, utcNow);
     }
 }
