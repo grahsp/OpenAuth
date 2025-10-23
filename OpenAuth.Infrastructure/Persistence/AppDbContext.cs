@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using OpenAuth.Domain.Clients;
 using OpenAuth.Domain.Clients.Secrets;
 using OpenAuth.Domain.SigningKeys;
+using OpenAuth.Domain.Users;
 
 namespace OpenAuth.Infrastructure.Persistence;
 
@@ -9,6 +10,7 @@ public class AppDbContext : DbContext
 {
     public AppDbContext(DbContextOptions options) : base(options) { }
 
+    public DbSet<User> Users { get; set; }
     public DbSet<Client> Clients { get; set; }
     public DbSet<Secret> ClientSecrets { get; set; }
     public DbSet<SigningKey> SigningKeys { get; set; }
