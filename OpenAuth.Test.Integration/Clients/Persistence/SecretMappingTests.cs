@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Time.Testing;
 using OpenAuth.Domain.Clients.Secrets;
 using OpenAuth.Test.Common.Builders;
-using OpenAuth.Test.Integration.Fixtures;
+using OpenAuth.Test.Integration.Infrastructure;
 
 namespace OpenAuth.Test.Integration.Clients.Persistence;
 

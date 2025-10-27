@@ -5,7 +5,7 @@ using OpenAuth.Domain.Clients.ValueObjects;
 using OpenAuth.Infrastructure.Clients.Persistence;
 using OpenAuth.Infrastructure.Persistence;
 using OpenAuth.Test.Common.Builders;
-using OpenAuth.Test.Integration.Fixtures;
+using OpenAuth.Test.Integration.Infrastructure;
 
 namespace OpenAuth.Test.Integration.Clients.Infrastructure;
 

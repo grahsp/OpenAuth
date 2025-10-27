@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Time.Testing;
 using OpenAuth.Domain.Users;
 using OpenAuth.Domain.Users.ValueObjects;
-using OpenAuth.Test.Integration.Fixtures;
+using OpenAuth.Test.Integration.Infrastructure;
 
 namespace OpenAuth.Test.Integration.Users;
 
