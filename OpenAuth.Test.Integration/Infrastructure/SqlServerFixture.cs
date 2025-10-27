@@ -5,10 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using OpenAuth.Infrastructure.Persistence;
 using Respawn;
 
-namespace OpenAuth.Test.Integration.Fixtures;
-
-[CollectionDefinition("sqlserver")]
-public class SqlServerCollection : ICollectionFixture<SqlServerFixture>;
+namespace OpenAuth.Test.Integration.Infrastructure;
 
 public class SqlServerFixture : IAsyncLifetime
 {
@@ -16,7 +13,7 @@ public class SqlServerFixture : IAsyncLifetime
     private int _port;
     private Respawner _respawner = null!;
 
-    private string ConnectionString =>
+    public string ConnectionString =>
         $"Server=127.0.0.1,{_port};Database=IntegrationTest;User Id=sa;Password=Passw0rd!123;TrustServerCertificate=True;Encrypt=False;";
 
     public async Task InitializeAsync()

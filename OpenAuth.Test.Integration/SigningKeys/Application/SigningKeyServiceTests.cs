@@ -6,7 +6,7 @@ using OpenAuth.Domain.SigningKeys.Enums;
 using OpenAuth.Domain.SigningKeys.ValueObjects;
 using OpenAuth.Infrastructure.SigningKeys.KeyMaterials;
 using OpenAuth.Infrastructure.SigningKeys.Persistence;
-using OpenAuth.Test.Integration.Fixtures;
+using OpenAuth.Test.Integration.Infrastructure;
 
 namespace OpenAuth.Test.Integration.SigningKeys.Application;
 

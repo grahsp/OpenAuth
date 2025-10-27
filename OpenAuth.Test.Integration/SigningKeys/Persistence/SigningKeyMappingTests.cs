@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Time.Testing;
 using OpenAuth.Test.Common.Helpers;
-using OpenAuth.Test.Integration.Fixtures;
+using OpenAuth.Test.Integration.Infrastructure;
 using Key = OpenAuth.Domain.SigningKeys.ValueObjects.Key;
 
 namespace OpenAuth.Test.Integration.SigningKeys.Persistence;
