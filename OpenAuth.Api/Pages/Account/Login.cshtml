@@ -1,0 +1,52 @@
+@page
+@model OpenAuth.Api.Pages.Account.Login
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+@{
+    ViewData["Title"] = "Sign In";
+}
+
+<html lang="en">
+<head>
+    <title>@ViewData["Title"]</title>
+</head>
+<body>
+<h1>Welcome Back</h1>
+<p class="subtitle">Sign in to continue</p>
+
+<div asp-validation-summary="ModelOnly" class="error-message"></div>
+
+<form method="post">
+    @Html.AntiForgeryToken()
+
+    <div class="form-group">
+        <label asp-for="Input.Username">Username</label>
+        <input asp-for="Input.Username" placeholder="Enter your username" autofocus/>
+        <span asp-validation-for="Input.Username" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Input.Password">Password</label>
+        <input asp-for="Input.Password" placeholder="Enter your password"/>
+        <span asp-validation-for="Input.Password" class="text-danger"></span>
+    </div>
+    
+    <div class="checkbox-group">
+        <input asp-for="Input.RememberMe" type="checkbox" id="rememberMe" />
+        <label asp-for="Input.RememberMe" for="rememberMe">Remember me</label>
+    </div>
+
+    <input type="hidden" asp-for="ReturnUrl"/>
+
+    <button type="submit">Sign In</button>
+</form>
+
+<div class="footer">
+    <p>Don't have an account? <a asp-page="/account/register" asp-route-returnUrl="@Model.ReturnUrl">Register Here</a></p>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScripts" />
+}
+</body>
+</html>
