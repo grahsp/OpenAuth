@@ -19,6 +19,8 @@ using OpenAuth.Application.SigningKeys.Services;
 using OpenAuth.Application.Tokens.Flows;
 using OpenAuth.Application.Tokens.Interfaces;
 using OpenAuth.Application.Tokens.Services;
+using OpenAuth.Application.Users.Interfaces;
+using OpenAuth.Application.Users.Services;
 using OpenAuth.Domain.AuthorizationGrants;
 using OpenAuth.Domain.Users;
 using OpenAuth.Infrastructure.Clients.Persistence;
@@ -34,6 +36,7 @@ using OpenAuth.Infrastructure.SigningKeys.KeyMaterials;
 using OpenAuth.Infrastructure.SigningKeys.Persistence;
 using OpenAuth.Infrastructure.Tokens;
 using OpenAuth.Infrastructure.Tokens.SigningCredentials;
+using OpenAuth.Infrastructure.Users.Persistence;
 
 namespace OpenAuth.Api;
 
@@ -139,6 +142,10 @@ public class Program
         // Token Generator
         builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("Auth"));
         builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
+        
+        // User
+        builder.Services.AddScoped<IUserRepository, UserRepository>();
+        builder.Services.AddScoped<IUserService, UserService>();
         
 
         // Configure the HTTP request pipeline.
