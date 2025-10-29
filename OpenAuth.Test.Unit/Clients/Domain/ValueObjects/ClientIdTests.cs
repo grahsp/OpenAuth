@@ -5,6 +5,13 @@ namespace OpenAuth.Test.Unit.Clients.Domain.ValueObjects;
 public class ClientIdTests
 {
     [Fact]
+    public void New_ReturnsNonEmptyRandomGuid()
+    {
+        var clientId = ClientId.New();
+        Assert.NotEqual(Guid.Empty, clientId.Value);
+    }
+    
+    [Fact]
     public void TryCreate_WhenInputValid_ReturnsTrueAndClientId()
     {
         var expected = Guid.NewGuid().ToString();
@@ -34,5 +41,14 @@ public class ClientIdTests
         
         Assert.False(result);
         Assert.Equal(Guid.Empty, actual.Value);
+    }
+    
+    [Fact]
+    public void ToString_ReturnsValueAsString()
+    {
+        var guid = Guid.NewGuid();
+        var clientId = new ClientId(guid);
+        
+        Assert.Equal(guid.ToString(), clientId.ToString());
     }
 }
