@@ -12,6 +12,7 @@ public class AppDbContext : IdentityDbContext<User, IdentityRole<Guid>, Guid>
 {
     public AppDbContext(DbContextOptions options) : base(options) { }
 
+    public DbSet<User> Users { get; set; }
     public DbSet<Client> Clients { get; set; }
     public DbSet<Secret> ClientSecrets { get; set; }
     public DbSet<SigningKey> SigningKeys { get; set; }
