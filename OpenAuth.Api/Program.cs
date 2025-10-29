@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using OpenAuth.Application.Audiences.Services;
 using OpenAuth.Application.Clients.Factories;
@@ -18,9 +19,8 @@ using OpenAuth.Application.SigningKeys.Services;
 using OpenAuth.Application.Tokens.Flows;
 using OpenAuth.Application.Tokens.Interfaces;
 using OpenAuth.Application.Tokens.Services;
-using OpenAuth.Application.Users.Interfaces;
-using OpenAuth.Application.Users.Services;
 using OpenAuth.Domain.AuthorizationGrants;
+using OpenAuth.Domain.Users;
 using OpenAuth.Infrastructure.Clients.Persistence;
 using OpenAuth.Infrastructure.Clients.Secrets;
 using OpenAuth.Infrastructure.Clients.Secrets.Persistence;
@@ -34,7 +34,6 @@ using OpenAuth.Infrastructure.SigningKeys.KeyMaterials;
 using OpenAuth.Infrastructure.SigningKeys.Persistence;
 using OpenAuth.Infrastructure.Tokens;
 using OpenAuth.Infrastructure.Tokens.SigningCredentials;
-using OpenAuth.Infrastructure.Users.Persistence;
 
 namespace OpenAuth.Api;
 
@@ -55,6 +54,30 @@ public class Program
         {
             opts.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
         });
+
+        builder.Services.AddIdentity<User, IdentityRole<Guid>>(options =>
+        {
+            // Password settings
+            options.Password.RequireDigit = false;
+            options.Password.RequireLowercase = false;
+            options.Password.RequireUppercase = false;
+            options.Password.RequireNonAlphanumeric = false;
+            options.Password.RequiredLength = 4;
+            options.Password.RequiredUniqueChars = 0;
+            
+            // Lockout settings
+            options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
+            options.Lockout.MaxFailedAccessAttempts = 5;
+            options.Lockout.AllowedForNewUsers = true;
+            
+            // User settings
+            options.User.RequireUniqueEmail = true;
+
+            // Sign in settings
+            options.SignIn.RequireConfirmedEmail = false;
+        })
+        .AddEntityFrameworkStores<AppDbContext>()
+        .AddDefaultTokenProviders();
         
         builder.Services.AddSingleton(TimeProvider.System);
 
@@ -105,13 +128,12 @@ public class Program
         builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("Auth"));
         builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
         
-        // User
-        builder.Services.AddScoped<IUserRepository, UserRepository>();
-        builder.Services.AddScoped<IUserService, UserService>();
-        
 
         // Configure the HTTP request pipeline.
         var app = builder.Build();
+
+        app.UseAuthentication();
+        app.UseAuthorization();
 
         app.MapControllers();
 
