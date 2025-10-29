@@ -44,6 +44,7 @@ public class Program
         // Add services to the container.
         var builder = WebApplication.CreateBuilder(args);
 
+        builder.Services.AddRazorPages();
         builder.Services.AddControllers();
         
         builder.Services.AddEndpointsApiExplorer();
@@ -78,6 +79,17 @@ public class Program
         })
         .AddEntityFrameworkStores<AppDbContext>()
         .AddDefaultTokenProviders();
+
+        builder.Services.ConfigureApplicationCookie(options =>
+        {
+            options.LoginPath = "/account/login";
+            options.LogoutPath = "/account/logout";
+            options.AccessDeniedPath = "/account/access_denied";
+            options.Cookie.HttpOnly = true;
+            options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+            options.ExpireTimeSpan = TimeSpan.FromHours(1);
+            options.SlidingExpiration = true;
+        });
         
         builder.Services.AddSingleton(TimeProvider.System);
 
@@ -135,6 +147,7 @@ public class Program
         app.UseAuthentication();
         app.UseAuthorization();
 
+        app.MapRazorPages();
         app.MapControllers();
 
         if (app.Environment.IsDevelopment())
