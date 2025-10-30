@@ -26,7 +26,7 @@ public class RedirectUriTests
     {
         // Act & Assert
         var exception = Assert.Throws<ArgumentException>(() => RedirectUri.Create(uri!));
-        Assert.Contains("cannot be empty", exception.Message);
+        Assert.Contains("invalid redirect uri", exception.Message, StringComparison.OrdinalIgnoreCase);
     }
     
     [Theory]
@@ -38,6 +38,29 @@ public class RedirectUriTests
     {
         // Act & Assert
         Assert.Throws<ArgumentException>(() => RedirectUri.Create(uri));
+    }
+    
+    [Theory]
+    [InlineData("https://app.com/callback")]
+    [InlineData("http://localhost:3000/auth")]
+    [InlineData("not a uri")]
+    [InlineData("")]
+    [InlineData("ftp://invalid.com")]
+    public void Create_BehavesConsistentlyWithTryCreate(string uri)
+    {
+        // Arrange
+        var tryResult = RedirectUri.TryCreate(uri, out var redirectUri);
+
+        // Act
+        if (tryResult)
+        {
+            var created = RedirectUri.Create(uri);
+            Assert.Equal(redirectUri, created);
+        }
+        else
+        {
+            Assert.Throws<ArgumentException>(() => RedirectUri.Create(uri));
+        }
     }
     
     [Fact]
