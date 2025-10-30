@@ -5,6 +5,7 @@ using OpenAuth.Application.Clients.Interfaces;
 using OpenAuth.Application.OAuth.Authorization.Dtos;
 using OpenAuth.Application.OAuth.Authorization.Interfaces;
 using OpenAuth.Domain.AuthorizationGrants;
+using OpenAuth.Domain.Clients.ValueObjects;
 
 namespace OpenAuth.Application.OAuth.Authorization.Handlers;
 
@@ -24,7 +25,7 @@ public class AuthorizationHandler : IAuthorizationHandler
         _time = time;
     }
 
-    public async Task<AuthorizationResponse> AuthorizeAsync(AuthorizationRequest request)
+    public async Task<AuthorizationResponse> AuthorizeAsync(AuthorizationRequest request, string subject)
     {
         var authorizationData = await _clientQueryService.GetAuthorizationDataAsync(request.ClientId)
                                 ?? throw new InvalidOperationException("Client not found.");
@@ -34,8 +35,8 @@ public class AuthorizationHandler : IAuthorizationHandler
         var code = GenerateCode();
         var authorizationGrant = AuthorizationGrant.Create(
             code,
-            request.GrantType,
-            "Test-Subject",
+            GrantType.AuthorizationCode,
+            subject,
             request.ClientId,
             request.RedirectUri,
             request.Audience,
@@ -51,10 +52,6 @@ public class AuthorizationHandler : IAuthorizationHandler
 
     private static void ValidateRequest(ClientAuthorizationData authorizationData, AuthorizationRequest request)
     {
-        if (!authorizationData.GrantTypes.Contains(request.GrantType))
-            throw new InvalidOperationException("Invalid grant type.");
-        
-
         if (authorizationData.RequirePkce && request.Pkce is null)
         {
             throw new InvalidOperationException("Pkce is required.");

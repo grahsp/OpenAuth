@@ -7,7 +7,6 @@ namespace OpenAuth.Application.OAuth.Authorization.Dtos;
 public record AuthorizationRequest
 (
     ClientId ClientId,
-    GrantType GrantType,
     RedirectUri RedirectUri,
     AudienceName Audience,
     Scope[] Scopes,

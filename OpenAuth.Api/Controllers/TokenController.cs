@@ -63,14 +63,13 @@ public class TokenController : ControllerBase
         var codeChallenge = Base64UrlEncoder.Encode(SHA256.HashData(Encoding.UTF8.GetBytes("this-is-a-secret-code")));
         var request = new AuthorizationRequest(
             new ClientId(Guid.Parse("c2b09d6b-e5cb-4154-a03f-7a824fc9c5df")),
-            GrantType.AuthorizationCode,
             RedirectUri.Create("https://example.com/callback"),
             new AudienceName("api"),
             [new Scope("read")],
             Pkce.Create(codeChallenge, CodeChallengeMethod.S256)
         );
 
-        var result = await _authorizationHandler.AuthorizeAsync(request);
+        var result = await _authorizationHandler.AuthorizeAsync(request, "subject");
         return Ok(result);
     }
 }
