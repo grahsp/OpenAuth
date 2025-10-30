@@ -1,8 +1,11 @@
 namespace OpenAuth.Domain.Clients.Audiences.ValueObjects;
 
-public record AudienceName
+public readonly record struct AudienceName
 {
     public string Value { get; }
+    
+    private const int MinLength = 1;
+    private const int MaxLength = 100;
 
     public AudienceName(string value)
     {
@@ -20,6 +23,17 @@ public record AudienceName
         };
     }
 
-    private const int MinLength = 1;
-    private const int MaxLength = 100;
+    public static bool TryCreate(string value, out AudienceName name)
+    {
+        try
+        {
+            name = new AudienceName(value);
+            return true;
+        }
+        catch (Exception)
+        {
+            name = default;
+            return false;
+        }
+    }
 }

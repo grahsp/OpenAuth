@@ -5,7 +5,7 @@ namespace OpenAuth.Domain.Clients.Audiences;
 public sealed class Audience
 {
     public AudienceId Id { get; private init; } = null!;
-    public AudienceName Name { get; private init; } = null!;
+    public AudienceName Name { get; private init; }
 
     private readonly HashSet<Scope> _allowedScopes = [];
     public IReadOnlyCollection<Scope> AllowedScopes => _allowedScopes;
