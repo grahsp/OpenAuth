@@ -4,5 +4,5 @@ namespace OpenAuth.Application.OAuth.Authorization.Handlers;
 
 public interface IAuthorizationHandler
 {
-    Task<AuthorizationResponse> AuthorizeAsync(AuthorizationRequest request);
+    Task<AuthorizationResponse> AuthorizeAsync(AuthorizationRequest request, string subject);
 }

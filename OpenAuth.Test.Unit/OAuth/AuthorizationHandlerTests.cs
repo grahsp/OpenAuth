@@ -41,7 +41,6 @@ public class AuthorizationHandlerTests
 
         _validRequest = new AuthorizationRequest(
             _defaultClient.Id,
-            GrantType.AuthorizationCode,
             RedirectUri.Create("https://example.com/callback"),
             new AudienceName("api"),
             [new Scope("read"), new Scope("write")],
@@ -54,17 +53,7 @@ public class AuthorizationHandlerTests
     public async Task ClientNotFound_Throws()
     {
         await Assert.ThrowsAnyAsync<InvalidOperationException>(()
-            => _sut.AuthorizeAsync(_validRequest));
-    }
-
-    [Fact]
-    public async Task IncorrectGrantType_Throws()
-    {
-        var request = _validRequest with { GrantType = GrantType.ClientCredentials };
-        _clientQueryService.Add(_defaultClient);
-        
-        await Assert.ThrowsAnyAsync<InvalidOperationException>(()
-            => _sut.AuthorizeAsync(request));
+            => _sut.AuthorizeAsync(_validRequest, "subject"));
     }
     
     [Fact]
@@ -74,7 +63,7 @@ public class AuthorizationHandlerTests
         _clientQueryService.Add(_defaultClient);
         
         await Assert.ThrowsAnyAsync<InvalidOperationException>(()
-            => _sut.AuthorizeAsync(request));       
+            => _sut.AuthorizeAsync(request, "subject"));
     }
     
     [Fact]
@@ -84,7 +73,7 @@ public class AuthorizationHandlerTests
         _clientQueryService.Add(_defaultClient);
         
         await Assert.ThrowsAnyAsync<InvalidOperationException>(()
-            => _sut.AuthorizeAsync(request));       
+            => _sut.AuthorizeAsync(request, "subject"));
     }
 
     [Fact]
@@ -94,7 +83,7 @@ public class AuthorizationHandlerTests
         _clientQueryService.Add(_defaultClient);
         
         await Assert.ThrowsAnyAsync<InvalidOperationException>(()
-            => _sut.AuthorizeAsync(request));       
+            => _sut.AuthorizeAsync(request, "subject"));
     }
 
     [Fact]
@@ -107,7 +96,7 @@ public class AuthorizationHandlerTests
         _clientQueryService.Add(_defaultClient);
         
         await Assert.ThrowsAnyAsync<InvalidOperationException>(()
-            => _sut.AuthorizeAsync(request));       
+            => _sut.AuthorizeAsync(request, "subject"));
     }
 
     [Fact]
@@ -119,7 +108,7 @@ public class AuthorizationHandlerTests
         _defaultClient.SetConfidential(_time.GetUtcNow(), false);
         _clientQueryService.Add(_defaultClient);
         
-        await _sut.AuthorizeAsync(request);
+        await _sut.AuthorizeAsync(request, "subject");
     }
 
     [Fact]
@@ -127,7 +116,7 @@ public class AuthorizationHandlerTests
     {
         _clientQueryService.Add(_defaultClient);
 
-        var response = await _sut.AuthorizeAsync(_validRequest);
+        var response = await _sut.AuthorizeAsync(_validRequest, "subject");
         
         Assert.Equal(_validRequest.RedirectUri, response.RedirectUri);
         Assert.NotNull(response.Code);
@@ -139,7 +128,7 @@ public class AuthorizationHandlerTests
     {
         _clientQueryService.Add(_defaultClient);
         
-        await _sut.AuthorizeAsync(_validRequest);
+        await _sut.AuthorizeAsync(_validRequest, "subject");
 
         await _store
             .Received(1)

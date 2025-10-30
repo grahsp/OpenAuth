@@ -34,7 +34,6 @@ public class AuthorizationRequestFactory : IAuthorizationRequestFactory
         var request = new AuthorizationRequest
         (
             clientId,
-            GrantType.AuthorizationCode,
             redirectUri,
             audience,
             scopes,
