@@ -127,7 +127,7 @@ public class JwtBuilderTests
             var builder = new JwtBuilder(Issuer);
             
             Assert.ThrowsAny<ArgumentException>(()
-                => builder.WithAudience(null!));
+                => builder.WithAudience(default));
         }
 
         [Fact]
