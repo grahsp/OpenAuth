@@ -19,6 +19,16 @@ public sealed record Scope
             _ => normalized
         };
     }
+
+    public static Scope[] ParseMany(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return [];
+        
+        return value.Split(' ')
+            .Select(v => new Scope(v.Trim()))
+            .ToArray();
+    }
     
     public override string ToString() => Value;
 }
