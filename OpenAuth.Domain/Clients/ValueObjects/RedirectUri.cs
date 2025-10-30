@@ -1,22 +1,31 @@
 namespace OpenAuth.Domain.Clients.ValueObjects;
 
-public record RedirectUri
+public readonly record struct RedirectUri(string Value)
 {
-    public string Value { get; private init; }
-    
-    private RedirectUri() { }
-
     public static RedirectUri Create(string uri)
     {
+        if (!TryCreate(uri, out var redirectUri))
+            throw new ArgumentException($"Invalid redirect URI: {uri}", nameof(uri));
+
+        return redirectUri;
+    }
+
+    public static bool TryCreate(string uri, out RedirectUri redirectUri)
+    {
+        redirectUri = default;
+        
         if (string.IsNullOrWhiteSpace(uri))
-            throw new ArgumentException("Redirect URI cannot be empty.", nameof(uri));
+            return false;
 
         if (!Uri.TryCreate(uri, UriKind.Absolute, out var parsed))
-            throw new ArgumentException($"Invalid URI format: { parsed }.", nameof(uri));
-        
+            return false;
+
         if (parsed.Scheme is not ("http" or "https"))
-            throw new ArgumentException("Only HTTP and HTTPS schemes are supported.", nameof(uri));
+            return false;
         
-        return new RedirectUri { Value = uri };
+        redirectUri = new RedirectUri(parsed.AbsoluteUri);
+        return true;
     }
+    
+    public override string ToString() => Value;
 }
