@@ -82,27 +82,22 @@ public sealed class Client
     }
     
     
-    // Public
-    public void SetPublic(DateTimeOffset utcNow)
+    public void SetPublic(bool isPublic, DateTimeOffset utcNow)
     {
-        var changed = !IsPublic || !RequirePkce;
+        if (IsPublic == isPublic)
+            return;
         
-        IsPublic = true;
-        RequirePkce = true;
-        
-        if (changed)
-            Touch(utcNow);
+        IsPublic = isPublic;
+        Touch(utcNow);
     }
 
-    public void SetConfidential(DateTimeOffset utcNow, bool requirePkce = true)
+    public void SetPkceRequirement(bool requirePkce, DateTimeOffset utcNow)
     {
-        var changed = IsPublic || RequirePkce != requirePkce;
-        
-        IsPublic = false;
+        if (RequirePkce == requirePkce)
+            return;
+
         RequirePkce = requirePkce;
-        
-        if (changed)
-            Touch(utcNow);
+        Touch(utcNow);
     }
     
     
