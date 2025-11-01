@@ -1,3 +1,6 @@
+using System.Diagnostics.CodeAnalysis;
+using OpenAuth.Domain.Shared.Interfaces;
+
 namespace OpenAuth.Domain.Clients.ValueObjects;
 
 public static class GrantTypes
@@ -7,7 +10,7 @@ public static class GrantTypes
     public const string RefreshToken = "refresh_token";
 }
 
-public record GrantType
+public record GrantType : ICreate<string, GrantType>
 {
     public string Value { get; }
     public bool SupportsPublicClient { get; }
@@ -26,12 +29,22 @@ public record GrantType
     
     public static GrantType Create(string value)
     {
-        return value switch
+        if (!TryCreate(value, out var grantType))
+            throw new ArgumentException($"Invalid grant type: '{value}'");
+        
+        return grantType;
+    }
+
+    public static bool TryCreate(string value, [NotNullWhen(true)] out GrantType? grantType)
+    {
+        grantType = value switch
         {
             GrantTypes.AuthorizationCode => AuthorizationCode,
             GrantTypes.ClientCredentials => ClientCredentials,
             GrantTypes.RefreshToken => RefreshToken,
-            _ => throw new ArgumentException($"Unknown grant type: {value}.", nameof(value))
+            _ => null
         };
+        
+        return grantType is not null;
     }
 }

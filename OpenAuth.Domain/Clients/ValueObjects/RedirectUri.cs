@@ -1,6 +1,9 @@
+using System.Diagnostics.CodeAnalysis;
+using OpenAuth.Domain.Shared.Interfaces;
+
 namespace OpenAuth.Domain.Clients.ValueObjects;
 
-public readonly record struct RedirectUri(string Value)
+public record RedirectUri(string Value) : ICreate<string, RedirectUri>
 {
     public static RedirectUri Create(string uri)
     {
@@ -10,9 +13,9 @@ public readonly record struct RedirectUri(string Value)
         return redirectUri;
     }
 
-    public static bool TryCreate(string uri, out RedirectUri redirectUri)
+    public static bool TryCreate(string uri, [NotNullWhen(true)] out RedirectUri? redirectUri)
     {
-        redirectUri = default;
+        redirectUri = null;
         
         if (string.IsNullOrWhiteSpace(uri))
             return false;

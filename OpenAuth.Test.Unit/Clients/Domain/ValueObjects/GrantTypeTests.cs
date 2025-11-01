@@ -34,7 +34,7 @@ public class GrantTypeTests
     {
         // Act & Assert
         var exception = Assert.Throws<ArgumentException>(() => GrantType.Create(value!));
-        Assert.Contains("Unknown", exception.Message);
+        Assert.Contains("invalid grant type", exception.Message, StringComparison.OrdinalIgnoreCase);
     }
     
     [Fact]
