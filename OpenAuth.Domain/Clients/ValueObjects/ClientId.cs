@@ -1,18 +1,29 @@
+using System.Diagnostics.CodeAnalysis;
+using OpenAuth.Domain.Shared.Interfaces;
+
 namespace OpenAuth.Domain.Clients.ValueObjects;
 
-public readonly record struct ClientId(Guid Value)
+public record ClientId(Guid Value) : ICreate<string, ClientId>
 {
     public static ClientId New() => new(Guid.NewGuid());
 
-    public static bool TryCreate(string value, out ClientId clientId)
+    public static ClientId Create(string value)
+    {
+        if (!TryCreate(value, out var id))
+            throw new ArgumentException($"Invalid client ID: {value}", nameof(value));
+
+        return id;
+    }
+
+    public static bool TryCreate(string value, [NotNullWhen(true)] out ClientId? id)
     {
         if (!Guid.TryParse(value, out var guid) || guid == Guid.Empty)
         {
-            clientId = default;
+            id = null;
             return false;
         }
         
-        clientId = new ClientId(guid);
+        id = new ClientId(guid);
         return true;
     }
     

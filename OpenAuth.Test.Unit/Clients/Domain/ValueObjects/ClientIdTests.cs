@@ -18,6 +18,7 @@ public class ClientIdTests
         var result = ClientId.TryCreate(expected, out var actual);
 
         Assert.True(result);
+        Assert.NotNull(actual);
         Assert.Equal(expected, actual.ToString());
     }
 
@@ -27,7 +28,7 @@ public class ClientIdTests
         var result = ClientId.TryCreate(Guid.Empty.ToString(), out var actual);
 
         Assert.False(result);
-        Assert.Equal(Guid.Empty, actual.Value);
+        Assert.Null(actual);
     }
 
     [Theory]
@@ -40,7 +41,7 @@ public class ClientIdTests
         var result = ClientId.TryCreate(input!, out var actual);
         
         Assert.False(result);
-        Assert.Equal(Guid.Empty, actual.Value);
+        Assert.Null(actual);
     }
     
     [Fact]
