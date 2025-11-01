@@ -37,7 +37,7 @@ public class AuthorizationHandlerTests
             .WithGrantType(GrantTypes.AuthorizationCode)
             .WithRedirectUri("https://example.com/callback")
             .Build();
-        _defaultClient.SetPublic(_time.GetUtcNow());
+        _defaultClient.SetPublic(true, _time.GetUtcNow());
 
         _validRequest = new AuthorizationRequest(
             _defaultClient.Id,
@@ -91,8 +91,9 @@ public class AuthorizationHandlerTests
     {
         var request = _validRequest with { Pkce = null! };
         
-        // Set public to enable PCKE.
-        _defaultClient.SetPublic(_time.GetUtcNow());
+        _defaultClient.SetPublic(true, _time.GetUtcNow());
+        _defaultClient.SetPkceRequirement(true, _time.GetUtcNow());
+        
         _clientQueryService.Add(_defaultClient);
         
         await Assert.ThrowsAnyAsync<InvalidOperationException>(()
@@ -103,9 +104,11 @@ public class AuthorizationHandlerTests
     public async Task IgnoreMissingPkce_WhenPkceDisabled()
     {
         var request = _validRequest with { Pkce = null! };
+        var now = _time.GetUtcNow();
         
-        // Set to confidential and disable PCKE.
-        _defaultClient.SetConfidential(_time.GetUtcNow(), false);
+        _defaultClient.SetPublic(false, now);
+        _defaultClient.SetPkceRequirement(false, now);
+        
         _clientQueryService.Add(_defaultClient);
         
         await _sut.AuthorizeAsync(request, "subject");

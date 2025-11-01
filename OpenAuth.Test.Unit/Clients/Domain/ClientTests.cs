@@ -36,118 +36,57 @@ public class ClientTests
     public class SetPublic : ClientTests
     {
         [Fact]
-        public void SetClientToPublic_WithPkceRequired()
+        public void SetPublic_WhenClientIsConfidential_Updates()
         {
             // Arrange
             var client = new ClientBuilder().Build();
+            client.SetPublic(false, _time.GetUtcNow());
+            
+            _time.Advance(TimeSpan.FromMinutes(5));
             
             // Act
-            client.SetPublic(_time.GetUtcNow());
+            var now = _time.GetUtcNow();
+            client.SetPublic(true, now);
             
             // Assert
             Assert.True(client.IsPublic);
-            Assert.True(client.RequirePkce);
+            Assert.Equal(now, client.UpdatedAt);
         }
         
         [Fact]
-        public void UpdateTimestamp_WhenUpdated()
+        public void SetPublic_WhenClientIsAlreadyPublic_DoesNotUpdate()
         {
             // Arrange
-            var client = new ClientBuilder()
-                .CreatedAt(_time.GetUtcNow()).Build();
-            
-            _time.Advance(TimeSpan.FromMinutes(5));
-            var expected = _time.GetUtcNow();
-            
-            // Act
-            client.SetPublic(expected);
-            
-            // Assert
-            Assert.Equal(expected, client.UpdatedAt);
-        }
-
-        [Fact]
-        public void DoesNotUpdateTimestamp_WhenNotUpdated()
-        {
-            // Arrange
-            var expected = _time.GetUtcNow();
             var client = new ClientBuilder().Build();
+            client.SetPublic(true, _time.GetUtcNow());
             
-            client.SetPublic(expected);
             _time.Advance(TimeSpan.FromMinutes(5));
             
             // Act
-            client.SetPublic(_time.GetUtcNow());
+            var now = _time.GetUtcNow();
+            client.SetPublic(true, now);
             
             // Assert
-            Assert.Equal(expected, client.UpdatedAt);           
+            Assert.True(client.IsPublic);
+            Assert.NotEqual(now, client.UpdatedAt);
         }
     }
-    
-    public class SetConfidential : ClientTests
+
+    public class SetPkceRequirements : ClientTests
     {
         [Fact]
-        public void RequirePkceByDefault()
+        public void SetPkceRequirements_WhenPkceIsNotSetToRequired_Updates()
         {
-            // Arrange
+            var client = new ClientBuilder().Build();
+            client.SetPkceRequirement(false, _time.GetUtcNow());
+            
+            _time.Advance(TimeSpan.FromMinutes(5));
+            
             var now = _time.GetUtcNow();
-            var client = new ClientBuilder().Build();
-            client.SetPublic(now);
+            client.SetPkceRequirement(true, now);
             
-            // Act
-            client.SetConfidential(now);
-            
-            // Assert
-            Assert.False(client.IsPublic);
             Assert.True(client.RequirePkce);
-        }
-        
-        [Fact]
-        public void RequirePkceOverride()
-        {
-            // Arrange
-            var client = new ClientBuilder().Build();
-            
-            // Act
-            client.SetConfidential(_time.GetUtcNow(), requirePkce: false);
-            
-            // Assert
-            Assert.False(client.IsPublic);
-            Assert.False(client.RequirePkce);
-        }
-        
-        [Fact]
-        public void UpdateTimestamp_WhenUpdated()
-        {
-            // Arrange
-            var client = new ClientBuilder().Build();
-            client.SetPublic(_time.GetUtcNow());
-            
-            _time.Advance(TimeSpan.FromMinutes(5));
-            var expected = _time.GetUtcNow();
-            
-            // Act
-            client.SetConfidential(expected);
-            
-            // Assert
-            Assert.Equal(expected, client.UpdatedAt);
-        }
-        
-        [Fact]
-        public void DoesNotUpdateTimestamp_WhenNotUpdated()
-        {
-            // Arrange
-            var expected = _time.GetUtcNow();
-            var client = new ClientBuilder().Build();
-            
-            client.SetConfidential(expected);
-            _time.Advance(TimeSpan.FromMinutes(5));
-            
-            // Act
-            client.SetConfidential(_time.GetUtcNow());
-            
-            // Assert
-            Assert.Equal(expected, client.UpdatedAt);
+            Assert.Equal(now, client.UpdatedAt);
         }
     }
     
