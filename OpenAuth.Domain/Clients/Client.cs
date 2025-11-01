@@ -141,7 +141,7 @@ public sealed class Client
     
     public Audience AddAudience(AudienceName name, DateTimeOffset utcNow)
     {
-        if (_allowedAudiences.Any(a => a.Name == name))
+        if (_allowedAudiences.Any(a => a.Name.NormalizedValue == name.NormalizedValue))
             throw new InvalidOperationException($"Audience {name.Value} already exists.");
 
         var audience = Audience.Create(name, utcNow);
