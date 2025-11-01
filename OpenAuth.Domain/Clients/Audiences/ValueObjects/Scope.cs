@@ -1,24 +1,10 @@
+using OpenAuth.Domain.Shared.ValueObjects;
+
 namespace OpenAuth.Domain.Clients.Audiences.ValueObjects;
 
-public sealed record Scope
+public sealed record Scope : Name
 {
-    public const int Min = 3, Max = 24;
-    
-    public string Value { get; }
-
-    public Scope(string value)
-    {
-        ArgumentNullException.ThrowIfNull(value);
-        ArgumentException.ThrowIfNullOrWhiteSpace(value);
-        
-        var normalized = value.ToLowerInvariant().Trim();
-        Value = normalized.Length switch
-        {
-            < Min => throw new ArgumentOutOfRangeException(nameof(value), $"Value must be greater than {Min} characters long."),
-            > Max => throw new ArgumentOutOfRangeException(nameof(value), $"Value must be less than {Max} characters long."),
-            _ => normalized
-        };
-    }
+    public Scope(string value) : base(value, 2, 32) { }
 
     public static Scope[] ParseMany(string? value)
     {

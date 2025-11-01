@@ -8,7 +8,7 @@ public class ScopeTests
     public void Scope_Normalizes_Value()
     {
         var scope = new Scope("   REaD   ");
-        Assert.Equal("read", scope.Value);
+        Assert.Equal("read", scope.NormalizedValue);
     }
 
     [Fact]
@@ -22,20 +22,20 @@ public class ScopeTests
     public void Scope_ThrowsOn_ValueWhitespace()
     {
         Assert.Throws<ArgumentException>(() =>
-            new Scope(new string(' ', Scope.Min)));
+            new Scope("   "));
     }
     
     [Fact]
     public void Scope_ThrowsOn_ValueTooShort()
     {
         Assert.Throws<ArgumentOutOfRangeException>(() =>
-            new Scope(new string('a', Scope.Min - 1)));
+            new Scope("a"));
     }
     
     [Fact]
     public void Scope_ThrowsOn_ValueTooLong()
     {
         Assert.Throws<ArgumentOutOfRangeException>(() =>
-            new Scope(new string('a', Scope.Max + 1)));
+            new Scope(new string('a',999)));
     }
 }

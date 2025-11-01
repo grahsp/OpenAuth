@@ -1,39 +1,31 @@
+using System.Diagnostics.CodeAnalysis;
+using OpenAuth.Domain.Shared.Interfaces;
+using OpenAuth.Domain.Shared.ValueObjects;
+
 namespace OpenAuth.Domain.Clients.Audiences.ValueObjects;
 
-public readonly record struct AudienceName
+public record AudienceName : Name, ICreate<string, AudienceName>
 {
-    public string Value { get; }
+    public AudienceName(string value) : base(value, 1, 100) { }
     
-    private const int MinLength = 1;
-    private const int MaxLength = 100;
-
-    public AudienceName(string value)
+    public static AudienceName Create(string value)
     {
-        if (string.IsNullOrWhiteSpace(value))
-            throw new ArgumentException("Audience name cannot be empty.", nameof(value));
-
-        var normalized = value.ToLowerInvariant().Trim();
-        Value = normalized.Length switch
-        {
-            < MinLength => throw new ArgumentException($"Audience name must be at least {MinLength} characters.",
-                nameof(value)),
-            > MaxLength => throw new ArgumentException($"Audience name cannot exceed {MaxLength} characters.",
-                nameof(value)),
-            _ => normalized
-        };
+        throw new NotImplementedException();
     }
 
-    public static bool TryCreate(string value, out AudienceName name)
+    public static bool TryCreate(string value, [NotNullWhen(true)] out AudienceName? name)
     {
         try
         {
             name = new AudienceName(value);
             return true;
         }
-        catch (Exception)
+        catch(ArgumentException _)
         {
-            name = default;
+            name = null;
             return false;
         }
     }
+    
+    public override string ToString() => Value;
 }
