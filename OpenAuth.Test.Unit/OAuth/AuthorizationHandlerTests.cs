@@ -9,6 +9,7 @@ using OpenAuth.Domain.AuthorizationGrants.ValueObjects;
 using OpenAuth.Domain.Clients;
 using OpenAuth.Domain.Clients.Audiences.ValueObjects;
 using OpenAuth.Domain.Clients.ValueObjects;
+using OpenAuth.Domain.OAuth;
 using OpenAuth.Test.Common.Builders;
 using OpenAuth.Test.Common.Fakes;
 

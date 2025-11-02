@@ -3,6 +3,7 @@ using Microsoft.Extensions.Time.Testing;
 using OpenAuth.Domain.Clients.Audiences.ValueObjects;
 using OpenAuth.Domain.Clients.Secrets;
 using OpenAuth.Domain.Clients.ValueObjects;
+using OpenAuth.Domain.OAuth;
 using OpenAuth.Test.Common.Builders;
 using OpenAuth.Test.Integration.Infrastructure;
 
