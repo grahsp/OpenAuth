@@ -3,37 +3,39 @@ using OpenAuth.Domain.Clients.ValueObjects;
 
 namespace OpenAuth.Domain.Clients.Secrets;
 
-public class Secret
+public sealed class Secret
 {
-    private Secret() { }
-
-    private Secret(SecretHash hash, DateTimeOffset utcNow, TimeSpan lifetime)
-    {
-        Hash = hash;
-        CreatedAt = utcNow;
-        ExpiresAt = utcNow.Add(lifetime);
-    }
-
-    public SecretId Id { get; private init; } = SecretId.New();
+    public SecretId Id { get; private init; }
     
+    public Client Client { get; private init; }
     public ClientId ClientId { get; private init; }
-    public Client Client { get; private init; } = null!;
     
     public SecretHash Hash { get; private init; }
     public DateTimeOffset CreatedAt { get; private init; }
     public DateTimeOffset ExpiresAt { get; private init; }
     public DateTimeOffset? RevokedAt { get; private set; }
+    
+    private Secret() { }
 
-
-    internal static Secret Create(SecretHash hash, DateTimeOffset createdAt, TimeSpan lifetime)
+    private Secret(SecretId id, ClientId clientId, SecretHash hash, DateTimeOffset utcNow, TimeSpan lifetime)
     {
-        if (lifetime <= TimeSpan.Zero)
-            throw new ArgumentOutOfRangeException(nameof(lifetime), "Lifetime must be positive.");
+        Id = id;
+        ClientId = clientId;
+        Hash = hash;
+        CreatedAt = utcNow;
+        ExpiresAt = utcNow.Add(lifetime);
+    }
+
+
+    internal static Secret Create(ClientId clientId, SecretHash hash, DateTimeOffset createdAt, TimeSpan lifetime)
+        => Create(SecretId.New(), clientId, hash, createdAt, lifetime);
+
+    internal static Secret Create(SecretId id, ClientId clientId, SecretHash hash, DateTimeOffset createdAt, TimeSpan lifetime)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(lifetime, TimeSpan.Zero, nameof(lifetime));
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(lifetime, TimeSpan.FromDays(365), nameof(lifetime));
         
-        if (lifetime > TimeSpan.FromDays(365))
-            throw new ArgumentOutOfRangeException(nameof(lifetime), "Lifetime cannot exceed 1 year.");
-        
-        return new Secret(hash, createdAt, lifetime);
+        return new Secret(id, clientId, hash, createdAt, lifetime);
     }
     
     public bool IsActive(DateTimeOffset utcNow) =>

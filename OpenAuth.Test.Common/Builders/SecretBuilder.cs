@@ -1,13 +1,40 @@
 using OpenAuth.Domain.Clients.Secrets;
 using OpenAuth.Domain.Clients.Secrets.ValueObjects;
+using OpenAuth.Domain.Clients.ValueObjects;
 
 namespace OpenAuth.Test.Common.Builders;
 
 public class SecretBuilder
 {
+    private SecretId? _id;
+    private ClientId? _clientId;
     private SecretHash? _hash;
     private DateTimeOffset? _createdAt;
     private TimeSpan? _lifetime;
+
+    public SecretBuilder WithId()
+    {
+        _id = SecretId.New();
+        return this;
+    }
+    
+    public SecretBuilder WithId(SecretId id)
+    {
+        _id = id;
+        return this;
+    }
+
+    public SecretBuilder WithClientId()
+    {
+        _clientId = ClientId.New();
+        return this;
+    }
+
+    public SecretBuilder WithClientId(ClientId clientId)
+    {
+        _clientId = clientId;
+        return this;
+    }
     
     public SecretBuilder WithHash(string hash)
     {
@@ -35,6 +62,8 @@ public class SecretBuilder
 
     public Secret Build()
     {
+        var id = _id ?? SecretId.New();
+        var clientId = _clientId ?? ClientId.New();
         var hash = _hash
                    ?? new SecretHash("$2a$10$abcdefghijklmnopqrstuv1234567890123456789012345678");
         var createdAt = _createdAt
@@ -42,6 +71,6 @@ public class SecretBuilder
         var lifetime = _lifetime
                        ?? TimeSpan.FromDays(1);
         
-        return Secret.Create(hash, createdAt, lifetime);
+        return Secret.Create(id, clientId, hash, createdAt, lifetime);
     }
 }
