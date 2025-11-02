@@ -50,7 +50,6 @@ public sealed class Client
     internal static Client Create(ClientName name, DateTimeOffset utcNow)
         => new(name, utcNow);
 
-    
     // Client
     public void Rename(ClientName newName, DateTimeOffset utcNow)
     {
@@ -201,7 +200,7 @@ public sealed class Client
     // Secrets
     public SecretId AddSecret(SecretHash hash, DateTimeOffset utcNow)
     {
-        var secret = Secret.Create(hash, utcNow, TimeSpan.FromDays(7));
+        var secret = Secret.Create(Id, hash, utcNow, TimeSpan.FromDays(7));
         
         if (!secret.IsActive(utcNow))
             throw new InvalidOperationException("Cannot add expired secret.");
