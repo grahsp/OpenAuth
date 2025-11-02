@@ -1,31 +1,27 @@
 using System.Diagnostics.CodeAnalysis;
+using OpenAuth.Domain.OAuth;
 using OpenAuth.Domain.Shared.Interfaces;
 
 namespace OpenAuth.Domain.Clients.ValueObjects;
-
-public static class GrantTypes
-{
-    public const string ClientCredentials = "client_credentials";
-    public const string AuthorizationCode = "authorization_code";
-    public const string RefreshToken = "refresh_token";
-}
 
 public record GrantType : ICreate<string, GrantType>
 {
     public string Value { get; }
     public bool SupportsPublicClient { get; }
     public bool SupportsPkce { get; }
+    public bool RequiresRedirectUri { get; }
 
-    private GrantType(string value, bool supportsPublicClient, bool supportsPkce)
+    private GrantType(string value, bool supportsPublicClient, bool supportsPkce, bool requiresRedirectUri)
     {
         Value = value;
         SupportsPublicClient = supportsPublicClient;
         SupportsPkce = supportsPkce;
+        RequiresRedirectUri = requiresRedirectUri;
     }
     
-    public static readonly GrantType AuthorizationCode = new(GrantTypes.AuthorizationCode, true, true);
-    public static readonly GrantType ClientCredentials = new(GrantTypes.ClientCredentials, false, false);
-    public static readonly GrantType RefreshToken = new(GrantTypes.RefreshToken, true, true);
+    public static readonly GrantType AuthorizationCode = new(GrantTypes.AuthorizationCode, true, true, true);
+    public static readonly GrantType ClientCredentials = new(GrantTypes.ClientCredentials, false, false, false);
+    public static readonly GrantType RefreshToken = new(GrantTypes.RefreshToken, true, false, false);
     
     public static GrantType Create(string value)
     {
