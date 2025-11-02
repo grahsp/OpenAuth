@@ -2,6 +2,7 @@ using OpenAuth.Domain.Clients;
 using OpenAuth.Domain.Clients.Audiences.ValueObjects;
 using OpenAuth.Domain.Clients.Secrets.ValueObjects;
 using OpenAuth.Domain.Clients.ValueObjects;
+using OpenAuth.Domain.OAuth;
 
 namespace OpenAuth.Test.Common.Builders;
 
