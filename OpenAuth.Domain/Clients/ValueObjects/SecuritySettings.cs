@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 using OpenAuth.Domain.Clients.Secrets;
+using OpenAuth.Domain.Clients.Secrets.ValueObjects;
 
 namespace OpenAuth.Domain.Clients.ValueObjects;
 
@@ -20,6 +21,18 @@ public record SecuritySettings
     {
         var updatedSecrets = Secrets.Append(secret);
         return this with { Secrets = ValidateSecrets(updatedSecrets) };
+    }
+
+    public bool RevokeSecret(SecretId secretId, DateTimeOffset utcNow)
+    {
+        var secret = Secrets.FirstOrDefault(x => x.Id == secretId)
+            ?? throw new InvalidOperationException($"Secret { secretId } does not exist in client.");
+
+        if (!secret.IsActive(utcNow))
+            return false;
+        
+        secret.Revoke(utcNow);
+        return true;
     }
 
     private IReadOnlyCollection<Secret> ValidateSecrets(IEnumerable<Secret> secrets)
