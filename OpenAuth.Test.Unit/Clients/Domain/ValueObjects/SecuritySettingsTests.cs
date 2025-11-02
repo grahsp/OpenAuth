@@ -1,3 +1,5 @@
+using Microsoft.Extensions.Time.Testing;
+using OpenAuth.Domain.Clients.Secrets.ValueObjects;
 using OpenAuth.Domain.Clients.ValueObjects;
 using OpenAuth.Test.Common.Builders;
 
@@ -5,6 +7,9 @@ namespace OpenAuth.Test.Unit.Clients.Domain.ValueObjects;
 
 public class SecuritySettingsTests
 {
+    private readonly FakeTimeProvider _time = new();
+    
+    
     [Fact]
     public void Ctor_WhenValidInput_Succeeds()
     {
@@ -60,6 +65,42 @@ public class SecuritySettingsTests
 
         Assert.Throws<ArgumentException>(()
             => settings.AddSecret(builder.Build()));
+    }
+
+    [Fact]
+    public void RevokeSecret_WhenSecretExists_RevokeSecretReturnsTrue()
+    {
+        var settings = new SecuritySettingsBuilder().Build();
+        var secret = new SecretBuilder().Build();
+        
+        var updated = settings.AddSecret(secret);
+        var revoked = updated.RevokeSecret(secret.Id, _time.GetUtcNow());
+        
+        Assert.True(revoked);
+    }
+
+    [Fact]
+    public void RevokeSecret_WhenSecretAlreadyRevoked_DoesNothingReturnsFalse()
+    {
+        var now = _time.GetUtcNow();
+        var settings = new SecuritySettingsBuilder().Build();
+        
+        var secret = new SecretBuilder().Build();
+        secret.Revoke(now);
+        var updated = settings.AddSecret(secret);
+        
+        var revoked = updated.RevokeSecret(secret.Id, now);
+        
+        Assert.False(revoked);       
+    }
+
+    [Fact]
+    public void RevokeSecret_WhenSecretNotFound_ThrowsException()
+    {
+        var settings = new SecuritySettingsBuilder().Build();
+        
+        Assert.Throws<InvalidOperationException>(()
+            => settings.RevokeSecret(SecretId.New(), _time.GetUtcNow()));
     }
 
     [Fact]
