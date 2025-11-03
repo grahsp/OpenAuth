@@ -315,4 +315,89 @@ public class OAuthConfigurationTests
                 => config.SetRedirectUris(null!));
         }
     }
+
+    public class SetRequirePkce
+    {
+        [Fact]
+        public void WhenPublicClientWithAuthCode_DisablingPkce_ThrowsException()
+        {
+            var config = new OAuthConfigurationBuilder()
+                .WithGrantTypes(GrantType.AuthorizationCode)
+                .WithRequirePkce(true)
+                .Build();
+        
+            Assert.Throws<InvalidOperationException>(()
+                => config.SetRequirePkce(false));
+        }
+
+        [Fact]
+        public void WhenPublicClientWithAuthCode_EnablingPkce_Succeeds()
+        {
+            var config = new OAuthConfigurationBuilder()
+                .WithGrantTypes(GrantType.AuthorizationCode)
+                .WithRequirePkce(false)
+                .Build();
+        
+            var updated = config.SetRequirePkce(true);
+        
+            Assert.NotSame(config, updated);
+            Assert.True(updated.RequirePkce);
+        }
+
+        [Fact]
+        public void WhenConfidentialClient_DisablingPkce_Succeeds()
+        {
+            var config = new OAuthConfigurationBuilder()
+                .WithGrantTypes(GrantType.ClientCredentials)
+                .WithRequirePkce(true)
+                .Build();
+
+            var updated = config.SetRequirePkce(false);
+
+            Assert.NotSame(config, updated);
+            Assert.False(updated.RequirePkce);
+        }
+
+        [Fact]
+        public void WhenConfidentialClient_EnablingPkce_Succeeds()
+        {
+            var config = new OAuthConfigurationBuilder()
+                .WithGrantTypes(GrantType.ClientCredentials)
+                .WithRequirePkce(false)
+                .Build();
+
+            var updated = config.SetRequirePkce(true);
+
+            Assert.NotSame(config, updated);
+            Assert.True(updated.RequirePkce);
+        }
+
+        [Fact]
+        public void WhenMixedPublicAndConfidential_DisablingPkce_Succeeds()
+        {
+            var config = new OAuthConfigurationBuilder()
+                .WithGrantTypes(GrantType.AuthorizationCode, GrantType.ClientCredentials)
+                .WithRequirePkce(true)
+                .Build();
+
+            var updated = config.SetRequirePkce(false);
+
+            Assert.NotSame(config, updated);
+            Assert.False(updated.RequirePkce);
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void WhenSameValue_ReturnsSameInstance(bool requirePkce)
+        {
+            var config = new OAuthConfigurationBuilder()
+                .WithRequirePkce(requirePkce)
+                .Build();
+
+            var updated = config.SetRequirePkce(requirePkce);
+
+            Assert.Same(config, updated);
+        }
+    }
 }
