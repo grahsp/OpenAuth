@@ -10,6 +10,102 @@ public class OAuthConfigurationTests
         => new OAuthConfigurationBuilder()
             .Build();
     
+    public class Constructor
+    {
+        private readonly Audience _defaultAudience =
+            new AudienceBuilder().WithName("api").Build();
+
+        private readonly RedirectUri _defaultRedirectUri =
+            RedirectUri.Create("https://example.com/callback");
+
+        [Fact]
+        public void WhenAudiencesEmpty_ThrowsException()
+        {
+            var grantTypes = new[] { GrantType.ClientCredentials };
+
+            Assert.Throws<InvalidOperationException>(() =>
+                new OAuthConfiguration([], grantTypes, [], false));
+        }
+
+        [Fact]
+        public void WhenGrantTypesEmpty_ThrowsException()
+        {
+            var audiences = new[] { _defaultAudience };
+
+            Assert.Throws<InvalidOperationException>(() =>
+                new OAuthConfiguration(audiences, [], [], false));
+        }
+
+        [Fact]
+        public void WhenMixingPublicAndConfidentialGrantTypes_ThrowsException()
+        {
+            var audiences = new[] { _defaultAudience };
+            var grants = new[] { GrantType.ClientCredentials, GrantType.RefreshToken };
+
+            Assert.Throws<InvalidOperationException>(() =>
+                new OAuthConfiguration(audiences, grants, [], false));
+        }
+
+        [Fact]
+        public void WhenRequiresRedirectUriAndNoneProvided_ThrowsException()
+        {
+            var audiences = new[] { _defaultAudience };
+            var grants = new[] { GrantType.AuthorizationCode };
+
+            Assert.Throws<InvalidOperationException>(() =>
+                new OAuthConfiguration(audiences, grants, [], true));
+        }
+
+        [Fact]
+        public void WhenRequiresRedirectUriAndProvided_Succeeds()
+        {
+            var audiences = new[] { _defaultAudience };
+            var grants = new[] { GrantType.AuthorizationCode };
+            var redirectUris = new[] { _defaultRedirectUri };
+
+            var config = new OAuthConfiguration(audiences, grants, redirectUris, true);
+
+            Assert.Single(config.RedirectUris);
+        }
+
+        [Fact]
+        public void WhenPkceDisabledForPublicClient_ThrowsException()
+        {
+            var audiences = new[] { _defaultAudience };
+            var grants = new[] { GrantType.RefreshToken };
+
+            Assert.Throws<InvalidOperationException>(() =>
+                new OAuthConfiguration(audiences, grants, [_defaultRedirectUri], false));
+        }
+
+        [Fact]
+        public void WhenPkceDisabledForConfidentialClient_Succeeds()
+        {
+            var audiences = new[] { _defaultAudience };
+            var grants = new[] { GrantType.ClientCredentials };
+
+            var config = new OAuthConfiguration(audiences, grants, [], false);
+
+            Assert.False(config.RequirePkce);
+        }
+
+        [Fact]
+        public void WhenDuplicatesProvided_RemovesThem()
+        {
+            var audiences = new[]
+            {
+                _defaultAudience,
+                new AudienceBuilder().WithName("api").Build()
+            };
+            var grants = new[] { GrantType.ClientCredentials, GrantType.ClientCredentials };
+
+            var config = new OAuthConfiguration(audiences, grants, [], false);
+
+            Assert.Single(config.Audiences);
+            Assert.Single(config.GrantTypes);
+        }
+    } 
+    
     public class SetAudiences
     {
         private static Audience CreateAudience(string name)
