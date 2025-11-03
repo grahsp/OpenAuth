@@ -206,6 +206,7 @@ public class OAuthConfigurationTests
         public void WhenRequiresRedirectUriAndNoneExists_ThrowsException()
         {
             var config = new OAuthConfigurationBuilder()
+                .WithGrantTypes(GrantType.ClientCredentials)
                 .WithRedirectUris(Array.Empty<RedirectUri>())
                 .Build();
             

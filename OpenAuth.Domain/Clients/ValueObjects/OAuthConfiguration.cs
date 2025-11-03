@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 using OpenAuth.Domain.Clients.Audiences;
+using OpenAuth.Domain.Shared;
 
 namespace OpenAuth.Domain.Clients.ValueObjects;
 
@@ -16,20 +17,35 @@ public record OAuthConfiguration
         IEnumerable<RedirectUri> redirectUris,
         bool requirePkce)
     {
-        Audiences = audiences.ToImmutableList();
-        GrantTypes = grantTypes.ToImmutableList();
-        RedirectUris = redirectUris.ToImmutableList();
+        Audiences = audiences.CreateDistinctCollection(a => a.Name);
+        GrantTypes = grantTypes.CreateDistinctCollection();
+        RedirectUris = redirectUris.CreateDistinctCollection();
         RequirePkce = requirePkce;
+        
+        DomainRules.EnsureCollectionNotEmpty(Audiences, DomainErrors.OAuth.AudienceRequired);
+        DomainRules.EnsureCollectionNotEmpty(GrantTypes, DomainErrors.OAuth.GrantTypeRequired);
+        
+        EnsureGrantTypeConsistency(GrantTypes);
+        EnsureRedirectUrisForGrantTypes(GrantTypes, RedirectUris);
+        EnsurePkceCompliance(RequirePkce);
     }
+    
+    
+    public bool IsPublicClient() => IsPublicClient(GrantTypes, RequirePkce);
+    public bool RequiresRedirectUri() => RequiresRedirectUri(GrantTypes);
+    public bool CanDisablePkce() => !IsPublicClient();
+    
+    private static bool IsPublicClient(IEnumerable<GrantType> grantTypes, bool requirePkce)
+        => grantTypes.All(gt => gt.IsPublic(requirePkce));
+    
+    private static bool RequiresRedirectUri(IEnumerable<GrantType> grantTypes)
+        => grantTypes.Any(gt => gt.RequiresRedirectUri);
+    
     
     public OAuthConfiguration SetAudiences(IEnumerable<Audience> audiences)
     {
-        ArgumentNullException.ThrowIfNull(audiences);
-
-        var items = audiences.DistinctBy(a => a.Name).ToArray();
-        
-        if (items.Length == 0)
-            throw new InvalidOperationException("Client must have at least one audience.");
+        var items = audiences.CreateDistinctCollection(a => a.Name);
+        DomainRules.EnsureCollectionNotEmpty(items, DomainErrors.OAuth.AudienceRequired);
 
         if (Audiences.SequenceEqual(items))
             return this;
@@ -39,23 +55,11 @@ public record OAuthConfiguration
 
     public OAuthConfiguration SetGrantTypes(IEnumerable<GrantType> grantTypes)
     {
-        ArgumentNullException.ThrowIfNull(grantTypes);
+        var grants = grantTypes.CreateDistinctCollection();
+        DomainRules.EnsureCollectionNotEmpty(grants, DomainErrors.OAuth.GrantTypeRequired);
         
-        var grants = grantTypes.Distinct().ToArray();
-        
-        if (grants.Length == 0)
-            throw new InvalidOperationException("Client must have at least one grant type.");
-
-        var allPublic= grants.All(gt => gt.IsPublic(RequirePkce));
-        var allConfidential= grants.All(gt => gt.IsConfidential());
-        
-        if (!allPublic && !allConfidential)
-            throw new InvalidOperationException("Cannot mix public and confidential grant types.");
-        
-        var requiresRedirectUri = grants.Any(gt => gt.RequiresRedirectUri);
-        
-        if (requiresRedirectUri && RedirectUris.Count == 0)
-            throw new InvalidOperationException("Client must have at least one redirect URI.");
+        EnsureGrantTypeConsistency(grants);
+        EnsureRedirectUrisForGrantTypes(grants, RedirectUris);
         
         if (GrantTypes.SequenceEqual(grants))
             return this;
@@ -63,14 +67,20 @@ public record OAuthConfiguration
         return this with { GrantTypes = grants.ToImmutableList() };
     }
 
+    private void EnsureGrantTypeConsistency(IReadOnlyCollection<GrantType> grants)
+    {
+        var allPublic = IsPublicClient(grants, RequirePkce);
+        var allConfidential= grants.All(gt => gt.IsConfidential());
+        
+        if (!allPublic && !allConfidential)
+            throw new InvalidOperationException("Cannot mix public and confidential grant types.");
+    }
+
     public OAuthConfiguration SetRedirectUris(IEnumerable<RedirectUri> redirectUris)
     {
-        ArgumentNullException.ThrowIfNull(redirectUris);
+        var uris = redirectUris.CreateDistinctCollection();
         
-        var uris = redirectUris.Distinct().ToArray();
-        
-        if (uris.Length == 0 && GrantTypes.Any(gt => gt.RequiresRedirectUri))
-            throw new InvalidOperationException("Client must have at least one redirect URI with the current grant types.");
+        EnsureRedirectUrisForGrantTypes(GrantTypes, uris);
 
         if (RedirectUris.SequenceEqual(uris))
             return this;
@@ -78,16 +88,27 @@ public record OAuthConfiguration
         return this with { RedirectUris = uris.ToImmutableList() };
     }
 
+    private static void EnsureRedirectUrisForGrantTypes(IEnumerable<GrantType> grants, IEnumerable<RedirectUri> uris)
+    {
+        if (!uris.Any() && RequiresRedirectUri(grants))
+            throw new InvalidOperationException("Client must have at least one redirect URI with the current grant types.");
+    }
+
     public OAuthConfiguration SetRequirePkce(bool requirePkce)
     {
-        var allPublic = GrantTypes.All(gt => gt.IsPublic(RequirePkce));
-        
-        if (!requirePkce && allPublic)
-            throw new InvalidOperationException("Cannot disable PKCE for public clients.");
+        EnsurePkceCompliance(requirePkce);
         
         if (RequirePkce == requirePkce)
             return this;
         
         return this with { RequirePkce = requirePkce };
     }
+
+    private void EnsurePkceCompliance(bool requirePkce)
+    {
+        if (!requirePkce && !CanDisablePkce())
+            throw new InvalidOperationException("Cannot disable PKCE for public clients.");
+    }
+
+
 }
