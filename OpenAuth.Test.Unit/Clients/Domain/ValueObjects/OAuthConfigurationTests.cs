@@ -72,4 +72,163 @@ public class OAuthConfigurationTests
                 => config.SetAudiences([]));       
         }
     }
+
+    public class SetGrantTypes
+    {
+        [Fact]
+        public void WhenConfidentialClientWithClientCredentialsOnly_Succeeds()
+        {
+            var config = CreateDefaultConfig();
+            
+            var updated = config
+                .SetGrantTypes([GrantType.ClientCredentials]);
+        
+            Assert.NotSame(updated, config);
+            Assert.Single(updated.GrantTypes);
+        }
+        
+        [Fact]
+        public void WhenPublicClientWithRefreshTokenOnly_Succeeds()
+        {
+            var config = CreateDefaultConfig();
+            
+            var updated = config
+                .SetGrantTypes([GrantType.RefreshToken]);
+        
+            Assert.NotSame(updated, config);
+            Assert.Single(updated.GrantTypes);
+        }
+        
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void WhenAuthCodeInConfidentialClientPkceRequiredIsOptional_Succeeds(bool requirePkce)
+        {
+            var grants = new[] { GrantType.AuthorizationCode, GrantType.ClientCredentials };
+            var config = new OAuthConfigurationBuilder()
+                .WithRequirePkce(requirePkce)
+                .Build();
+            
+            var updated = config
+                .SetGrantTypes(grants);
+        
+            Assert.NotSame(updated, config);
+            Assert.Equal(grants.Length, updated.GrantTypes.Count);
+        }
+
+        [Fact]
+        public void WhenAuthCodeInPublicClientWithPkce_Succeeds()
+        {
+            var grants = new[] { GrantType.AuthorizationCode, GrantType.RefreshToken };
+            var config = new OAuthConfigurationBuilder()
+                .WithRequirePkce(true)
+                .Build();
+            
+            var updated = config.SetGrantTypes(grants);
+            
+            Assert.NotSame(config, updated);
+            Assert.Equal(grants.Length, updated.GrantTypes.Count);
+        }
+        
+        [Fact]
+        public void WhenAuthCodeInPublicClientWithoutPkce_ThrowsException()
+        {
+            var config = new OAuthConfigurationBuilder()
+                .WithRequirePkce(false)
+                .Build();
+            
+            Assert.Throws<InvalidOperationException>(()
+                => config.SetGrantTypes([GrantType.AuthorizationCode, GrantType.RefreshToken]));
+        }
+
+        [Fact]
+        public void WhenExplicitPublicAndConfidentialGrantTypes_ThrowsException()
+        {
+            var config = CreateDefaultConfig();
+            
+            Assert.Throws<InvalidOperationException>(()
+                => config.SetGrantTypes([GrantType.ClientCredentials, GrantType.RefreshToken]));           
+        }
+
+        [Fact]
+        public void WhenRedirectUriRequiredAndExists_Succeeds()
+        {
+            var config = new OAuthConfigurationBuilder()
+                .WithGrantTypes(GrantType.RefreshToken)
+                .WithRedirectUris("https://example.com/callback")
+                .Build();
+            
+            var updated =
+                config.SetGrantTypes([GrantType.AuthorizationCode]);
+        
+            Assert.NotSame(updated, config);           
+        }
+
+        [Fact]
+        public void WhenRedirectUriNotRequiredAndDoesNotExist_Succeeds()
+        {
+            var config = new OAuthConfigurationBuilder()
+                .WithGrantTypes(GrantType.RefreshToken)
+                .Build();
+            
+            var updated =
+                config.SetGrantTypes([GrantType.ClientCredentials]);
+        
+            Assert.NotSame(updated, config);
+        }
+
+        [Fact]
+        public void WhenDuplicates_RemoveThem()
+        {
+            var config = CreateDefaultConfig();
+            
+            var updated =
+                config.SetGrantTypes([GrantType.ClientCredentials, GrantType.ClientCredentials]);
+        
+            Assert.Single(updated.GrantTypes);
+        }
+
+        [Fact]
+        public void WhenSameGrantTypes_ReturnsSameInstance()
+        {
+            var grantTypes = new[] { GrantType.ClientCredentials };
+            var config = new OAuthConfigurationBuilder()
+                .WithGrantTypes(grantTypes)
+                .Build();
+            
+            var updated =
+                config.SetGrantTypes(grantTypes);
+        
+            Assert.Same(updated, config);
+        }
+        
+        [Fact]
+        public void WhenRequiresRedirectUriAndNoneExists_ThrowsException()
+        {
+            var config = new OAuthConfigurationBuilder()
+                .WithRedirectUris()
+                .Build();
+            
+            Assert.Throws<InvalidOperationException>(()
+                => config.SetGrantTypes([GrantType.AuthorizationCode]));
+        }
+        
+        [Fact]
+        public void WhenNull_ThrowsException()
+        {
+            var config = CreateDefaultConfig();
+            
+            Assert.Throws<ArgumentNullException>(()
+                => config.SetGrantTypes(null!));
+        }
+
+        [Fact]
+        public void WhenEmpty_ThrowsException()
+        {
+            var config = CreateDefaultConfig();
+            
+            Assert.Throws<InvalidOperationException>(()
+                => config.SetGrantTypes([]));
+        }
+    }
 }
