@@ -80,10 +80,9 @@ public record OAuthConfiguration
 
     public OAuthConfiguration SetRequirePkce(bool requirePkce)
     {
-        var allPublic = GrantTypes.All(gt => gt.SupportsPublicClient);
-        var includesAuthCode = GrantTypes.Contains(GrantType.AuthorizationCode);
+        var allPublic = GrantTypes.All(gt => gt.IsPublic(RequirePkce));
         
-        if (!requirePkce && allPublic && includesAuthCode)
+        if (!requirePkce && allPublic)
             throw new InvalidOperationException("Cannot disable PKCE for public clients.");
         
         if (RequirePkce == requirePkce)
