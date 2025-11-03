@@ -10,7 +10,10 @@ public record AudienceName : Name, ICreate<string, AudienceName>
     
     public static AudienceName Create(string value)
     {
-        throw new NotImplementedException();
+        if (!TryCreate(value, out var name))
+            throw new ArgumentException($"Invalid audience name: {value}", nameof(value));
+
+        return name;
     }
 
     public static bool TryCreate(string value, [NotNullWhen(true)] out AudienceName? name)
