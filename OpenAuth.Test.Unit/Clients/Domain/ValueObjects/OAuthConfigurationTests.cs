@@ -206,7 +206,7 @@ public class OAuthConfigurationTests
         public void WhenRequiresRedirectUriAndNoneExists_ThrowsException()
         {
             var config = new OAuthConfigurationBuilder()
-                .WithRedirectUris()
+                .WithRedirectUris(Array.Empty<RedirectUri>())
                 .Build();
             
             Assert.Throws<InvalidOperationException>(()
@@ -229,6 +229,90 @@ public class OAuthConfigurationTests
             
             Assert.Throws<InvalidOperationException>(()
                 => config.SetGrantTypes([]));
+        }
+    }
+
+    public class SetRedirectUris
+    {
+        [Fact]
+        public void WhenSameUris_ReturnsSameInstance()
+        {
+            var uris = new[]
+            {
+                RedirectUri.Create("https://example.com/callback"),
+                RedirectUri.Create("https://test.com/callback")
+            };
+            var config = new OAuthConfigurationBuilder()
+                .WithRedirectUris(uris)
+                .Build();
+
+            var updated = config.SetRedirectUris(uris);
+        
+            Assert.Same(updated, config);
+            Assert.Equal(uris, updated.RedirectUris);
+        }
+
+        [Fact]
+        public void WhenGrantTypeRequiresRedirectUriAndExists_Succeeds()
+        {
+            var config = new OAuthConfigurationBuilder()
+                .WithGrantTypes(GrantType.AuthorizationCode)
+                .Build();
+
+            var updated =
+                config.SetRedirectUris([RedirectUri.Create("https://test.com/callback")]);
+        
+            Assert.NotSame(updated, config);
+            Assert.Single(updated.RedirectUris);           
+        }
+        
+        [Fact]
+        public void WhenEmptyAndGrantTypeDoesNotRequireRedirectUri_Succeeds()
+        {
+            var config = new OAuthConfigurationBuilder()
+                .WithGrantTypes(GrantType.ClientCredentials)
+                .Build();
+
+            var updated = config.SetRedirectUris([]);
+        
+            Assert.NotSame(updated, config);
+            Assert.Empty(updated.RedirectUris);
+        }
+        
+        [Fact]
+        public void WhenEmptyAndGrantTypeRequiresRedirectUri_ThrowsException()
+        {
+            var config = new OAuthConfigurationBuilder()
+                .WithGrantTypes(GrantType.AuthorizationCode)
+                .Build();
+
+            Assert.Throws<InvalidOperationException>(()
+                => config.SetRedirectUris([]));
+        }
+
+        [Fact]
+        public void WhenDuplicates_RemoveThem()
+        {
+            var config = CreateDefaultConfig();
+            var uris = new[]
+            {
+                RedirectUri.Create("https://test.com/callback"),
+                RedirectUri.Create("https://test.com/callback")
+            };
+
+            var updated = config.SetRedirectUris(uris);
+            
+            Assert.NotSame(config, updated);
+            Assert.Single(updated.RedirectUris);
+        }
+        
+        [Fact]
+        public void WhenNull_ThrowsException()
+        {
+            var config = CreateDefaultConfig();
+            
+            Assert.Throws<ArgumentNullException>(()
+                => config.SetRedirectUris(null!));
         }
     }
 }

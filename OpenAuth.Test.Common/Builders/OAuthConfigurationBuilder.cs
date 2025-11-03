@@ -29,6 +29,12 @@ public class OAuthConfigurationBuilder
         return this;
     }
     
+    public OAuthConfigurationBuilder WithRedirectUris(params RedirectUri[] redirectUris)
+    {
+        _redirectUris = redirectUris;
+        return this;
+    }
+    
     public OAuthConfigurationBuilder WithRequirePkce(bool requirePkce)
     {
         _requirePkce = requirePkce;

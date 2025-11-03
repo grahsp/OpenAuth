@@ -70,7 +70,10 @@ public record OAuthConfiguration
         var uris = redirectUris.Distinct().ToArray();
         
         if (uris.Length == 0 && GrantTypes.Any(gt => gt.RequiresRedirectUri))
-            throw new InvalidOperationException("Client must have at least one redirect URI.");
+            throw new InvalidOperationException("Client must have at least one redirect URI with the current grant types.");
+
+        if (RedirectUris.SequenceEqual(uris))
+            return this;
         
         return this with { RedirectUris = uris.ToImmutableList() };
     }
