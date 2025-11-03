@@ -109,6 +109,4 @@ public record OAuthConfiguration
         if (!requirePkce && !CanDisablePkce())
             throw new InvalidOperationException("Cannot disable PKCE for public clients.");
     }
-
-
 }
