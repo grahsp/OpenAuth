@@ -23,9 +23,9 @@ public class OAuthConfigurationBuilder
         return this;
     }
     
-    public OAuthConfigurationBuilder WithRedirectUris(params RedirectUri[] redirectUris)
+    public OAuthConfigurationBuilder WithRedirectUris(params string[] redirectUris)
     {
-        _redirectUris = redirectUris;
+        _redirectUris = redirectUris.Select(RedirectUri.Create);
         return this;
     }
     
@@ -42,7 +42,7 @@ public class OAuthConfigurationBuilder
         var grantTypes = _grantTypes
             ?? [GrantType.AuthorizationCode];
         var redirectUris = _redirectUris
-            ?? [RedirectUri.Create("http://example.com/callback")];
+            ?? [RedirectUri.Create("https://example.com/callback")];
         var requirePkce = _requirePkce
             ?? true;
         
