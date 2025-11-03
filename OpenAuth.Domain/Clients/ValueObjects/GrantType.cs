@@ -43,4 +43,10 @@ public record GrantType : ICreate<string, GrantType>
         
         return grantType is not null;
     }
+    
+    public bool IsPublic(bool requirePkce)
+        => this == AuthorizationCode ? requirePkce : SupportsPublicClient;
+
+    public bool IsConfidential()
+        => !SupportsPublicClient || this == AuthorizationCode;
 }

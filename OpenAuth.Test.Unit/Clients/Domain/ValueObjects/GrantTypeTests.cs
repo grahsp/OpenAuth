@@ -81,4 +81,58 @@ public class GrantTypeTests
         // Assert
         Assert.Single(set);
     }
+
+    public class IsPublic
+    {
+        [Theory]
+        [InlineData(true, true)]
+        [InlineData(false, false)]
+        public void WhenAuthorizationCode_ReturnsRequirePkceValue(bool requirePkce, bool expected)
+        {
+            var result = GrantType.AuthorizationCode.IsPublic(requirePkce);
+            Assert.Equal(expected, result);
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void WhenClientCredentials_AlwaysReturnsFalse(bool requirePkce)
+        {
+            var result = GrantType.ClientCredentials.IsPublic(requirePkce);
+            Assert.False(result);
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void WhenRefreshToken_AlwaysReturnsTrue(bool requirePkce)
+        {
+            var result = GrantType.RefreshToken.IsPublic(requirePkce);
+            Assert.True(result);
+        }
+    }
+
+    public class IsConfidential
+    {
+        [Fact]
+        public void WhenAuthorizationCode_ReturnsTrue()
+        {
+            var result = GrantType.AuthorizationCode.IsConfidential();
+            Assert.True(result);
+        }
+
+        [Fact]
+        public void WhenClientCredentials_ReturnsTrue()
+        {
+            var result = GrantType.ClientCredentials.IsConfidential();
+            Assert.True(result);
+        }
+
+        [Fact]
+        public void WhenRefreshToken_ReturnsFalse()
+        {
+            var result = GrantType.RefreshToken.IsConfidential();
+            Assert.False(result);
+        } 
+    }
 }

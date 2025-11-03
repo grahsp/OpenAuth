@@ -46,20 +46,19 @@ public record OAuthConfiguration
         if (grants.Length == 0)
             throw new InvalidOperationException("Client must have at least one grant type.");
 
-        var allPublic= grants.All(gt => gt.SupportsPublicClient);
-        var allConfidential= grants.All(gt => !gt.SupportsPublicClient);
-        var includesAuthCode = grants.Contains(GrantType.AuthorizationCode);
+        var allPublic= grants.All(gt => gt.IsPublic(RequirePkce));
+        var allConfidential= grants.All(gt => gt.IsConfidential());
         
-        var isMixed = !allPublic && !allConfidential;
-        var isAuthCodePublic = includesAuthCode && RequirePkce;
-        
-        if (isMixed && !isAuthCodePublic)
+        if (!allPublic && !allConfidential)
             throw new InvalidOperationException("Cannot mix public and confidential grant types.");
         
         var requiresRedirectUri = grants.Any(gt => gt.RequiresRedirectUri);
         
         if (requiresRedirectUri && RedirectUris.Count == 0)
             throw new InvalidOperationException("Client must have at least one redirect URI.");
+        
+        if (GrantTypes.SequenceEqual(grants))
+            return this;
         
         return this with { GrantTypes = grants.ToImmutableList() };
     }
