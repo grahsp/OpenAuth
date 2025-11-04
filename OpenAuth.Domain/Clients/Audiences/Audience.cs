@@ -1,7 +1,9 @@
 using OpenAuth.Domain.Clients.Audiences.ValueObjects;
+using OpenAuth.Domain.Clients.ValueObjects;
 
 namespace OpenAuth.Domain.Clients.Audiences;
 
+[Obsolete($"Use { nameof(NewAudience) } instead.")]
 public sealed class Audience
 {
     public AudienceId Id { get; private init; } = null!;
