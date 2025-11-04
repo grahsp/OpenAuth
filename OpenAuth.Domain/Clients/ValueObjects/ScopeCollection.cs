@@ -1,6 +1,6 @@
 namespace OpenAuth.Domain.Clients.ValueObjects;
 
-public record ScopeCollection
+public sealed record ScopeCollection : IEquatable<ScopeCollection>
 {
     private readonly HashSet<string> _scopes;
     public IReadOnlyCollection<string> Scopes => _scopes;
@@ -27,4 +27,21 @@ public record ScopeCollection
     public bool Contains(string scope) => _scopes.Contains(scope);
     
     public override string ToString() => string.Join(' ', _scopes);
+
+    public bool Equals(ScopeCollection? other)
+    {
+        if (other is null)
+            return false;
+
+        return _scopes.SetEquals(other._scopes);
+    }
+
+    public override int GetHashCode()
+    {
+        var hash = new HashCode();
+        foreach (var scope in _scopes.Order())
+            hash.Add(scope, StringComparer.Ordinal);
+        
+        return hash.ToHashCode();
+    }
 }
