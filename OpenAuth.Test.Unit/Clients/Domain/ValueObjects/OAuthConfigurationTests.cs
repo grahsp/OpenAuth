@@ -1,4 +1,4 @@
-using OpenAuth.Domain.Clients.Audiences;
+using OpenAuth.Domain.Clients.Audiences.ValueObjects;
 using OpenAuth.Domain.Clients.ValueObjects;
 using OpenAuth.Test.Common.Builders;
 
@@ -10,11 +10,11 @@ public class OAuthConfigurationTests
         => new OAuthConfigurationBuilder()
             .Build();
     
-    public class Constructor
+    private static NewAudience CreateAudience(string name = "test", params string[] scopes) =>
+        new(AudienceName.Create(name), new ScopeCollection(scopes));
+    
+    public class Constructor : OAuthConfigurationTests
     {
-        private readonly Audience _defaultAudience =
-            new AudienceBuilder().WithName("api").Build();
-
         private readonly RedirectUri _defaultRedirectUri =
             RedirectUri.Create("https://example.com/callback");
 
@@ -30,7 +30,7 @@ public class OAuthConfigurationTests
         [Fact]
         public void WhenGrantTypesEmpty_ThrowsException()
         {
-            var audiences = new[] { _defaultAudience };
+            var audiences = new[] { CreateAudience() };
 
             Assert.Throws<InvalidOperationException>(() =>
                 new OAuthConfiguration(audiences, [], [], false));
@@ -39,7 +39,7 @@ public class OAuthConfigurationTests
         [Fact]
         public void WhenMixingPublicAndConfidentialGrantTypes_ThrowsException()
         {
-            var audiences = new[] { _defaultAudience };
+            var audiences = new[] { CreateAudience() };
             var grants = new[] { GrantType.ClientCredentials, GrantType.RefreshToken };
 
             Assert.Throws<InvalidOperationException>(() =>
@@ -49,7 +49,7 @@ public class OAuthConfigurationTests
         [Fact]
         public void WhenRequiresRedirectUriAndNoneProvided_ThrowsException()
         {
-            var audiences = new[] { _defaultAudience };
+            var audiences = new[] { CreateAudience() };
             var grants = new[] { GrantType.AuthorizationCode };
 
             Assert.Throws<InvalidOperationException>(() =>
@@ -59,7 +59,7 @@ public class OAuthConfigurationTests
         [Fact]
         public void WhenRequiresRedirectUriAndProvided_Succeeds()
         {
-            var audiences = new[] { _defaultAudience };
+            var audiences = new[] { CreateAudience() };
             var grants = new[] { GrantType.AuthorizationCode };
             var redirectUris = new[] { _defaultRedirectUri };
 
@@ -71,7 +71,7 @@ public class OAuthConfigurationTests
         [Fact]
         public void WhenPkceDisabledForPublicClient_ThrowsException()
         {
-            var audiences = new[] { _defaultAudience };
+            var audiences = new[] { CreateAudience() };
             var grants = new[] { GrantType.RefreshToken };
 
             Assert.Throws<InvalidOperationException>(() =>
@@ -81,7 +81,7 @@ public class OAuthConfigurationTests
         [Fact]
         public void WhenPkceDisabledForConfidentialClient_Succeeds()
         {
-            var audiences = new[] { _defaultAudience };
+            var audiences = new[] { CreateAudience() };
             var grants = new[] { GrantType.ClientCredentials };
 
             var config = new OAuthConfiguration(audiences, grants, [], false);
@@ -90,12 +90,12 @@ public class OAuthConfigurationTests
         }
 
         [Fact]
-        public void WhenDuplicatesProvided_RemovesThem()
+        public void WhenDuplicatesProvided_RemoveThem()
         {
             var audiences = new[]
             {
-                _defaultAudience,
-                new AudienceBuilder().WithName("api").Build()
+                CreateAudience("api"),
+                CreateAudience("api")
             };
             var grants = new[] { GrantType.ClientCredentials, GrantType.ClientCredentials };
 
@@ -106,20 +106,14 @@ public class OAuthConfigurationTests
         }
     } 
     
-    public class SetAudiences
+    public class SetAudiences : OAuthConfigurationTests
     {
-        private static Audience CreateAudience(string name)
-            => new AudienceBuilder()
-                .WithName(name)
-                .Build();
-        
         [Fact]
         public void WhenValid_ReturnsNewInstance()
         {
-            var audience = CreateAudience("test");
             var config = CreateDefaultConfig();
 
-            var updated = config.SetAudiences([audience]);
+            var updated = config.SetAudiences([CreateAudience()]);
         
             Assert.NotSame(updated, config);
             Assert.Single(updated.Audiences);
@@ -128,7 +122,7 @@ public class OAuthConfigurationTests
         [Fact]
         public void WhenSame_ReturnsSameInstance()
         {
-            var audience = CreateAudience("test");
+            var audience = CreateAudience();
             var config = new OAuthConfigurationBuilder()
                 .WithAudiences(audience)
                 .Build();
@@ -141,8 +135,8 @@ public class OAuthConfigurationTests
         [Fact]
         public void WhenDuplicates_RemoveThem()
         {
-            var a = CreateAudience("test");
-            var b = CreateAudience("test");
+            var a = CreateAudience();
+            var b = CreateAudience();
             var config = CreateDefaultConfig();
         
             var updated = config.SetAudiences([a, b]);
