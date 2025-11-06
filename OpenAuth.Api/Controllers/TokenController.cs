@@ -37,7 +37,7 @@ public class TokenController : ControllerBase
             ClientId = new ClientId(Guid.Parse("c2b09d6b-e5cb-4154-a03f-7a824fc9c5df")),
             ClientSecret = "68loWhVtCow-q3AzYy3RE7vd7tV94tZ9WtX1Mj9PEJA",
             RequestedAudience = new AudienceName("api"),
-            RequestedScopes = [new Scope("read")]
+            RequestedScopes = ScopeCollection.Parse("read")
         };
 
         // Authorization Code
@@ -48,7 +48,7 @@ public class TokenController : ControllerBase
             Subject = "Test-Subject",
             RedirectUri = RedirectUri.Create("https://example.com/callback"),
             RequestedAudience = new AudienceName("api"),
-            RequestedScopes = [new Scope("read")],
+            RequestedScopes = ScopeCollection.Parse("read"),
             CodeVerifier = "this-is-a-secret-code"
             // ClientSecret = "68loWhVtCow-q3AzYy3RE7vd7tV94tZ9WtX1Mj9PEJA",
         };
@@ -65,7 +65,7 @@ public class TokenController : ControllerBase
             new ClientId(Guid.Parse("c2b09d6b-e5cb-4154-a03f-7a824fc9c5df")),
             RedirectUri.Create("https://example.com/callback"),
             new AudienceName("api"),
-            [new Scope("read")],
+            ScopeCollection.Parse("read"),
             Pkce.Create(codeChallenge, CodeChallengeMethod.S256)
         );
 

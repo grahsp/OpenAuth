@@ -126,7 +126,7 @@ public class TokenServiceTests
     public async Task IssueToken_WithInvalidScopes_ThrowsInvalidOperationException()
     {
         var request = CreateValidRequest();
-        var tokenData = CreateValidTokenData() with { AllowedScopes = [new Scope("invalid")] };
+        var tokenData = CreateValidTokenData() with { Scopes = ScopeCollection.Parse("invalid") };
 
         _clientQueryService
             .GetTokenDataAsync(request.ClientId, request.RequestedAudience, Arg.Any<CancellationToken>())
@@ -135,8 +135,7 @@ public class TokenServiceTests
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(
             () => _tokenService.IssueToken(request));
 
-        Assert.Contains("Invalid scopes requested for audience", ex.Message);
-        Assert.Contains(request.RequestedAudience.Value, ex.Message);
+        Assert.Contains($"Invalid scopes: '{ tokenData.Scopes }'", ex.Message);
     }
 
     [Fact]
@@ -275,11 +274,11 @@ public class TokenServiceTests
         ClientId = ClientId.New(),
         ClientSecret = "secret",
         RequestedAudience = new AudienceName("api.example.com"),
-        RequestedScopes = [new Scope("read"), new Scope("write")]
+        RequestedScopes = ScopeCollection.Parse("read write")
     };
 
     private static ClientTokenData CreateValidTokenData() => new(
-        AllowedScopes: [new Scope("read"), new Scope("write"), new Scope("admin")],
+        Scopes: ScopeCollection.Parse("read write admin"),
         [GrantType.ClientCredentials, GrantType.AuthorizationCode],
         false,
         TokenLifetime: TimeSpan.FromHours(1));
@@ -291,7 +290,8 @@ public class TokenServiceTests
             clientId,
             clientId.ToString(),
             new AudienceName("api.example.com"),
-            [new Scope("read"), new Scope("write")]);
+            ScopeCollection.Parse("read write admin")
+        );
     }
     
     private static SigningKeyData CreateValidKeyData()

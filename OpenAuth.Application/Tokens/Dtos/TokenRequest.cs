@@ -9,5 +9,5 @@ public abstract record TokenRequest
     
     public required ClientId ClientId { get; init; }
     public required AudienceName RequestedAudience { get; init; }
-    public required IReadOnlyCollection<Scope> RequestedScopes { get; init; }
+    public required ScopeCollection RequestedScopes { get; init; }
 }

@@ -37,7 +37,7 @@ public class AuthorizationCodeTokenIssuerTests
             Subject = "Test-Subject",
             RedirectUri = RedirectUri.Create("https://client.app/callback"),
             RequestedAudience = new AudienceName("api.example.com"),
-            RequestedScopes = [new Scope("read"), new Scope("write")],
+            RequestedScopes = ScopeCollection.Parse("read write"),
             CodeVerifier = "secret-code",
             ClientSecret = "client-secret"
         };
@@ -58,7 +58,7 @@ public class AuthorizationCodeTokenIssuerTests
             DefaultClientId,
             RedirectUri.Create("https://client.app/callback"),
             new AudienceName("api.example.com"),
-            [new Scope("read"), new Scope("write")],
+            ScopeCollection.Parse("read write"),
             DateTimeOffset.UtcNow,
             pkce
         );

@@ -7,8 +7,6 @@ using NSubstitute;
 using OpenAuth.Application.Clients.Dtos;
 using OpenAuth.Application.Security.Signing;
 using OpenAuth.Application.SigningKeys.Dtos;
-using OpenAuth.Application.Tokens.Dtos;
-using OpenAuth.Application.Tokens.Interfaces;
 using OpenAuth.Domain.Clients.Audiences.ValueObjects;
 using OpenAuth.Domain.Clients.ValueObjects;
 using OpenAuth.Domain.SigningKeys.Enums;
@@ -55,10 +53,11 @@ public class JwtTokenGeneratorTests
             ClientId.New(),
             "test-user",
             new AudienceName("api"),
-            new[] { new Scope("read"), new Scope("write") });
+            ScopeCollection.Parse("read write")
+        );
 
         _defaultTokenData = new ClientTokenData(
-            new[] { new Scope("read"), new Scope("write") },
+            ScopeCollection.Parse("read write"),
             [],
             false,
             TimeSpan.FromMinutes(10));
@@ -132,14 +131,14 @@ public class JwtTokenGeneratorTests
             var jtiClaim = jwt.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Jti);
 
             Assert.NotNull(jtiClaim);
-            Assert.True(Guid.TryParse(jtiClaim!.Value, out _));
+            Assert.True(Guid.TryParse(jtiClaim.Value, out _));
         }
 
         [Fact]
         public void WithEmptyScopes_ReturnsTokenWithNoScopeClaims()
         {
             // Arrange
-            var context = _defaultContext with { RequestedScopes = Array.Empty<Scope>() };
+            var context = _defaultContext with { RequestedScopes = ScopeCollection.Parse("") };
 
             // Act
             var token = _sut.GenerateToken(context, _defaultTokenData, _keyData);
@@ -153,7 +152,7 @@ public class JwtTokenGeneratorTests
         public void WithMultipleScopes_IncludesAllInToken()
         {
             // Arrange
-            var scopes = new[] { new Scope("read"), new Scope("write"), new Scope("delete") };
+            var scopes = ScopeCollection.Parse("read write delete");
             var context = _defaultContext with { RequestedScopes = scopes };
 
             // Act

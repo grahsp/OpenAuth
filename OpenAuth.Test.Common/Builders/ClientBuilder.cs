@@ -79,7 +79,7 @@ public class ClientBuilder
         {
             var audienceName = new AudienceName(audience);
             client.AddAudience(audienceName, createdAt);
-            client.GrantScopes(audienceName, scopes.Select(s => new Scope(s)), createdAt);
+            client.SetScopes(audienceName, scopes.Select(s => new Scope(s)), createdAt);
         }
         
         foreach (var redirectUri in _redirectUris)

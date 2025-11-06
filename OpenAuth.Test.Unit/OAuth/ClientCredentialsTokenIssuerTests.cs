@@ -30,7 +30,7 @@ public class ClientCredentialsTokenIssuerTests
             ClientId = ClientId.New(),
             ClientSecret = secret ?? "secret",
             RequestedAudience = new AudienceName(audience ?? "api.example.com"),
-            RequestedScopes = scopes?.ToArray() ?? [new Scope("read")]
+            RequestedScopes = ScopeCollection.Parse("read")
         };
     }
 

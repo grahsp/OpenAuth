@@ -25,8 +25,8 @@ public sealed class Client
     private readonly HashSet<RedirectUri> _redirectUris = [];
     public IReadOnlyCollection<RedirectUri> RedirectUris => _redirectUris;
     
-    private readonly HashSet<Audience> _allowedAudiences = [];
-    public IReadOnlyCollection<Audience> AllowedAudiences => _allowedAudiences;
+    private readonly HashSet<NewAudience> _allowedAudiences = [];
+    public IReadOnlyCollection<NewAudience> AllowedAudiences => _allowedAudiences;
     
     
     // Token
@@ -129,16 +129,16 @@ public sealed class Client
     
     
     // Audiences
-    public Audience GetAudience(AudienceName name)
+    public NewAudience GetAudience(AudienceName name)
         => _allowedAudiences.SingleOrDefault(a => a.Name == name) ??
            throw new InvalidOperationException($"Audience {name.Value} not found.");
     
-    public Audience AddAudience(AudienceName name, DateTimeOffset utcNow)
+    public NewAudience AddAudience(AudienceName name, DateTimeOffset utcNow)
     {
         if (_allowedAudiences.Any(a => a.Name.NormalizedValue == name.NormalizedValue))
             throw new InvalidOperationException($"Audience {name.Value} already exists.");
 
-        var audience = Audience.Create(name, utcNow);
+        var audience = new NewAudience(name, new ScopeCollection([]));
         _allowedAudiences.Add(audience);
         
         Touch(utcNow);
@@ -155,31 +155,16 @@ public sealed class Client
 
     
     // Scopes
-    public Audience SetScopes(AudienceName name, IEnumerable<Scope> scopes, DateTimeOffset utcNow)
+    public NewAudience SetScopes(AudienceName name, IEnumerable<Scope> scopes, DateTimeOffset utcNow)
     {
-        var audience = GetAudience(name);
-        audience.SetScopes(scopes, utcNow);
+        var existing = GetAudience(name);
+        _allowedAudiences.Remove(existing);
         
-        Touch(utcNow);
-        return audience;
-    }
+        var updated = existing with { Scopes = new ScopeCollection(scopes) };
+        _allowedAudiences.Add(updated);
 
-    public Audience GrantScopes(AudienceName name, IEnumerable<Scope> scopes, DateTimeOffset utcNow)
-    {
-        var audience = GetAudience(name);
-        audience.GrantScopes(scopes, utcNow);
-        
         Touch(utcNow);
-        return audience;
-    }
-
-    public Audience RevokeScopes(AudienceName name, IEnumerable<Scope> scopes, DateTimeOffset utcNow)
-    {
-        var audience = GetAudience(name);
-        audience.RevokeScope(scopes, utcNow);
-        
-        Touch(utcNow);
-        return audience;
+        return updated;
     }
 
 

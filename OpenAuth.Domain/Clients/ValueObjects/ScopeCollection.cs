@@ -34,18 +34,13 @@ public sealed record ScopeCollection : IReadOnlyCollection<Scope>
     public override string ToString() => string.Join(' ', _items);
 
     public bool Equals(ScopeCollection? other)
-    {
-        if (other is null)
-            return false;
-
-        return _items.SetEquals(other._items);
-    }
+        => other is not null && _items.SetEquals(other._items);
 
     public override int GetHashCode()
     {
         var hash = new HashCode();
-        foreach (var scope in _items.Order())
-            hash.Add(scope);
+        foreach (var scope in _items.OrderBy(s => s.Value))
+            hash.Add(scope.GetHashCode());
         
         return hash.ToHashCode();
     }

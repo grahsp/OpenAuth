@@ -40,9 +40,12 @@ public class TokenService : ITokenService
         
         if (tokenData.RequirePkce && !request.GrantType.SupportsPkce)
             throw new InvalidOperationException("PKCE is required for this grant type.");
-        
-        if (request.RequestedScopes.Except(tokenData.AllowedScopes).Any())
-            throw new InvalidOperationException($"Invalid scopes requested for audience '{request.RequestedAudience.Value}'.");
+
+        var invalidScopes = tokenData.Scopes.Except(request.RequestedScopes)
+            .Select(s => s.Value)
+            .ToArray();
+        if (invalidScopes.Length > 0)
+            throw new InvalidOperationException($"Invalid scopes: '{ string.Join(' ', invalidScopes) }'.");
 
 
         var tokenContext = await issuer.IssueToken(request, ct);

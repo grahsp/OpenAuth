@@ -123,7 +123,7 @@ public class ClientRepositoryTests : IAsyncLifetime
             client.AddAudience(audienceName, _time.GetUtcNow());
             
             var scopes = new[] { new Scope("read"), new Scope("write") };
-            client.GrantScopes(audienceName, scopes, _time.GetUtcNow());
+            client.SetScopes(audienceName, scopes, _time.GetUtcNow());
             
             repo.Add(client);
             await repo.SaveChangesAsync();
@@ -134,7 +134,7 @@ public class ClientRepositoryTests : IAsyncLifetime
             // Assert
             Assert.NotNull(fetched);
             var fetchedAudience = fetched.AllowedAudiences.Single();
-            Assert.Equal(2, fetchedAudience.AllowedScopes.Count);
+            Assert.Equal(2, fetchedAudience.Scopes.Count);
         }
     }
 

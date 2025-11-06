@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using OpenAuth.Application.Audiences.Services;
 using OpenAuth.Application.Clients.Factories;
 using OpenAuth.Application.Clients.Interfaces;
 using OpenAuth.Application.Clients.Services;
@@ -101,7 +100,7 @@ public class Program
         builder.Services.AddScoped<IClientFactory, ClientFactory>();
         
         // Audience Services
-        builder.Services.AddScoped<IAudienceService, AudienceService>();
+        // builder.Services.AddScoped<IAudienceService, AudienceService>();
         
         // Secret Services
         builder.Services.AddScoped<ISecretService, SecretService>();

@@ -20,4 +20,9 @@ public abstract record Name
         => value.ToLowerInvariant();
 
     public override string ToString() => Value;
+    
+    public virtual bool Equals(Name? other)
+        => other is not null && NormalizedValue == other.NormalizedValue;
+    
+    public override int GetHashCode() => NormalizedValue.GetHashCode();
 }
