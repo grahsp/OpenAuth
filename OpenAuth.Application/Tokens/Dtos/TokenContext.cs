@@ -7,5 +7,5 @@ public record TokenContext(
     ClientId ClientId,
     string Subject,
     AudienceName RequestedAudience,
-    IReadOnlyCollection<Scope> RequestedScopes
+    ScopeCollection RequestedScopes
 );

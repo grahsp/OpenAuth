@@ -1,3 +1,5 @@
+using System.Formats.Asn1;
+using OpenAuth.Domain.Clients.Audiences.ValueObjects;
 using OpenAuth.Domain.Clients.ValueObjects;
 
 namespace OpenAuth.Test.Unit.Clients.Domain.ValueObjects;
@@ -8,15 +10,18 @@ public class ScopeCollectionTests
     public void Constructor_RemovesDuplicates_AndTrimsWhitespace()
     {
         // Arrange
-        var input = new[] { " read ", "write", "read" };
+        var read = new Scope("read");
+        var write = new Scope("write");
+        
+        var input = new[] { new Scope(" read "), read, write };
 
         // Act
         var scopes = new ScopeCollection(input);
 
         // Assert
         Assert.Equal(2, scopes.Count);
-        Assert.Contains("read", scopes);
-        Assert.Contains("write", scopes);
+        Assert.Contains(read, scopes);
+        Assert.Contains(write, scopes);
     }
 
     [Theory]
@@ -32,7 +37,7 @@ public class ScopeCollectionTests
         // Assert
         Assert.Equal(expected.Length, scopes.Count);
         foreach (var s in expected)
-            Assert.Contains(s, scopes);
+            Assert.Contains(new Scope(s), scopes);
     }
 
     [Fact]
@@ -42,15 +47,15 @@ public class ScopeCollectionTests
         var scopes = ScopeCollection.Parse("read write");
 
         // Assert
-        Assert.True(scopes.Contains("read"));
-        Assert.False(scopes.Contains("admin"));
+        Assert.True(scopes.Contains(new Scope("read")));
+        Assert.False(scopes.Contains(new Scope("admin")));
     }
 
     [Fact]
     public void ToString_ProducesSpaceSeparatedString()
     {
         // Arrange
-        var scopes = new ScopeCollection(["read", "write"]);
+        var scopes = ScopeCollection.Parse("read write");
 
         // Act
         var result = scopes.ToString();
@@ -63,8 +68,8 @@ public class ScopeCollectionTests
     public void Equality_IsBasedOnScopeSet_NotOrder()
     {
         // Arrange
-        var a = new ScopeCollection(["read", "write"]);
-        var b = new ScopeCollection(["write", "read"]);
+        var a = ScopeCollection.Parse("read write");
+        var b = ScopeCollection.Parse("write read");
 
         // Assert
         Assert.Equal(a, b);
@@ -76,13 +81,13 @@ public class ScopeCollectionTests
     public void Enumerator_IteratesAllScopes()
     {
         // Arrange
-        var scopes = new ScopeCollection(["read", "write"]);
+        var scopes = ScopeCollection.Parse("read write");
 
         // Act
         var result = scopes.ToList();
 
         // Assert
-        Assert.Contains("read", result);
-        Assert.Contains("write", result);
+        Assert.Contains(new Scope("read"), result);
+        Assert.Contains(new Scope("write"), result);
     }
 }

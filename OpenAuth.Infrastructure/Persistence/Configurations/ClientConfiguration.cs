@@ -86,45 +86,25 @@ public class ClientConfiguration : IEntityTypeConfiguration<Client>
         builder.Ignore(c => c.AllowedAudiences);
         builder.OwnsMany(c => c.AllowedAudiences, aud =>
         {
-            aud.ToTable("AllowedAudiences");
-            
-            aud.WithOwner()
-                .HasForeignKey("ClientId"); // Shadow property
-            
-            aud.HasKey(nameof(Audience.Id));
-            
-            aud.Property(a => a.Id)
-                .HasConversion(
-                    id => id.Value,
-                    value => new AudienceId(value));
+            aud.ToTable("Audiences");
+            aud.WithOwner().HasForeignKey("ClientId"); // Shadow property
+
+            aud.Property<Guid>("Id");
+            aud.HasKey("Id");
             
             aud.Property(a => a.Name)
                 .HasConversion(
                     name => name.Value,
                     value => new AudienceName(value))
                 .HasMaxLength(100);
-            
-            aud.Property(a => a.CreatedAt).IsRequired();
-            aud.Property(a => a.UpdatedAt).IsRequired();
-            
-            // Scopes configuration
-            aud.Ignore(a => a.AllowedScopes);
-            aud.Property<HashSet<Scope>>("_allowedScopes")
+
+            aud.Property(a => a.Scopes)
                 .HasConversion(
-                    scopes => string.Join(' ', scopes.Select(s => s.Value)),
-                    value => string.IsNullOrWhiteSpace(value)
-                        ? new HashSet<Scope>()
-                        : value.Split(' ', StringSplitOptions.RemoveEmptyEntries)
-                            .Select(v => new Scope(v))
-                            .ToHashSet(),
-                    new ValueComparer<HashSet<Scope>>(
-                        (c1, c2) => c1!.SequenceEqual(c2!),
-                        c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
-                        c => c.ToHashSet()
-                    )
-                )
-                .HasColumnName("AllowedScopes")
-                .HasMaxLength(2000);
+                    scopes => scopes.ToString(),
+                    value => ScopeCollection.Parse(value ?? string.Empty))
+                .HasColumnName("Scopes")
+                .HasMaxLength(2000)
+                .IsRequired(false);
         });
     }
 }

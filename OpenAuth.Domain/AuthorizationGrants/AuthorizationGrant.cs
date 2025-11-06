@@ -11,7 +11,7 @@ public class AuthorizationGrant
     public string Subject { get; }
     public RedirectUri RedirectUri { get; }
     public AudienceName Audience { get; }
-    public Scope[] Scopes { get; }
+    public ScopeCollection Scopes { get; }
     public DateTimeOffset CreatedAt { get; }
     public DateTimeOffset ExpiresAt { get; }
     
@@ -27,7 +27,7 @@ public class AuthorizationGrant
         string subject,
         RedirectUri redirectUri,
         AudienceName audience,
-        IEnumerable<Scope> scopes,
+        ScopeCollection scopes,
         DateTimeOffset utcNow,
         Pkce? pkce = null)
     {
@@ -37,7 +37,7 @@ public class AuthorizationGrant
         
         RedirectUri = redirectUri;
         Audience = audience;
-        Scopes = scopes.ToArray();
+        Scopes = scopes;
         
         Code = code;
         Pkce = pkce;
@@ -53,7 +53,7 @@ public class AuthorizationGrant
         ClientId clientId,
         RedirectUri redirectUri,
         AudienceName audience,
-        IEnumerable<Scope> scopes,
+        ScopeCollection scopes,
         DateTimeOffset utcNow,
         Pkce? pkce = null)
     {

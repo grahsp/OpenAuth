@@ -3,6 +3,7 @@ using OpenAuth.Application.OAuth.Authorization.Interfaces;
 using OpenAuth.Application.Shared.Models;
 using OpenAuth.Domain.AuthorizationGrants.Enums;
 using OpenAuth.Domain.AuthorizationGrants.ValueObjects;
+using OpenAuth.Domain.Clients.Audiences;
 using OpenAuth.Domain.Clients.Audiences.ValueObjects;
 using OpenAuth.Domain.Clients.ValueObjects;
 
@@ -25,7 +26,7 @@ public class AuthorizationRequestFactory : IAuthorizationRequestFactory
         if (!AudienceName.TryCreate(query.Audience, out var audience))
             return Result<AuthorizationRequest>.Fail(new Error("invalid_request", "Invalid audience."));
 
-        var scopes = Scope.ParseMany(query.Scope);
+        var scopes = ScopeCollection.Parse(query.Scope ?? string.Empty);
         
         var pkceResult = ValidatePkce(query.CodeChallenge, query.CodeChallengeMethod);
         if (!pkceResult.IsSuccess)

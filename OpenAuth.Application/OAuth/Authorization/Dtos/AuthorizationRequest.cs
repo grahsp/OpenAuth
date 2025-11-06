@@ -9,6 +9,6 @@ public record AuthorizationRequest
     ClientId ClientId,
     RedirectUri RedirectUri,
     AudienceName Audience,
-    Scope[] Scopes,
+    ScopeCollection Scopes,
     Pkce? Pkce
 );

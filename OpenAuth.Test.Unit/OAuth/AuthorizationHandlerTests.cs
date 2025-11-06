@@ -44,7 +44,7 @@ public class AuthorizationHandlerTests
             _defaultClient.Id,
             RedirectUri.Create("https://example.com/callback"),
             new AudienceName("api"),
-            [new Scope("read"), new Scope("write")],
+            ScopeCollection.Parse("read write"), 
             Pkce.Create("code-challenge", CodeChallengeMethod.S256)
         );
     }
@@ -80,7 +80,7 @@ public class AuthorizationHandlerTests
     [Fact]
     public async Task RequestContainsInvalidScopes_Throws()
     {
-        var request = _validRequest with { Scopes = [new Scope("invalid")] };
+        var request = _validRequest with { Scopes = ScopeCollection.Parse("invalid") };
         _clientQueryService.Add(_defaultClient);
         
         await Assert.ThrowsAnyAsync<InvalidOperationException>(()

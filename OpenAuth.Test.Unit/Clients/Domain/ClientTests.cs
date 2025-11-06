@@ -414,9 +414,6 @@ public class ClientTests
             // Assert
             Assert.NotNull(audience);
             Assert.Equal(audienceName, audience.Name);
-            Assert.Equal(now, audience.CreatedAt);
-            Assert.Equal(now, audience.UpdatedAt);
-            Assert.Empty(audience.AllowedScopes);
         }
     }
 
@@ -478,7 +475,7 @@ public class ClientTests
             var scopes = new[] { new Scope("read"), new Scope("write") };
             
             client.AddAudience(audienceName, _time.GetUtcNow());
-            client.GrantScopes(audienceName, scopes, _time.GetUtcNow());
+            client.SetScopes(audienceName, scopes, _time.GetUtcNow());
 
             // Act
             client.RemoveAudience(audienceName, _time.GetUtcNow());
@@ -498,18 +495,18 @@ public class ClientTests
             var audienceName = new AudienceName("api");
 
             client.AddAudience(audienceName, _time.GetUtcNow());
-            client.GrantScopes(audienceName, new[] { new Scope("read"), new Scope("write") }, _time.GetUtcNow());
+            client.SetScopes(audienceName, [new Scope("read"), new Scope("write")], _time.GetUtcNow());
 
             // Act
             var newScopes = new[] { new Scope("admin"), new Scope("delete") };
             var audience = client.SetScopes(audienceName, newScopes, _time.GetUtcNow());
 
             // Assert
-            Assert.Equal(2, audience.AllowedScopes.Count);
-            Assert.Contains(audience.AllowedScopes, s => s.Value == "admin");
-            Assert.Contains(audience.AllowedScopes, s => s.Value == "delete");
-            Assert.DoesNotContain(audience.AllowedScopes, s => s.Value == "read");
-            Assert.DoesNotContain(audience.AllowedScopes, s => s.Value == "write");
+            Assert.Equal(2, audience.Scopes.Count);
+            Assert.Contains(audience.Scopes, s => s == new Scope("admin"));
+            Assert.Contains(audience.Scopes, s => s == new Scope("delete"));
+            Assert.DoesNotContain(audience.Scopes, s => s == new Scope("read"));
+            Assert.DoesNotContain(audience.Scopes, s => s == new Scope("write"));
         }
 
         [Fact]
@@ -520,13 +517,13 @@ public class ClientTests
             var audienceName = new AudienceName("api");
 
             client.AddAudience(audienceName, _time.GetUtcNow());
-            client.GrantScopes(audienceName, new[] { new Scope("read"), new Scope("write") }, _time.GetUtcNow());
+            client.SetScopes(audienceName, [new Scope("read"), new Scope("write")], _time.GetUtcNow());
 
             // Act
             var audience = client.SetScopes(audienceName, Array.Empty<Scope>(), _time.GetUtcNow());
 
             // Assert
-            Assert.Empty(audience.AllowedScopes);
+            Assert.Empty(audience.Scopes);
         }
 
         [Fact]
@@ -538,7 +535,7 @@ public class ClientTests
 
             // Act & Assert
             var exception = Assert.Throws<InvalidOperationException>(() =>
-                client.SetScopes(audienceName, new[] { new Scope("read") }, _time.GetUtcNow()));
+                client.SetScopes(audienceName, [new Scope("read")], _time.GetUtcNow()));
 
             Assert.Contains("not found", exception.Message);
         }
@@ -555,206 +552,7 @@ public class ClientTests
             var expectedTime = _time.GetUtcNow();
 
             // Act
-            client.SetScopes(audienceName, new[] { new Scope("read") }, expectedTime);
-
-            // Assert
-            Assert.Equal(expectedTime, client.UpdatedAt);
-        }
-    }
-
-    public class GrantScopes : ClientTests
-    {
-        [Fact]
-        public void GrantScopes_WithNewScopes_AddsToAudience()
-        {
-            // Arrange
-            var client = new ClientBuilder().Build();
-            var audienceName = new AudienceName("api");
-            var scopes = new[] { new Scope("read"), new Scope("write") };
-            
-            client.AddAudience(audienceName, _time.GetUtcNow());
-
-            // Act
-            var audience = client.GrantScopes(audienceName, scopes, _time.GetUtcNow());
-
-            // Assert
-            Assert.Equal(2, audience.AllowedScopes.Count);
-            Assert.Contains(audience.AllowedScopes, s => s.Value == "read");
-            Assert.Contains(audience.AllowedScopes, s => s.Value == "write");
-        }
-
-        [Fact]
-        public void GrantScopes_WithDuplicateScopes_IgnoresDuplicates()
-        {
-            // Arrange
-            var client = new ClientBuilder().Build();
-            var audienceName = new AudienceName("api");
-            var scopes = new[] { new Scope("read"), new Scope("write"), new Scope("read") };
-            
-            client.AddAudience(audienceName, _time.GetUtcNow());
-
-            // Act
-            var audience = client.GrantScopes(audienceName, scopes, _time.GetUtcNow());
-
-            // Assert - HashSet prevents duplicates
-            Assert.Equal(2, audience.AllowedScopes.Count);
-        }
-
-        [Fact]
-        public void GrantScopes_WithExistingScopes_IsIdempotent()
-        {
-            // Arrange
-            var client = new ClientBuilder().Build();
-            var audienceName = new AudienceName("api");
-            
-            client.AddAudience(audienceName, _time.GetUtcNow());
-            client.GrantScopes(audienceName, new[] { new Scope("read") }, _time.GetUtcNow());
-
-            // Act - grant same scope again
-            var audience = client.GrantScopes(audienceName, new[] { new Scope("read") }, _time.GetUtcNow());
-
-            // Assert
-            Assert.Single(audience.AllowedScopes);
-        }
-
-        [Fact]
-        public void GrantScopes_WithNonExistentAudience_ThrowsInvalidOperationException()
-        {
-            // Arrange
-            var client = new ClientBuilder().Build();
-            var audienceName = new AudienceName("api");
-
-            // Act & Assert
-            var exception = Assert.Throws<InvalidOperationException>(() =>
-                client.GrantScopes(audienceName, new[] { new Scope("read") }, _time.GetUtcNow()));
-
-            Assert.Contains("not found", exception.Message);
-        }
-
-        [Fact]
-        public void GrantScopes_UpdatesClientUpdatedAt()
-        {
-            // Arrange
-            var client = new ClientBuilder().Build();
-            var audienceName = new AudienceName("api");
-            client.AddAudience(audienceName, _time.GetUtcNow());
-
-            _time.Advance(TimeSpan.FromSeconds(1));
-            var expectedTime = _time.GetUtcNow();
-
-            // Act
-            client.GrantScopes(audienceName, new[] { new Scope("read") }, expectedTime);
-
-            // Assert
-            Assert.Equal(expectedTime, client.UpdatedAt);
-        }
-
-        [Fact]
-        public void GrantScopes_UpdatesAudienceUpdatedAt()
-        {
-            // Arrange
-            var client = new ClientBuilder().Build();
-            var audienceName = new AudienceName("api");
-            var audience = client.AddAudience(audienceName, _time.GetUtcNow());
-
-            _time.Advance(TimeSpan.FromSeconds(1));
-            var expectedTime = _time.GetUtcNow();
-
-            // Act
-            client.GrantScopes(audienceName, new[] { new Scope("read") }, expectedTime);
-
-            // Assert
-            Assert.Equal(expectedTime, audience.UpdatedAt);
-        }
-    }
-
-    public class RevokeScopes : ClientTests
-    {
-        [Fact]
-        public void RevokeScopes_WithExistingScopes_RemovesFromAudience()
-        {
-            // Arrange
-            var client = new ClientBuilder().Build();
-            var audienceName = new AudienceName("api");
-            var scopes = new[] { new Scope("read"), new Scope("write") };
-            
-            client.AddAudience(audienceName, _time.GetUtcNow());
-            client.GrantScopes(audienceName, scopes, _time.GetUtcNow());
-
-            // Act
-            var audience = client.RevokeScopes(audienceName, new[] { new Scope("read") }, _time.GetUtcNow());
-
-            // Assert
-            Assert.Single(audience.AllowedScopes);
-            Assert.Contains(audience.AllowedScopes, s => s.Value == "write");
-            Assert.DoesNotContain(audience.AllowedScopes, s => s.Value == "read");
-        }
-
-        [Fact]
-        public void RevokeScopes_WithAllScopes_LeavesAudienceEmpty()
-        {
-            // Arrange
-            var client = new ClientBuilder().Build();
-            var audienceName = new AudienceName("api");
-            var scopes = new[] { new Scope("read"), new Scope("write") };
-            
-            client.AddAudience(audienceName, _time.GetUtcNow());
-            client.GrantScopes(audienceName, scopes, _time.GetUtcNow());
-
-            // Act
-            var audience = client.RevokeScopes(audienceName, scopes, _time.GetUtcNow());
-
-            // Assert
-            Assert.Empty(audience.AllowedScopes);
-            Assert.Contains(client.AllowedAudiences, a => a.Name == audienceName); // Audience still exists
-        }
-
-        [Fact]
-        public void RevokeScopes_WithNonExistentScopes_IsIdempotent()
-        {
-            // Arrange
-            var client = new ClientBuilder().Build();
-            var audienceName = new AudienceName("api");
-            
-            client.AddAudience(audienceName, _time.GetUtcNow());
-            client.GrantScopes(audienceName, new[] { new Scope("read") }, _time.GetUtcNow());
-
-            // Act - revoke scope that doesn't exist
-            var audience = client.RevokeScopes(audienceName, new[] { new Scope("write") }, _time.GetUtcNow());
-
-            // Assert - no error, scope count unchanged
-            Assert.Single(audience.AllowedScopes);
-            Assert.Contains(audience.AllowedScopes, s => s.Value == "read");
-        }
-
-        [Fact]
-        public void RevokeScopes_WithNonExistentAudience_ThrowsInvalidOperationException()
-        {
-            // Arrange
-            var client = new ClientBuilder().Build();
-            var audienceName = new AudienceName("api");
-
-            // Act & Assert
-            var exception = Assert.Throws<InvalidOperationException>(() =>
-                client.RevokeScopes(audienceName, new[] { new Scope("read") }, _time.GetUtcNow()));
-
-            Assert.Contains("not found", exception.Message);
-        }
-
-        [Fact]
-        public void RevokeScopes_UpdatesClientUpdatedAt()
-        {
-            // Arrange
-            var client = new ClientBuilder().Build();
-            var audienceName = new AudienceName("api");
-            client.AddAudience(audienceName, _time.GetUtcNow());
-            client.GrantScopes(audienceName, new[] { new Scope("read") }, _time.GetUtcNow());
-
-            _time.Advance(TimeSpan.FromSeconds(1));
-            var expectedTime = _time.GetUtcNow();
-
-            // Act
-            client.RevokeScopes(audienceName, new[] { new Scope("read") }, expectedTime);
+            client.SetScopes(audienceName, [new Scope("read")], expectedTime);
 
             // Assert
             Assert.Equal(expectedTime, client.UpdatedAt);
@@ -789,7 +587,7 @@ public class ClientTests
             
             _time.Advance(TimeSpan.FromSeconds(1));
             var expected = _time.GetUtcNow();
-            client.Rename(new ClientName("client"), expected);
+            client.Rename(new ClientName("new-client"), expected);
             
             Assert.Equal(expected, client.UpdatedAt);
         }

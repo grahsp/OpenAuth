@@ -65,8 +65,11 @@ public class AuthorizationHandler : IAuthorizationHandler
         if (audience is null)
             throw new InvalidOperationException("Invalid audience.");
         
-        if (!request.Scopes.All(s => audience.AllowedScopes.Contains(s)))
-            throw new InvalidOperationException("Invalid scopes.");
+        var invalidScopes = request.Scopes.Except(audience.Scopes)
+            .Select(s => s.Value)
+            .ToArray();
+        if (invalidScopes.Length != 0)
+            throw new InvalidOperationException($"Invalid scopes: '{ string.Join(' ', invalidScopes) }'.");
     }
 
     private string GenerateCode()

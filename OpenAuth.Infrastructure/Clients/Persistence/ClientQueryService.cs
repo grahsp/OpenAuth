@@ -58,10 +58,10 @@ public class ClientQueryService : IClientQueryService
             .Where(c => c.Id == id)
             .Where(c => c.AllowedAudiences.Any(a => a.Name == audienceName))
             .Select(c => new ClientTokenData(
+                // TODO: add helper to client?
                 c.AllowedAudiences
-                    .Where(a => a.Name == audienceName)
-                    .Select(a => a.AllowedScopes.ToArray())
-                    .Single(),
+                    .Single(a => a.Name == audienceName)
+                    .Scopes,
                 c.AllowedGrantTypes.ToArray(),
                 c.RequirePkce,
                 c.TokenLifetime))

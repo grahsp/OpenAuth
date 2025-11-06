@@ -10,8 +10,8 @@ public class OAuthConfigurationTests
         => new OAuthConfigurationBuilder()
             .Build();
     
-    private static NewAudience CreateAudience(string name = "test", params string[] scopes) =>
-        new(AudienceName.Create(name), new ScopeCollection(scopes));
+    private static NewAudience CreateAudience(string name = "test", string scopes = "") =>
+        new(AudienceName.Create(name), ScopeCollection.Parse(scopes));
     
     public class Constructor : OAuthConfigurationTests
     {

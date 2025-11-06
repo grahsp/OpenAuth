@@ -8,5 +8,5 @@ public record ClientAuthorizationData(
     bool RequirePkce,
     GrantType[] GrantTypes,
     RedirectUri[] RedirectUris,
-    Audience[] AllowedAudiences
+    NewAudience[] AllowedAudiences
 );
