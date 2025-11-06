@@ -41,7 +41,7 @@ public class TokenService : ITokenService
         if (tokenData.RequirePkce && !request.GrantType.SupportsPkce)
             throw new InvalidOperationException("PKCE is required for this grant type.");
 
-        var invalidScopes = tokenData.Scopes.Except(request.RequestedScopes)
+        var invalidScopes = request.RequestedScopes.Except(tokenData.Scopes)
             .Select(s => s.Value)
             .ToArray();
         if (invalidScopes.Length > 0)

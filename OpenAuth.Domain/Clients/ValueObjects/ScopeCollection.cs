@@ -1,5 +1,4 @@
 using System.Collections;
-using OpenAuth.Domain.Clients.Audiences.ValueObjects;
 
 namespace OpenAuth.Domain.Clients.ValueObjects;
 
@@ -29,7 +28,7 @@ public sealed record ScopeCollection : IReadOnlyCollection<Scope>
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     
     public bool Contains(Scope scope) => _items.Contains(scope);
-    public IEnumerable<Scope> Except(IEnumerable<Scope> scopes) => _items.Except(scopes);
+    // public IEnumerable<Scope> Except(IEnumerable<Scope> scopes) => _items.Except(scopes);
     
     public override string ToString() => string.Join(' ', _items);
 

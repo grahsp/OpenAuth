@@ -2,7 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using OpenAuth.Domain.Shared.Interfaces;
 using OpenAuth.Domain.Shared.ValueObjects;
 
-namespace OpenAuth.Domain.Clients.Audiences.ValueObjects;
+namespace OpenAuth.Domain.Clients.ValueObjects;
 
 public record AudienceName : Name, ICreate<string, AudienceName>
 {

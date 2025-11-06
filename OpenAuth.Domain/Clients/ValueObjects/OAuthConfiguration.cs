@@ -1,18 +1,17 @@
 using System.Collections.Immutable;
-using OpenAuth.Domain.Clients.Audiences;
 using OpenAuth.Domain.Shared;
 
 namespace OpenAuth.Domain.Clients.ValueObjects;
 
 public record OAuthConfiguration
 {
-    public IReadOnlyCollection<NewAudience> Audiences { get; private init; }
+    public IReadOnlyCollection<Audience> Audiences { get; private init; }
     public IReadOnlyCollection<GrantType> GrantTypes { get; private init; }
     public IReadOnlyCollection<RedirectUri> RedirectUris { get; private init; }
     public bool RequirePkce { get; private init; }
     
     public OAuthConfiguration(
-        IEnumerable<NewAudience> audiences,
+        IEnumerable<Audience> audiences,
         IEnumerable<GrantType> grantTypes,
         IEnumerable<RedirectUri> redirectUris,
         bool requirePkce)
@@ -42,7 +41,7 @@ public record OAuthConfiguration
         => grantTypes.Any(gt => gt.RequiresRedirectUri);
     
     
-    public OAuthConfiguration SetAudiences(IEnumerable<NewAudience> audiences)
+    public OAuthConfiguration SetAudiences(IEnumerable<Audience> audiences)
     {
         var items = audiences.CreateDistinctCollection(a => a.Name);
         DomainRules.EnsureCollectionNotEmpty(items, DomainErrors.OAuth.AudienceRequired);

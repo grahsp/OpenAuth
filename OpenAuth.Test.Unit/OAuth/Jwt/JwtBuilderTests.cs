@@ -1,6 +1,5 @@
 using Microsoft.Extensions.Time.Testing;
 using Microsoft.IdentityModel.Tokens;
-using OpenAuth.Domain.Clients.Audiences.ValueObjects;
 using OpenAuth.Domain.Clients.ValueObjects;
 using OpenAuth.Domain.OAuth;
 

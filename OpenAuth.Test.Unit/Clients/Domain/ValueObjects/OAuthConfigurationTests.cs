@@ -1,4 +1,3 @@
-using OpenAuth.Domain.Clients.Audiences.ValueObjects;
 using OpenAuth.Domain.Clients.ValueObjects;
 using OpenAuth.Test.Common.Builders;
 
@@ -10,7 +9,7 @@ public class OAuthConfigurationTests
         => new OAuthConfigurationBuilder()
             .Build();
     
-    private static NewAudience CreateAudience(string name = "test", string scopes = "") =>
+    private static Audience CreateAudience(string name = "test", string scopes = "") =>
         new(AudienceName.Create(name), ScopeCollection.Parse(scopes));
     
     public class Constructor : OAuthConfigurationTests

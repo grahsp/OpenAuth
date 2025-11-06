@@ -1,4 +1,4 @@
-using OpenAuth.Domain.Clients.Audiences.ValueObjects;
+using OpenAuth.Domain.Clients.ValueObjects;
 
 namespace OpenAuth.Test.Unit.Clients.Domain.ValueObjects;
 

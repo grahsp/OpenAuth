@@ -7,7 +7,6 @@ using NSubstitute;
 using OpenAuth.Application.Clients.Dtos;
 using OpenAuth.Application.Security.Signing;
 using OpenAuth.Application.SigningKeys.Dtos;
-using OpenAuth.Domain.Clients.Audiences.ValueObjects;
 using OpenAuth.Domain.Clients.ValueObjects;
 using OpenAuth.Domain.SigningKeys.Enums;
 using OpenAuth.Domain.SigningKeys.ValueObjects;
