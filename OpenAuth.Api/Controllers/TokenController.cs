@@ -9,7 +9,6 @@ using OpenAuth.Application.Tokens.Dtos;
 using OpenAuth.Application.Tokens.Services;
 using OpenAuth.Domain.AuthorizationGrants.Enums;
 using OpenAuth.Domain.AuthorizationGrants.ValueObjects;
-using OpenAuth.Domain.Clients.Audiences.ValueObjects;
 using OpenAuth.Domain.Clients.ValueObjects;
 
 namespace OpenAuth.Api.Controllers;

@@ -1,10 +1,8 @@
-using OpenAuth.Domain.Clients.Audiences.ValueObjects;
-
 namespace OpenAuth.Domain.Clients.ValueObjects;
 
-public sealed record NewAudience(AudienceName Name, ScopeCollection Scopes)
+public sealed record Audience(AudienceName Name, ScopeCollection Scopes)
 {
-    public bool Equals(NewAudience? other)
+    public bool Equals(Audience? other)
     {
         if (other is null)
             return false;

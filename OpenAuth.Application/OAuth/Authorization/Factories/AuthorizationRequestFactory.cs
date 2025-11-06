@@ -3,8 +3,6 @@ using OpenAuth.Application.OAuth.Authorization.Interfaces;
 using OpenAuth.Application.Shared.Models;
 using OpenAuth.Domain.AuthorizationGrants.Enums;
 using OpenAuth.Domain.AuthorizationGrants.ValueObjects;
-using OpenAuth.Domain.Clients.Audiences;
-using OpenAuth.Domain.Clients.Audiences.ValueObjects;
 using OpenAuth.Domain.Clients.ValueObjects;
 
 namespace OpenAuth.Application.OAuth.Authorization.Factories;

@@ -1,6 +1,5 @@
 using System.Security.Claims;
 using Microsoft.IdentityModel.Tokens;
-using OpenAuth.Domain.Clients.Audiences.ValueObjects;
 using OpenAuth.Domain.Clients.ValueObjects;
 
 namespace OpenAuth.Domain.OAuth;

@@ -2,7 +2,6 @@ using OpenAuth.Application.Clients.Dtos;
 using OpenAuth.Application.Clients.Interfaces;
 using OpenAuth.Application.Shared.Models;
 using OpenAuth.Domain.Clients;
-using OpenAuth.Domain.Clients.Audiences.ValueObjects;
 using OpenAuth.Domain.Clients.ValueObjects;
 
 namespace OpenAuth.Test.Common.Fakes;

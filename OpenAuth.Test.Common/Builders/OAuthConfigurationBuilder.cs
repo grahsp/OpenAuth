@@ -1,16 +1,15 @@
-using OpenAuth.Domain.Clients.Audiences.ValueObjects;
 using OpenAuth.Domain.Clients.ValueObjects;
 
 namespace OpenAuth.Test.Common.Builders;
 
 public class OAuthConfigurationBuilder
 {
-    private IEnumerable<NewAudience>? _audiences;
+    private IEnumerable<Audience>? _audiences;
     private IEnumerable<GrantType>? _grantTypes;
     private IEnumerable<RedirectUri>? _redirectUris;
     private bool? _requirePkce;
 
-    public OAuthConfigurationBuilder WithAudiences(params NewAudience[] audiences)
+    public OAuthConfigurationBuilder WithAudiences(params Audience[] audiences)
     {
         _audiences = audiences;
         return this;
@@ -43,7 +42,7 @@ public class OAuthConfigurationBuilder
     public OAuthConfiguration Build()
     {
         var audiences = _audiences
-                        ?? [new NewAudience(AudienceName.Create("api"),
+                        ?? [new Audience(AudienceName.Create("api"),
                             new ScopeCollection([]))];
         var grantTypes = _grantTypes
             ?? [GrantType.AuthorizationCode];

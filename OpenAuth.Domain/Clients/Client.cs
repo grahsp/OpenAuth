@@ -1,8 +1,6 @@
-using OpenAuth.Domain.Clients.Audiences;
-using OpenAuth.Domain.Clients.Audiences.ValueObjects;
+using OpenAuth.Domain.Clients.ValueObjects;
 using OpenAuth.Domain.Clients.Secrets;
 using OpenAuth.Domain.Clients.Secrets.ValueObjects;
-using OpenAuth.Domain.Clients.ValueObjects;
 
 namespace OpenAuth.Domain.Clients;
 
@@ -25,8 +23,8 @@ public sealed class Client
     private readonly HashSet<RedirectUri> _redirectUris = [];
     public IReadOnlyCollection<RedirectUri> RedirectUris => _redirectUris;
     
-    private readonly HashSet<NewAudience> _allowedAudiences = [];
-    public IReadOnlyCollection<NewAudience> AllowedAudiences => _allowedAudiences;
+    private readonly HashSet<Audience> _allowedAudiences = [];
+    public IReadOnlyCollection<Audience> AllowedAudiences => _allowedAudiences;
     
     
     // Token
@@ -129,16 +127,16 @@ public sealed class Client
     
     
     // Audiences
-    public NewAudience GetAudience(AudienceName name)
+    public Audience GetAudience(AudienceName name)
         => _allowedAudiences.SingleOrDefault(a => a.Name == name) ??
            throw new InvalidOperationException($"Audience {name.Value} not found.");
     
-    public NewAudience AddAudience(AudienceName name, DateTimeOffset utcNow)
+    public Audience AddAudience(AudienceName name, DateTimeOffset utcNow)
     {
         if (_allowedAudiences.Any(a => a.Name.NormalizedValue == name.NormalizedValue))
             throw new InvalidOperationException($"Audience {name.Value} already exists.");
 
-        var audience = new NewAudience(name, new ScopeCollection([]));
+        var audience = new Audience(name, new ScopeCollection([]));
         _allowedAudiences.Add(audience);
         
         Touch(utcNow);
@@ -155,7 +153,7 @@ public sealed class Client
 
     
     // Scopes
-    public NewAudience SetScopes(AudienceName name, IEnumerable<Scope> scopes, DateTimeOffset utcNow)
+    public Audience SetScopes(AudienceName name, IEnumerable<Scope> scopes, DateTimeOffset utcNow)
     {
         var existing = GetAudience(name);
         _allowedAudiences.Remove(existing);

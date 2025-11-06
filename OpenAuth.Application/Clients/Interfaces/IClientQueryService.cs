@@ -1,6 +1,5 @@
 using OpenAuth.Application.Clients.Dtos;
 using OpenAuth.Application.Shared.Models;
-using OpenAuth.Domain.Clients.Audiences.ValueObjects;
 using OpenAuth.Domain.Clients.ValueObjects;
 
 namespace OpenAuth.Application.Clients.Interfaces;

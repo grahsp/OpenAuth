@@ -1,12 +1,11 @@
-using OpenAuth.Domain.Clients.Audiences;
-using OpenAuth.Domain.Clients.Audiences.ValueObjects;
+using OpenAuth.Domain.Clients.ValueObjects;
 
 namespace OpenAuth.Test.Common.Builders;
 
 public class AudienceBuilder
 {
     private AudienceName? _name;
-    private DateTimeOffset? _createdAt;
+    private ScopeCollection? _scopes;
     
     public AudienceBuilder WithName(string name)
     {
@@ -14,17 +13,17 @@ public class AudienceBuilder
         return this;
     }
 
-    public AudienceBuilder WithCreatedAt(DateTimeOffset createdAt)
+    public AudienceBuilder WithScopes(string scopes)
     {
-        _createdAt = createdAt;
+        _scopes = ScopeCollection.Parse(scopes);
         return this;
     }
 
     public Audience Build()
     {
         var name = _name ?? AudienceName.Create("api");
-        var createdAt = _createdAt ?? DateTimeOffset.UtcNow;
+        var scopes = _scopes ?? ScopeCollection.Parse("read write");
         
-        return Audience.Create(name, createdAt);
+        return new Audience(name, scopes);
     }
 }

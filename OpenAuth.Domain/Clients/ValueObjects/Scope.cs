@@ -1,6 +1,6 @@
 using OpenAuth.Domain.Shared.ValueObjects;
 
-namespace OpenAuth.Domain.Clients.Audiences.ValueObjects;
+namespace OpenAuth.Domain.Clients.ValueObjects;
 
 public sealed record Scope : Name
 {

@@ -8,7 +8,6 @@ using OpenAuth.Application.Tokens.Dtos;
 using OpenAuth.Application.Tokens.Flows;
 using OpenAuth.Application.Tokens.Interfaces;
 using OpenAuth.Application.Tokens.Services;
-using OpenAuth.Domain.Clients.Audiences.ValueObjects;
 using OpenAuth.Domain.Clients.ValueObjects;
 using OpenAuth.Domain.SigningKeys.Enums;
 using OpenAuth.Domain.SigningKeys.ValueObjects;
@@ -125,8 +124,8 @@ public class TokenServiceTests
     [Fact]
     public async Task IssueToken_WithInvalidScopes_ThrowsInvalidOperationException()
     {
-        var request = CreateValidRequest();
-        var tokenData = CreateValidTokenData() with { Scopes = ScopeCollection.Parse("invalid") };
+        var request = CreateValidRequest() with { RequestedScopes = ScopeCollection.Parse("invalid") };
+        var tokenData = CreateValidTokenData();
 
         _clientQueryService
             .GetTokenDataAsync(request.ClientId, request.RequestedAudience, Arg.Any<CancellationToken>())
@@ -135,7 +134,7 @@ public class TokenServiceTests
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(
             () => _tokenService.IssueToken(request));
 
-        Assert.Contains($"Invalid scopes: '{ tokenData.Scopes }'", ex.Message);
+        Assert.Contains($"Invalid scopes: '{ request.RequestedScopes }'", ex.Message);
     }
 
     [Fact]
