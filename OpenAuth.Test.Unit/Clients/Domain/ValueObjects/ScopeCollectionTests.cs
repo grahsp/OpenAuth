@@ -14,9 +14,9 @@ public class ScopeCollectionTests
         var scopes = new ScopeCollection(input);
 
         // Assert
-        Assert.Equal(2, scopes.Scopes.Count);
-        Assert.Contains("read", scopes.Scopes);
-        Assert.Contains("write", scopes.Scopes);
+        Assert.Equal(2, scopes.Count);
+        Assert.Contains("read", scopes);
+        Assert.Contains("write", scopes);
     }
 
     [Theory]
@@ -30,16 +30,18 @@ public class ScopeCollectionTests
         var scopes = ScopeCollection.Parse(input);
 
         // Assert
-        Assert.Equal(expected.Length, scopes.Scopes.Count);
+        Assert.Equal(expected.Length, scopes.Count);
         foreach (var s in expected)
-            Assert.Contains(s, scopes.Scopes);
+            Assert.Contains(s, scopes);
     }
 
     [Fact]
     public void Contains_ReturnsTrue_WhenScopeExists()
     {
+        // Arrange
         var scopes = ScopeCollection.Parse("read write");
 
+        // Assert
         Assert.True(scopes.Contains("read"));
         Assert.False(scopes.Contains("admin"));
     }
@@ -47,17 +49,40 @@ public class ScopeCollectionTests
     [Fact]
     public void ToString_ProducesSpaceSeparatedString()
     {
+        // Arrange
         var scopes = new ScopeCollection(["read", "write"]);
 
-        Assert.Equal("read write", scopes.ToString());
+        // Act
+        var result = scopes.ToString();
+
+        // Assert
+        Assert.Equal("read write", result);
     }
 
     [Fact]
     public void Equality_IsBasedOnScopeSet_NotOrder()
     {
+        // Arrange
         var a = new ScopeCollection(["read", "write"]);
         var b = new ScopeCollection(["write", "read"]);
 
+        // Assert
         Assert.Equal(a, b);
+        Assert.True(a.Equals(b));
+        Assert.Equal(a.GetHashCode(), b.GetHashCode());
+    }
+
+    [Fact]
+    public void Enumerator_IteratesAllScopes()
+    {
+        // Arrange
+        var scopes = new ScopeCollection(["read", "write"]);
+
+        // Act
+        var result = scopes.ToList();
+
+        // Assert
+        Assert.Contains("read", result);
+        Assert.Contains("write", result);
     }
 }
