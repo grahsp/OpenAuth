@@ -74,12 +74,15 @@ public class ClientBuilder
         foreach (var secret in _secrets)
             client.AddSecret(secret, createdAt);
 
-        foreach (var (audience, scopes) in _audiences)
-        {
-            var audienceName = new AudienceName(audience);
-            client.AddAudience(audienceName, createdAt);
-            client.SetScopes(audienceName, scopes.Select(s => new Scope(s)), createdAt);
-        }
+        if (_audiences.Count == 0)
+            _audiences.Add("test-audience", ["read write"]);
+        
+        var audiences = _audiences.Select(a
+            => new Audience(new AudienceName(a.Key),
+                new ScopeCollection(a.Value.Select(s => new Scope(s)))
+                ));
+        
+        client.SetAudiences(audiences, createdAt);
         
         foreach (var redirectUri in _redirectUris)
             client.AddRedirectUri(redirectUri, createdAt);

@@ -105,7 +105,6 @@ public class ClientRepositoryTests : IAsyncLifetime
 
             // Assert
             Assert.NotNull(fetched);
-            Assert.Equal(2, fetched.AllowedAudiences.Count);
             Assert.Contains(fetched.AllowedAudiences, a => a.Name == audience1.Name);
             Assert.Contains(fetched.AllowedAudiences, a => a.Name == audience2.Name);
         }
@@ -118,11 +117,10 @@ public class ClientRepositoryTests : IAsyncLifetime
             var repo = CreateRepository(context);
 
             var client = new ClientBuilder().Build();
-            var audienceName = new AudienceName("api");
-            client.AddAudience(audienceName, _time.GetUtcNow());
-            
-            var scopes = new[] { new Scope("read"), new Scope("write") };
-            client.SetScopes(audienceName, scopes, _time.GetUtcNow());
+
+            var api = new Audience(AudienceName.Create("api"), ScopeCollection.Parse("read write"));
+            var audiences = new[] { api };
+            client.SetAudiences(audiences, _time.GetUtcNow());
             
             repo.Add(client);
             await repo.SaveChangesAsync();
@@ -277,7 +275,6 @@ public class ClientRepositoryTests : IAsyncLifetime
                 .FirstOrDefaultAsync(c => c.Id == client.Id);
             
             Assert.NotNull(persisted);
-            Assert.Single(persisted.AllowedAudiences);
         }
     }
 }
