@@ -93,9 +93,10 @@ public class ClientRepositoryTests : IAsyncLifetime
             await using var context = _fx.CreateContext();
             var repo = CreateRepository(context);
 
-            var client = new ClientBuilder().Build();
-            var audience1 = client.AddAudience(new AudienceName("api"), _time.GetUtcNow());
-            var audience2 = client.AddAudience(new AudienceName("web"), _time.GetUtcNow());
+            var client = new ClientBuilder()
+                .WithAudience("api", "read")
+                .WithAudience("web", "read write")
+                .Build();
             
             repo.Add(client);
             await repo.SaveChangesAsync();
@@ -105,8 +106,8 @@ public class ClientRepositoryTests : IAsyncLifetime
 
             // Assert
             Assert.NotNull(fetched);
-            Assert.Contains(fetched.AllowedAudiences, a => a.Name == audience1.Name);
-            Assert.Contains(fetched.AllowedAudiences, a => a.Name == audience2.Name);
+            Assert.Contains(fetched.AllowedAudiences, a => a.Name == AudienceName.Create("api"));
+            Assert.Contains(fetched.AllowedAudiences, a => a.Name == AudienceName.Create("web"));
         }
 
         [Fact]
@@ -262,8 +263,8 @@ public class ClientRepositoryTests : IAsyncLifetime
             await repo.SaveChangesAsync();
 
             // Modify client
-            var audienceName = new AudienceName("api");
-            client.AddAudience(audienceName, _time.GetUtcNow());
+            var api = new Audience(AudienceName.Create("web"), ScopeCollection.Parse("read write"));
+            client.SetAudiences([api], _time.GetUtcNow());
 
             // Act
             await repo.SaveChangesAsync();

@@ -130,18 +130,6 @@ public sealed class Client
     public Audience GetAudience(AudienceName name)
         => _allowedAudiences.SingleOrDefault(a => a.Name == name) ??
            throw new InvalidOperationException($"Audience {name.Value} not found.");
-    
-    public Audience AddAudience(AudienceName name, DateTimeOffset utcNow)
-    {
-        if (_allowedAudiences.Any(a => a.Name.NormalizedValue == name.NormalizedValue))
-            throw new InvalidOperationException($"Audience {name.Value} already exists.");
-
-        var audience = new Audience(name, new ScopeCollection([]));
-        _allowedAudiences.Add(audience);
-        
-        Touch(utcNow);
-        return audience;
-    }
 
     public void SetAudiences(IEnumerable<Audience> audiences, DateTimeOffset utcNow)
     {
