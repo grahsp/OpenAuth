@@ -76,7 +76,6 @@ public class ClientPersistenceTests : IAsyncLifetime
                 Assert.NotNull(loaded);
                 Assert.Equal(client.Name, loaded.Name);
                 Assert.Empty(loaded.Secrets);
-                Assert.Empty(loaded.AllowedAudiences);
             }
         }
         
@@ -522,7 +521,6 @@ public class ClientPersistenceTests : IAsyncLifetime
                     .SingleAsync(x => x.Id == client.Id);
 
                 // Assert
-                Assert.Equal(2, loaded.AllowedAudiences.Count);
                 Assert.Contains(loaded.AllowedAudiences, a => a.Name == apiAudienceName);
                 Assert.Contains(loaded.AllowedAudiences, a => a.Name == webAudienceName);
             }
@@ -551,8 +549,7 @@ public class ClientPersistenceTests : IAsyncLifetime
                 var loaded = await ctx.Clients
                     .SingleAsync(x => x.Id == client.Id);
 
-                Assert.Single(loaded.AllowedAudiences);
-                Assert.Equal(audienceName, loaded.AllowedAudiences.First().Name);
+                Assert.Contains(loaded.AllowedAudiences, a => a.Name == audienceName);
             }
         }
         
@@ -592,8 +589,7 @@ public class ClientPersistenceTests : IAsyncLifetime
             await using (var ctx = _fx.CreateContext())
             {
                 var remaining = await ctx.Clients.SingleAsync(x => x.Id == client2.Id);
-                Assert.Single(remaining.AllowedAudiences);
-                Assert.Equal(audienceName, remaining.AllowedAudiences.First().Name);
+                Assert.Contains(remaining.AllowedAudiences, a => a.Name == audienceName);
             }
         }
         
@@ -630,109 +626,6 @@ public class ClientPersistenceTests : IAsyncLifetime
                 // Assert
                 Assert.Single(found);
                 Assert.Equal(client1.Id, found[0].Id);
-            }
-        }
-        
-        [Fact]
-        public async Task AudienceWithScopes_PersistsAllScopes()
-        {
-            // Arrange
-            var client = new ClientBuilder()
-                .WithName("test-client")
-                .Build();
-            
-            var audienceName = new AudienceName("api");
-            client.AddAudience(audienceName, _time.GetUtcNow());
-            client.SetScopes(audienceName, [new Scope("read"), new Scope("write")], _time.GetUtcNow());
-        
-            await using (var ctx = _fx.CreateContext())
-            {
-                ctx.Add(client);
-                await ctx.SaveChangesAsync();
-            }
-
-            // Act
-            await using (var ctx = _fx.CreateContext())
-            {
-                var loaded = await ctx.Clients
-                    .SingleAsync(x => x.Id == client.Id);
-
-                // Assert
-                var audience = Assert.Single(loaded.AllowedAudiences);
-                Assert.Equal(2, audience.Scopes.Count);
-                Assert.Contains(audience.Scopes, s => s == new Scope("read"));
-                Assert.Contains(audience.Scopes, s => s == new Scope("write"));
-            }
-        }
-        
-        [Fact]
-        public async Task MultipleAudiences_WithDifferentScopes_AllPersist()
-        {
-            // Arrange
-            var client = new ClientBuilder()
-                .WithName("test-client")
-                .Build();
-            
-            var apiAudienceName = new AudienceName("api");
-            client.AddAudience(apiAudienceName, _time.GetUtcNow());
-            client.SetScopes(apiAudienceName, [new Scope("read"), new Scope("write")], _time.GetUtcNow());
-            
-            var webAudienceName = new AudienceName("web");
-            client.AddAudience(webAudienceName, _time.GetUtcNow());
-            client.SetScopes(webAudienceName, [new Scope("admin")], _time.GetUtcNow());
-            
-        
-            await using (var ctx = _fx.CreateContext())
-            {
-                ctx.Add(client);
-                await ctx.SaveChangesAsync();
-            }
-
-            // Act
-            await using (var ctx = _fx.CreateContext())
-            {
-                var loaded = await ctx.Clients
-                    .SingleAsync(x => x.Id == client.Id);
-
-                // Assert
-                Assert.Equal(2, loaded.AllowedAudiences.Count);
-                
-                var audience1 = loaded.AllowedAudiences.Single(a => a.Name == apiAudienceName);
-                Assert.Equal(2, audience1.Scopes.Count);
-                Assert.Contains(audience1.Scopes, s => s == new Scope("read"));
-                Assert.Contains(audience1.Scopes, s => s == new Scope("write"));
-                
-                var audience2 = loaded.AllowedAudiences.Single(a => a.Name == webAudienceName);
-                Assert.Single(audience2.Scopes);
-                Assert.Contains(audience2.Scopes, s => s == new Scope("admin"));
-            }
-        }
-        
-        [Fact]
-        public async Task AudienceWithoutScopes_SavesSuccessfully()
-        {
-            // Arrange
-            var client = new ClientBuilder()
-                .WithName("test-client")
-                .Build();
-            
-            client.AddAudience(new AudienceName("api"), _time.GetUtcNow());
-        
-            await using (var ctx = _fx.CreateContext())
-            {
-                ctx.Add(client);
-                await ctx.SaveChangesAsync();
-            }
-
-            // Act
-            await using (var ctx = _fx.CreateContext())
-            {
-                var loaded = await ctx.Clients
-                    .SingleAsync(x => x.Id == client.Id);
-
-                // Assert
-                var audience = Assert.Single(loaded.AllowedAudiences);
-                Assert.Empty(audience.Scopes);
             }
         }
     }

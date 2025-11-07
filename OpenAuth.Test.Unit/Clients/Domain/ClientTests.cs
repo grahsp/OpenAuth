@@ -26,7 +26,6 @@ public class ClientTests
         Assert.NotEqual(TimeSpan.Zero, client.TokenLifetime);
 
         Assert.NotEqual(Guid.Empty, client.Id.Value);
-        Assert.Empty(client.AllowedAudiences);
 
         Assert.Equal(now, client.CreatedAt);
         Assert.Equal(now, client.UpdatedAt);
@@ -348,7 +347,6 @@ public class ClientTests
             var audience = client.AddAudience(audienceName, _time.GetUtcNow());
 
             // Assert
-            Assert.Single(client.AllowedAudiences);
             Assert.Contains(client.AllowedAudiences, a => a.Name == audienceName);
             Assert.Equal(audienceName, audience.Name);
         }

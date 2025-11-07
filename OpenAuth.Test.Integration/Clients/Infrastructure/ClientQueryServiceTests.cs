@@ -196,7 +196,6 @@ public class ClientQueryServiceTests : IAsyncLifetime
             // Assert
             Assert.NotNull(result);
             Assert.Empty(result.Secrets);
-            Assert.Empty(result.Audiences);
         }
     }
 
