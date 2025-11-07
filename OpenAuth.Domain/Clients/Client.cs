@@ -160,20 +160,6 @@ public sealed class Client
         Touch(utcNow);
     }
 
-    
-    // Scopes
-    public Audience SetScopes(AudienceName name, IEnumerable<Scope> scopes, DateTimeOffset utcNow)
-    {
-        var existing = GetAudience(name);
-        _allowedAudiences.Remove(existing);
-        
-        var updated = existing with { Scopes = new ScopeCollection(scopes) };
-        _allowedAudiences.Add(updated);
-
-        Touch(utcNow);
-        return updated;
-    }
-
 
     // Token
     public void SetTokenLifetime(TimeSpan value, DateTimeOffset utcNow)
