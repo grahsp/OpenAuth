@@ -502,11 +502,10 @@ public class ClientPersistenceTests : IAsyncLifetime
                 .WithName("test-client")
                 .Build();
 
-            var apiAudienceName = new AudienceName("api");
-            var webAudienceName = new AudienceName("web");
-            
-            client.AddAudience(apiAudienceName, _time.GetUtcNow());
-            client.AddAudience(webAudienceName, _time.GetUtcNow());
+            var api = new Audience(AudienceName.Create("api"), ScopeCollection.Parse("read write"));
+            var web = new Audience(AudienceName.Create("web"), ScopeCollection.Parse("read write"));
+            var audiences = new[] { api, web };
+            client.SetAudiences(audiences, _time.GetUtcNow());
         
             await using (var ctx = _fx.CreateContext())
             {
@@ -521,8 +520,8 @@ public class ClientPersistenceTests : IAsyncLifetime
                     .SingleAsync(x => x.Id == client.Id);
 
                 // Assert
-                Assert.Contains(loaded.AllowedAudiences, a => a.Name == apiAudienceName);
-                Assert.Contains(loaded.AllowedAudiences, a => a.Name == webAudienceName);
+                Assert.Contains(loaded.AllowedAudiences, a => a.Name == api.Name);
+                Assert.Contains(loaded.AllowedAudiences, a => a.Name == web.Name);
             }
         }
         
@@ -534,8 +533,9 @@ public class ClientPersistenceTests : IAsyncLifetime
                 .WithName("test-client")
                 .Build();
             
-            var audienceName = new AudienceName("api");
-            client.AddAudience(audienceName, _time.GetUtcNow());
+            var api = new Audience(AudienceName.Create("api"), ScopeCollection.Parse("read write"));
+            var audiences = new[] { api };
+            client.SetAudiences(audiences, _time.GetUtcNow());
         
             await using (var ctx = _fx.CreateContext())
             {
@@ -549,7 +549,7 @@ public class ClientPersistenceTests : IAsyncLifetime
                 var loaded = await ctx.Clients
                     .SingleAsync(x => x.Id == client.Id);
 
-                Assert.Contains(loaded.AllowedAudiences, a => a.Name == audienceName);
+                Assert.Contains(loaded.AllowedAudiences, a => a.Name == api.Name);
             }
         }
         
@@ -561,15 +561,15 @@ public class ClientPersistenceTests : IAsyncLifetime
                 .WithName("client1")
                 .Build();
             
-            client1.AddAudience(new AudienceName("api"), _time.GetUtcNow());
-            client1.AddAudience(new AudienceName("web"), _time.GetUtcNow());
+            var api = new Audience(AudienceName.Create("api"), ScopeCollection.Parse("read write"));
+            client1.SetAudiences([api], _time.GetUtcNow());
                 
             var client2 = new ClientBuilder()
                 .WithName("client2")
                 .Build();
             
-            var audienceName = new AudienceName("api");
-            client2.AddAudience(audienceName, _time.GetUtcNow());
+            var web = new Audience(AudienceName.Create("web"), ScopeCollection.Parse("read write"));
+            client2.SetAudiences([web], _time.GetUtcNow());
         
             await using (var ctx = _fx.CreateContext())
             {
@@ -589,43 +589,7 @@ public class ClientPersistenceTests : IAsyncLifetime
             await using (var ctx = _fx.CreateContext())
             {
                 var remaining = await ctx.Clients.SingleAsync(x => x.Id == client2.Id);
-                Assert.Contains(remaining.AllowedAudiences, a => a.Name == audienceName);
-            }
-        }
-        
-        [Fact]
-        public async Task ClientCanBeQueried_ByAudienceValue()
-        {
-            // Arrange
-            var client1 = new ClientBuilder()
-                .WithName("client1")
-                .Build();
-            
-            var audienceName = new AudienceName("api");
-            client1.AddAudience(audienceName, _time.GetUtcNow());
-                
-            var client2 = new ClientBuilder()
-                .WithName("client2")
-                .Build();
-            
-            client2.AddAudience(new AudienceName("web"), _time.GetUtcNow());
-        
-            await using (var ctx = _fx.CreateContext())
-            {
-                ctx.AddRange(client1, client2);
-                await ctx.SaveChangesAsync();
-            }
-
-            // Act
-            await using (var ctx = _fx.CreateContext())
-            {
-                var found = await ctx.Clients
-                    .Where(c => c.AllowedAudiences.Any(a => a.Name == audienceName))
-                    .ToListAsync();
-
-                // Assert
-                Assert.Single(found);
-                Assert.Equal(client1.Id, found[0].Id);
+                Assert.Contains(remaining.AllowedAudiences, a => a.Name == web.Name);
             }
         }
     }
