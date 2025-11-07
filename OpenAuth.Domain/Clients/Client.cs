@@ -23,7 +23,7 @@ public sealed class Client
     private readonly HashSet<RedirectUri> _redirectUris = [];
     public IReadOnlyCollection<RedirectUri> RedirectUris => _redirectUris;
     
-    private readonly HashSet<Audience> _allowedAudiences = [];
+    private HashSet<Audience> _allowedAudiences = [];
     public IReadOnlyCollection<Audience> AllowedAudiences => _allowedAudiences;
     
     
@@ -141,6 +141,23 @@ public sealed class Client
         
         Touch(utcNow);
         return audience;
+    }
+
+    public void SetAudiences(IEnumerable<Audience> audiences, DateTimeOffset utcNow)
+    {
+        var items = audiences.ToArray();
+        
+        if (items.Select(a => a.Name.NormalizedValue).Distinct().Count() != items.Length)
+            throw new InvalidOperationException("Client cannot contain duplicate audience names.");
+
+        if (items.Length == 0)
+            throw new InvalidOperationException("Client must have at least one audience.");
+
+        if (_allowedAudiences.SetEquals(items))
+            return;
+
+        _allowedAudiences = items.ToHashSet();
+        Touch(utcNow);
     }
 
     public void RemoveAudience(AudienceName name, DateTimeOffset utcNow)

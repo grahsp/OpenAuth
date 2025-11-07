@@ -415,6 +415,70 @@ public class ClientTests
             Assert.Equal(audienceName, audience.Name);
         }
     }
+    
+    public class SetAudiences : ClientTests
+    {
+        [Fact]
+        public void WhenValidAudiences_UpdatesCollectionAndTimestamp()
+        {
+            var client = new ClientBuilder()
+                .CreatedAt(_time.GetUtcNow())
+                .Build();
+            
+            var api = new Audience(AudienceName.Create("api"), ScopeCollection.Parse("read write"));
+            var web = new Audience(AudienceName.Create("web"), ScopeCollection.Parse("read"));
+            var expectedAudiences = new[] { api, web };
+
+            _time.Advance(TimeSpan.FromMinutes(5));
+            var expectedTime = _time.GetUtcNow();
+            client.SetAudiences(expectedAudiences, expectedTime);
+            
+            Assert.Equal(expectedAudiences, client.AllowedAudiences);
+            Assert.Equal(expectedTime, client.UpdatedAt);
+        }
+
+        [Fact]
+        public void WhenSameAudiences_DoesNotUpdate()
+        {
+            var expectedTime = _time.GetUtcNow();
+            var client = new ClientBuilder()
+                .WithAudience("api", "read", "write")
+                .CreatedAt(expectedTime)
+                .Build();
+            
+            var api = new Audience(AudienceName.Create("api"), ScopeCollection.Parse("read write"));
+            var expectedAudiences = new[] { api };
+
+            _time.Advance(TimeSpan.FromMinutes(5));
+            client.SetAudiences(expectedAudiences, _time.GetUtcNow());
+            
+            Assert.Equal(expectedAudiences, client.AllowedAudiences);
+            Assert.Equal(expectedTime, client.UpdatedAt);
+        }
+
+        [Fact]
+        public void WhenDuplicateNames_ThrowsException()
+        {
+            var client = new ClientBuilder().Build();
+            
+            var api1 = new Audience(AudienceName.Create("api"), ScopeCollection.Parse("read write"));
+            var api2 = new Audience(AudienceName.Create("api"), ScopeCollection.Parse("read write"));
+            var audiences = new[] { api1, api2 };
+
+            Assert.Throws<InvalidOperationException>(()
+                => client.SetAudiences(audiences, _time.GetUtcNow()));
+        }
+
+        [Fact]
+        public void WhenEmptyCollection_ThrowsException()
+        {
+            var client = new ClientBuilder().Build();
+            var audiences = Array.Empty<Audience>();
+
+            Assert.Throws<InvalidOperationException>(()
+                => client.SetAudiences(audiences, _time.GetUtcNow()));           
+        }
+    }
 
     public class RemoveAudience : ClientTests
     {
@@ -483,7 +547,7 @@ public class ClientTests
             Assert.Empty(client.AllowedAudiences);
         }
     }
-
+    
     public class SetScopes : ClientTests
     {
         [Fact]
