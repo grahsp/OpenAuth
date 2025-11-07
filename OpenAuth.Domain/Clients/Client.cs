@@ -160,14 +160,6 @@ public sealed class Client
         Touch(utcNow);
     }
 
-    public void RemoveAudience(AudienceName name, DateTimeOffset utcNow)
-    {
-        var audience = GetAudience(name);
-        _allowedAudiences.Remove(audience);
-        
-        Touch(utcNow);
-    }
-
     
     // Scopes
     public Audience SetScopes(AudienceName name, IEnumerable<Scope> scopes, DateTimeOffset utcNow)
