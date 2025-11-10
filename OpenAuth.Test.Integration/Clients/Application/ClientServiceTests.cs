@@ -60,6 +60,53 @@ public class ClientServiceTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task SetAudiences_PersistsNewAudiences()
+    {
+        var created = await _sut.RegisterAsync(new ClientName("client"));
+        var audiences = new Audience[]
+        {
+            new(AudienceName.Create("api"), ScopeCollection.Parse("read write")),
+            new(AudienceName.Create("web"), ScopeCollection.Parse("read write"))
+        };
+
+        await _sut.SetAudiencesAsync(created.Id, audiences);
+        
+        await using var ctx = _fx.CreateContext();
+        var fetched = await ctx.Clients.SingleAsync(c => c.Id == created.Id);
+
+        Assert.Equal(audiences, fetched.AllowedAudiences);
+    }
+
+    [Fact]
+    public async Task AddAudienceAsync_PersistsNewAudience()
+    {
+        var created = await _sut.RegisterAsync(new ClientName("client"));
+        var audience = new Audience(AudienceName.Create("api"), ScopeCollection.Parse("read write"));
+
+        await _sut.AddAudienceAsync(created.Id, audience);
+        
+        await using var ctx = _fx.CreateContext();
+        var fetched = await ctx.Clients.SingleAsync(c => c.Id == created.Id);
+
+        Assert.Contains(fetched.AllowedAudiences, a => a == audience);
+    }
+
+    [Fact]
+    public async Task RemoveAudienceAsync_PersistsChange()
+    {
+        var created = await _sut.RegisterAsync(new ClientName("client"));
+        var audience = new Audience(AudienceName.Create("api"), ScopeCollection.Parse("read write"));
+        await _sut.AddAudienceAsync(created.Id, audience);
+        
+        await _sut.RemoveAudienceAsync(created.Id, audience.Name);
+        
+        await using var ctx = _fx.CreateContext();
+        var fetched = await ctx.Clients.SingleAsync(c => c.Id == created.Id);
+
+        Assert.DoesNotContain(fetched.AllowedAudiences, a => a == audience);
+    }
+
+    [Fact]
     public async Task DeleteAsync_RemovesClient()
     {
         var clientInfo = await _sut.RegisterAsync(new ClientName("client"));
