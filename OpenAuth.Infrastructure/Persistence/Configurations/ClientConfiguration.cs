@@ -99,7 +99,13 @@ public class ClientConfiguration : IEntityTypeConfiguration<Client>
             aud.Property(a => a.Scopes)
                 .HasConversion(
                     scopes => scopes.ToString(),
-                    value => ScopeCollection.Parse(value ?? string.Empty))
+                    value => ScopeCollection.Parse(value),
+                    new ValueComparer<ScopeCollection>(
+                        (c1, c2) => c1!.SequenceEqual(c2!),
+                        c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
+                        c => ScopeCollection.Parse(c.ToString())
+                    )
+                )
                 .HasColumnName("Scopes")
                 .HasMaxLength(2000)
                 .IsRequired(false);
