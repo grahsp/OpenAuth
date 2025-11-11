@@ -1,9 +1,9 @@
-using OpenAuth.Domain.Clients;
 using OpenAuth.Domain.Clients.ValueObjects;
 
-namespace OpenAuth.Application.Clients.Factories;
+namespace OpenAuth.Domain.Clients.Factories;
 
 public interface IClientFactory
 {
     Client Create(ClientName name);
+    Client Create(ClientConfiguration config);
 }

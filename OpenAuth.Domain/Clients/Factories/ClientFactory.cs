@@ -1,7 +1,6 @@
-using OpenAuth.Domain.Clients;
 using OpenAuth.Domain.Clients.ValueObjects;
 
-namespace OpenAuth.Application.Clients.Factories;
+namespace OpenAuth.Domain.Clients.Factories;
 
 public class ClientFactory : IClientFactory
 {
@@ -15,4 +14,9 @@ public class ClientFactory : IClientFactory
     
     public Client Create(ClientName name)
         => Client.Create(name, _time.GetUtcNow());
+    
+    public Client Create(ClientConfiguration config)
+    {
+        return Client.Create(config);
+    }
 }

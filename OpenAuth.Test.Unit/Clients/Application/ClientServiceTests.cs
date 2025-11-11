@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Time.Testing;
-using OpenAuth.Application.Clients.Factories;
 using OpenAuth.Application.Clients.Services;
+using OpenAuth.Domain.Clients.Factories;
 using OpenAuth.Domain.Clients.ValueObjects;
 using OpenAuth.Test.Common.Builders;
 using OpenAuth.Test.Common.Fakes;
