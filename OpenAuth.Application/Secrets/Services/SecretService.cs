@@ -1,9 +1,9 @@
 using OpenAuth.Application.Clients.Interfaces;
 using OpenAuth.Application.Secrets.Dtos;
 using OpenAuth.Application.Secrets.Interfaces;
-using OpenAuth.Application.Security.Hashing;
 using OpenAuth.Domain.Clients.Secrets.ValueObjects;
 using OpenAuth.Domain.Clients.ValueObjects;
+using OpenAuth.Domain.Shared.Interfaces;
 
 namespace OpenAuth.Application.Secrets.Services;
 
