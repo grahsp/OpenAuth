@@ -1,5 +1,5 @@
-using OpenAuth.Application.Secrets.Dtos;
 using OpenAuth.Domain.Clients.ValueObjects;
+using OpenAuth.Domain.Services.Dtos;
 
 namespace OpenAuth.Application.Clients.Dtos;
 

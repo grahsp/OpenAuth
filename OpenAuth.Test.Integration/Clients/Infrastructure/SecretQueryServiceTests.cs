@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Time.Testing;
 using OpenAuth.Domain.Clients.Secrets.ValueObjects;
 using OpenAuth.Domain.Clients.ValueObjects;
-using OpenAuth.Domain.Shared.Interfaces;
+using OpenAuth.Domain.Services;
 using OpenAuth.Infrastructure.Clients.Secrets.Persistence;
 using OpenAuth.Infrastructure.Security.Hashing;
 using OpenAuth.Test.Common.Builders;

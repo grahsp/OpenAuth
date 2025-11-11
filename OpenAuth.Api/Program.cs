@@ -19,7 +19,7 @@ using OpenAuth.Application.Tokens.Interfaces;
 using OpenAuth.Application.Tokens.Services;
 using OpenAuth.Domain.AuthorizationGrants;
 using OpenAuth.Domain.Clients.Factories;
-using OpenAuth.Domain.Shared.Interfaces;
+using OpenAuth.Domain.Services;
 using OpenAuth.Domain.Users;
 using OpenAuth.Infrastructure.Clients.Persistence;
 using OpenAuth.Infrastructure.Clients.Secrets;
