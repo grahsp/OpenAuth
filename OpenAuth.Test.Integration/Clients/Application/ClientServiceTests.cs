@@ -97,6 +97,7 @@ public class ClientServiceTests : IAsyncLifetime
         var created = await _sut.RegisterAsync(new ClientName("client"));
         var audience = new Audience(AudienceName.Create("api"), ScopeCollection.Parse("read write"));
         await _sut.AddAudienceAsync(created.Id, audience);
+        await _sut.AddAudienceAsync(created.Id, new Audience(AudienceName.Create("web"), ScopeCollection.Parse("read write")));
         
         await _sut.RemoveAudienceAsync(created.Id, audience.Name);
         
