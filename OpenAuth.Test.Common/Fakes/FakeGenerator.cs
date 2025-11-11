@@ -1,4 +1,4 @@
-using OpenAuth.Application.Secrets.Interfaces;
+using OpenAuth.Infrastructure.Clients.Secrets;
 
 namespace OpenAuth.Test.Common.Fakes;
 

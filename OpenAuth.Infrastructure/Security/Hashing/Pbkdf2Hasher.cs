@@ -1,6 +1,6 @@
 using System.Globalization;
 using System.Security.Cryptography;
-using OpenAuth.Domain.Shared.Interfaces;
+using OpenAuth.Domain.Services;
 
 namespace OpenAuth.Infrastructure.Security.Hashing;
 

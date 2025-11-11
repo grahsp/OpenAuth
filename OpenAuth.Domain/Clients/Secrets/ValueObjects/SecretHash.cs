@@ -1,5 +1,4 @@
-using OpenAuth.Domain.Shared.Interfaces;
-
+using OpenAuth.Domain.Services;
 namespace OpenAuth.Domain.Clients.Secrets.ValueObjects;
 
 public readonly record struct SecretHash

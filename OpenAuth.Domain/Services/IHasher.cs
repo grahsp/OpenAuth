@@ -1,4 +1,4 @@
-namespace OpenAuth.Domain.Shared.Interfaces;
+namespace OpenAuth.Domain.Services;
 
 public interface IHasher
 {

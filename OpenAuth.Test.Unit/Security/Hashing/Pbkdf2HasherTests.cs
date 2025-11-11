@@ -1,5 +1,5 @@
 using OpenAuth.Domain.Clients.Secrets.ValueObjects;
-using OpenAuth.Domain.Shared.Interfaces;
+using OpenAuth.Domain.Services;
 using OpenAuth.Infrastructure.Security.Hashing;
 
 namespace OpenAuth.Test.Unit.Security.Hashing;
