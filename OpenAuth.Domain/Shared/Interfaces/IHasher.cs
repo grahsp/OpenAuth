@@ -1,6 +1,4 @@
-using OpenAuth.Domain.Clients.Secrets.ValueObjects;
-
-namespace OpenAuth.Application.Security.Hashing;
+namespace OpenAuth.Domain.Shared.Interfaces;
 
 public interface IHasher
 {
