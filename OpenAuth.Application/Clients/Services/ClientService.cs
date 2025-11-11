@@ -1,7 +1,7 @@
 using OpenAuth.Application.Clients.Dtos;
-using OpenAuth.Application.Clients.Factories;
 using OpenAuth.Application.Clients.Interfaces;
 using OpenAuth.Application.Clients.Mappings;
+using OpenAuth.Domain.Clients.Factories;
 using OpenAuth.Domain.Clients.ValueObjects;
 
 namespace OpenAuth.Application.Clients.Services;

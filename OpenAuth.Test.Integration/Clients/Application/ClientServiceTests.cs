@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
-using OpenAuth.Application.Clients.Factories;
 using OpenAuth.Application.Clients.Services;
+using OpenAuth.Domain.Clients.Factories;
 using OpenAuth.Domain.Clients.ValueObjects;
 using OpenAuth.Infrastructure.Clients.Persistence;
 using OpenAuth.Test.Integration.Infrastructure;
