@@ -1,7 +1,11 @@
 using Microsoft.Extensions.Time.Testing;
+using NSubstitute;
 using OpenAuth.Application.Clients.Services;
 using OpenAuth.Domain.Clients.Factories;
+using OpenAuth.Domain.Clients.Secrets.ValueObjects;
 using OpenAuth.Domain.Clients.ValueObjects;
+using OpenAuth.Domain.Services;
+using OpenAuth.Domain.Services.Dtos;
 using OpenAuth.Test.Common.Builders;
 using OpenAuth.Test.Common.Fakes;
 
@@ -10,6 +14,7 @@ namespace OpenAuth.Test.Unit.Clients.Application;
 public class ClientServiceTests
 {
     private FakeClientRepository _repo;
+    private ISecretHashProvider _hashProvider;
     private IClientFactory _clientFactory;
     
     private TimeProvider _time;
@@ -20,9 +25,13 @@ public class ClientServiceTests
         _time = new FakeTimeProvider();
         
         _repo = new FakeClientRepository();
-        _clientFactory = new ClientFactory(_time);
-
+        _hashProvider = Substitute.For<ISecretHashProvider>();
+        _clientFactory = new ClientFactory(_hashProvider, _time);
+        
         _sut = new ClientService(_repo, _clientFactory, _time);
+
+        var secretResult = new SecretCreationResult("secret", SecretHash.FromHash("secret"));
+        _hashProvider.Create().Returns(secretResult);
     }
 
     

@@ -3,6 +3,8 @@ using OpenAuth.Application.Clients.Services;
 using OpenAuth.Domain.Clients.Factories;
 using OpenAuth.Domain.Clients.ValueObjects;
 using OpenAuth.Infrastructure.Clients.Persistence;
+using OpenAuth.Infrastructure.Clients.Secrets;
+using OpenAuth.Infrastructure.Security.Hashing;
 using OpenAuth.Test.Integration.Infrastructure;
 
 namespace OpenAuth.Test.Integration.Clients.Application;
@@ -21,7 +23,12 @@ public class ClientServiceTests : IAsyncLifetime
         
         var context = _fx.CreateContext();
         var repo = new ClientRepository(context);
-        var factory = new ClientFactory(time);
+        
+        var secretGenerator = new SecretGenerator();
+        var hasher = new Pbkdf2Hasher();
+        var hashProvider = new SecretHashProvider(secretGenerator, hasher);
+        
+        var factory = new ClientFactory(hashProvider, time);
 
         _sut = new ClientService(repo, factory, time);
     }

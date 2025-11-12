@@ -39,14 +39,26 @@ public sealed class Client
     
     private Client() { }
 
+    [Obsolete]
     private Client(ClientName name, DateTimeOffset utcNow)
     {
         Name = name;
         CreatedAt = UpdatedAt = utcNow;
     }
 
+    [Obsolete]
     internal static Client Create(ClientName name, DateTimeOffset utcNow)
         => new(name, utcNow);
+    
+
+    private Client(ClientConfiguration config, DateTimeOffset utcNow)
+    {
+        Name = config.Identity.Name;
+        CreatedAt = UpdatedAt = utcNow;
+    }
+
+    internal static Client Create(ClientConfiguration config, DateTimeOffset utcNow)
+        => new(config, utcNow);
 
     // Client
     public void Rename(ClientName newName, DateTimeOffset utcNow)
