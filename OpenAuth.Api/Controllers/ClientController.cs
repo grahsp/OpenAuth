@@ -45,7 +45,7 @@ public class ClientController : ControllerBase
              ClientId = client.Id.ToString(),
              Name = client.Name.Value,
              CreatedAt = client.CreatedAt,
-             ClientSecret = creationResult.PlainTextSecret,
+             ClientSecret = creationResult.PlainSecret,
          };
      
          return CreatedAtAction(nameof(GetById), new { clientId = client.Id }, response);

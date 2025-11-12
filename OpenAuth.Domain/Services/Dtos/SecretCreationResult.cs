@@ -4,6 +4,6 @@ namespace OpenAuth.Domain.Services.Dtos;
 
 public record SecretCreationResult
 (
-    string PlainTextSecret,
+    string PlainSecret,
     SecretHash Hash
 );

@@ -5,13 +5,20 @@ public readonly record struct SecretHash
 {
     public string Value { get; }
 
-    // TODO: make private (add FromHash method?)
+    [Obsolete("Use FromHash instead")]
     public SecretHash(string value)
     {
         ArgumentNullException.ThrowIfNull(value);
         ArgumentException.ThrowIfNullOrWhiteSpace(value);
 
         Value = value;
+    }
+
+    public static SecretHash FromHash(string hashedText)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(hashedText);
+        
+        return new SecretHash(hashedText);
     }
 
     public static SecretHash Create(string plainText, IHasher hasher)
