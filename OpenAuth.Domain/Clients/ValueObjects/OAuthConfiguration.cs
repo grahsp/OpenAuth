@@ -10,7 +10,7 @@ public record OAuthConfiguration
     public IReadOnlyCollection<RedirectUri> RedirectUris { get; private init; }
     public bool RequirePkce { get; private init; }
     
-    public OAuthConfiguration(
+    internal OAuthConfiguration(
         IEnumerable<Audience> audiences,
         IEnumerable<GrantType> grantTypes,
         IEnumerable<RedirectUri> redirectUris,
@@ -28,6 +28,12 @@ public record OAuthConfiguration
         EnsureRedirectUrisForGrantTypes(GrantTypes, RedirectUris);
         EnsurePkceCompliance(RequirePkce);
     }
+
+    public static OAuthConfiguration CreateSpa(IEnumerable<Audience> audiences, IEnumerable<RedirectUri> redirectUris)
+        => new(audiences, [GrantType.AuthorizationCode, GrantType.RefreshToken], redirectUris, true);
+
+    public static OAuthConfiguration CreateM2M(IEnumerable<Audience> audiences)
+        => new(audiences, [GrantType.ClientCredentials], [], false);
     
     
     public bool IsPublicClient() => IsPublicClient(GrantTypes, RequirePkce);
