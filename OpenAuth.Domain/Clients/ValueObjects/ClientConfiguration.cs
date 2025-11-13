@@ -1,9 +1,7 @@
 namespace OpenAuth.Domain.Clients.ValueObjects;
 
 public sealed record ClientConfiguration(
-    ClientIdentity Identity,
+    ClientName Name,
     SecuritySettings Security,
-    OAuthConfiguration OAuth,
-    bool Enabled,
-    DateTimeOffset CreatedAt
+    OAuthConfiguration OAuth
 );
