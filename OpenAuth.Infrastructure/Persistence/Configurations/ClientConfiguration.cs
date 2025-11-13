@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using OpenAuth.Domain.Clients;
+using OpenAuth.Domain.Clients.ApplicationType;
 using OpenAuth.Domain.Clients.ValueObjects;
 
 namespace OpenAuth.Infrastructure.Persistence.Configurations;
@@ -43,6 +44,12 @@ public class ClientConfiguration : IEntityTypeConfiguration<Client>
 
         builder.Property(c => c.IsPublic).IsRequired();
         builder.Property(c => c.RequirePkce).IsRequired();
+
+        builder.Property(c => c.ApplicationType)
+            .HasConversion(
+                type => type.Name,
+                value => ClientApplicationTypes.Parse(value))
+            .IsRequired();
         
         builder.Ignore(c => c.AllowedGrantTypes);
         builder.Property<HashSet<GrantType>>("_allowedGrantTypes")

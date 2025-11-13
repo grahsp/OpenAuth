@@ -99,14 +99,12 @@ public class Program
         builder.Services.AddScoped<IClientQueryService, ClientQueryService>();
         builder.Services.AddScoped<IClientFactory, ClientFactory>();
         
-        // Audience Services
-        // builder.Services.AddScoped<IAudienceService, AudienceService>();
-        
         // Secret Services
         builder.Services.AddScoped<ISecretService, SecretService>();
         builder.Services.AddScoped<ISecretQueryService, SecretQueryService>();
         builder.Services.AddScoped<IHasher, Pbkdf2Hasher>();
         builder.Services.AddScoped<ISecretGenerator, SecretGenerator>();
+        builder.Services.AddScoped<ISecretHashProvider, SecretHashProvider>();
 
         // Signing Keys
         builder.Services.AddScoped<ISigningKeyService, SigningKeyService>();

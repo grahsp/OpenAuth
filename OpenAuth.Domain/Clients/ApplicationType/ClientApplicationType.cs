@@ -14,12 +14,6 @@ public abstract class ClientApplicationType
     public abstract bool RequiresPermissions { get; }
     public abstract bool AllowsClientSecrets { get; }
 
-    public bool IsPublic => !AllowsClientSecrets;
-
-    public virtual OAuthConfiguration CreateDefaultConfiguration(IEnumerable<Audience> audiences,
-        IEnumerable<RedirectUri> redirectUris)
-        => new(audiences, DefaultGrantTypes, redirectUris, true);
-    
     public void ValidateAudiences(IEnumerable<Audience> audiences)
     {
         if (RequiresPermissions && !audiences.Any())
@@ -36,9 +30,6 @@ public abstract class ClientApplicationType
             var invalidNames = string.Join(", ", invalid.Select(g => g.Value));
             throw new InvalidOperationException($"Grant type(s) {invalidNames} are not allowed for this client type.");
         }
-        
-        if (RequiresRedirectUris && grantTypes.Any(g => !g.RequiresRedirectUri))
-            throw new InvalidOperationException("Grant type(s) require redirect URIs.");
     }
 
     public void ValidateRedirectUris(IEnumerable<RedirectUri> redirectUris)

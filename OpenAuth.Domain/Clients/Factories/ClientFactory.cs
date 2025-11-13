@@ -35,6 +35,8 @@ public class ClientFactory : IClientFactory
             client.AddSecret(result.Hash, now);
         }
         
+        client.ValidateClient();
+        
         return client;
     }
 }
