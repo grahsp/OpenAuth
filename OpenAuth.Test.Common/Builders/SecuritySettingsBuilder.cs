@@ -24,6 +24,10 @@ public class SecuritySettingsBuilder
     {
         var lifetime = _lifetime ?? TimeSpan.FromMinutes(10);
         
-        return new SecuritySettings(_secrets, lifetime);
+        return new SecuritySettings
+        {
+            Secrets = _secrets.ToList(),
+            TokenLifetime = lifetime
+        };
     }
 }

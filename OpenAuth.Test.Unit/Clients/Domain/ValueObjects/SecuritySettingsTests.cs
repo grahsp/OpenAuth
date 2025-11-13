@@ -11,38 +11,6 @@ public class SecuritySettingsTests
     
     
     [Fact]
-    public void Ctor_WhenValidInput_Succeeds()
-    {
-        var lifetime = TimeSpan.FromMinutes(5);
-        var settings = new SecuritySettingsBuilder()
-            .WithTokenLifetime(lifetime)
-            .Build();
-        
-        Assert.Empty(settings.Secrets);
-        Assert.Equal(lifetime, settings.TokenLifetime);
-    }
-
-    [Fact]
-    public void Ctor_WhenDuplicateSecretId_ThrowsException()
-    {
-        var builder = new SecretBuilder()
-            .WithId();
-        var secrets = new[] {builder.Build(), builder.Build()};
-
-        Assert.Throws <ArgumentException>(()
-            => new SecuritySettings(secrets, TimeSpan.FromMinutes(5)));
-    }
-
-    [Fact]
-    public void Ctor_WhenInvalidTokenLifetime_ThrowsException()
-    {
-        var secret = new SecretBuilder().Build();
-        
-        Assert.Throws<ArgumentOutOfRangeException>(()
-            => new SecuritySettings([secret], TimeSpan.FromSeconds(-1)));
-    }
-
-    [Fact]
     public void AddSecret_WhenValidSecret_AddsSecret()
     {
         var settings = new SecuritySettingsBuilder().Build();
