@@ -53,7 +53,7 @@ public sealed class Client
 
     private Client(ClientConfiguration config, DateTimeOffset utcNow)
     {
-        Name = config.Identity.Name;
+        Name = config.Name;
         CreatedAt = UpdatedAt = utcNow;
     }
 
