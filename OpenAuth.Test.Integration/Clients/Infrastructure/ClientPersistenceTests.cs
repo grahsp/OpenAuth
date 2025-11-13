@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Time.Testing;
+using OpenAuth.Domain.Clients.ApplicationType;
 using OpenAuth.Domain.Clients.Secrets;
 using OpenAuth.Domain.Clients.ValueObjects;
 using OpenAuth.Domain.OAuth;
@@ -106,8 +107,9 @@ public class ClientPersistenceTests : IAsyncLifetime
         {
             // Arrange
             var client = new ClientBuilder()
-                .WithGrantType()
+                .WithApplicationType(ClientApplicationTypes.Spa)
                 .WithGrantType(GrantTypes.AuthorizationCode)
+                .WithGrantType(GrantTypes.RefreshToken)
                 .Build();
         
             await using (var ctx = _fx.CreateContext())
@@ -125,7 +127,7 @@ public class ClientPersistenceTests : IAsyncLifetime
                 // Assert
                 Assert.Equal(2, loaded.AllowedGrantTypes.Count);
                 Assert.Contains(loaded.AllowedGrantTypes, g => g == GrantType.AuthorizationCode);
-                Assert.Contains(loaded.AllowedGrantTypes, g => g == GrantType.ClientCredentials);
+                Assert.Contains(loaded.AllowedGrantTypes, g => g == GrantType.RefreshToken);
             }
         }
     
@@ -223,6 +225,7 @@ public class ClientPersistenceTests : IAsyncLifetime
         {
             // Arrange
             var client = new ClientBuilder()
+                .WithApplicationType(ClientApplicationTypes.M2M)
                 .Build();
     
             await using (var ctx = _fx.CreateContext())
@@ -248,6 +251,7 @@ public class ClientPersistenceTests : IAsyncLifetime
         {
             // Arrange
             var client = new ClientBuilder()
+                .WithApplicationType(ClientApplicationTypes.M2M)
                 .Build();
     
             await using (var ctx = _fx.CreateContext())

@@ -37,7 +37,6 @@ public class AuthorizationHandlerTests
             .WithGrantType(GrantTypes.AuthorizationCode)
             .WithRedirectUri("https://example.com/callback")
             .Build();
-        _defaultClient.SetPublic(true, _time.GetUtcNow());
 
         _validRequest = new AuthorizationRequest(
             _defaultClient.Id,
@@ -91,7 +90,6 @@ public class AuthorizationHandlerTests
     {
         var request = _validRequest with { Pkce = null! };
         
-        _defaultClient.SetPublic(true, _time.GetUtcNow());
         _defaultClient.SetPkceRequirement(true, _time.GetUtcNow());
         
         _clientQueryService.Add(_defaultClient);
@@ -106,7 +104,6 @@ public class AuthorizationHandlerTests
         var request = _validRequest with { Pkce = null! };
         var now = _time.GetUtcNow();
         
-        _defaultClient.SetPublic(false, now);
         _defaultClient.SetPkceRequirement(false, now);
         
         _clientQueryService.Add(_defaultClient);
