@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 using OpenAuth.Application.Clients.Services;
+using OpenAuth.Domain.Clients.ApplicationType;
 using OpenAuth.Domain.Clients.Factories;
 using OpenAuth.Domain.Clients.Secrets.ValueObjects;
 using OpenAuth.Domain.Clients.ValueObjects;
@@ -194,7 +195,9 @@ public class ClientServiceTests
         [Fact]
         public async Task WhenAudienceNotFound_DoesNothing()
         {
-            var client = new ClientBuilder().Build();
+            var client = new ClientBuilder()
+                .WithApplicationType(ClientApplicationTypes.M2M)
+                .Build();
             _repo.Add(client);
 
             var expected = client.AllowedAudiences.ToArray();
@@ -206,7 +209,9 @@ public class ClientServiceTests
         [Fact]
         public async Task WhenValid_RemovesAudience()
         {
-            var client = new ClientBuilder().Build();
+            var client = new ClientBuilder()
+                .WithApplicationType(ClientApplicationTypes.M2M)
+                .Build();
             _repo.Add(client);
             
             var audience = new Audience(AudienceName.Create("unique"), ScopeCollection.Parse("read write"));

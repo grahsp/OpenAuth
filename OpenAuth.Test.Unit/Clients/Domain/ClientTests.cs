@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Time.Testing;
 using OpenAuth.Domain.Clients;
+using OpenAuth.Domain.Clients.ApplicationType;
 using OpenAuth.Domain.Clients.Secrets.ValueObjects;
 using OpenAuth.Domain.Clients.ValueObjects;
 using OpenAuth.Test.Common.Builders;
@@ -217,6 +218,7 @@ public class ClientTests
         {
             // Arrange
             var client = new ClientBuilder()
+                .WithApplicationType(ClientApplicationTypes.M2M)
                 .CreatedAt(_time.GetUtcNow())
                 .Build();
             var uri = RedirectUri.Create("https://app.com/callback");
@@ -239,6 +241,7 @@ public class ClientTests
             // Arrange
             var expectedTime = _time.GetUtcNow();
             var client = new ClientBuilder()
+                .WithApplicationType(ClientApplicationTypes.M2M)
                 .CreatedAt(expectedTime)
                 .Build();
             var uri = RedirectUri.Create("https://app.com/callback");
@@ -259,7 +262,9 @@ public class ClientTests
         {
             // Arrange
             var now = _time.GetUtcNow();
-            var client = new ClientBuilder().Build();
+            var client = new ClientBuilder()
+                .WithApplicationType(ClientApplicationTypes.M2M)
+                .Build();
             
             // Act
             client.AddRedirectUri(RedirectUri.Create("https://app.com/callback"), now);
@@ -278,6 +283,7 @@ public class ClientTests
         {
             // Arrange
             var client = new ClientBuilder()
+                .WithApplicationType(ClientApplicationTypes.M2M)
                 .CreatedAt(_time.GetUtcNow())
                 .Build();
             
@@ -301,6 +307,7 @@ public class ClientTests
             // Arrange
             var expectedTime = _time.GetUtcNow();
             var client = new ClientBuilder()
+                .WithApplicationType(ClientApplicationTypes.M2M)
                 .CreatedAt(expectedTime)
                 .Build();
             var uri = RedirectUri.Create("https://app.com/callback");
@@ -318,7 +325,9 @@ public class ClientTests
         {
             // Arrange
             var now = _time.GetUtcNow();
-            var client = new ClientBuilder().Build();
+            var client = new ClientBuilder()
+                .WithApplicationType(ClientApplicationTypes.M2M)
+                .Build();
             
             var uri1 = RedirectUri.Create("https://app.com/callback");
             var uri2 = RedirectUri.Create("https://app.com/silent");

@@ -1,4 +1,5 @@
 using OpenAuth.Domain.Clients;
+using OpenAuth.Domain.Clients.ApplicationType;
 using OpenAuth.Domain.Clients.Secrets.ValueObjects;
 using OpenAuth.Domain.Clients.ValueObjects;
 using OpenAuth.Domain.OAuth;
@@ -8,13 +9,20 @@ namespace OpenAuth.Test.Common.Builders;
 public class ClientBuilder
 {
     private ClientName? _name;
+    private ClientApplicationType? _applicationType;
     private DateTimeOffset? _createdAt;
     
     private List<SecretHash> _secrets = [];
     private Dictionary<string, string[]> _audiences = [];
     private List<RedirectUri> _redirectUris = [];
     private List<GrantType> _grantTypes = [];
-    
+
+
+    public ClientBuilder WithApplicationType(ClientApplicationType applicationType)
+    {
+        _applicationType = applicationType;
+        return this;
+    }
     
     public ClientBuilder WithName(string name)
     {
@@ -69,26 +77,41 @@ public class ClientBuilder
         var name = _name ?? new ClientName("Client");
         var createdAt = _createdAt ?? DateTimeOffset.UtcNow;
         
-        var client = Client.Create(name, createdAt);
-        
-        foreach (var secret in _secrets)
-            client.AddSecret(secret, createdAt);
+        var applicationType = _applicationType ?? ClientApplicationTypes.Spa;
 
-        if (_audiences.Count == 0)
-            _audiences.Add("test-audience", ["read write"]);
+        if (applicationType.RequiresPermissions && _audiences.Count == 0)
+            WithAudience("test-audience", "read", "write");
+        
+        if (applicationType.RequiresRedirectUris && _redirectUris.Count == 0)
+            WithRedirectUri();
+
+        if (applicationType.AllowsClientSecrets && _secrets.Count == 0)
+            WithSecret();
         
         var audiences = _audiences.Select(a
             => new Audience(new AudienceName(a.Key),
                 new ScopeCollection(a.Value.Select(s => new Scope(s)))
-                ));
+            ));
+
+        var clientConfig = new ClientConfiguration(
+            name, applicationType, audiences, _grantTypes, _redirectUris);
         
-        client.SetAudiences(audiences, createdAt);
+        var client = Client.Create(clientConfig, createdAt);
         
-        foreach (var redirectUri in _redirectUris)
-            client.AddRedirectUri(redirectUri, createdAt);
+        foreach (var secret in _secrets)
+            client.AddSecret(secret, createdAt);
+
+        // if (_audiences.Count == 0)
+        //     _audiences.Add("test-audience", ["read write"]);
         
-        foreach (var grantType in _grantTypes)
-            client.AddGrantType(grantType, createdAt);
+        
+        // client.SetAudiences(audiences, createdAt);
+        
+        // foreach (var redirectUri in _redirectUris)
+        //     client.AddRedirectUri(redirectUri, createdAt);
+        //
+        // foreach (var grantType in _grantTypes)
+        //     client.AddGrantType(grantType, createdAt);
 
         return client;
     }
