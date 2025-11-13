@@ -1,6 +1,6 @@
 using System.Collections.Immutable;
 using OpenAuth.Application.Clients.Dtos;
-using OpenAuth.Domain.Clients.Enums;
+using OpenAuth.Domain.Clients.ApplicationType;
 using OpenAuth.Domain.Clients.ValueObjects;
 
 namespace OpenAuth.Application.Clients.Services;
@@ -12,19 +12,18 @@ public class ClientConfigurationFactory : IClientConfigurationFactory
         ArgumentNullException.ThrowIfNull(request);
         
         var name = ClientName.Create(request.Name);
-        var security = new SecuritySettings();
 
         var audiences = CreateAudiences(request.Permissions);
         var redirectUris = CreateRedirectUris(request.RedirectUris);
+
+        var applicationType = ClientApplicationTypes.Parse(request.ApplicationType);
         
-        var oauth = request.Type switch
-        {
-            ClientApplicationType.SinglePageApplication => OAuthConfiguration.CreateSpa(audiences, redirectUris),
-            ClientApplicationType.MachineToMachine => OAuthConfiguration.CreateM2M(audiences),
-            _ => throw new NotSupportedException($"Unsupported application type: {request.Type}.")
-        };
-        
-        var configuration = new ClientConfiguration(name, security, oauth);
+        var configuration = new ClientConfiguration(name,
+            applicationType,
+            audiences,
+            applicationType.DefaultGrantTypes,
+            redirectUris
+        );
         return configuration;
     }
 

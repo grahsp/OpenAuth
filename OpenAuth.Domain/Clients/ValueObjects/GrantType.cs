@@ -6,10 +6,10 @@ namespace OpenAuth.Domain.Clients.ValueObjects;
 
 public record GrantType : ICreate<string, GrantType>
 {
-    public string Value { get; }
-    public bool SupportsPublicClient { get; }
-    public bool SupportsPkce { get; }
-    public bool RequiresRedirectUri { get; }
+    public string Value { get; private init; }
+    public bool SupportsPublicClient { get; private init; }
+    public bool SupportsPkce { get; private init; }
+    public bool RequiresRedirectUri { get; private init; }
 
     private GrantType(string value, bool supportsPublicClient, bool supportsPkce, bool requiresRedirectUri)
     {

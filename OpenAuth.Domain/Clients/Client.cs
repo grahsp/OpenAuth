@@ -1,3 +1,4 @@
+using OpenAuth.Domain.Clients.ApplicationType;
 using OpenAuth.Domain.Clients.ValueObjects;
 using OpenAuth.Domain.Clients.Secrets;
 using OpenAuth.Domain.Clients.Secrets.ValueObjects;
@@ -8,6 +9,8 @@ public sealed class Client
 {
     public ClientId Id { get; init; } = ClientId.New();
     public ClientName Name { get; private set; } = null!;
+    
+    public ClientApplicationType ApplicationType { get; init; }
     
     public const int MaxSecrets = 3;
     public List<Secret> Secrets { get; private set; } = [];
@@ -44,21 +47,44 @@ public sealed class Client
     {
         Name = name;
         CreatedAt = UpdatedAt = utcNow;
+        
+        // Temporary
+        ApplicationType = new SinglePageClientApplicationType();
     }
 
     [Obsolete]
     internal static Client Create(ClientName name, DateTimeOffset utcNow)
         => new(name, utcNow);
-    
 
     private Client(ClientConfiguration config, DateTimeOffset utcNow)
     {
         Name = config.Name;
+        ApplicationType = config.ApplicationType;
+        
+        _allowedAudiences = config.AllowedAudiences.ToHashSet();
+        _allowedGrantTypes = config.AllowedGrantTypes.ToHashSet();
+        _redirectUris = config.RedirectUris.ToHashSet();
+        
         CreatedAt = UpdatedAt = utcNow;
+        
+        ValidateInitialClient();
     }
 
     internal static Client Create(ClientConfiguration config, DateTimeOffset utcNow)
         => new(config, utcNow);
+
+    private void ValidateInitialClient()
+    {
+        ApplicationType.ValidateAudiences(AllowedAudiences);
+        ApplicationType.ValidateRedirectUris(RedirectUris);
+        ApplicationType.ValidateGrantTypes(AllowedGrantTypes);
+    }
+
+    public void ValidateClient()
+    {
+        ValidateInitialClient();
+        ApplicationType.ValidateSecrets(Secrets);
+    }
 
     // Client
     public void Rename(ClientName newName, DateTimeOffset utcNow)
