@@ -176,7 +176,7 @@ public sealed class Client
         if (items.Select(a => a.Name.NormalizedValue).Distinct().Count() != items.Length)
             throw new InvalidOperationException("Client cannot contain duplicate audience names.");
 
-        if (items.Length == 0)
+        if (ApplicationType.RequiresPermissions && items.Length == 0)
             throw new InvalidOperationException("Client must have at least one audience.");
 
         if (_allowedAudiences.SetEquals(items))

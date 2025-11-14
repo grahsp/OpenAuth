@@ -33,9 +33,9 @@ public class TokenController : ControllerBase
         // Client Credentials
         var ccRequest = new ClientCredentialsTokenRequest()
         {
-            ClientId = new ClientId(Guid.Parse("c2b09d6b-e5cb-4154-a03f-7a824fc9c5df")),
-            ClientSecret = "68loWhVtCow-q3AzYy3RE7vd7tV94tZ9WtX1Mj9PEJA",
-            RequestedAudience = new AudienceName("api"),
+            ClientId = new ClientId(Guid.Parse("55b12c3f-11ba-4b98-8453-728ff2e2f2be")),
+            ClientSecret = "sdrN2svMaLqIGSc1DOpRTVvcrZQV1X6MI02vSe3IyS0",
+            RequestedAudience = new AudienceName("test-audience"),
             RequestedScopes = ScopeCollection.Parse("read")
         };
 

@@ -9,8 +9,8 @@ public static class ClientMappingExtensions
 {
     public static ClientInfo ToClientInfo(this Client client)
         => new ClientInfo(
-            client.Id,
-            client.Name,
+            client.Id.ToString(),
+            client.Name.ToString(),
             client.CreatedAt,
             client.UpdatedAt
         );

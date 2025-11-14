@@ -11,8 +11,8 @@ public static class ClientMapper
 {
     public static ClientResponse ToResponse(ClientInfo client)
         => new ClientResponse(
-            client.Id.Value.ToString(),
-            client.Name.Value,
+            client.Id,
+            client.Name,
             [],
             [],
             client.CreatedAt,

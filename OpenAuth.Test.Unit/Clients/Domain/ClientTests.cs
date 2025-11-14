@@ -397,13 +397,26 @@ public class ClientTests
         }
 
         [Fact]
-        public void WhenEmptyCollection_ThrowsException()
+        public void WhenEmptyCollectionAndApplicationTypeDoesNotRequireIt_UpdateCollection()
         {
-            var client = new ClientBuilder().Build();
-            var audiences = Array.Empty<Audience>();
+            var client = new ClientBuilder()
+                .WithApplicationType(ClientApplicationTypes.Spa)
+                .Build();
+            
+            client.SetAudiences([], _time.GetUtcNow());
+
+            Assert.Empty(client.AllowedAudiences);
+        }
+
+        [Fact]
+        public void WhenEmptyCollectionAndApplicationTypeRequiresIt_ThrowsException()
+        {
+            var client = new ClientBuilder()
+                .WithApplicationType(ClientApplicationTypes.M2M)
+                .Build();
 
             Assert.Throws<InvalidOperationException>(()
-                => client.SetAudiences(audiences, _time.GetUtcNow()));           
+                => client.SetAudiences([], _time.GetUtcNow()));           
         }
     }
 
