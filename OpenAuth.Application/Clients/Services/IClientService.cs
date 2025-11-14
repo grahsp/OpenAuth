@@ -5,7 +5,7 @@ namespace OpenAuth.Application.Clients.Services;
 
 public interface IClientService
 {
-    Task<ClientInfo> RegisterAsync(ClientName name, CancellationToken ct = default);
+    Task<RegisteredClientResponse> RegisterAsync(RegisterClientRequest request, CancellationToken ct = default);
     Task<ClientInfo> RenameAsync(ClientId id, ClientName name, CancellationToken ct = default);
     Task DeleteAsync(ClientId id, CancellationToken ct = default);
     

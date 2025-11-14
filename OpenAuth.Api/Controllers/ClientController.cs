@@ -38,18 +38,8 @@ public class ClientController : ControllerBase
      [HttpPost]
      public async Task<ActionResult<CreateClientResponse>> Create([FromBody] RegisterClientRequest request)
      {
-         var client = await _clientService.RegisterAsync(new ClientName(request.Name));
-         var creationResult = await _secretService.AddSecretAsync(client.Id);
-     
-         var response = new CreateClientResponse
-         {
-             ClientId = client.Id.ToString(),
-             Name = client.Name.Value,
-             CreatedAt = client.CreatedAt,
-             ClientSecret = creationResult.PlainSecret,
-         };
-     
-         return CreatedAtAction(nameof(GetById), new { clientId = client.Id }, response);
+         var response = await _clientService.RegisterAsync(request);
+         return CreatedAtAction(nameof(GetById), new { clientId = response.Client.Id }, response);
      }
 
      [HttpDelete("{clientId:guid}")]

@@ -28,7 +28,7 @@ public class ClientFactory : IClientFactory
         var client = Client.Create(config, now);
         plainSecret = null;
         
-        if (!client.IsPublic)
+        if (config.ApplicationType.AllowsClientSecrets)
         {
             var result = _hashProvider.Create();
             plainSecret = result.PlainSecret;

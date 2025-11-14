@@ -6,28 +6,40 @@ using OpenAuth.Domain.Clients.ValueObjects;
 
 namespace OpenAuth.Application.Clients.Services;
 
+public sealed record RegisteredClientResponse(ClientInfo Client, string? ClientSecret);
+
 public class ClientService : IClientService
 {
     private readonly IClientRepository _repository;
     private readonly IClientFactory _clientFactory;
+    private readonly IClientConfigurationFactory _configurationFactory;
     private readonly TimeProvider _time;
     
-    public ClientService(IClientRepository repository, IClientFactory clientFactory, TimeProvider time)
+    public ClientService(
+        IClientRepository repository,
+        IClientFactory clientFactory,
+        IClientConfigurationFactory configurationFactory,
+        TimeProvider time)
     {
         _repository = repository;
         _clientFactory = clientFactory;
+        _configurationFactory = configurationFactory;
         _time = time;
     }
     
     
-    public async Task<ClientInfo> RegisterAsync(ClientName name, CancellationToken ct = default)
+    public async Task<RegisteredClientResponse> RegisterAsync(RegisterClientRequest request, CancellationToken ct = default)
     {
-        var client = _clientFactory.Create(name);
+        ArgumentNullException.ThrowIfNull(request);
+        
+        var clientConfiguration = _configurationFactory.Create(request);
+        var client = _clientFactory.Create(clientConfiguration, out var clientSecret);
         
         _repository.Add(client);
         await _repository.SaveChangesAsync(ct);
-
-        return client.ToClientInfo();
+        
+        var response = new RegisteredClientResponse(client.ToClientInfo(), clientSecret);
+        return response;
     }
     
     public async Task<ClientInfo> RenameAsync(ClientId id, ClientName name, CancellationToken ct = default)
@@ -45,7 +57,7 @@ public class ClientService : IClientService
         CancellationToken ct = default)
     {
         var client = await _repository.GetByIdAsync(id, ct)
-            ?? throw new InvalidOperationException("Client not found.");
+                     ?? throw new InvalidOperationException("Client not found.");
 
         client.SetAudiences(audiences, _time.GetUtcNow());
         await _repository.SaveChangesAsync(ct);
@@ -57,7 +69,7 @@ public class ClientService : IClientService
         CancellationToken ct = default)
     {
         var client = await _repository.GetByIdAsync(id, ct)
-            ?? throw new InvalidOperationException("Client not found.");
+                     ?? throw new InvalidOperationException("Client not found.");
 
         var audiences = client.AllowedAudiences
             .Append(audience);
@@ -72,7 +84,7 @@ public class ClientService : IClientService
         CancellationToken ct = default)
     {
         var client = await _repository.GetByIdAsync(id, ct)
-            ?? throw new InvalidOperationException("Client not found.");
+                     ?? throw new InvalidOperationException("Client not found.");
         
         var audiences = client.AllowedAudiences
             .Where(a => a.Name != name);

@@ -49,8 +49,8 @@ public class ClientQueryServiceTests : IAsyncLifetime
             
             // Assert
             Assert.NotNull(result);
-            Assert.Equal(client.Id, result.Id);
-            Assert.Equal(client.Name, result.Name);
+            Assert.Equal(client.Id.ToString(), result.Id);
+            Assert.Equal(client.Name.ToString(), result.Name);
         }
         
         [Fact]
@@ -82,8 +82,8 @@ public class ClientQueryServiceTests : IAsyncLifetime
             
             // Assert
             Assert.NotNull(result);
-            Assert.Equal(client.Id, result.Id);
-            Assert.Equal(client.Name, result.Name);
+            Assert.Equal(client.Id.ToString(), result.Id);
+            Assert.Equal(client.Name.ToString(), result.Name);
         }
         
         [Fact]
@@ -243,9 +243,9 @@ public class ClientQueryServiceTests : IAsyncLifetime
             
             // Assert
             Assert.Equal(3, items.Length);
-            Assert.Equal(alpha.Name, items[0].Name);
-            Assert.Equal(beta.Name, items[1].Name);
-            Assert.Equal(zebra.Name, items[2].Name);
+            Assert.Equal(alpha.Name.ToString(), items[0].Name);
+            Assert.Equal(beta.Name.ToString(), items[1].Name);
+            Assert.Equal(zebra.Name.ToString(), items[2].Name);
         }
         
         [Fact]

@@ -98,6 +98,7 @@ public class Program
         builder.Services.AddScoped<IClientService, ClientService>();
         builder.Services.AddScoped<IClientQueryService, ClientQueryService>();
         builder.Services.AddScoped<IClientFactory, ClientFactory>();
+        builder.Services.AddScoped<IClientConfigurationFactory, ClientConfigurationFactory>();
         
         // Secret Services
         builder.Services.AddScoped<ISecretService, SecretService>();

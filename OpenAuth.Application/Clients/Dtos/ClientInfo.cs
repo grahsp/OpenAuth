@@ -1,10 +1,8 @@
-using OpenAuth.Domain.Clients.ValueObjects;
-
 namespace OpenAuth.Application.Clients.Dtos;
 
 public record ClientInfo(
-    ClientId Id,
-    ClientName Name,
+    string Id,
+    string Name,
     DateTimeOffset CreatedAt,
     DateTimeOffset UpdatedAt
 );

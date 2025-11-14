@@ -47,7 +47,7 @@ public abstract class ClientApplicationType
         if (!AllowsClientSecrets && secrets.Any())
             throw new InvalidOperationException("Client type does not allow client secrets.");
         
-        if (AllowsClientSecrets && secrets.Any())
+        if (AllowsClientSecrets && !secrets.Any())
             throw new InvalidOperationException("Client must have at least one secret.");
     }
 }
