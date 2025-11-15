@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Time.Testing;
+using OpenAuth.Domain.Clients.ApplicationType;
 using OpenAuth.Domain.Clients.Secrets;
 using OpenAuth.Test.Common.Builders;
 using OpenAuth.Test.Integration.Infrastructure;
@@ -25,6 +26,7 @@ public class SecretMappingTests : IAsyncLifetime
         
         const string hash = "secret";
         var client = new ClientBuilder()
+            .WithApplicationType(ClientApplicationTypes.M2M)
             .WithSecret(hash)
             .Build();
         

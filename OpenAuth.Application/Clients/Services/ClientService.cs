@@ -53,6 +53,50 @@ public class ClientService : IClientService
         return client.ToClientInfo();
     }
 
+
+    public async Task<ClientDetails> SetRedirectUrisAsync(ClientId id, IEnumerable<RedirectUri> redirectUris,
+        CancellationToken ct = default)
+    {
+        var client = await _repository.GetByIdAsync(id, ct)
+            ?? throw new InvalidOperationException("Client not found.");
+        
+        client.SetRedirectUris(redirectUris, _time.GetUtcNow());
+        await _repository.SaveChangesAsync(ct);
+        
+        return client.ToClientDetails();
+    }
+
+    public async Task<ClientDetails> AddRedirectUriAsync(ClientId id, RedirectUri redirectUri,
+        CancellationToken ct = default)
+    {
+        var client = await _repository.GetByIdAsync(id, ct)
+            ?? throw new InvalidOperationException("Client not found.");
+
+        var redirectUris = client.RedirectUris
+            .Append(redirectUri);
+        
+        client.SetRedirectUris(redirectUris, _time.GetUtcNow());
+        await _repository.SaveChangesAsync(ct);
+        
+        return client.ToClientDetails();
+    }
+    
+    public async Task<ClientDetails> RemoveRedirectUriAsync(ClientId id, RedirectUri redirectUri,
+        CancellationToken ct = default)
+    {
+        var client = await _repository.GetByIdAsync(id, ct)
+            ?? throw new InvalidOperationException("Client not found.");
+        
+        var redirectUris = client.RedirectUris
+            .Where(r => r != redirectUri);
+        
+        client.SetRedirectUris(redirectUris, _time.GetUtcNow());
+        await _repository.SaveChangesAsync(ct);
+        
+        return client.ToClientDetails();
+    }
+    
+
     public async Task<ClientDetails> SetAudiencesAsync(ClientId id, IEnumerable<Audience> audiences,
         CancellationToken ct = default)
     {

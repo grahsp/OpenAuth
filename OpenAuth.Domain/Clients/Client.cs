@@ -150,17 +150,20 @@ public sealed class Client
     }
     
     
-    // RedirectUris
-    public void AddRedirectUri(RedirectUri uri, DateTimeOffset utcNow)
+    public void SetRedirectUris(IEnumerable<RedirectUri> uris, DateTimeOffset utcNow)
     {
-        if (_redirectUris.Add(uri))
-            Touch(utcNow);
-    }
+        ArgumentNullException.ThrowIfNull(uris);
+        
+        var items = uris.ToArray();
+        
+        if (items.Distinct().Count() != items.Length)
+            throw new InvalidOperationException("Client cannot contain duplicate redirect URIs.");
 
-    public void RemoveRedirectUri(RedirectUri uri, DateTimeOffset utcNow)
-    {
-        if (_redirectUris.Remove(uri))
-            Touch(utcNow);
+        if (_redirectUris.SetEquals(items))
+            return;
+        
+        _redirectUris = items.ToHashSet();
+        Touch(utcNow);
     }
     
     

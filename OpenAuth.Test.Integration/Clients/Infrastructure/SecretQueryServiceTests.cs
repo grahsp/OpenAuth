@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Time.Testing;
+using OpenAuth.Domain.Clients.ApplicationType;
 using OpenAuth.Domain.Clients.Secrets.ValueObjects;
 using OpenAuth.Domain.Clients.ValueObjects;
 using OpenAuth.Domain.Services;
@@ -39,6 +40,7 @@ public class SecretQueryServiceTests : IAsyncLifetime
             const string plain = "my-secret-key-12345";
             
             var client = new ClientBuilder()
+                .WithApplicationType(ClientApplicationTypes.M2M)
                 .WithName("test-client")
                 .WithSecret(_hasher.Hash(plain))
                 .Build();
@@ -61,6 +63,7 @@ public class SecretQueryServiceTests : IAsyncLifetime
         {
             // Arrange
             var client = new ClientBuilder()
+                .WithApplicationType(ClientApplicationTypes.M2M)
                 .WithName("test-client")
                 .WithSecret("correct-secret")
                 .Build();
@@ -120,6 +123,7 @@ public class SecretQueryServiceTests : IAsyncLifetime
             var utcNow = _time.GetUtcNow();
             
             var client = new ClientBuilder()
+                .WithApplicationType(ClientApplicationTypes.M2M)
                 .WithName("test-client")
                 .WithSecret(_hasher.Hash(plain))
                 .CreatedAt(utcNow.AddDays(-10))
@@ -146,6 +150,7 @@ public class SecretQueryServiceTests : IAsyncLifetime
             const string plain = "my-secret-key";
             
             var client = new ClientBuilder()
+                .WithApplicationType(ClientApplicationTypes.M2M)
                 .WithName("test-client")
                 .WithSecret(_hasher.Hash(plain))
                 .WithSecret("another-secret")
@@ -185,6 +190,7 @@ public class SecretQueryServiceTests : IAsyncLifetime
             const string plain3 = "third-secret";
             
             var client = new ClientBuilder()
+                .WithApplicationType(ClientApplicationTypes.M2M)
                 .WithName("test-client")
                 .WithSecret(_hasher.Hash(plain1))
                 .WithSecret(_hasher.Hash(plain2))
@@ -214,6 +220,7 @@ public class SecretQueryServiceTests : IAsyncLifetime
             var utcNow = _time.GetUtcNow();
             
             var client = new ClientBuilder()
+                .WithApplicationType(ClientApplicationTypes.M2M)
                 .WithName("test-client")
                 .WithSecret(_hasher.Hash(activePlain))
                 .WithSecret(_hasher.Hash(revokedPlain))
@@ -253,6 +260,7 @@ public class SecretQueryServiceTests : IAsyncLifetime
             // Arrange
             var utcNow = _time.GetUtcNow();
             var client = new ClientBuilder()
+                .WithApplicationType(ClientApplicationTypes.M2M)
                 .WithName("test-client")
                 .WithSecret("secret1")
                 .WithSecret("secret2")
@@ -319,6 +327,7 @@ public class SecretQueryServiceTests : IAsyncLifetime
             // Arrange
             var utcNow = _time.GetUtcNow();
             var client = new ClientBuilder()
+                .WithApplicationType(ClientApplicationTypes.M2M)
                 .WithName("test-client")
                 .WithSecret("secret1")
                 .CreatedAt(utcNow.AddDays(-10))
@@ -344,6 +353,7 @@ public class SecretQueryServiceTests : IAsyncLifetime
             // Arrange
             var utcNow = _time.GetUtcNow();
             var client = new ClientBuilder()
+                .WithApplicationType(ClientApplicationTypes.M2M)
                 .WithName("test-client")
                 .WithSecret("secret1")
                 .WithSecret("secret2")
@@ -382,6 +392,7 @@ public class SecretQueryServiceTests : IAsyncLifetime
             // Arrange
             var utcNow = _time.GetUtcNow();
             var client = new ClientBuilder()
+                .WithApplicationType(ClientApplicationTypes.M2M)
                 .WithName("test-client")
                 .WithSecret("active-secret")
                 .WithSecret("revoked-secret")
@@ -430,6 +441,7 @@ public class SecretQueryServiceTests : IAsyncLifetime
             // Arrange
             var utcNow = _time.GetUtcNow();
             var client = new ClientBuilder()
+                .WithApplicationType(ClientApplicationTypes.M2M)
                 .WithName("test-client")
                 .WithSecret("secret1")
                 .CreatedAt(utcNow)

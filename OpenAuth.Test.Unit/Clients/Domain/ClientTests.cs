@@ -211,135 +211,92 @@ public class ClientTests
         }
     }
     
-    public class AddRedirectUri : ClientTests
+    public class SetRedirectUris : ClientTests
     {
-        [Fact]
-        public void UpdateTimestamp_OnSuccess()
-        {
-            // Arrange
-            var client = new ClientBuilder()
-                .WithApplicationType(ClientApplicationTypes.M2M)
-                .CreatedAt(_time.GetUtcNow())
-                .Build();
-            var uri = RedirectUri.Create("https://app.com/callback");
-            
-            _time.Advance(TimeSpan.FromMinutes(5));
-            var expectedTime = _time.GetUtcNow();
-            
-            // Act
-            client.AddRedirectUri(uri, expectedTime);
-            
-            // Assert
-            var actualUri = Assert.Single(client.RedirectUris);
-            Assert.Equal(uri, actualUri);
-            Assert.Equal(expectedTime, client.UpdatedAt);
-        }
+        private static readonly RedirectUri Uri = RedirectUri.Create("https://example.com/callback");
+        
         
         [Fact]
-        public void DoesNotUpdate_OnFailure()
+        public void WhenValid_ReplaceExistingAndUpdateTimestamp()
         {
-            // Arrange
-            var expectedTime = _time.GetUtcNow();
             var client = new ClientBuilder()
-                .WithApplicationType(ClientApplicationTypes.M2M)
-                .CreatedAt(expectedTime)
-                .Build();
-            var uri = RedirectUri.Create("https://app.com/callback");
-            client.AddRedirectUri(uri, expectedTime);
-            
-            _time.Advance(TimeSpan.FromMinutes(5));
-            
-            // Act
-            client.AddRedirectUri(uri, _time.GetUtcNow());
-            
-            // Assert
-            Assert.Single(client.RedirectUris);
-            Assert.Equal(expectedTime, client.UpdatedAt);
-        }
-        
-        [Fact]
-        public void AddMultipleDifferentUris()
-        {
-            // Arrange
-            var now = _time.GetUtcNow();
-            var client = new ClientBuilder()
-                .WithApplicationType(ClientApplicationTypes.M2M)
-                .Build();
-            
-            // Act
-            client.AddRedirectUri(RedirectUri.Create("https://app.com/callback"), now);
-            client.AddRedirectUri(RedirectUri.Create("https://app.com/silent"), now);
-            client.AddRedirectUri(RedirectUri.Create("http://localhost:3000/auth"), now);
-            
-            // Assert
-            Assert.Equal(3, client.RedirectUris.Count);
-        }
-    }
-    
-    public class RemoveRedirectUri : ClientTests
-    {
-        [Fact]
-        public void UpdateTimestamp_OnSuccess()
-        {
-            // Arrange
-            var client = new ClientBuilder()
-                .WithApplicationType(ClientApplicationTypes.M2M)
                 .CreatedAt(_time.GetUtcNow())
                 .Build();
             
-            var uri = RedirectUri.Create("https://app.com/callback");
-            client.AddRedirectUri(uri, _time.GetUtcNow());
+            _time.Advance(TimeSpan.FromMinutes(5));
             
-            _time.Advance(TimeSpan.FromMinutes(10));
-            var expected = _time.GetUtcNow();
-            
-            // Act
-            client.RemoveRedirectUri(uri, expected);
-            
-            // Assert
-            Assert.Empty(client.RedirectUris);
-            Assert.Equal(expected, client.UpdatedAt);
-        }
-        
-        [Fact]
-        public void DoesNotUpdateTimestamp_OnFailure()
-        {
-            // Arrange
+            var expectedUris = new[] { Uri };
             var expectedTime = _time.GetUtcNow();
-            var client = new ClientBuilder()
-                .WithApplicationType(ClientApplicationTypes.M2M)
-                .CreatedAt(expectedTime)
-                .Build();
-            var uri = RedirectUri.Create("https://app.com/callback");
             
-            // Act
-            client.RemoveRedirectUri(uri, _time.GetUtcNow());
+            client.SetRedirectUris(expectedUris, expectedTime);
             
-            // Assert
-            Assert.Empty(client.RedirectUris);
+            Assert.Equal(expectedUris, client.RedirectUris);
             Assert.Equal(expectedTime, client.UpdatedAt);
         }
-        
+
         [Fact]
-        public void RemovesCorrectUri()
+        public void WhenSameUris_DoesNotUpdate()
         {
-            // Arrange
-            var now = _time.GetUtcNow();
+            var expectedTime = _time.GetUtcNow();
+            var expectedUris = new[] { Uri };
+            
+            var client = new ClientBuilder()
+                .CreatedAt(expectedTime)
+                .Build();
+            
+            _time.Advance(TimeSpan.FromMinutes(5));
+            client.SetRedirectUris(expectedUris, expectedTime);
+            
+            Assert.Equal(expectedUris, client.RedirectUris);
+            Assert.Equal(expectedTime, client.UpdatedAt);
+        }
+
+        [Fact]
+        public void WhenEmptyCollectionAndIsNotRequiredByApplicationType_UpdateCollection()
+        {
             var client = new ClientBuilder()
                 .WithApplicationType(ClientApplicationTypes.M2M)
                 .Build();
             
-            var uri1 = RedirectUri.Create("https://app.com/callback");
-            var uri2 = RedirectUri.Create("https://app.com/silent");
-            client.AddRedirectUri(uri1, now);
-            client.AddRedirectUri(uri2, now);
+            client.SetRedirectUris([], _time.GetUtcNow());
+            client.ValidateClient();
             
-            // Act
-            client.RemoveRedirectUri(uri1, now);
+            Assert.Empty(client.RedirectUris);
+        }
+
+        [Fact]
+        public void WhenEmptyCollectionAndIsRequiredByApplicationType_ThrowsException()
+        {
             
-            // Assert
-            var actual = Assert.Single(client.RedirectUris);
-            Assert.Equal(uri2, actual);
+            var client = new ClientBuilder()
+                .WithApplicationType(ClientApplicationTypes.Spa)
+                .Build();
+            
+            client.SetRedirectUris([], _time.GetUtcNow());
+
+            Assert.Throws<InvalidOperationException>(()
+                => client.ValidateClient());
+        }
+        
+        [Fact]
+        public void WhenDuplicateUris_ThrowsException()
+        {
+            var client = new ClientBuilder().Build();
+            
+            var redirectUris = new[] { Uri, Uri };
+
+            Assert.Throws<InvalidOperationException>(()
+                => client.SetRedirectUris(redirectUris, _time.GetUtcNow()));
+        }
+        
+        [Fact]
+        public void WhenRedirectUrisNull_ThrowsException()
+        {
+            var client = new ClientBuilder()
+                .Build();
+
+            Assert.Throws<ArgumentNullException>(()
+                => client.SetRedirectUris(null!, _time.GetUtcNow()));
         }
     }
     
