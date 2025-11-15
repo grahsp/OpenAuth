@@ -208,8 +208,174 @@ public class ClientServiceTests
                 => _sut.DeleteAsync(ClientId.New()));
         }
     }
+    
+    public class GrantTypeMethods : ClientServiceTests
+    {
+        private static readonly GrantType ClientCredentials = GrantType.ClientCredentials;
+        private static readonly GrantType RefreshToken = GrantType.RefreshToken;
+        
+        
+        [Fact]
+        public async Task SetGrantTypesAsync_WhenValidTypes_ReplaceExistingTypes()
+        {
+            var result = await RegisterM2MClientAsync();
+            var client = _repo.Clients.Single(c => c.Id == ClientId.Create(result.Client.Id));
+            
+            var grantTypes = new[] { ClientCredentials, RefreshToken };
+            
+            await _sut.SetGrantTypesAsync(client.Id, grantTypes);
+    
+            Assert.Equal(2, client.AllowedGrantTypes.Count);
+            Assert.Contains(client.AllowedGrantTypes, a => a == ClientCredentials);
+            Assert.Contains(client.AllowedGrantTypes, a => a == RefreshToken);
+            
+            Assert.True(_repo.Saved);
+        }
+        
+        [Fact]
+        public async Task SetRedirectUrisAsync_WhenClientNotFound_ThrowsException()
+        {
+            await Assert.ThrowsAnyAsync<InvalidOperationException>(()
+                => _sut.SetGrantTypesAsync(ClientId.New(), [RefreshToken]));
+        }
+    
+        [Fact]
+        public async Task AddGrantTypeAsync_WhenValid_AppendsWithoutAffectingExistingTypes()
+        {
+            var result = await RegisterM2MClientAsync();
+            var client = _repo.Clients.Single(c => c.Id == ClientId.Create(result.Client.Id));
+            
+            await _sut.AddGrantTypeAsync(client.Id, RefreshToken);
+            
+            Assert.Contains(client.AllowedGrantTypes, a => a == RefreshToken);
+            Assert.True(_repo.Saved);
+        }
+    
+        [Fact]
+        public async Task AddGrantTYpeAsync_WhenClientNotFound_ThrowsException()
+        {
+            await Assert.ThrowsAnyAsync<InvalidOperationException>(()
+                => _sut.AddGrantTypeAsync(ClientId.New(), RefreshToken));
+        }
+        
+        [Fact]
+        public async Task RemoveGrantTypeAsync_WhenTypeNotFound_DoesNothing()
+        {
+            var result = await RegisterM2MClientAsync();
+            var client = _repo.Clients.Single(c => c.Id == ClientId.Create(result.Client.Id));
+    
+            var expected = client.AllowedGrantTypes.ToArray();
+            await _sut.RemoveGrantTypeAsync(client.Id, RefreshToken);
+            
+            Assert.Equal(expected, client.AllowedGrantTypes);
+        }
+    
+        [Fact]
+        public async Task RemoveGrantTypeAsync_WhenTypeExists_RemoveType()
+        {
+            var result = await RegisterM2MClientAsync();
+            var client = _repo.Clients.Single(c => c.Id == ClientId.Create(result.Client.Id));
+            
+            await _sut.AddGrantTypeAsync(client.Id, RefreshToken);
+            
+            await _sut.RemoveGrantTypeAsync(client.Id, ClientCredentials);
+            
+            Assert.DoesNotContain(client.AllowedGrantTypes, a => a == ClientCredentials);
+            Assert.True(_repo.Saved);
+        }
+        
+        [Fact]
+        public async Task RemoveGrantTypeAsync_WhenClientNotFound_ThrowsException()
+        {
+            await Assert.ThrowsAnyAsync<InvalidOperationException>(()
+                => _sut.RemoveGrantTypeAsync(ClientId.New(), ClientCredentials));
+        }
+    }
+    
+    public class RedirectUriMethods : ClientServiceTests
+    {
+        private static readonly RedirectUri UriA = RedirectUri.Create("https://a.com/callback");
+        private static readonly RedirectUri UriB = RedirectUri.Create("https://b.com/callback");
+        
+        
+        [Fact]
+        public async Task SetRedirectUrisAsync_WhenValidUris_ReplaceExistingUris()
+        {
+            var result = await RegisterM2MClientAsync();
+            var client = _repo.Clients.Single(c => c.Id == ClientId.Create(result.Client.Id));
+            
+            var redirectUris = new[] { UriA, UriB };
+            
+            await _sut.SetRedirectUrisAsync(client.Id, redirectUris);
 
-    public class Audiences : ClientServiceTests
+            Assert.Equal(2, client.RedirectUris.Count);
+            Assert.Contains(client.RedirectUris, a => a == UriA);
+            Assert.Contains(client.RedirectUris, a => a == UriB);
+            
+            Assert.True(_repo.Saved);
+        }
+        
+        [Fact]
+        public async Task SetRedirectUrisAsync_WhenClientNotFound_ThrowsException()
+        {
+            await Assert.ThrowsAnyAsync<InvalidOperationException>(()
+                => _sut.SetRedirectUrisAsync(ClientId.New(), [UriA]));
+        }
+
+        [Fact]
+        public async Task AddRedirectUriAsync_WhenValid_AppendsWithoutAffectingExistingUris()
+        {
+            var result = await RegisterSpaClientAsync();
+            var client = _repo.Clients.Single(c => c.Id == ClientId.Create(result.Client.Id));
+            
+            await _sut.AddRedirectUriAsync(client.Id, UriA);
+            
+            Assert.Contains(client.RedirectUris, a => a == UriA);
+            Assert.True(_repo.Saved);
+        }
+
+        [Fact]
+        public async Task AddRedirectUriAsync_WhenClientNotFound_ThrowsException()
+        {
+            await Assert.ThrowsAnyAsync<InvalidOperationException>(()
+                => _sut.AddRedirectUriAsync(ClientId.New(), UriA));
+        }
+        
+        [Fact]
+        public async Task RemoveRedirectUriAsync_WhenUriNotFound_DoesNothing()
+        {
+            var result = await RegisterSpaClientAsync();
+            var client = _repo.Clients.Single(c => c.Id == ClientId.Create(result.Client.Id));
+
+            var expected = client.RedirectUris.ToArray();
+            await _sut.RemoveRedirectUriAsync(client.Id, UriA);
+            
+            Assert.Equal(expected, client.RedirectUris);
+        }
+
+        [Fact]
+        public async Task RemoveRedirectUriAsync_WhenUriExists_RemoveUri()
+        {
+            var result = await RegisterSpaClientAsync();
+            var client = _repo.Clients.Single(c => c.Id == ClientId.Create(result.Client.Id));
+            
+            await _sut.AddRedirectUriAsync(client.Id, UriA);
+            
+            await _sut.RemoveRedirectUriAsync(client.Id, UriA);
+            
+            Assert.DoesNotContain(client.RedirectUris, a => a == UriA);
+            Assert.True(_repo.Saved);
+        }
+ 
+        [Fact]
+        public async Task RemoveRedirectUriAsync_WhenClientNotFound_ThrowsException()
+        {
+            await Assert.ThrowsAnyAsync<InvalidOperationException>(()
+                => _sut.RemoveRedirectUriAsync(ClientId.New(), UriA));
+        }
+    }
+
+    public class AudienceMethods : ClientServiceTests
     {
         private static readonly Audience ApiAudience = new(AudienceName.Create("api"), ScopeCollection.Parse("read write"));
         private static readonly Audience WebAudience = new(AudienceName.Create("web"), ScopeCollection.Parse("read"));
@@ -277,7 +443,6 @@ public class ClientServiceTests
             var client = _repo.Clients.Single(c => c.Id == ClientId.Create(result.Client.Id));
             
             await _sut.AddAudienceAsync(client.Id, ApiAudience);
-            
             await _sut.RemoveAudienceAsync(client.Id, ApiAudience.Name);
             
             Assert.DoesNotContain(client.AllowedAudiences, a => a == ApiAudience);
@@ -285,10 +450,10 @@ public class ClientServiceTests
         }
         
         [Fact]
-        public async Task WhenClientNotFound_ThrowsException()
+        public async Task RemoveAudiencesAsync_WhenClientNotFound_ThrowsException()
         {
             await Assert.ThrowsAnyAsync<InvalidOperationException>(()
-                => _sut.RemoveAudienceAsync(ClientId.New(), AudienceName.Create("non-existent")));
+                => _sut.RemoveAudienceAsync(ClientId.New(), ApiAudience.Name));
         }
     }
     
