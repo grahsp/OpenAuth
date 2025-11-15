@@ -17,7 +17,9 @@ public sealed class Client
     
     
     // Authorization
-    public bool IsPublic { get; private set; }
+    public bool IsPublic => !ApplicationType.AllowsClientSecrets;
+    public bool IsConfidential => ApplicationType.AllowsClientSecrets;
+    
     public bool RequirePkce { get; private set; }
     
     private HashSet<GrantType> _allowedGrantTypes = [];
@@ -116,16 +118,6 @@ public sealed class Client
         Touch(utcNow);
     }
     
-    
-    public void SetPublic(bool isPublic, DateTimeOffset utcNow)
-    {
-        if (IsPublic == isPublic)
-            return;
-        
-        IsPublic = isPublic;
-        Touch(utcNow);
-    }
-
     public void SetPkceRequirement(bool requirePkce, DateTimeOffset utcNow)
     {
         if (RequirePkce == requirePkce)

@@ -31,45 +31,6 @@ public class ClientTests
         Assert.Equal(now, client.CreatedAt);
         Assert.Equal(now, client.UpdatedAt);
     }
-    
-    public class SetPublic : ClientTests
-    {
-        [Fact]
-        public void SetPublic_WhenClientIsConfidential_Updates()
-        {
-            // Arrange
-            var client = new ClientBuilder().Build();
-            client.SetPublic(false, _time.GetUtcNow());
-            
-            _time.Advance(TimeSpan.FromMinutes(5));
-            
-            // Act
-            var now = _time.GetUtcNow();
-            client.SetPublic(true, now);
-            
-            // Assert
-            Assert.True(client.IsPublic);
-            Assert.Equal(now, client.UpdatedAt);
-        }
-        
-        [Fact]
-        public void SetPublic_WhenClientIsAlreadyPublic_DoesNotUpdate()
-        {
-            // Arrange
-            var client = new ClientBuilder().Build();
-            client.SetPublic(true, _time.GetUtcNow());
-            
-            _time.Advance(TimeSpan.FromMinutes(5));
-            
-            // Act
-            var now = _time.GetUtcNow();
-            client.SetPublic(true, now);
-            
-            // Assert
-            Assert.True(client.IsPublic);
-            Assert.NotEqual(now, client.UpdatedAt);
-        }
-    }
 
     public class SetPkceRequirements : ClientTests
     {
