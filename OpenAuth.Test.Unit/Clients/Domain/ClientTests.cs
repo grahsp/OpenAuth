@@ -89,125 +89,90 @@ public class ClientTests
         }
     }
     
-    public class AddGrantType : ClientTests
+    public class SetGrantTypes : ClientTests
     {
+        private static readonly GrantType AuthorizationCode = GrantType.AuthorizationCode;
+        private static readonly GrantType ClientCredentials = GrantType.ClientCredentials;
+        
+        
         [Fact]
-        public void UpdateTimestamp_OnSuccess()
+        public void WhenValid_ReplaceExistingAndUpdateTimestamp()
         {
-            // Arrange
             var client = new ClientBuilder()
                 .CreatedAt(_time.GetUtcNow())
                 .Build();
-            var grantType = GrantType.AuthorizationCode;
             
             _time.Advance(TimeSpan.FromMinutes(5));
-            var expected = _time.GetUtcNow();
             
-            // Act
-            client.AddGrantType(grantType, expected);
-            
-            // Assert
-            var actual = Assert.Single(client.AllowedGrantTypes);
-            Assert.Equal(grantType, actual);
-            Assert.Equal(expected, client.UpdatedAt);
-        }
-        
-        [Fact]
-        public void DoesNotUpdateTimestamp_OnFailure()
-        {
-            // Arrange
+            var expectedGrantTypes = new[] { AuthorizationCode, ClientCredentials };
             var expectedTime = _time.GetUtcNow();
-            var client = new ClientBuilder().Build();
             
-            client.AddGrantType(GrantType.AuthorizationCode, _time.GetUtcNow());
-            _time.Advance(TimeSpan.FromMinutes(5));
+            client.SetGrantTypes(expectedGrantTypes, expectedTime);
             
-            // Act
-            client.AddGrantType(GrantType.AuthorizationCode, _time.GetUtcNow());
-            
-            // Assert
-            Assert.Single(client.AllowedGrantTypes);
+            Assert.Equal(expectedGrantTypes, client.AllowedGrantTypes);
             Assert.Equal(expectedTime, client.UpdatedAt);
         }
-        
+
         [Fact]
-        public void CanAddMultipleGrantTypes()
+        public void WhenSameGrantTypes_DoesNotUpdate()
         {
-            // Arrange
-            var now = _time.GetUtcNow();
-            var client = new ClientBuilder().Build();
-            
-            // Act
-            client.AddGrantType(GrantType.AuthorizationCode, now);
-            client.AddGrantType(GrantType.ClientCredentials, now);
-            
-            // Assert
-            Assert.Equal(2, client.AllowedGrantTypes.Count);
-            Assert.Contains(client.AllowedGrantTypes, g => g == GrantType.AuthorizationCode);
-            Assert.Contains(client.AllowedGrantTypes, g => g == GrantType.ClientCredentials);
-        }
-    }
-    
-    public class RemoveGrantType : ClientTests
-    {
-        [Fact]
-        public void UpdateTimestamp_OnSuccess()
-        {
-            // Arrange
-            var client = new ClientBuilder().Build();
-            
-            var grantType = GrantType.AuthorizationCode;
-            client.AddGrantType(grantType, _time.GetUtcNow());
-            
-            _time.Advance(TimeSpan.FromMinutes(5));
             var expectedTime = _time.GetUtcNow();
+            var expectedGrantTypes = new[] { AuthorizationCode };
             
-            // Act
-            client.RemoveGrantType(grantType, expectedTime);
-            
-            // Assert
-            Assert.Empty(client.AllowedGrantTypes);
-            Assert.Equal(expectedTime, client.UpdatedAt);
-        }
-        
-        [Fact]
-        public void DoesNotUpdateTimestamp_OnFailure()
-        {
-            // Arrange
-            var expectedTime = _time.GetUtcNow();
             var client = new ClientBuilder()
                 .CreatedAt(expectedTime)
+                .WithGrantType(AuthorizationCode)
                 .Build();
             
             _time.Advance(TimeSpan.FromMinutes(5));
+            client.SetGrantTypes(expectedGrantTypes, expectedTime);
             
-            // Act
-            client.RemoveGrantType(GrantType.AuthorizationCode, _time.GetUtcNow());
-            
-            // Assert
-            Assert.Empty(client.AllowedGrantTypes);
+            Assert.Equal(expectedGrantTypes, client.AllowedGrantTypes);
             Assert.Equal(expectedTime, client.UpdatedAt);
         }
         
         [Fact]
-        public void RemovesCorrectGrantType()
+        public void WhenDuplicateGrantTypes_ThrowsException()
         {
-            // Arrange
-            var now = _time.GetUtcNow();
             var client = new ClientBuilder().Build();
             
-            var authorizationCode = GrantType.AuthorizationCode;
-            var clientCredentials = GrantType.ClientCredentials;
+            var grantTypes = new[] { AuthorizationCode, AuthorizationCode };
+
+            Assert.Throws<InvalidOperationException>(()
+                => client.SetGrantTypes(grantTypes, _time.GetUtcNow()));
+        }
+
+        [Fact]
+        public void WhenGrantTypeIsNotSupportedByApplicationType_ThrowsException()
+        {
+            var client = new ClientBuilder()
+                .WithApplicationType(ClientApplicationTypes.Spa)
+                .Build();
             
-            client.AddGrantType(authorizationCode, now);
-            client.AddGrantType(clientCredentials, now);
+            client.SetGrantTypes([ClientCredentials], _time.GetUtcNow());
             
-            // Act
-            client.RemoveGrantType(authorizationCode, now);
-            
-            // Assert
-            var grant = Assert.Single(client.AllowedGrantTypes);
-            Assert.Equal(grant, clientCredentials);
+            Assert.Throws<InvalidOperationException>(()
+                => client.ValidateClient());
+        }
+
+        [Fact]
+        public void WhenEmpty_ThrowsException()
+        {
+            var client = new ClientBuilder()
+                .Build();
+
+            Assert.Throws<InvalidOperationException>(()
+                => client.SetGrantTypes([], _time.GetUtcNow()));
+        }
+        
+        [Fact]
+        public void WhenGrantTypesIsNull_ThrowsException()
+        {
+            var client = new ClientBuilder()
+                .Build();
+
+            Assert.Throws<ArgumentNullException>(()
+                => client.SetGrantTypes(null!, _time.GetUtcNow()));
         }
     }
     

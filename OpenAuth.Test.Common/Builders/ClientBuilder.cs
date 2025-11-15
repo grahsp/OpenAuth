@@ -53,6 +53,13 @@ public class ClientBuilder
         _redirectUris.Add(RedirectUri.Create(uri));
         return this;
     }
+    
+    
+    public ClientBuilder WithGrantType(GrantType grantType)
+    {
+        _grantTypes.Add(grantType);
+        return this;
+    }
 
     public ClientBuilder WithGrantType(string grantType = GrantTypes.ClientCredentials)
     {

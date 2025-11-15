@@ -20,7 +20,7 @@ public sealed class Client
     public bool IsPublic { get; private set; }
     public bool RequirePkce { get; private set; }
     
-    private readonly HashSet<GrantType> _allowedGrantTypes = [];
+    private HashSet<GrantType> _allowedGrantTypes = [];
     public IReadOnlyCollection<GrantType> AllowedGrantTypes => _allowedGrantTypes;
 
     private HashSet<RedirectUri> _redirectUris = [];
@@ -136,17 +136,23 @@ public sealed class Client
     }
     
     
-    // GrantTypes
-    public void AddGrantType(GrantType grantType, DateTimeOffset utcNow)
+    public void SetGrantTypes(IEnumerable<GrantType> grants, DateTimeOffset utcNow)
     {
-        if (_allowedGrantTypes.Add(grantType))
-            Touch(utcNow);
-    }
+        ArgumentNullException.ThrowIfNull(grants);
 
-    public void RemoveGrantType(GrantType grantType, DateTimeOffset utcNow)
-    {
-        if (_allowedGrantTypes.Remove(grantType))
-            Touch(utcNow);
+        var items = grants.ToArray();
+        
+        if (items.Length == 0)
+            throw new InvalidOperationException("Client must have at least one grant type.");
+        
+        if (items.Distinct().Count() != items.Length)
+            throw new InvalidOperationException("Client cannot contain duplicate grant types.");
+
+        if (_allowedGrantTypes.SetEquals(items))
+            return;
+        
+        _allowedGrantTypes = items.ToHashSet();
+        Touch(utcNow);
     }
     
     
