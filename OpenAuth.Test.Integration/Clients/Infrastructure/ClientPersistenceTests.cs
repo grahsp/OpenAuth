@@ -251,7 +251,7 @@ public class ClientPersistenceTests : IAsyncLifetime
         {
             // Arrange
             var client = new ClientBuilder()
-                .WithApplicationType(ClientApplicationTypes.M2M)
+                .WithApplicationType(ClientApplicationTypes.Spa)
                 .Build();
     
             await using (var ctx = _fx.CreateContext())
@@ -266,7 +266,7 @@ public class ClientPersistenceTests : IAsyncLifetime
                 var loaded = await ctx.Clients
                     .SingleAsync(x => x.Id == client.Id);
             
-                loaded.AddRedirectUri(RedirectUri.Create("https://example.com/callback"), _time.GetUtcNow());
+                loaded.SetRedirectUris([RedirectUri.Create("https://example.com/callback")], _time.GetUtcNow());
                 await ctx.SaveChangesAsync();
             }
 
@@ -291,6 +291,7 @@ public class ClientPersistenceTests : IAsyncLifetime
             // Arrange
             var utcNow = _time.GetUtcNow();
             var client = new ClientBuilder()
+                .WithApplicationType(ClientApplicationTypes.M2M)
                 .WithName("test-client")
                 .WithSecret("$2a$10$hash1abcdefghijklmnopqrstuvwxyz123456789012345678")
                 .CreatedAt(utcNow)
@@ -323,6 +324,7 @@ public class ClientPersistenceTests : IAsyncLifetime
         {
             // Arrange
             var client = new ClientBuilder()
+                .WithApplicationType(ClientApplicationTypes.M2M)
                 .WithName("test-client")
                 .WithSecret("$2a$10$hashabcdefghijklmnopqrstuvwxyz12345678901234567")
                 .Build();
@@ -358,6 +360,7 @@ public class ClientPersistenceTests : IAsyncLifetime
         {
             // Arrange
             var client = new ClientBuilder()
+                .WithApplicationType(ClientApplicationTypes.M2M)
                 .WithName("test-client")
                 .WithSecret("$2a$10$hashabcdefghijklmnopqrstuvwxyz12345678901234567")
                 .WithSecret("$2a$10$hashabcdefghijklmnopqrstuvwxyz12345678901234568")
@@ -406,6 +409,7 @@ public class ClientPersistenceTests : IAsyncLifetime
         {
             // Arrange
             var client = new ClientBuilder()
+                .WithApplicationType(ClientApplicationTypes.M2M)
                 .WithName("test-client")
                 .WithSecret("$2a$10$hashabcdefghijklmnopqrstuvwxyz12345678901234567")
                 .Build();
@@ -436,6 +440,7 @@ public class ClientPersistenceTests : IAsyncLifetime
         {
             // Arrange
             var client = new ClientBuilder()
+                .WithApplicationType(ClientApplicationTypes.M2M)
                 .WithName("test-client")
                 .WithSecret("$2a$10$hashabcdefghijklmnopqrstuvwxyz12345678901234567")
                 .WithSecret("$2a$10$hashabcdefghijklmnopqrstuvwxyz12345678901234568")
@@ -468,6 +473,7 @@ public class ClientPersistenceTests : IAsyncLifetime
         {
             // Arrange
             var client = new ClientBuilder()
+                .WithApplicationType(ClientApplicationTypes.M2M)
                 .WithName("test-client")
                 .WithSecret("$2a$10$hash1abcdefghijklmnopqrstuvwxyz12345678901234567")
                 .WithSecret("$2a$10$hash2abcdefghijklmnopqrstuvwxyz12345678901234567")

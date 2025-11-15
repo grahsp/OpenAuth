@@ -72,6 +72,7 @@ public class ClientRepositoryTests : IAsyncLifetime
             var repo = CreateRepository(context);
 
             var client = new ClientBuilder()
+                .WithApplicationType(ClientApplicationTypes.M2M)
                 .WithSecret("hash1")
                 .WithSecret("hash2")
                 .Build();
@@ -226,6 +227,7 @@ public class ClientRepositoryTests : IAsyncLifetime
             var repo = CreateRepository(context);
             
             var client = new ClientBuilder()
+                .WithApplicationType(ClientApplicationTypes.M2M)
                 .WithSecret("hash1")
                 .WithSecret("hash2")
                 .Build();

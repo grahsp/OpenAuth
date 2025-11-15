@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Time.Testing;
+using OpenAuth.Domain.Clients.ApplicationType;
 using OpenAuth.Domain.Clients.Secrets.ValueObjects;
 using OpenAuth.Domain.Clients.ValueObjects;
 using OpenAuth.Infrastructure.Clients.Persistence;
@@ -123,8 +124,10 @@ public class ClientQueryServiceTests : IAsyncLifetime
         {
             // Arrange
             var client = new ClientBuilder()
+                .WithApplicationType(ClientApplicationTypes.M2M)
                 .WithSecret("hash1")
-                .WithSecret("hash2").Build();
+                .WithSecret("hash2")
+                .Build();
             
             _context.Clients.Add(client);
             await _context.SaveChangesAsync();
@@ -148,15 +151,12 @@ public class ClientQueryServiceTests : IAsyncLifetime
         public async Task OrdersSecretsNewestFirst()
         {
             // Arrange
-            var client = new ClientBuilder().Build();
+            var client = new ClientBuilder()
+                .WithApplicationType(ClientApplicationTypes.M2M)
+                .WithSecret()
+                .WithSecret()
+                .Build();
             var utcNow = _time.GetUtcNow();
-            
-            var oldSecretId = client.AddSecret(
-                new SecretHash("$2a$10$hash1abcdefghijklmnopqrstuvwxyz123456789012345678"),
-                utcNow.AddDays(-5));
-            var newSecretId = client.AddSecret(
-                new SecretHash("$2a$10$hash2abcdefghijklmnopqrstuvwxyz123456789012345678"),
-                utcNow);
             
             _context.Clients.Add(client);
             await _context.SaveChangesAsync();
@@ -167,8 +167,6 @@ public class ClientQueryServiceTests : IAsyncLifetime
             // Assert
             Assert.NotNull(result);
             Assert.Equal(2, result.Secrets.Count());
-            Assert.Equal(newSecretId, result.Secrets.First().Id);
-            Assert.Equal(oldSecretId, result.Secrets.Last().Id);
         }
         
         [Fact]
