@@ -52,6 +52,12 @@ public class ClientServiceTests : IAsyncLifetime
             ApplicationType: "spa", 
             Name: "test client", 
             RedirectUris: ["https://example.com/callback"]);
+    
+    private static readonly Audience ApiAudience = new(AudienceName.Create("api"), ScopeCollection.Parse("read write"));
+    private static readonly Audience WebAudience = new(AudienceName.Create("web"), ScopeCollection.Parse("read"));
+    
+    private static readonly RedirectUri UriA = RedirectUri.Create("https://a.com/callback");
+    private static readonly RedirectUri UriB = RedirectUri.Create("https://b.com/callback");
 
     
     [Fact]
@@ -92,96 +98,157 @@ public class ClientServiceTests : IAsyncLifetime
         Assert.Empty(secrets);      
     }
     
-     [Fact]
-     public async Task RenameAsync_PersistsUpdatedName()
-     {
-         var result = await _sut.RegisterAsync(CreateSpaRequest());
+    [Fact]
+    public async Task RenameAsync_PersistsUpdatedName()
+    {
+        var result = await _sut.RegisterAsync(CreateSpaRequest());
          
-         var expected = new ClientName("new client");
+        var expected = new ClientName("new client");
          
-         var clientId = ClientId.Create(result.Client.Id);
-         await _sut.RenameAsync(clientId, expected);
+        var clientId = ClientId.Create(result.Client.Id);
+        await _sut.RenameAsync(clientId, expected);
 
-         await using var ctx = _fx.CreateContext();
-         var fetched = await ctx.Clients.SingleAsync(c => c.Id == clientId);
+        await using var ctx = _fx.CreateContext();
+        var fetched = await ctx.Clients.SingleAsync(c => c.Id == clientId);
          
-         Assert.Equal(expected, fetched.Name);
-     }
-
-     [Fact]
-     public async Task SetAudiences_PersistsNewAudiences()
-     {
-         var result = await _sut.RegisterAsync(CreateSpaRequest());
-         var audiences = new Audience[]
-         {
-             new(AudienceName.Create("api"), ScopeCollection.Parse("read write")),
-             new(AudienceName.Create("web"), ScopeCollection.Parse("read"))
-         };
-
-         var clientId = ClientId.Create(result.Client.Id);
-         await _sut.SetAudiencesAsync(clientId, audiences);
+        Assert.Equal(expected, fetched.Name);
+    }
+    
+    [Fact]
+    public async Task SetGrantTypesAsync_PersistsUpdate()
+    {
+        var result = await _sut.RegisterAsync(CreateM2MRequest());
+        var clientId = ClientId.Create(result.Client.Id);
+             
+        var grantTypes = new[] { GrantType.ClientCredentials, GrantType.RefreshToken };
+        await _sut.SetGrantTypesAsync(clientId, grantTypes);
          
-         await using var ctx = _fx.CreateContext();
-         var client = await ctx.Clients.SingleAsync(c => c.Id == clientId);
+        await using var ctx = _fx.CreateContext();
+        var client = await ctx.Clients.SingleAsync(c => c.Id == clientId);
 
-         Assert.Equal(audiences.Length, client.AllowedAudiences.Count);
-         Assert.All(audiences, a =>
-             Assert.Contains(a, client.AllowedAudiences));
-     }
+        Assert.Equal(grantTypes.Length, client.AllowedGrantTypes.Count);
+        Assert.All(grantTypes, r =>
+            Assert.Contains(r, client.AllowedGrantTypes));
+    }
 
-     [Fact]
-     public async Task AddAndRemoveAudienceAsync_PersistsChanges()
-     {
-         var result = await _sut.RegisterAsync(CreateSpaRequest());
+    [Fact]
+    public async Task AddAndRemoveGrantTypeAsync_PersistsUpdate()
+    {
+        var result = await _sut.RegisterAsync(CreateM2MRequest());
+        var clientId = ClientId.Create(result.Client.Id);
+             
+        // M2M clients already contain ClientCredentials by default
+        await _sut.AddGrantTypeAsync(clientId, GrantType.RefreshToken);
+        await _sut.RemoveGrantTypeAsync(clientId, GrantType.ClientCredentials);
          
-         var api = new Audience(AudienceName.Create("api"), ScopeCollection.Parse("read write"));
-         var web = new Audience(AudienceName.Create("web"), ScopeCollection.Parse("read"));
+        await using var ctx = _fx.CreateContext();
+        var client = await ctx.Clients.SingleAsync(c => c.Id == clientId);
 
-         var clientId = ClientId.Create(result.Client.Id);
-         await _sut.AddAudienceAsync(clientId, api);
-         await _sut.AddAudienceAsync(clientId, web);
-         await _sut.RemoveAudienceAsync(clientId, web.Name);
+        Assert.Null(client.AllowedGrantTypes.SingleOrDefault(r => r == GrantType.ClientCredentials));
+        Assert.NotNull(client.AllowedGrantTypes.SingleOrDefault(r => r == GrantType.RefreshToken));
+    }
+    
+    [Fact]
+    public async Task SetRedirectUrisAsync_PersistsUpdate()
+    {
+        var result = await _sut.RegisterAsync(CreateSpaRequest());
+        var clientId = ClientId.Create(result.Client.Id);
+             
+        var redirectUris = new[] { UriA, UriB };
+        await _sut.SetRedirectUrisAsync(clientId, redirectUris);
          
-         await using var ctx = _fx.CreateContext();
-         var client = await ctx.Clients.SingleAsync(c => c.Id == clientId);
+        await using var ctx = _fx.CreateContext();
+        var client = await ctx.Clients.SingleAsync(c => c.Id == clientId);
 
-         var actual = Assert.Single(client.AllowedAudiences);
-         Assert.Equal(api.Name, actual.Name);
-     }
+        Assert.Equal(redirectUris.Length, client.RedirectUris.Count);
+        Assert.All(redirectUris, r =>
+            Assert.Contains(r, client.RedirectUris));
+    }
 
-     [Fact]
-     public async Task DeleteAsync_RemovesClient()
-     {
-         var result = await _sut.RegisterAsync(CreateSpaRequest());
+    [Fact]
+    public async Task AddAndRemoveRedirectUriAsync_PersistsUpdate()
+    {
+        var result = await _sut.RegisterAsync(CreateSpaRequest());
+        var clientId = ClientId.Create(result.Client.Id);
+             
+        await _sut.AddRedirectUriAsync(clientId, UriA);
+        await _sut.AddRedirectUriAsync(clientId, UriB);
+        await _sut.RemoveRedirectUriAsync(clientId, UriA);
          
-         var clientId = ClientId.Create(result.Client.Id);
-         await _sut.DeleteAsync(clientId);
+        await using var ctx = _fx.CreateContext();
+        var client = await ctx.Clients.SingleAsync(c => c.Id == clientId);
 
-         await using var ctx = _fx.CreateContext();
-         var client = await ctx.Clients.SingleOrDefaultAsync(c => c.Id == clientId);
+        Assert.Null(client.RedirectUris.SingleOrDefault(r => r == UriA));
+        Assert.NotNull(client.RedirectUris.SingleOrDefault(r => r == UriB));
+    }
+    
+    [Fact]
+    public async Task SetAudiencesAsync_PersistsUpdate()
+    {
+        var result = await _sut.RegisterAsync(CreateSpaRequest());
+        var audiences = new[] { ApiAudience, WebAudience };
+
+        var clientId = ClientId.Create(result.Client.Id);
+        await _sut.SetAudiencesAsync(clientId, audiences);
          
-         Assert.Null(client);
-     }
+        await using var ctx = _fx.CreateContext();
+        var client = await ctx.Clients.SingleAsync(c => c.Id == clientId);
+
+        Assert.Equal(audiences.Length, client.AllowedAudiences.Count);
+        Assert.All(audiences, a =>
+            Assert.Contains(a, client.AllowedAudiences));
+    }
+    
+    [Fact]
+    public async Task AddAndRemoveAudienceAsync_PersistsUpdate()
+    {
+        var result = await _sut.RegisterAsync(CreateSpaRequest());
+
+        var clientId = ClientId.Create(result.Client.Id);
+        await _sut.AddAudienceAsync(clientId, ApiAudience);
+        await _sut.AddAudienceAsync(clientId, WebAudience);
+        await _sut.RemoveAudienceAsync(clientId, WebAudience.Name);
+         
+        await using var ctx = _fx.CreateContext();
+        var client = await ctx.Clients.SingleAsync(c => c.Id == clientId);
+
+        var actual = Assert.Single(client.AllowedAudiences);
+        Assert.Equal(ApiAudience, actual);
+    }
+
+    [Fact]
+    public async Task DeleteAsync_RemovesClient()
+    {
+        var result = await _sut.RegisterAsync(CreateSpaRequest());
+         
+        var clientId = ClientId.Create(result.Client.Id);
+        await _sut.DeleteAsync(clientId);
+
+        await using var ctx = _fx.CreateContext();
+        var client = await ctx.Clients.SingleOrDefaultAsync(c => c.Id == clientId);
+         
+        Assert.Null(client);
+    }
      
-     [Fact]
-     public async Task EnableAndDisableAsync_TogglesAndPersistsFlag()
-     {
-         var result = await _sut.RegisterAsync(CreateSpaRequest());
+    [Fact]
+    public async Task EnableAndDisableAsync_TogglesAndPersistsFlag()
+    {
+        var result = await _sut.RegisterAsync(CreateSpaRequest());
          
-         var clientId = ClientId.Create(result.Client.Id);
+        var clientId = ClientId.Create(result.Client.Id);
          
-         await _sut.DisableAsync(clientId);
-         await using (var ctx = _fx.CreateContext())
-         {
-             var client = await ctx.Clients.SingleAsync(c => c.Id == clientId);
-             Assert.False(client.Enabled);
-         }
+        await _sut.DisableAsync(clientId);
+        await using (var ctx = _fx.CreateContext())
+        {
+            var client = await ctx.Clients.SingleAsync(c => c.Id == clientId);
+            Assert.False(client.Enabled);
+        }
          
-         await _sut.EnableAsync(clientId);
-         await using (var ctx = _fx.CreateContext())
-         {
-             var client = await ctx.Clients.SingleAsync(c => c.Id == clientId);
-             Assert.True(client.Enabled);
-         }
-     }
+        await _sut.EnableAsync(clientId);
+        await using (var ctx = _fx.CreateContext())
+        {
+            var client = await ctx.Clients.SingleAsync(c => c.Id == clientId);
+            Assert.True(client.Enabled);
+        }
+    }
 }
