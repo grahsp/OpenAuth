@@ -209,61 +209,57 @@ public class ClientServiceTests
         }
     }
 
-    public class SetAudiences : ClientServiceTests
+    public class Audiences : ClientServiceTests
     {
+        private static readonly Audience ApiAudience = new(AudienceName.Create("api"), ScopeCollection.Parse("read write"));
+        private static readonly Audience WebAudience = new(AudienceName.Create("web"), ScopeCollection.Parse("read"));
+        
+        
         [Fact]
-        public async Task WhenValidAudiences_ReplaceExistingAudiences()
+        public async Task SetAudiencesAsync_WhenValidAudiences_ReplaceExistingAudiences()
         {
             var result = await RegisterSpaClientAsync();
             var client = _repo.Clients.Single(c => c.Id == ClientId.Create(result.Client.Id));
             
-            var api = new Audience(AudienceName.Create("api"), ScopeCollection.Parse("read write"));
-            var web = new Audience(AudienceName.Create("web"), ScopeCollection.Parse("read"));
-            var audiences = new[] { api, web };
+            var audiences = new[] { ApiAudience, WebAudience };
             
             await _sut.SetAudiencesAsync(client.Id, audiences);
 
             Assert.Equal(2, client.AllowedAudiences.Count);
-            Assert.Contains(client.AllowedAudiences, a => a == api);
-            Assert.Contains(client.AllowedAudiences, a => a == web);
+            Assert.Contains(client.AllowedAudiences, a => a == ApiAudience);
+            Assert.Contains(client.AllowedAudiences, a => a == WebAudience);
+            
+            Assert.True(_repo.Saved);
         }
         
         [Fact]
-        public async Task WhenClientNotFound_ThrowsException()
+        public async Task SetAudiencesAsync_WhenClientNotFound_ThrowsException()
         {
             await Assert.ThrowsAnyAsync<InvalidOperationException>(()
                 => _sut.SetAudiencesAsync(ClientId.New(), []));
         }
-    }
 
-    public class AddAudience : ClientServiceTests
-    {
         [Fact]
-        public async Task WhenValid_AppendsWithoutRemovingExistingAudiences()
+        public async Task AddAudienceAsync_WhenValid_AppendsWithoutAffectingExistingAudiences()
         {
             var result = await RegisterSpaClientAsync();
             var client = _repo.Clients.Single(c => c.Id == ClientId.Create(result.Client.Id));
             
-            var audience = new Audience(AudienceName.Create("api"), ScopeCollection.Parse("read write"));
-            await _sut.AddAudienceAsync(client.Id, audience);
+            await _sut.AddAudienceAsync(client.Id, ApiAudience);
             
-            Assert.Contains(client.AllowedAudiences, a => a == audience);
+            Assert.Contains(client.AllowedAudiences, a => a == ApiAudience);
+            Assert.True(_repo.Saved);
         }
 
         [Fact]
-        public async Task WhenClientNotFound_ThrowsException()
+        public async Task AddAudienceAsync_WhenClientNotFound_ThrowsException()
         {
-            var audience = new Audience(AudienceName.Create("api"), ScopeCollection.Parse("read write"));
-            
             await Assert.ThrowsAnyAsync<InvalidOperationException>(()
-                => _sut.AddAudienceAsync(ClientId.New(), audience));
+                => _sut.AddAudienceAsync(ClientId.New(), ApiAudience));
         }
-    }
-
-    public class RemoveAudienceAsync : ClientServiceTests
-    {
+        
         [Fact]
-        public async Task WhenAudienceNotFound_DoesNothing()
+        public async Task RemoveAudienceAsync_WhenAudienceNotFound_DoesNothing()
         {
             var result = await RegisterSpaClientAsync();
             var client = _repo.Clients.Single(c => c.Id == ClientId.Create(result.Client.Id));
@@ -275,17 +271,17 @@ public class ClientServiceTests
         }
 
         [Fact]
-        public async Task WhenAudienceExists_RemoveAudience()
+        public async Task RemoveAudienceAsync_WhenAudienceExists_RemoveAudience()
         {
             var result = await RegisterSpaClientAsync();
             var client = _repo.Clients.Single(c => c.Id == ClientId.Create(result.Client.Id));
             
-            var audience = new Audience(AudienceName.Create("unique"), ScopeCollection.Parse("read write"));
-            await _sut.AddAudienceAsync(client.Id, audience);
+            await _sut.AddAudienceAsync(client.Id, ApiAudience);
             
-            await _sut.RemoveAudienceAsync(client.Id, audience.Name);
+            await _sut.RemoveAudienceAsync(client.Id, ApiAudience.Name);
             
-            Assert.DoesNotContain(client.AllowedAudiences, a => a == audience);
+            Assert.DoesNotContain(client.AllowedAudiences, a => a == ApiAudience);
+            Assert.True(_repo.Saved);
         }
         
         [Fact]
