@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Time.Testing;
+using OpenAuth.Domain.Clients.ApplicationType;
 using OpenAuth.Domain.Clients.ValueObjects;
 using OpenAuth.Infrastructure.Clients.Persistence;
 using OpenAuth.Infrastructure.Persistence;
@@ -153,6 +154,23 @@ public class ClientRepositoryTests : IAsyncLifetime
             // Assert
             var persisted = await context.Clients.FindAsync(client.Id);
             Assert.NotNull(persisted);
+        }
+
+        [Fact]
+        public async Task CallsClientValidation()
+        {
+            var client = new ClientBuilder()
+                .WithApplicationType(ClientApplicationTypes.M2M)
+                .Build();
+            
+            client.SetAudiences([], _time.GetUtcNow());
+            
+            await using var context = _fx.CreateContext();
+            var repo = CreateRepository(context);
+            
+            // Act
+            repo.Add(client);
+            await Assert.ThrowsAsync<InvalidOperationException>(() => repo.SaveChangesAsync());
         }
 
         [Fact]

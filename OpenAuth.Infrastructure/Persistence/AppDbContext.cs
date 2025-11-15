@@ -21,4 +21,21 @@ public class AppDbContext : IdentityDbContext<User, IdentityRole<Guid>, Guid>
         base.OnModelCreating(builder);
         builder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
     }
+
+    public override async Task<int> SaveChangesAsync(CancellationToken ct = default)
+    {
+        ValidateAggregates();
+        return await base.SaveChangesAsync(ct);
+    }
+
+    private void ValidateAggregates()
+    {
+        var clients = ChangeTracker
+            .Entries<Client>()
+            .Where(e => e.State is EntityState.Added or EntityState.Modified)
+            .Select(e => e.Entity);
+
+        foreach (var client in clients)
+            client.ValidateClient();
+    }
 }
