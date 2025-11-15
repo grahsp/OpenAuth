@@ -20,6 +20,9 @@ public sealed class Client
     public bool IsPublic => !ApplicationType.AllowsClientSecrets;
     public bool IsConfidential => ApplicationType.AllowsClientSecrets;
     
+    public bool RequiresRedirectUri => AllowedGrantTypes
+        .Any(x => x.RequiresRedirectUri);
+    
     private HashSet<GrantType> _allowedGrantTypes = [];
     public IReadOnlyCollection<GrantType> AllowedGrantTypes => _allowedGrantTypes;
 
@@ -75,15 +78,46 @@ public sealed class Client
 
     private void ValidateInitialClient()
     {
-        ApplicationType.ValidateAudiences(AllowedAudiences);
-        ApplicationType.ValidateRedirectUris(RedirectUris);
-        ApplicationType.ValidateGrantTypes(AllowedGrantTypes);
+        ValidateAudiences();
+        ValidateRedirectUris();
+        ValidateGrantTypes();
     }
 
     public void ValidateClient()
     {
         ValidateInitialClient();
-        ApplicationType.ValidateSecrets(Secrets);
+        ValidateSecrets();
+    }
+
+    private void ValidateAudiences()
+    {
+        if (ApplicationType.RequiresPermissions && AllowedAudiences.Count == 0)
+            throw new InvalidOperationException("Client must have at least one audience.");
+    }
+
+    private void ValidateGrantTypes()
+    {
+        var invalid = AllowedGrantTypes.Except(ApplicationType.AllowedGrants).ToList();
+        if (invalid.Count <= 0)
+            return;
+        
+        var invalidNames = string.Join(", ", invalid.Select(g => g.Value));
+        throw new InvalidOperationException($"Grant type(s) {invalidNames} are not allowed for this client type.");
+    }
+
+    private void ValidateRedirectUris()
+    {
+        if (RequiresRedirectUri && RedirectUris.Count == 0)
+            throw new InvalidOperationException("Client must have at least one redirect URI.");
+    }
+    
+    private void ValidateSecrets()
+    {
+        if (!ApplicationType.AllowsClientSecrets && Secrets.Count > 0)
+            throw new InvalidOperationException("Client type does not allow client secrets.");
+        
+        if (ApplicationType.AllowsClientSecrets && Secrets.Count == 0)
+            throw new InvalidOperationException("Client must have at least one secret.");
     }
 
     

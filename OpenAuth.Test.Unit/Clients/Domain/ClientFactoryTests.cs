@@ -67,14 +67,16 @@ public class ClientFactoryTests
     [Fact]
     public void Create_CallsValidateClient()
     {
+        var applicationType = ClientApplicationTypes.Spa;
         var invalidConfig = new ClientConfiguration(
             ClientName.Create("client"),
-            ClientApplicationTypes.Spa,
+            applicationType,
             [],
-            [],
+            applicationType.DefaultGrantTypes,
             []
         );
 
+        // Throws due to missing redirect required by AuthorizationCode flow
         Assert.Throws<InvalidOperationException>(() =>
             _sut.Create(invalidConfig, out _));
     }

@@ -10,44 +10,6 @@ public abstract class ClientApplicationType
     public abstract IReadOnlyCollection<GrantType> AllowedGrants { get; }
     public abstract IReadOnlyCollection<GrantType> DefaultGrantTypes { get; }
     
-    public abstract bool RequiresRedirectUris { get; }
     public abstract bool RequiresPermissions { get; }
     public abstract bool AllowsClientSecrets { get; }
-
-    public void ValidateAudiences(IEnumerable<Audience> audiences)
-    {
-        if (RequiresPermissions && !audiences.Any())
-            throw new InvalidOperationException("Client must have at least one audience.");
-    }
-
-    public void ValidateGrantTypes(IEnumerable<GrantType> grantTypes)
-    {
-        grantTypes = grantTypes.ToList();
-        
-        var invalid = grantTypes.Except(AllowedGrants).ToList();
-        if (invalid.Count > 0)
-        {
-            var invalidNames = string.Join(", ", invalid.Select(g => g.Value));
-            throw new InvalidOperationException($"Grant type(s) {invalidNames} are not allowed for this client type.");
-        }
-    }
-
-    public void ValidateRedirectUris(IEnumerable<RedirectUri> redirectUris)
-    {
-        redirectUris = redirectUris.ToList();
-        
-        if (RequiresRedirectUris && !redirectUris.Any())
-            throw new InvalidOperationException("Client must have at least one redirect URI.");
-    }
-    
-    public void ValidateSecrets(IEnumerable<Secret> secrets)
-    {
-        secrets = secrets.ToList();
-        
-        if (!AllowsClientSecrets && secrets.Any())
-            throw new InvalidOperationException("Client type does not allow client secrets.");
-        
-        if (AllowsClientSecrets && !secrets.Any())
-            throw new InvalidOperationException("Client must have at least one secret.");
-    }
 }

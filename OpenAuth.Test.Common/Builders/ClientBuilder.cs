@@ -95,10 +95,13 @@ public class ClientBuilder
         
         var applicationType = _applicationType ?? ClientApplicationTypes.Spa;
 
+        if (_grantTypes.Count == 0)
+            _grantTypes = applicationType.DefaultGrantTypes.ToList();
+
         if (applicationType.RequiresPermissions && _audiences.Count == 0)
             WithAudience("test-audience", "read", "write");
         
-        if (applicationType.RequiresRedirectUris && _redirectUris.Count == 0)
+        if (_grantTypes.Any(g => g.RequiresRedirectUri) && _redirectUris.Count == 0)
             WithRedirectUri();
 
         if (applicationType.AllowsClientSecrets && _secrets.Count == 0)
