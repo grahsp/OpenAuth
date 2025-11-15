@@ -7,7 +7,7 @@ public class MachineToMachineClientApplicationType : ClientApplicationType
     public override string Name => "m2m";
 
     public override IReadOnlyCollection<GrantType> AllowedGrants =>
-        [GrantType.ClientCredentials];
+        [GrantType.ClientCredentials, GrantType.RefreshToken];
 
     public override bool RequiresRedirectUris => false;
     public override bool RequiresPermissions => true;
