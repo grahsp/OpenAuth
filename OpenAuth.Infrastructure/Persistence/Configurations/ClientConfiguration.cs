@@ -42,7 +42,6 @@ public class ClientConfiguration : IEntityTypeConfiguration<Client>
         builder.Property(c => c.UpdatedAt).IsRequired();
         builder.Property(c => c.Enabled).IsRequired();
 
-        builder.Property(c => c.IsPublic).IsRequired();
         builder.Property(c => c.RequirePkce).IsRequired();
 
         builder.Property(c => c.ApplicationType)
@@ -87,7 +86,6 @@ public class ClientConfiguration : IEntityTypeConfiguration<Client>
             .HasColumnName("RedirectUris")
             .HasMaxLength(2000);
         
-        // Audience
         builder.Ignore(c => c.AllowedAudiences);
         builder.OwnsMany(c => c.AllowedAudiences, aud =>
         {

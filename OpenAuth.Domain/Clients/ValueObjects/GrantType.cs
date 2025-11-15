@@ -7,21 +7,19 @@ namespace OpenAuth.Domain.Clients.ValueObjects;
 public record GrantType : ICreate<string, GrantType>
 {
     public string Value { get; private init; }
-    public bool SupportsPublicClient { get; private init; }
     public bool SupportsPkce { get; private init; }
     public bool RequiresRedirectUri { get; private init; }
 
-    private GrantType(string value, bool supportsPublicClient, bool supportsPkce, bool requiresRedirectUri)
+    private GrantType(string value, bool supportsPkce, bool requiresRedirectUri)
     {
         Value = value;
-        SupportsPublicClient = supportsPublicClient;
         SupportsPkce = supportsPkce;
         RequiresRedirectUri = requiresRedirectUri;
     }
     
-    public static readonly GrantType AuthorizationCode = new(GrantTypes.AuthorizationCode, true, true, true);
-    public static readonly GrantType ClientCredentials = new(GrantTypes.ClientCredentials, false, false, false);
-    public static readonly GrantType RefreshToken = new(GrantTypes.RefreshToken, true, false, false);
+    public static readonly GrantType AuthorizationCode = new(GrantTypes.AuthorizationCode, true, true);
+    public static readonly GrantType ClientCredentials = new(GrantTypes.ClientCredentials, false, false);
+    public static readonly GrantType RefreshToken = new(GrantTypes.RefreshToken, false, false);
     
     public static GrantType Create(string value)
     {
@@ -43,10 +41,4 @@ public record GrantType : ICreate<string, GrantType>
         
         return grantType is not null;
     }
-    
-    public bool IsPublic(bool requirePkce)
-        => this == AuthorizationCode ? requirePkce : SupportsPublicClient;
-
-    public bool IsConfidential()
-        => !SupportsPublicClient || this == AuthorizationCode;
 }
