@@ -20,6 +20,9 @@ public class FakeClientRepository : IClientRepository
 
     public Task SaveChangesAsync(CancellationToken ct = default)
     {
+        foreach (var client in _store.Values)
+            client.ValidateClient();
+        
         Saved = true;
         return Task.CompletedTask;
     }
