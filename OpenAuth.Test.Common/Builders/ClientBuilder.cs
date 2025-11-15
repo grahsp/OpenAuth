@@ -13,7 +13,7 @@ public class ClientBuilder
     private DateTimeOffset? _createdAt;
     
     private List<SecretHash> _secrets = [];
-    private Dictionary<string, string[]> _audiences = [];
+    private List<Audience> _audiences = [];
     private List<RedirectUri> _redirectUris = [];
     private List<GrantType> _grantTypes = [];
 
@@ -38,7 +38,7 @@ public class ClientBuilder
     
     public ClientBuilder WithSecret(string secret = "$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy")
     {
-        _secrets.Add(new SecretHash(secret));
+        _secrets.Add(SecretHash.FromHash(secret));
         return this;
     }
 
@@ -60,9 +60,18 @@ public class ClientBuilder
         return this;
     }
 
-    public ClientBuilder WithAudience(string audience, params string[] scopes)
+    public ClientBuilder WithAudience(Audience audience)
     {
-        _audiences.Add(audience, scopes);
+        _audiences.Add(audience);
+        return this;
+    }
+
+    public ClientBuilder WithAudience(string audienceName, params string[] scopes)
+    {
+        var scopeCollection = new ScopeCollection(scopes.Select(s => new Scope(s)));
+        var audience = new Audience(AudienceName.Create(audienceName), scopeCollection);
+        
+        _audiences.Add(audience);
         return this;
     }
 
@@ -88,30 +97,14 @@ public class ClientBuilder
         if (applicationType.AllowsClientSecrets && _secrets.Count == 0)
             WithSecret();
         
-        var audiences = _audiences.Select(a
-            => new Audience(new AudienceName(a.Key),
-                new ScopeCollection(a.Value.Select(s => new Scope(s)))
-            ));
 
         var clientConfig = new ClientConfiguration(
-            name, applicationType, audiences, _grantTypes, _redirectUris);
+            name, applicationType, _audiences, _grantTypes, _redirectUris);
         
         var client = Client.Create(clientConfig, createdAt);
         
         foreach (var secret in _secrets)
             client.AddSecret(secret, createdAt);
-
-        // if (_audiences.Count == 0)
-        //     _audiences.Add("test-audience", ["read write"]);
-        
-        
-        // client.SetAudiences(audiences, createdAt);
-        
-        // foreach (var redirectUri in _redirectUris)
-        //     client.AddRedirectUri(redirectUri, createdAt);
-        //
-        // foreach (var grantType in _grantTypes)
-        //     client.AddGrantType(grantType, createdAt);
 
         return client;
     }

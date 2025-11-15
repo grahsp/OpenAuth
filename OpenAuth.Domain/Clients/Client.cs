@@ -23,7 +23,7 @@ public sealed class Client
     private readonly HashSet<GrantType> _allowedGrantTypes = [];
     public IReadOnlyCollection<GrantType> AllowedGrantTypes => _allowedGrantTypes;
 
-    private readonly HashSet<RedirectUri> _redirectUris = [];
+    private HashSet<RedirectUri> _redirectUris = [];
     public IReadOnlyCollection<RedirectUri> RedirectUris => _redirectUris;
     
     private HashSet<Audience> _allowedAudiences = [];
@@ -164,20 +164,18 @@ public sealed class Client
     }
     
     
-    // Audiences
     public Audience GetAudience(AudienceName name)
         => _allowedAudiences.SingleOrDefault(a => a.Name == name) ??
            throw new InvalidOperationException($"Audience {name.Value} not found.");
 
     public void SetAudiences(IEnumerable<Audience> audiences, DateTimeOffset utcNow)
     {
+        ArgumentNullException.ThrowIfNull(audiences);
+        
         var items = audiences.ToArray();
         
-        if (items.Select(a => a.Name.NormalizedValue).Distinct().Count() != items.Length)
+        if (items.Distinct().Count() != items.Length)
             throw new InvalidOperationException("Client cannot contain duplicate audience names.");
-
-        if (ApplicationType.RequiresPermissions && items.Length == 0)
-            throw new InvalidOperationException("Client must have at least one audience.");
 
         if (_allowedAudiences.SetEquals(items))
             return;

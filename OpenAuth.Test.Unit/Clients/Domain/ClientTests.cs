@@ -345,19 +345,25 @@ public class ClientTests
     
     public class SetAudiences : ClientTests
     {
+        private static readonly Audience ApiAudience =
+            new(AudienceName.Create("api"), ScopeCollection.Parse("read write"));
+        
+        private static readonly Audience WebAudience =
+            new(AudienceName.Create("web"), ScopeCollection.Parse("read"));
+        
+        
         [Fact]
-        public void WhenValidAudiences_UpdatesCollectionAndTimestamp()
+        public void WhenValid_ReplaceExistingAndUpdateTimestamp()
         {
             var client = new ClientBuilder()
                 .CreatedAt(_time.GetUtcNow())
                 .Build();
             
-            var api = new Audience(AudienceName.Create("api"), ScopeCollection.Parse("read write"));
-            var web = new Audience(AudienceName.Create("web"), ScopeCollection.Parse("read"));
-            var expectedAudiences = new[] { api, web };
-
             _time.Advance(TimeSpan.FromMinutes(5));
+            
+            var expectedAudiences = new[] { ApiAudience, WebAudience };
             var expectedTime = _time.GetUtcNow();
+            
             client.SetAudiences(expectedAudiences, expectedTime);
             
             Assert.Equal(expectedAudiences, client.AllowedAudiences);
@@ -368,13 +374,12 @@ public class ClientTests
         public void WhenSameAudiences_DoesNotUpdate()
         {
             var expectedTime = _time.GetUtcNow();
+            var expectedAudiences = new[] { ApiAudience };
+            
             var client = new ClientBuilder()
-                .WithAudience("api", "read", "write")
+                .WithAudience(ApiAudience)
                 .CreatedAt(expectedTime)
                 .Build();
-            
-            var api = new Audience(AudienceName.Create("api"), ScopeCollection.Parse("read write"));
-            var expectedAudiences = new[] { api };
 
             _time.Advance(TimeSpan.FromMinutes(5));
             client.SetAudiences(expectedAudiences, _time.GetUtcNow());
@@ -388,22 +393,22 @@ public class ClientTests
         {
             var client = new ClientBuilder().Build();
             
-            var api1 = new Audience(AudienceName.Create("api"), ScopeCollection.Parse("read write"));
-            var api2 = new Audience(AudienceName.Create("api"), ScopeCollection.Parse("read write"));
-            var audiences = new[] { api1, api2 };
+            var audiences = new[] { ApiAudience, ApiAudience };
 
             Assert.Throws<InvalidOperationException>(()
                 => client.SetAudiences(audiences, _time.GetUtcNow()));
         }
 
         [Fact]
-        public void WhenEmptyCollectionAndApplicationTypeDoesNotRequireIt_UpdateCollection()
+        public void WhenEmptyCollectionAndApplicationTypeDoesNotRequireIt_ClientIsInValidState()
         {
             var client = new ClientBuilder()
                 .WithApplicationType(ClientApplicationTypes.Spa)
+                .WithAudience(ApiAudience)
                 .Build();
             
             client.SetAudiences([], _time.GetUtcNow());
+            client.ValidateClient();
 
             Assert.Empty(client.AllowedAudiences);
         }
@@ -413,10 +418,23 @@ public class ClientTests
         {
             var client = new ClientBuilder()
                 .WithApplicationType(ClientApplicationTypes.M2M)
+                .WithAudience(ApiAudience)
+                .Build();
+            
+            client.SetAudiences([], _time.GetUtcNow());
+            
+            Assert.Throws<InvalidOperationException>(()
+                => client.ValidateClient());
+        }
+
+        [Fact]
+        public void WhenAudiencesNull_ThrowsException()
+        {
+            var client = new ClientBuilder()
                 .Build();
 
-            Assert.Throws<InvalidOperationException>(()
-                => client.SetAudiences([], _time.GetUtcNow()));           
+            Assert.Throws<ArgumentNullException>(()
+                => client.SetAudiences(null!, _time.GetUtcNow()));
         }
     }
 
