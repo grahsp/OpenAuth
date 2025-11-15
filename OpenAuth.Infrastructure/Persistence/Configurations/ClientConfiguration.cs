@@ -42,8 +42,6 @@ public class ClientConfiguration : IEntityTypeConfiguration<Client>
         builder.Property(c => c.UpdatedAt).IsRequired();
         builder.Property(c => c.Enabled).IsRequired();
 
-        builder.Property(c => c.RequirePkce).IsRequired();
-
         builder.Property(c => c.ApplicationType)
             .HasConversion(
                 type => type.Name,

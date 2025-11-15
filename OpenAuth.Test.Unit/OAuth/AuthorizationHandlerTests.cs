@@ -7,6 +7,7 @@ using OpenAuth.Domain.AuthorizationGrants;
 using OpenAuth.Domain.AuthorizationGrants.Enums;
 using OpenAuth.Domain.AuthorizationGrants.ValueObjects;
 using OpenAuth.Domain.Clients;
+using OpenAuth.Domain.Clients.ApplicationType;
 using OpenAuth.Domain.Clients.ValueObjects;
 using OpenAuth.Domain.OAuth;
 using OpenAuth.Test.Common.Builders;
@@ -33,6 +34,7 @@ public class AuthorizationHandlerTests
         _sut = new AuthorizationHandler(_clientQueryService, _store, _time);
 
         _defaultClient = new ClientBuilder()
+            .WithApplicationType(ClientApplicationTypes.Spa)
             .WithAudience("api", "read", "write")
             .WithGrantType(GrantTypes.AuthorizationCode)
             .WithRedirectUri("https://example.com/callback")
@@ -86,29 +88,14 @@ public class AuthorizationHandlerTests
     }
 
     [Fact]
-    public async Task MissingPkce_Throws_WhenPkceEnabled()
+    public async Task WhenPublicClientAndMissingPkce_ThrowsException()
     {
         var request = _validRequest with { Pkce = null! };
-        
-        _defaultClient.SetPkceRequirement(true, _time.GetUtcNow());
         
         _clientQueryService.Add(_defaultClient);
         
         await Assert.ThrowsAnyAsync<InvalidOperationException>(()
             => _sut.AuthorizeAsync(request, "subject"));
-    }
-
-    [Fact]
-    public async Task IgnoreMissingPkce_WhenPkceDisabled()
-    {
-        var request = _validRequest with { Pkce = null! };
-        var now = _time.GetUtcNow();
-        
-        _defaultClient.SetPkceRequirement(false, now);
-        
-        _clientQueryService.Add(_defaultClient);
-        
-        await _sut.AuthorizeAsync(request, "subject");
     }
 
     [Fact]

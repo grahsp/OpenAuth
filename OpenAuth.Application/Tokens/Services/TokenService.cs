@@ -38,8 +38,8 @@ public class TokenService : ITokenService
         if (!tokenData.AllowedGrantTypes.Contains(request.GrantType))
             throw new InvalidOperationException($"Grant type '{request.GrantType}' is not allowed for this client.");
         
-        if (tokenData.RequirePkce && !request.GrantType.SupportsPkce)
-            throw new InvalidOperationException("PKCE is required for this grant type.");
+        // if (tokenData.RequirePkce && !request.GrantType.SupportsPkce)
+        //     throw new InvalidOperationException("PKCE is required for this grant type.");
 
         var invalidScopes = request.RequestedScopes.Except(tokenData.Scopes)
             .Select(s => s.Value)

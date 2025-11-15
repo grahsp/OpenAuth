@@ -7,19 +7,17 @@ namespace OpenAuth.Domain.Clients.ValueObjects;
 public record GrantType : ICreate<string, GrantType>
 {
     public string Value { get; private init; }
-    public bool SupportsPkce { get; private init; }
     public bool RequiresRedirectUri { get; private init; }
 
-    private GrantType(string value, bool supportsPkce, bool requiresRedirectUri)
+    private GrantType(string value, bool requiresRedirectUri)
     {
         Value = value;
-        SupportsPkce = supportsPkce;
         RequiresRedirectUri = requiresRedirectUri;
     }
     
-    public static readonly GrantType AuthorizationCode = new(GrantTypes.AuthorizationCode, true, true);
-    public static readonly GrantType ClientCredentials = new(GrantTypes.ClientCredentials, false, false);
-    public static readonly GrantType RefreshToken = new(GrantTypes.RefreshToken, false, false);
+    public static readonly GrantType AuthorizationCode = new(GrantTypes.AuthorizationCode, true);
+    public static readonly GrantType ClientCredentials = new(GrantTypes.ClientCredentials, false);
+    public static readonly GrantType RefreshToken = new(GrantTypes.RefreshToken, false);
     
     public static GrantType Create(string value)
     {

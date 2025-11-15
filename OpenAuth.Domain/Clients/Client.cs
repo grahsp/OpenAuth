@@ -20,8 +20,6 @@ public sealed class Client
     public bool IsPublic => !ApplicationType.AllowsClientSecrets;
     public bool IsConfidential => ApplicationType.AllowsClientSecrets;
     
-    public bool RequirePkce { get; private set; }
-    
     private HashSet<GrantType> _allowedGrantTypes = [];
     public IReadOnlyCollection<GrantType> AllowedGrantTypes => _allowedGrantTypes;
 
@@ -88,7 +86,7 @@ public sealed class Client
         ApplicationType.ValidateSecrets(Secrets);
     }
 
-    // Client
+    
     public void Rename(ClientName newName, DateTimeOffset utcNow)
     {
         ArgumentNullException.ThrowIfNull(newName);
@@ -99,6 +97,7 @@ public sealed class Client
         Name = newName;
         Touch(utcNow);
     }
+    
 
     public void Enable(DateTimeOffset utcNow)
     {
@@ -115,15 +114,6 @@ public sealed class Client
             return;
         
         Enabled = false;
-        Touch(utcNow);
-    }
-    
-    public void SetPkceRequirement(bool requirePkce, DateTimeOffset utcNow)
-    {
-        if (RequirePkce == requirePkce)
-            return;
-
-        RequirePkce = requirePkce;
         Touch(utcNow);
     }
     

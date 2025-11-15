@@ -52,10 +52,8 @@ public class AuthorizationHandler : IAuthorizationHandler
 
     private static void ValidateRequest(ClientAuthorizationData authorizationData, AuthorizationRequest request)
     {
-        if (authorizationData.RequirePkce && request.Pkce is null)
-        {
+        if (authorizationData.IsClientPublic && request.Pkce is null)
             throw new InvalidOperationException("Pkce is required.");
-        }
 
         if (!authorizationData.RedirectUris.Contains(request.RedirectUri))
             throw new InvalidOperationException("Invalid redirect URI.");

@@ -4,7 +4,7 @@ namespace OpenAuth.Application.Clients.Dtos;
 
 public record ClientAuthorizationData(
     ClientId ClientId,
-    bool RequirePkce,
+    bool IsClientPublic,
     GrantType[] GrantTypes,
     RedirectUri[] RedirectUris,
     Audience[] AllowedAudiences
