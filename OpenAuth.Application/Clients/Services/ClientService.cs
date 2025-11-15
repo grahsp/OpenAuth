@@ -52,6 +52,49 @@ public class ClientService : IClientService
 
         return client.ToClientInfo();
     }
+    
+    
+    public async Task<ClientDetails> SetGrantTypesAsync(ClientId id, IEnumerable<GrantType> grantTypes,
+        CancellationToken ct = default)
+    {
+        var client = await _repository.GetByIdAsync(id, ct)
+                     ?? throw new InvalidOperationException("Client not found.");
+        
+        client.SetGrantTypes(grantTypes, _time.GetUtcNow());
+        await _repository.SaveChangesAsync(ct);
+        
+        return client.ToClientDetails();
+    }
+
+    public async Task<ClientDetails> AddGrantTypeAsync(ClientId id, GrantType grantType,
+        CancellationToken ct = default)
+    {
+        var client = await _repository.GetByIdAsync(id, ct)
+                     ?? throw new InvalidOperationException("Client not found.");
+
+        var grantTypes = client.AllowedGrantTypes
+            .Append(grantType);
+        
+        client.SetGrantTypes(grantTypes, _time.GetUtcNow());
+        await _repository.SaveChangesAsync(ct);
+        
+        return client.ToClientDetails();
+    }
+    
+    public async Task<ClientDetails> RemoveGrantTypeAsync(ClientId id, GrantType grantType,
+        CancellationToken ct = default)
+    {
+        var client = await _repository.GetByIdAsync(id, ct)
+                     ?? throw new InvalidOperationException("Client not found.");
+        
+        var grantTypes = client.AllowedGrantTypes
+            .Where(r => r != grantType);
+        
+        client.SetGrantTypes(grantTypes, _time.GetUtcNow());
+        await _repository.SaveChangesAsync(ct);
+        
+        return client.ToClientDetails();
+    }
 
 
     public async Task<ClientDetails> SetRedirectUrisAsync(ClientId id, IEnumerable<RedirectUri> redirectUris,

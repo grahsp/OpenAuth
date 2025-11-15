@@ -175,7 +175,7 @@ public class ClientPersistenceTests : IAsyncLifetime
                 var loaded = await ctx.Clients
                     .SingleAsync(x => x.Id == client.Id);
 
-                loaded.AddGrantType(GrantType.AuthorizationCode, _time.GetUtcNow());
+                loaded.SetGrantTypes([GrantType.RefreshToken], _time.GetUtcNow());
                 await ctx.SaveChangesAsync();
             }
 
