@@ -62,7 +62,6 @@ public class ClientQueryService : IClientQueryService
                     .Single(a => a.Name == audienceName)
                     .Scopes,
                 c.AllowedGrantTypes.ToArray(),
-                c.RequirePkce,
                 c.TokenLifetime))
             .SingleOrDefaultAsync(ct);
 
@@ -76,7 +75,7 @@ public class ClientQueryService : IClientQueryService
             .Where(c => c.Id == id)
             .Select(c => new ClientAuthorizationData(
                 c.Id,
-                c.RequirePkce,
+                c.IsPublic,
                 c.AllowedGrantTypes.ToArray(),
                 c.RedirectUris.ToArray(),
                 c.AllowedAudiences.ToArray()

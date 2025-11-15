@@ -31,24 +31,6 @@ public class ClientTests
         Assert.Equal(now, client.CreatedAt);
         Assert.Equal(now, client.UpdatedAt);
     }
-
-    public class SetPkceRequirements : ClientTests
-    {
-        [Fact]
-        public void SetPkceRequirements_WhenPkceIsNotSetToRequired_Updates()
-        {
-            var client = new ClientBuilder().Build();
-            client.SetPkceRequirement(false, _time.GetUtcNow());
-            
-            _time.Advance(TimeSpan.FromMinutes(5));
-            
-            var now = _time.GetUtcNow();
-            client.SetPkceRequirement(true, now);
-            
-            Assert.True(client.RequirePkce);
-            Assert.Equal(now, client.UpdatedAt);
-        }
-    }
     
     public class SetGrantTypes : ClientTests
     {

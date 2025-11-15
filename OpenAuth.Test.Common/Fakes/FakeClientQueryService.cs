@@ -43,7 +43,7 @@ public class FakeClientQueryService : IClientQueryService
 
         var data = new ClientAuthorizationData(
             client.Id,
-            client.RequirePkce,
+            client.IsPublic,
             client.AllowedGrantTypes.ToArray(),
             client.RedirectUris.ToArray(),
             client.AllowedAudiences.ToArray()
