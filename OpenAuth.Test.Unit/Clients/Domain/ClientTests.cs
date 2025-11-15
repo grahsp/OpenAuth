@@ -160,7 +160,7 @@ public class ClientTests
         }
 
         [Fact]
-        public void WhenEmptyCollectionAndIsNotRequiredByApplicationType_UpdateCollection()
+        public void WhenEmptyCollectionAndIsNotRequired_UpdateCollection()
         {
             var client = new ClientBuilder()
                 .WithApplicationType(ClientApplicationTypes.M2M)
@@ -173,7 +173,7 @@ public class ClientTests
         }
 
         [Fact]
-        public void WhenEmptyCollectionAndIsRequiredByApplicationType_ThrowsException()
+        public void WhenEmptyCollectionAndIsRequired_ThrowsException()
         {
             
             var client = new ClientBuilder()

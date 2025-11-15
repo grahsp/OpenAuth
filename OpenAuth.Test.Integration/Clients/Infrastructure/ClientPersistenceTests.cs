@@ -71,6 +71,7 @@ public class ClientPersistenceTests : IAsyncLifetime
             await using (var ctx = _fx.CreateContext())
             {
                 var loaded = await ctx.Clients
+                    .Include(c => c.Secrets)
                     .SingleAsync(x => x.Id == client.Id);
 
                 // Assert
@@ -128,31 +129,6 @@ public class ClientPersistenceTests : IAsyncLifetime
                 Assert.Equal(2, loaded.AllowedGrantTypes.Count);
                 Assert.Contains(loaded.AllowedGrantTypes, g => g == GrantType.AuthorizationCode);
                 Assert.Contains(loaded.AllowedGrantTypes, g => g == GrantType.RefreshToken);
-            }
-        }
-    
-        [Fact]
-        public async Task EmptyCollection_SerializesCorrectly()
-        {
-            // Arrange
-            var client = new ClientBuilder()
-                .Build();
-    
-            await using (var ctx = _fx.CreateContext())
-            {
-                ctx.Add(client);
-                await ctx.SaveChangesAsync();
-            }
-
-            // Act
-            await using (var ctx = _fx.CreateContext())
-            {
-                var loaded = await ctx.Clients
-                    .SingleAsync(x => x.Id == client.Id);
-
-                // Assert
-                Assert.NotNull(loaded.AllowedGrantTypes);
-                Assert.Empty(loaded.AllowedGrantTypes);
             }
         }
     

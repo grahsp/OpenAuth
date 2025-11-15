@@ -9,7 +9,6 @@ public class MachineToMachineClientApplicationType : ClientApplicationType
     public override IReadOnlyCollection<GrantType> AllowedGrants =>
         [GrantType.ClientCredentials, GrantType.RefreshToken];
 
-    public override bool RequiresRedirectUris => false;
     public override bool RequiresPermissions => true;
     public override bool AllowsClientSecrets => true;
 

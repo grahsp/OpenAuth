@@ -9,7 +9,6 @@ public class SinglePageClientApplicationType : ClientApplicationType
     public override IReadOnlyCollection<GrantType> AllowedGrants =>
         [GrantType.AuthorizationCode, GrantType.RefreshToken];
 
-    public override bool RequiresRedirectUris => true;
     public override bool RequiresPermissions => false;
     public override bool AllowsClientSecrets => false;
 
