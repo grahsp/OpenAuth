@@ -15,7 +15,7 @@ public record SecretId(Guid Value) : ICreate<string, SecretId>
         return id;
     }
 
-    public static bool TryCreate(string value, [NotNullWhen(true)] out SecretId? id)
+    public static bool TryCreate(string? value, [NotNullWhen(true)] out SecretId? id)
     {
         if (!Guid.TryParse(value, out var guid) || guid == Guid.Empty)
         {

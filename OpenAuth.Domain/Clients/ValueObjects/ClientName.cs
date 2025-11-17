@@ -9,10 +9,15 @@ public record ClientName : Name, ICreate<string, ClientName>
     public ClientName(string value) : base(value, 1, 100) { }
 
     public static ClientName Create(string value)
-        => new ClientName(value);
+        => new(value);
 
-    public static bool TryCreate(string value, [NotNullWhen(true)] out ClientName? name)
+    public static bool TryCreate(string? value, [NotNullWhen(true)] out ClientName? name)
     {
+        name = null;
+
+        if (string.IsNullOrWhiteSpace(value))
+            return false;
+        
         try
         {
             name = new ClientName(value);
@@ -20,7 +25,6 @@ public record ClientName : Name, ICreate<string, ClientName>
         }
         catch (ArgumentException _)
         {
-            name = null;
             return false;
         }
     }

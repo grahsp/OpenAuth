@@ -16,8 +16,13 @@ public record AudienceName : Name, ICreate<string, AudienceName>
         return name;
     }
 
-    public static bool TryCreate(string value, [NotNullWhen(true)] out AudienceName? name)
+    public static bool TryCreate(string? value, [NotNullWhen(true)] out AudienceName? name)
     {
+        name = null;
+        
+        if (string.IsNullOrWhiteSpace(value))
+            return false;
+        
         try
         {
             name = new AudienceName(value);
@@ -25,7 +30,6 @@ public record AudienceName : Name, ICreate<string, AudienceName>
         }
         catch(ArgumentException _)
         {
-            name = null;
             return false;
         }
     }
