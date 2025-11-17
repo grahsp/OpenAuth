@@ -31,22 +31,31 @@ public class TokenService : ITokenService
         if (!_strategies.TryGetValue(request.GrantType, out var issuer))
             throw new InvalidOperationException("Invalid grant type.");
         
-        var tokenData = await _clientQueryService.GetTokenDataAsync(request.ClientId, request.RequestedAudience, ct);
+        var tokenData = await _clientQueryService.GetTokenDataAsync(request.ClientId, ct);
         if (tokenData is null)
-            throw new InvalidOperationException("Client not found or does not have access to the requested audience.");
+            throw new InvalidOperationException("Client not found.");
         
         if (!tokenData.AllowedGrantTypes.Contains(request.GrantType))
             throw new InvalidOperationException($"Grant type '{request.GrantType}' is not allowed for this client.");
         
-        // if (tokenData.RequirePkce && !request.GrantType.SupportsPkce)
-        //     throw new InvalidOperationException("PKCE is required for this grant type.");
+        if (request.RequestedAudience is not null)
+        {
+            var audience = tokenData.AllowedAudiences
+                .FirstOrDefault(a => a.Name == request.RequestedAudience);
+            if (audience is null)
+                throw new InvalidOperationException($"Invalid audience: '{request.RequestedAudience}'.");
 
-        var invalidScopes = request.RequestedScopes.Except(tokenData.Scopes)
-            .Select(s => s.Value)
-            .ToArray();
-        if (invalidScopes.Length > 0)
-            throw new InvalidOperationException($"Invalid scopes: '{ string.Join(' ', invalidScopes) }'.");
-
+            if (request.RequestedScopes is not null)
+            {
+                var invalidScopes = request.RequestedScopes
+                    .Except(audience.Scopes)
+                    .Select(s => s.Value)
+                    .ToArray();
+                
+                if (invalidScopes.Length > 0)
+                    throw new InvalidOperationException($"Invalid scopes: '{ string.Join(' ', invalidScopes) }'.");
+            }
+        }
 
         var tokenContext = await issuer.IssueToken(request, ct);
     
