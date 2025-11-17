@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Diagnostics.CodeAnalysis;
 
 namespace OpenAuth.Domain.Clients.ValueObjects;
 
@@ -21,6 +22,24 @@ public sealed record ScopeCollection : IReadOnlyCollection<Scope>
             .ToArray();
         
         return new ScopeCollection(scopes);
+    }
+
+    public static bool TryParse(string? spaceSeparatedScopes, [NotNullWhen(true)] out ScopeCollection? scopes)
+    {
+        scopes = null;
+
+        if (string.IsNullOrWhiteSpace(spaceSeparatedScopes))
+            return false;
+        
+        try
+        {
+            scopes = Parse(spaceSeparatedScopes);
+            return true;
+        }
+        catch (Exception)
+        {
+            return false;
+        }
     }
 
     public int Count => _items.Count;

@@ -15,7 +15,7 @@ public record ClientId(Guid Value) : ICreate<string, ClientId>
         return id;
     }
 
-    public static bool TryCreate(string value, [NotNullWhen(true)] out ClientId? id)
+    public static bool TryCreate(string? value, [NotNullWhen(true)] out ClientId? id)
     {
         if (!Guid.TryParse(value, out var guid) || guid == Guid.Empty)
         {
