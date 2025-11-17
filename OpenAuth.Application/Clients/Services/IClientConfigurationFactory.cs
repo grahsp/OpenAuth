@@ -5,5 +5,5 @@ namespace OpenAuth.Application.Clients.Services;
 
 public interface IClientConfigurationFactory
 {
-    ClientConfiguration Create(RegisterClientRequest request);
+    ClientConfiguration Create(RegisterClientCommand command);
 }

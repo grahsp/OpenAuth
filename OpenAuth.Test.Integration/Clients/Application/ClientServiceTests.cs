@@ -39,7 +39,7 @@ public class ClientServiceTests : IAsyncLifetime
     public async Task InitializeAsync() => await _fx.ResetAsync();
     public Task DisposeAsync() => Task.CompletedTask;
     
-    private static RegisterClientRequest CreateM2MRequest()
+    private static RegisterClientCommand CreateM2MRequest()
         => new(
             ApplicationType: "m2m", 
             Name: "test client", 
@@ -47,7 +47,7 @@ public class ClientServiceTests : IAsyncLifetime
                 { { "api", ["read", "write"] } }
         );
     
-    private static RegisterClientRequest CreateSpaRequest()
+    private static RegisterClientCommand CreateSpaRequest()
         => new(
             ApplicationType: "spa", 
             Name: "test client", 
@@ -67,10 +67,10 @@ public class ClientServiceTests : IAsyncLifetime
         
         await using var ctx = _fx.CreateContext();
         var client = await ctx.Clients.
-            SingleAsync(c => c.Id == ClientId.Create(result.Client.Id));
+            SingleAsync(c => c.Id == result.Client.Id);
 
         Assert.NotNull(client);
-        Assert.Equal(result.Client.Name, client.Name.ToString());
+        Assert.Equal(result.Client.Name, client.Name);
         
         var secrets = await ctx.ClientSecrets
             .Where(s => s.ClientId == client.Id)
@@ -86,10 +86,10 @@ public class ClientServiceTests : IAsyncLifetime
         
         await using var ctx = _fx.CreateContext();
         var client = await ctx.Clients.
-            SingleAsync(c => c.Id == ClientId.Create(result.Client.Id));
+            SingleAsync(c => c.Id == result.Client.Id);
 
         Assert.NotNull(client);
-        Assert.Equal(result.Client.Name, client.Name.ToString());
+        Assert.Equal(result.Client.Name, client.Name);
         
         var secrets = await ctx.ClientSecrets
             .Where(s => s.ClientId == client.Id)
@@ -105,11 +105,10 @@ public class ClientServiceTests : IAsyncLifetime
          
         var expected = new ClientName("new client");
          
-        var clientId = ClientId.Create(result.Client.Id);
-        await _sut.RenameAsync(clientId, expected);
+        await _sut.RenameAsync(result.Client.Id, expected);
 
         await using var ctx = _fx.CreateContext();
-        var fetched = await ctx.Clients.SingleAsync(c => c.Id == clientId);
+        var fetched = await ctx.Clients.SingleAsync(c => c.Id == result.Client.Id);
          
         Assert.Equal(expected, fetched.Name);
     }
@@ -118,7 +117,7 @@ public class ClientServiceTests : IAsyncLifetime
     public async Task SetGrantTypesAsync_PersistsUpdate()
     {
         var result = await _sut.RegisterAsync(CreateM2MRequest());
-        var clientId = ClientId.Create(result.Client.Id);
+        var clientId = result.Client.Id;
              
         var grantTypes = new[] { GrantType.ClientCredentials, GrantType.RefreshToken };
         await _sut.SetGrantTypesAsync(clientId, grantTypes);
@@ -135,7 +134,7 @@ public class ClientServiceTests : IAsyncLifetime
     public async Task AddAndRemoveGrantTypeAsync_PersistsUpdate()
     {
         var result = await _sut.RegisterAsync(CreateM2MRequest());
-        var clientId = ClientId.Create(result.Client.Id);
+        var clientId = result.Client.Id;
              
         // M2M clients already contain ClientCredentials by default
         await _sut.AddGrantTypeAsync(clientId, GrantType.RefreshToken);
@@ -152,7 +151,7 @@ public class ClientServiceTests : IAsyncLifetime
     public async Task SetRedirectUrisAsync_PersistsUpdate()
     {
         var result = await _sut.RegisterAsync(CreateSpaRequest());
-        var clientId = ClientId.Create(result.Client.Id);
+        var clientId = result.Client.Id;
              
         var redirectUris = new[] { UriA, UriB };
         await _sut.SetRedirectUrisAsync(clientId, redirectUris);
@@ -169,7 +168,7 @@ public class ClientServiceTests : IAsyncLifetime
     public async Task AddAndRemoveRedirectUriAsync_PersistsUpdate()
     {
         var result = await _sut.RegisterAsync(CreateSpaRequest());
-        var clientId = ClientId.Create(result.Client.Id);
+        var clientId = result.Client.Id;
              
         await _sut.AddRedirectUriAsync(clientId, UriA);
         await _sut.AddRedirectUriAsync(clientId, UriB);
@@ -188,7 +187,7 @@ public class ClientServiceTests : IAsyncLifetime
         var result = await _sut.RegisterAsync(CreateSpaRequest());
         var audiences = new[] { ApiAudience, WebAudience };
 
-        var clientId = ClientId.Create(result.Client.Id);
+        var clientId = result.Client.Id;
         await _sut.SetAudiencesAsync(clientId, audiences);
          
         await using var ctx = _fx.CreateContext();
@@ -203,8 +202,8 @@ public class ClientServiceTests : IAsyncLifetime
     public async Task AddAndRemoveAudienceAsync_PersistsUpdate()
     {
         var result = await _sut.RegisterAsync(CreateSpaRequest());
-
-        var clientId = ClientId.Create(result.Client.Id);
+        var clientId = result.Client.Id;
+        
         await _sut.AddAudienceAsync(clientId, ApiAudience);
         await _sut.AddAudienceAsync(clientId, WebAudience);
         await _sut.RemoveAudienceAsync(clientId, WebAudience.Name);
@@ -221,7 +220,7 @@ public class ClientServiceTests : IAsyncLifetime
     {
         var result = await _sut.RegisterAsync(CreateSpaRequest());
          
-        var clientId = ClientId.Create(result.Client.Id);
+        var clientId = result.Client.Id;
         await _sut.DeleteAsync(clientId);
 
         await using var ctx = _fx.CreateContext();
@@ -235,7 +234,7 @@ public class ClientServiceTests : IAsyncLifetime
     {
         var result = await _sut.RegisterAsync(CreateSpaRequest());
          
-        var clientId = ClientId.Create(result.Client.Id);
+        var clientId = result.Client.Id;
          
         await _sut.DisableAsync(clientId);
         await using (var ctx = _fx.CreateContext())
