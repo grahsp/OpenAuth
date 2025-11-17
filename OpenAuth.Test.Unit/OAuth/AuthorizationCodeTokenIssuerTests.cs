@@ -58,8 +58,8 @@ public class AuthorizationCodeTokenIssuerTests
             RedirectUri.Create("https://client.app/callback"),
             new AudienceName("api.example.com"),
             ScopeCollection.Parse("read write"),
-            DateTimeOffset.UtcNow,
-            pkce
+            pkce,
+            DateTimeOffset.UtcNow
         );
     }
 
