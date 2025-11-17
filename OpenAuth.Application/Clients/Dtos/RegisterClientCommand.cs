@@ -1,6 +1,6 @@
 namespace OpenAuth.Application.Clients.Dtos;
 
-public sealed record RegisterClientRequest(
+public sealed record RegisterClientCommand(
     string ApplicationType,
     string Name,
     Dictionary<string, IEnumerable<string>>? Permissions = null,

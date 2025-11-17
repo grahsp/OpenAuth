@@ -13,7 +13,7 @@ public class ClientConfigurationFactoryTests
     [Fact]
     public void Create_WhenValidRequest_MapsBasicFieldsCorrectly()
     {
-        var request = new RegisterClientRequest(
+        var request = new RegisterClientCommand(
             "m2m",
             "client-name",
             new Dictionary<string, IEnumerable<string>>
@@ -37,7 +37,7 @@ public class ClientConfigurationFactoryTests
     [Fact]
     public void Create_WhenPermissionsIsNull_ReturnsEmptyAudiences()
     {
-        var request = new RegisterClientRequest("spa", "client", null, null);
+        var request = new RegisterClientCommand("spa", "client", null, null);
 
         var config = _sut.Create(request);
 
@@ -47,7 +47,7 @@ public class ClientConfigurationFactoryTests
     [Fact]
     public void Create_AssignsDefaultGrantTypes_FromApplicationType()
     {
-        var request = new RegisterClientRequest("spa", "client", null, null);
+        var request = new RegisterClientCommand("spa", "client", null, null);
         var config = _sut.Create(request);
 
         Assert.Equal(ClientApplicationTypes.Spa.DefaultGrantTypes, config.AllowedGrantTypes);

@@ -7,16 +7,16 @@ namespace OpenAuth.Application.Clients.Services;
 
 public class ClientConfigurationFactory : IClientConfigurationFactory
 {
-    public ClientConfiguration Create(RegisterClientRequest request)
+    public ClientConfiguration Create(RegisterClientCommand command)
     {
-        ArgumentNullException.ThrowIfNull(request);
+        ArgumentNullException.ThrowIfNull(command);
         
-        var name = ClientName.Create(request.Name);
+        var name = ClientName.Create(command.Name);
 
-        var audiences = CreateAudiences(request.Permissions);
-        var redirectUris = CreateRedirectUris(request.RedirectUris);
+        var audiences = CreateAudiences(command.Permissions);
+        var redirectUris = CreateRedirectUris(command.RedirectUris);
 
-        var applicationType = ClientApplicationTypes.Parse(request.ApplicationType);
+        var applicationType = ClientApplicationTypes.Parse(command.ApplicationType);
         
         var configuration = new ClientConfiguration(name,
             applicationType,

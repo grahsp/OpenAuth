@@ -55,20 +55,20 @@ public class ClientServiceTests
                 return client.Build();
             });
         
-        _configurationFactory.Create(Arg.Any<RegisterClientRequest>())
+        _configurationFactory.Create(Arg.Any<RegisterClientCommand>())
             .Returns(x =>
             {
-                var request = x.Arg<RegisterClientRequest>();
+                var request = x.Arg<RegisterClientCommand>();
                 return DeriveConfiguration(request);
             });
     }
 
-    private static ClientConfiguration DeriveConfiguration(RegisterClientRequest request)
+    private static ClientConfiguration DeriveConfiguration(RegisterClientCommand command)
     {
-        var clientName = ClientName.Create(request.Name);
-        var applicationType = ClientApplicationTypes.Parse(request.ApplicationType);
+        var clientName = ClientName.Create(command.Name);
+        var applicationType = ClientApplicationTypes.Parse(command.ApplicationType);
         
-        var audiences = request.Permissions?
+        var audiences = command.Permissions?
             .Select(permission =>
         {
             var audienceName = AudienceName.Create(permission.Key);
@@ -80,7 +80,7 @@ public class ClientServiceTests
             return audience;
         }) ?? [];
         
-        var redirectUris = request.RedirectUris?
+        var redirectUris = command.RedirectUris?
             .Select(RedirectUri.Create) ?? [];
             
         var config = new ClientConfiguration(
@@ -94,7 +94,7 @@ public class ClientServiceTests
         return config;
     }
 
-    private static RegisterClientRequest CreateM2MRequest()
+    private static RegisterClientCommand CreateM2MRequest()
         => new(
             "m2m", 
             "test client", 
@@ -102,23 +102,23 @@ public class ClientServiceTests
             { { "api", ["read", "write"] } }, 
             []);
     
-    private static RegisterClientRequest CreateSpaRequest()
+    private static RegisterClientCommand CreateSpaRequest()
         => new(
             "spa", 
             "test client", 
             [],
             ["https://example.com/callback"]);
 
-    private async Task<RegisteredClientResponse> RegisterClientAsync(RegisterClientRequest request)
+    private async Task<RegisteredClientResponse> RegisterClientAsync(RegisterClientCommand command)
     {
         SetupDefaultClientConfiguration();
-        return await _sut.RegisterAsync(request);
+        return await _sut.RegisterAsync(command);
     }
     
-    private async Task<RegisteredClientResponse> RegisterM2MClientAsync(RegisterClientRequest? request = null)
+    private async Task<RegisteredClientResponse> RegisterM2MClientAsync(RegisterClientCommand? request = null)
         => await RegisterClientAsync(request ?? CreateM2MRequest());
 
-    private async Task<RegisteredClientResponse> RegisterSpaClientAsync(RegisterClientRequest? request = null)
+    private async Task<RegisteredClientResponse> RegisterSpaClientAsync(RegisterClientCommand? request = null)
         => await RegisterClientAsync(request ?? CreateSpaRequest());
     
 
@@ -166,7 +166,7 @@ public class ClientServiceTests
             var result = await RegisterSpaClientAsync();
             var newName = new ClientName("cool client");
             
-            var renamed = await _sut.RenameAsync(ClientId.Create(result.Client.Id), newName);
+            var renamed = await _sut.RenameAsync(result.Client.Id, newName);
             
             Assert.Equal(newName.ToString(), renamed.Name);
         }
@@ -177,15 +177,14 @@ public class ClientServiceTests
             var result = await RegisterSpaClientAsync();
             
             await Assert.ThrowsAsync<ArgumentNullException>(() =>
-                _sut.RenameAsync(ClientId.Create(result.Client.Id), null!));
+                _sut.RenameAsync(result.Client.Id, null!));
         }
 
         [Fact]
         public async Task WhenClientNotFound_ThrowsException()
         {
-            var service = _sut;
             await Assert.ThrowsAsync<InvalidOperationException>(
-                () => service.RenameAsync(ClientId.New(), new ClientName("test")));
+                () => _sut.RenameAsync(ClientId.New(), new ClientName("test")));
         }
     }
 
@@ -196,7 +195,7 @@ public class ClientServiceTests
         {
             var result = await RegisterSpaClientAsync();
 
-            await _sut.DeleteAsync(ClientId.Create(result.Client.Id));
+            await _sut.DeleteAsync(result.Client.Id);
             
             Assert.Empty(_repo.Clients);
         }
@@ -219,7 +218,7 @@ public class ClientServiceTests
         public async Task SetGrantTypesAsync_WhenValidTypes_ReplaceExistingTypes()
         {
             var result = await RegisterM2MClientAsync();
-            var client = _repo.Clients.Single(c => c.Id == ClientId.Create(result.Client.Id));
+            var client = result.Client;
             
             var grantTypes = new[] { ClientCredentials, RefreshToken };
             
@@ -243,7 +242,7 @@ public class ClientServiceTests
         public async Task AddGrantTypeAsync_WhenValid_AppendsWithoutAffectingExistingTypes()
         {
             var result = await RegisterM2MClientAsync();
-            var client = _repo.Clients.Single(c => c.Id == ClientId.Create(result.Client.Id));
+            var client = result.Client;
             
             await _sut.AddGrantTypeAsync(client.Id, RefreshToken);
             
@@ -262,7 +261,7 @@ public class ClientServiceTests
         public async Task RemoveGrantTypeAsync_WhenTypeNotFound_DoesNothing()
         {
             var result = await RegisterM2MClientAsync();
-            var client = _repo.Clients.Single(c => c.Id == ClientId.Create(result.Client.Id));
+            var client = result.Client;
     
             var expected = client.AllowedGrantTypes.ToArray();
             await _sut.RemoveGrantTypeAsync(client.Id, RefreshToken);
@@ -274,7 +273,7 @@ public class ClientServiceTests
         public async Task RemoveGrantTypeAsync_WhenTypeExists_RemoveType()
         {
             var result = await RegisterM2MClientAsync();
-            var client = _repo.Clients.Single(c => c.Id == ClientId.Create(result.Client.Id));
+            var client = result.Client;
             
             await _sut.AddGrantTypeAsync(client.Id, RefreshToken);
             
@@ -302,7 +301,7 @@ public class ClientServiceTests
         public async Task SetRedirectUrisAsync_WhenValidUris_ReplaceExistingUris()
         {
             var result = await RegisterM2MClientAsync();
-            var client = _repo.Clients.Single(c => c.Id == ClientId.Create(result.Client.Id));
+            var client = result.Client;
             
             var redirectUris = new[] { UriA, UriB };
             
@@ -326,7 +325,7 @@ public class ClientServiceTests
         public async Task AddRedirectUriAsync_WhenValid_AppendsWithoutAffectingExistingUris()
         {
             var result = await RegisterSpaClientAsync();
-            var client = _repo.Clients.Single(c => c.Id == ClientId.Create(result.Client.Id));
+            var client = result.Client;
             
             await _sut.AddRedirectUriAsync(client.Id, UriA);
             
@@ -345,7 +344,7 @@ public class ClientServiceTests
         public async Task RemoveRedirectUriAsync_WhenUriNotFound_DoesNothing()
         {
             var result = await RegisterSpaClientAsync();
-            var client = _repo.Clients.Single(c => c.Id == ClientId.Create(result.Client.Id));
+            var client = result.Client;
 
             var expected = client.RedirectUris.ToArray();
             await _sut.RemoveRedirectUriAsync(client.Id, UriA);
@@ -357,7 +356,7 @@ public class ClientServiceTests
         public async Task RemoveRedirectUriAsync_WhenUriExists_RemoveUri()
         {
             var result = await RegisterSpaClientAsync();
-            var client = _repo.Clients.Single(c => c.Id == ClientId.Create(result.Client.Id));
+            var client = result.Client;
             
             await _sut.AddRedirectUriAsync(client.Id, UriA);
             
@@ -385,7 +384,7 @@ public class ClientServiceTests
         public async Task SetAudiencesAsync_WhenValidAudiences_ReplaceExistingAudiences()
         {
             var result = await RegisterSpaClientAsync();
-            var client = _repo.Clients.Single(c => c.Id == ClientId.Create(result.Client.Id));
+            var client = result.Client;
             
             var audiences = new[] { ApiAudience, WebAudience };
             
@@ -409,7 +408,7 @@ public class ClientServiceTests
         public async Task AddAudienceAsync_WhenValid_AppendsWithoutAffectingExistingAudiences()
         {
             var result = await RegisterSpaClientAsync();
-            var client = _repo.Clients.Single(c => c.Id == ClientId.Create(result.Client.Id));
+            var client = result.Client;
             
             await _sut.AddAudienceAsync(client.Id, ApiAudience);
             
@@ -428,7 +427,7 @@ public class ClientServiceTests
         public async Task RemoveAudienceAsync_WhenAudienceNotFound_DoesNothing()
         {
             var result = await RegisterSpaClientAsync();
-            var client = _repo.Clients.Single(c => c.Id == ClientId.Create(result.Client.Id));
+            var client = result.Client;
 
             var expected = client.AllowedAudiences.ToArray();
             await _sut.RemoveAudienceAsync(client.Id, AudienceName.Create("non-existent"));
@@ -440,7 +439,7 @@ public class ClientServiceTests
         public async Task RemoveAudienceAsync_WhenAudienceExists_RemoveAudience()
         {
             var result = await RegisterSpaClientAsync();
-            var client = _repo.Clients.Single(c => c.Id == ClientId.Create(result.Client.Id));
+            var client = result.Client;
             
             await _sut.AddAudienceAsync(client.Id, ApiAudience);
             await _sut.RemoveAudienceAsync(client.Id, ApiAudience.Name);
@@ -463,9 +462,9 @@ public class ClientServiceTests
         public async Task EnableAndDisable_TogglesEnabled()
         {
             var result = await RegisterSpaClientAsync();
-            var client = _repo.Clients.Single(c => c.Id == ClientId.Create(result.Client.Id));
+            var client = result.Client;
 
-            await _sut.DisableAsync(ClientId.Create(result.Client.Id));
+            await _sut.DisableAsync(client.Id);
             Assert.False(client.Enabled);
 
             await _sut.EnableAsync(client.Id);

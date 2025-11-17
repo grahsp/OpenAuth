@@ -1,12 +1,13 @@
 using OpenAuth.Application.Clients.Dtos;
 using OpenAuth.Application.Clients.Interfaces;
 using OpenAuth.Application.Clients.Mappings;
+using OpenAuth.Domain.Clients;
 using OpenAuth.Domain.Clients.Factories;
 using OpenAuth.Domain.Clients.ValueObjects;
 
 namespace OpenAuth.Application.Clients.Services;
 
-public sealed record RegisteredClientResponse(ClientInfo Client, string? ClientSecret);
+public sealed record RegisteredClientResponse(Client Client, string? ClientSecret);
 
 public class ClientService : IClientService
 {
@@ -28,17 +29,17 @@ public class ClientService : IClientService
     }
     
     
-    public async Task<RegisteredClientResponse> RegisterAsync(RegisterClientRequest request, CancellationToken ct = default)
+    public async Task<RegisteredClientResponse> RegisterAsync(RegisterClientCommand cmd, CancellationToken ct = default)
     {
-        ArgumentNullException.ThrowIfNull(request);
+        ArgumentNullException.ThrowIfNull(cmd);
         
-        var clientConfiguration = _configurationFactory.Create(request);
+        var clientConfiguration = _configurationFactory.Create(cmd);
         var client = _clientFactory.Create(clientConfiguration, out var clientSecret);
         
         _repository.Add(client);
         await _repository.SaveChangesAsync(ct);
         
-        var response = new RegisteredClientResponse(client.ToClientInfo(), clientSecret);
+        var response = new RegisteredClientResponse(client, clientSecret);
         return response;
     }
     
