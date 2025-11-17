@@ -4,7 +4,6 @@ using OpenAuth.Application.Clients.Interfaces;
 using OpenAuth.Application.Clients.Services;
 using OpenAuth.Application.Jwks.Interfaces;
 using OpenAuth.Application.Jwks.Services;
-using OpenAuth.Application.OAuth.Authorization.Factories;
 using OpenAuth.Application.OAuth.Authorization.Handlers;
 using OpenAuth.Application.OAuth.Authorization.Interfaces;
 using OpenAuth.Application.OAuth.Stores;
@@ -125,7 +124,6 @@ public class Program
         builder.Services.AddScoped<ITokenIssuer, ClientCredentialsTokenIssuer>();
         builder.Services.AddScoped<ITokenIssuer, AuthorizationCodeTokenIssuer>();
 
-        builder.Services.AddScoped<IAuthorizationRequestFactory, AuthorizationRequestFactory>();
         builder.Services.AddScoped<IAuthorizationHandler, AuthorizationHandler>();
         
         builder.Services.AddScoped<IAuthorizationGrantStore, AuthorizationGrantStore>();
