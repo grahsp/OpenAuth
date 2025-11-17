@@ -56,7 +56,7 @@ public class JwtTokenGeneratorTests
         );
 
         _defaultTokenData = new ClientTokenData(
-            ScopeCollection.Parse("read write"),
+            [new Audience(AudienceName.Create("api"), ScopeCollection.Parse("read write"))],
             [],
             TimeSpan.FromMinutes(10));
     }
