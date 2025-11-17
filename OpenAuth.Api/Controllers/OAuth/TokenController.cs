@@ -1,17 +1,12 @@
-using System.Security.Cryptography;
-using System.Text;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.WebUtilities;
 using OpenAuth.Api.Dtos;
-using OpenAuth.Application.OAuth.Authorization.Dtos;
 using OpenAuth.Application.OAuth.Authorization.Handlers;
 using OpenAuth.Application.Tokens.Dtos;
 using OpenAuth.Application.Tokens.Services;
-using OpenAuth.Domain.AuthorizationGrants.Enums;
-using OpenAuth.Domain.AuthorizationGrants.ValueObjects;
 using OpenAuth.Domain.Clients.ValueObjects;
 
-namespace OpenAuth.Api.Controllers;
+namespace OpenAuth.Api.Controllers.OAuth;
 
 [ApiController]
 [Route("connect")]
@@ -57,18 +52,30 @@ public class TokenController : ControllerBase
     }
 
     [HttpPost("authorize")]
-    public async Task<ActionResult> Authorize()
+    public async Task<ActionResult> Authorize([FromBody] AuthorizationRequest request)
     {
-        var codeChallenge = Base64UrlEncoder.Encode(SHA256.HashData(Encoding.UTF8.GetBytes("this-is-a-secret-code")));
-        var request = new AuthorizationRequest(
-            new ClientId(Guid.Parse("c2b09d6b-e5cb-4154-a03f-7a824fc9c5df")),
-            RedirectUri.Create("https://example.com/callback"),
-            new AudienceName("api"),
-            ScopeCollection.Parse("read"),
-            Pkce.Create(codeChallenge, CodeChallengeMethod.S256)
+        var subject = User.Identity?.Name ?? "anonymous";
+        
+        var command = new AuthorizeCommand(
+            request.ClientId,
+            subject,
+            request.RedirectUri,
+            request.Audience,
+            request.Scope,
+            request.State,
+            request.CodeChallenge,
+            request.CodeChallengeMethod
         );
 
-        var result = await _authorizationHandler.AuthorizeAsync(request, "subject");
-        return Ok(result);
+        var grant = await _authorizationHandler.AuthorizeAsync(command);
+        var redirectUri = QueryHelpers.AddQueryString(
+            grant.RedirectUri.Value,
+            new Dictionary<string, string?>
+            {
+                ["code"] = grant.Code,
+                ["state"] = request.State
+            });
+        
+        return Ok(redirectUri);
     }
 }

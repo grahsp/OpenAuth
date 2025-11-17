@@ -1,8 +1,8 @@
-using OpenAuth.Application.OAuth.Authorization.Dtos;
+using OpenAuth.Domain.AuthorizationGrants;
 
 namespace OpenAuth.Application.OAuth.Authorization.Handlers;
 
 public interface IAuthorizationHandler
 {
-    Task<AuthorizationResponse> AuthorizeAsync(AuthorizationRequest request, string subject);
+    Task<AuthorizationGrant> AuthorizeAsync(AuthorizeCommand cmd, CancellationToken ct = default);
 }

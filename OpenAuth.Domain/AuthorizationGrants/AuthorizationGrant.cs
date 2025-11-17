@@ -9,8 +9,8 @@ public class AuthorizationGrant
     public ClientId ClientId { get; }
     public string Subject { get; }
     public RedirectUri RedirectUri { get; }
-    public AudienceName Audience { get; }
-    public ScopeCollection Scopes { get; }
+    public AudienceName? Audience { get; }
+    public ScopeCollection? Scopes { get; }
     public DateTimeOffset CreatedAt { get; }
     public DateTimeOffset ExpiresAt { get; }
     
@@ -25,10 +25,10 @@ public class AuthorizationGrant
         ClientId clientId,
         string subject,
         RedirectUri redirectUri,
-        AudienceName audience,
-        ScopeCollection scopes,
-        DateTimeOffset utcNow,
-        Pkce? pkce = null)
+        AudienceName? audience,
+        ScopeCollection? scopes,
+        Pkce? pkce,
+        DateTimeOffset utcNow)
     {
         GrantType = grantType;
         ClientId = clientId;
@@ -51,10 +51,10 @@ public class AuthorizationGrant
         string subject,
         ClientId clientId,
         RedirectUri redirectUri,
-        AudienceName audience,
-        ScopeCollection scopes,
-        DateTimeOffset utcNow,
-        Pkce? pkce = null)
+        AudienceName? audience,
+        ScopeCollection? scopes,
+        Pkce? pkce,
+        DateTimeOffset utcNow)
     {
         return new AuthorizationGrant(
             code,
@@ -64,13 +64,11 @@ public class AuthorizationGrant
             redirectUri,
             audience,
             scopes,
-            utcNow,
-            pkce
+            pkce,
+            utcNow
         );
     }
-    
 
     public void Consume() => Consumed = true;
-
     public bool IsExpired(DateTimeOffset utcNow) => utcNow >= ExpiresAt;
 }
