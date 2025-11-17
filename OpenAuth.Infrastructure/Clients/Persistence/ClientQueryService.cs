@@ -50,23 +50,15 @@ public class ClientQueryService : IClientQueryService
         return client?.ToClientDetails() ?? null;
     }
 
-    public async Task<ClientTokenData?> GetTokenDataAsync(ClientId id, AudienceName audienceName, CancellationToken ct = default)
-    {
-        var data = await _context.Clients
+    public async Task<ClientTokenData?> GetTokenDataAsync(ClientId id, CancellationToken ct = default)
+        => await _context.Clients
             .AsNoTracking()
             .Where(c => c.Id == id)
-            .Where(c => c.AllowedAudiences.Any(a => a.Name == audienceName))
             .Select(c => new ClientTokenData(
-                // TODO: add helper to client?
-                c.AllowedAudiences
-                    .Single(a => a.Name == audienceName)
-                    .Scopes,
-                c.AllowedGrantTypes.ToArray(),
+                c.AllowedAudiences,
+                c.AllowedGrantTypes,
                 c.TokenLifetime))
             .SingleOrDefaultAsync(ct);
-
-        return data;
-    }
 
     public async Task<ClientAuthorizationData?> GetAuthorizationDataAsync(ClientId id, CancellationToken ct = default)
     {

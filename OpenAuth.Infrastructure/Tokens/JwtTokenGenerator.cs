@@ -37,10 +37,13 @@ public class JwtTokenGenerator : IJwtTokenGenerator
             new(JwtRegisteredClaimNames.Sub, context.Subject),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             new(JwtRegisteredClaimNames.Iat, EpochTime.GetIntDate(now).ToString()),
-            new(JwtRegisteredClaimNames.Aud, context.RequestedAudience.Value)
         };
-        
-        claims.AddRange(context.RequestedScopes.Select(scope => new Claim("scope", scope.Value)));
+
+        if (context.RequestedAudience is not null)
+            claims.Add(new Claim(JwtRegisteredClaimNames.Aud, context.RequestedAudience.Value));
+            
+        if (context.RequestedScopes is not null)
+            claims.AddRange(context.RequestedScopes.Select(scope => new Claim("scope", scope.Value)));
 
         var token = new JwtSecurityToken(
             issuer: _config.Issuer,
