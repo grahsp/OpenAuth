@@ -1,7 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using OpenAuth.Application.Clients.Dtos;
+using OpenAuth.Application.Clients.Factories;
 using OpenAuth.Application.Clients.Services;
-using OpenAuth.Domain.Clients.Factories;
+using OpenAuth.Domain.Clients.ApplicationType;
 using OpenAuth.Domain.Clients.ValueObjects;
 using OpenAuth.Infrastructure.Clients.Persistence;
 using OpenAuth.Infrastructure.Clients.Secrets;
@@ -30,28 +31,28 @@ public class ClientServiceTests : IAsyncLifetime
         var hashProvider = new SecretHashProvider(secretGenerator, hasher);
         
         var clientFactory = new ClientFactory(hashProvider, time);
-        
-        var configFactory = new ClientConfigurationFactory();
 
-        _sut = new ClientService(repo, clientFactory, configFactory, time);
+        _sut = new ClientService(repo, clientFactory, time);
     }
     
     public async Task InitializeAsync() => await _fx.ResetAsync();
     public Task DisposeAsync() => Task.CompletedTask;
     
-    private static RegisterClientCommand CreateM2MRequest()
+    private static CreateClientRequest CreateM2MRequest()
         => new(
-            ApplicationType: "m2m", 
-            Name: "test client", 
-            Permissions: new Dictionary<string, IEnumerable<string>>
-                { { "api", ["read", "write"] } }
+            ClientApplicationTypes.M2M,
+            ClientName.Create("test client"),
+            [new Audience(AudienceName.Create("api"), ScopeCollection.Parse("read write"))],
+            []
         );
-    
-    private static RegisterClientCommand CreateSpaRequest()
+
+    private static CreateClientRequest CreateSpaRequest()
         => new(
-            ApplicationType: "spa", 
-            Name: "test client", 
-            RedirectUris: ["https://example.com/callback"]);
+            ClientApplicationTypes.Spa,
+            ClientName.Create("test client"),
+            [],
+            [RedirectUri.Create("https://example.com/callback")]
+        );
     
     private static readonly Audience ApiAudience = new(AudienceName.Create("api"), ScopeCollection.Parse("read write"));
     private static readonly Audience WebAudience = new(AudienceName.Create("web"), ScopeCollection.Parse("read"));

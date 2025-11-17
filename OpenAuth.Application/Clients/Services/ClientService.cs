@@ -1,8 +1,8 @@
 using OpenAuth.Application.Clients.Dtos;
+using OpenAuth.Application.Clients.Factories;
 using OpenAuth.Application.Clients.Interfaces;
 using OpenAuth.Application.Clients.Mappings;
 using OpenAuth.Domain.Clients;
-using OpenAuth.Domain.Clients.Factories;
 using OpenAuth.Domain.Clients.ValueObjects;
 
 namespace OpenAuth.Application.Clients.Services;
@@ -13,28 +13,24 @@ public class ClientService : IClientService
 {
     private readonly IClientRepository _repository;
     private readonly IClientFactory _clientFactory;
-    private readonly IClientConfigurationFactory _configurationFactory;
     private readonly TimeProvider _time;
     
     public ClientService(
         IClientRepository repository,
         IClientFactory clientFactory,
-        IClientConfigurationFactory configurationFactory,
         TimeProvider time)
     {
         _repository = repository;
         _clientFactory = clientFactory;
-        _configurationFactory = configurationFactory;
         _time = time;
     }
     
     
-    public async Task<RegisteredClientResponse> RegisterAsync(RegisterClientCommand cmd, CancellationToken ct = default)
+    public async Task<RegisteredClientResponse> RegisterAsync(CreateClientRequest request, CancellationToken ct = default)
     {
-        ArgumentNullException.ThrowIfNull(cmd);
+        ArgumentNullException.ThrowIfNull(request);
         
-        var clientConfiguration = _configurationFactory.Create(cmd);
-        var client = _clientFactory.Create(clientConfiguration, out var clientSecret);
+        var client = _clientFactory.Create(request, out var clientSecret);
         
         _repository.Add(client);
         await _repository.SaveChangesAsync(ct);
