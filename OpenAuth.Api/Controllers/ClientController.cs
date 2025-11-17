@@ -36,9 +36,9 @@ public class ClientController : ControllerBase
      }
      
      [HttpPost]
-     public async Task<ActionResult<CreateClientResponse>> Create([FromBody] RegisterClientCommand command)
+     public async Task<ActionResult<CreateClientResponse>> Create([FromBody] CreateClientRequest request)
      {
-         var response = await _clientService.RegisterAsync(command);
+         var response = await _clientService.RegisterAsync(request);
          return CreatedAtAction(nameof(GetById), new { clientId = response.Client.Id }, response);
      }
 

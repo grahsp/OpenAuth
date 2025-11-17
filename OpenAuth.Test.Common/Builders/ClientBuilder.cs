@@ -107,11 +107,14 @@ public class ClientBuilder
         if (applicationType.AllowsClientSecrets && _secrets.Count == 0)
             WithSecret();
         
-
-        var clientConfig = new ClientConfiguration(
-            name, applicationType, _audiences, _grantTypes, _redirectUris);
         
-        var client = Client.Create(clientConfig, createdAt);
+        var client = Client.Create(
+            name,
+            applicationType,
+            _audiences,
+            applicationType.DefaultGrantTypes,
+            _redirectUris,
+            createdAt);
         
         foreach (var secret in _secrets)
             client.AddSecret(secret, createdAt);

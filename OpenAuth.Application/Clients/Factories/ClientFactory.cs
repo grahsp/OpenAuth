@@ -1,7 +1,9 @@
+using OpenAuth.Application.Clients.Dtos;
+using OpenAuth.Domain.Clients;
 using OpenAuth.Domain.Clients.ValueObjects;
 using OpenAuth.Domain.Services;
 
-namespace OpenAuth.Domain.Clients.Factories;
+namespace OpenAuth.Application.Clients.Factories;
 
 public class ClientFactory : IClientFactory
 {
@@ -19,16 +21,22 @@ public class ClientFactory : IClientFactory
     public Client Create(ClientName name)
         => Client.Create(name, _time.GetUtcNow());
     
-    public Client Create(ClientConfiguration config, out string? plainSecret)
+    public Client Create(CreateClientRequest request, out string? plainSecret)
     {
-        ArgumentNullException.ThrowIfNull(config);
+        ArgumentNullException.ThrowIfNull(request);
         
         var now = _time.GetUtcNow();
         
-        var client = Client.Create(config, now);
         plainSecret = null;
+        var client = Client.Create(
+            request.Name,
+            request.ApplicationType,
+            request.Permissions,
+            request.ApplicationType.DefaultGrantTypes,
+            request.RedirectUris,
+            now);
         
-        if (config.ApplicationType.AllowsClientSecrets)
+        if (request.ApplicationType.AllowsClientSecrets)
         {
             var result = _hashProvider.Create();
             plainSecret = result.PlainSecret;

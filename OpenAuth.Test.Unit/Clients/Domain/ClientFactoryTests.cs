@@ -1,7 +1,8 @@
 using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
+using OpenAuth.Application.Clients.Dtos;
+using OpenAuth.Application.Clients.Factories;
 using OpenAuth.Domain.Clients.ApplicationType;
-using OpenAuth.Domain.Clients.Factories;
 using OpenAuth.Domain.Clients.Secrets.ValueObjects;
 using OpenAuth.Domain.Clients.ValueObjects;
 using OpenAuth.Domain.Services;
@@ -28,15 +29,14 @@ public class ClientFactoryTests
     [Fact]
     public void Create_WhenPublicClient_DoesNotGenerateSecret()
     {
-        var config = new ClientConfiguration(
-            ClientName.Create("client"),
+        var request = new CreateClientRequest(
             ClientApplicationTypes.Spa,
-            [],
+            ClientName.Create("client"),
             [],
             [RedirectUri.Create("https://example.com/callback")]
         );
 
-        var client = _sut.Create(config, out var secret);
+        var client = _sut.Create(request, out var secret);
 
         Assert.Null(secret);
         _hashProvider.DidNotReceive().Create();
@@ -46,18 +46,17 @@ public class ClientFactoryTests
     [Fact]
     public void Create_WhenConfidentialClient_GeneratesSecret_AndAddsToClient()
     {
-        var config = new ClientConfiguration(
-            ClientName.Create("client"),
+        var request = new CreateClientRequest(
             ClientApplicationTypes.M2M,
+            ClientName.Create("client"),
             [new Audience(AudienceName.Create("api"), ScopeCollection.Parse("read write"))],
-            [],
             []
         );
 
         var hashResult = new SecretCreationResult("plain-secret", SecretHash.FromHash("hashed-value"));
         _hashProvider.Create().Returns(hashResult);
 
-        var client = _sut.Create(config, out var plainSecret);
+        var client = _sut.Create(request, out var plainSecret);
 
         Assert.Equal("plain-secret", plainSecret);
         Assert.Contains(client.Secrets, s => s.Hash == hashResult.Hash);
@@ -67,18 +66,16 @@ public class ClientFactoryTests
     [Fact]
     public void Create_CallsValidateClient()
     {
-        var applicationType = ClientApplicationTypes.Spa;
-        var invalidConfig = new ClientConfiguration(
+        var invalidCmd = new CreateClientRequest(
+            ClientApplicationTypes.Spa,
             ClientName.Create("client"),
-            applicationType,
             [],
-            applicationType.DefaultGrantTypes,
             []
         );
 
         // Throws due to missing redirect required by AuthorizationCode flow
         Assert.Throws<InvalidOperationException>(() =>
-            _sut.Create(invalidConfig, out _));
+            _sut.Create(invalidCmd, out _));
     }
 
     [Fact]
@@ -86,10 +83,9 @@ public class ClientFactoryTests
     {
         var expected = _time.GetUtcNow();
 
-        var config = new ClientConfiguration(
-            ClientName.Create("client"),
+        var cmd = new CreateClientRequest(
             ClientApplicationTypes.Spa,
-            [],
+            ClientName.Create("client"),
             [],
             [RedirectUri.Create("https://example.com/callback")]
         );
@@ -97,7 +93,7 @@ public class ClientFactoryTests
         var hashResult = new SecretCreationResult("plain", SecretHash.FromHash("hash"));
         _hashProvider.Create().Returns(hashResult);
 
-        var client = _sut.Create(config, out _);
+        var client = _sut.Create(cmd, out _);
 
         Assert.All(client.Secrets, s => Assert.Equal(expected, s.CreatedAt));
     }

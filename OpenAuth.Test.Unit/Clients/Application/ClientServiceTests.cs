@@ -1,9 +1,9 @@
 using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 using OpenAuth.Application.Clients.Dtos;
+using OpenAuth.Application.Clients.Factories;
 using OpenAuth.Application.Clients.Services;
 using OpenAuth.Domain.Clients.ApplicationType;
-using OpenAuth.Domain.Clients.Factories;
 using OpenAuth.Domain.Clients.ValueObjects;
 using OpenAuth.Test.Common.Builders;
 using OpenAuth.Test.Common.Fakes;
@@ -14,7 +14,6 @@ public class ClientServiceTests
 {
     private FakeClientRepository _repo;
     private IClientFactory _clientFactory;
-    private IClientConfigurationFactory _configurationFactory;
     
     private IClientService _sut;
 
@@ -24,17 +23,16 @@ public class ClientServiceTests
         
         _repo = new FakeClientRepository();
         _clientFactory = Substitute.For<IClientFactory>();
-        _configurationFactory = Substitute.For<IClientConfigurationFactory>();
         
-        _sut = new ClientService(_repo, _clientFactory, _configurationFactory, time);
+        _sut = new ClientService(_repo, _clientFactory, time);
     }
 
     private void SetupDefaultClientConfiguration()
     {
-        _clientFactory.Create(Arg.Any<ClientConfiguration>(), out _)
+        _clientFactory.Create(Arg.Any<CreateClientRequest>(), out _)
             .Returns(x =>
             {
-                var config = x.Arg<ClientConfiguration>();
+                var config = x.Arg<CreateClientRequest>();
                 x[1] = config.ApplicationType.AllowsClientSecrets
                     ? "plain-secret"
                     : null;
@@ -43,10 +41,10 @@ public class ClientServiceTests
                     .WithName(config.Name)
                     .WithApplicationType(config.ApplicationType);
                 
-                foreach (var audience in config.AllowedAudiences)
+                foreach (var audience in config.Permissions)
                     client.WithAudience(audience.Name.ToString(), audience.Scopes.Select(s => s.ToString()).ToArray());
 
-                foreach (var grantType in config.AllowedGrantTypes)
+                foreach (var grantType in config.ApplicationType.DefaultGrantTypes)
                     client.WithGrantType(grantType.Value);
 
                 foreach (var redirectUri in config.RedirectUris)
@@ -54,71 +52,35 @@ public class ClientServiceTests
 
                 return client.Build();
             });
-        
-        _configurationFactory.Create(Arg.Any<RegisterClientCommand>())
-            .Returns(x =>
-            {
-                var request = x.Arg<RegisterClientCommand>();
-                return DeriveConfiguration(request);
-            });
     }
 
-    private static ClientConfiguration DeriveConfiguration(RegisterClientCommand command)
-    {
-        var clientName = ClientName.Create(command.Name);
-        var applicationType = ClientApplicationTypes.Parse(command.ApplicationType);
-        
-        var audiences = command.Permissions?
-            .Select(permission =>
-        {
-            var audienceName = AudienceName.Create(permission.Key);
-            var scopes = permission.Value.Select(s => new Scope(s));
-
-            var scopeCollection = new ScopeCollection(scopes);
-            var audience = new Audience(audienceName, scopeCollection);
-
-            return audience;
-        }) ?? [];
-        
-        var redirectUris = command.RedirectUris?
-            .Select(RedirectUri.Create) ?? [];
-            
-        var config = new ClientConfiguration(
-            clientName,
-            applicationType,
-            audiences,
-            applicationType.DefaultGrantTypes,
-            redirectUris
+    private static CreateClientRequest CreateM2MRequest()
+        => new(
+            ClientApplicationTypes.M2M,
+            ClientName.Create("test client"),
+            [new Audience(AudienceName.Create("api"), ScopeCollection.Parse("read write"))],
+            []
         );
 
-        return config;
-    }
-
-    private static RegisterClientCommand CreateM2MRequest()
+    private static CreateClientRequest CreateSpaRequest()
         => new(
-            "m2m", 
-            "test client", 
-            new Dictionary<string, IEnumerable<string>>
-            { { "api", ["read", "write"] } }, 
-            []);
-    
-    private static RegisterClientCommand CreateSpaRequest()
-        => new(
-            "spa", 
-            "test client", 
+            ClientApplicationTypes.Spa,
+            ClientName.Create("test client"),
             [],
-            ["https://example.com/callback"]);
+            [RedirectUri.Create("https://example.com/callback")]
+        );
 
-    private async Task<RegisteredClientResponse> RegisterClientAsync(RegisterClientCommand command)
+
+    private async Task<RegisteredClientResponse> RegisterClientAsync(CreateClientRequest request)
     {
         SetupDefaultClientConfiguration();
-        return await _sut.RegisterAsync(command);
+        return await _sut.RegisterAsync(request);
     }
     
-    private async Task<RegisteredClientResponse> RegisterM2MClientAsync(RegisterClientCommand? request = null)
+    private async Task<RegisteredClientResponse> RegisterM2MClientAsync(CreateClientRequest? request = null)
         => await RegisterClientAsync(request ?? CreateM2MRequest());
 
-    private async Task<RegisteredClientResponse> RegisterSpaClientAsync(RegisterClientCommand? request = null)
+    private async Task<RegisteredClientResponse> RegisterSpaClientAsync(CreateClientRequest? request = null)
         => await RegisterClientAsync(request ?? CreateSpaRequest());
     
 

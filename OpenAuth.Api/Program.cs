@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using OpenAuth.Application.Clients.Factories;
 using OpenAuth.Application.Clients.Interfaces;
 using OpenAuth.Application.Clients.Services;
 using OpenAuth.Application.Jwks.Interfaces;
@@ -17,7 +18,6 @@ using OpenAuth.Application.Tokens.Flows;
 using OpenAuth.Application.Tokens.Interfaces;
 using OpenAuth.Application.Tokens.Services;
 using OpenAuth.Domain.AuthorizationGrants;
-using OpenAuth.Domain.Clients.Factories;
 using OpenAuth.Domain.Services;
 using OpenAuth.Domain.Users;
 using OpenAuth.Infrastructure.Clients.Persistence;
@@ -97,7 +97,6 @@ public class Program
         builder.Services.AddScoped<IClientService, ClientService>();
         builder.Services.AddScoped<IClientQueryService, ClientQueryService>();
         builder.Services.AddScoped<IClientFactory, ClientFactory>();
-        builder.Services.AddScoped<IClientConfigurationFactory, ClientConfigurationFactory>();
         
         // Secret Services
         builder.Services.AddScoped<ISecretService, SecretService>();

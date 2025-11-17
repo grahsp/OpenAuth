@@ -59,22 +59,34 @@ public sealed class Client
     internal static Client Create(ClientName name, DateTimeOffset utcNow)
         => new(name, utcNow);
 
-    private Client(ClientConfiguration config, DateTimeOffset utcNow)
+    private Client(
+        ClientName name,
+        ClientApplicationType applicationType,
+        IEnumerable<Audience> allowedAudiences,
+        IEnumerable<GrantType> allowedGrantTypes,
+        IEnumerable<RedirectUri> redirectUris,
+        DateTimeOffset utcNow)
     {
-        Name = config.Name;
-        ApplicationType = config.ApplicationType;
+        Name = name;
+        ApplicationType = applicationType;
         
-        _allowedAudiences = config.AllowedAudiences.ToHashSet();
-        _allowedGrantTypes = config.AllowedGrantTypes.ToHashSet();
-        _redirectUris = config.RedirectUris.ToHashSet();
+        _allowedAudiences = allowedAudiences.ToHashSet();
+        _allowedGrantTypes = allowedGrantTypes.ToHashSet();
+        _redirectUris = redirectUris.ToHashSet();
         
         CreatedAt = UpdatedAt = utcNow;
         
         ValidateInitialClient();
     }
 
-    internal static Client Create(ClientConfiguration config, DateTimeOffset utcNow)
-        => new(config, utcNow);
+    internal static Client Create(
+        ClientName name,
+        ClientApplicationType applicationType,
+        IEnumerable<Audience> allowedAudiences,
+        IEnumerable<GrantType> allowedGrantTypes,
+        IEnumerable<RedirectUri> redirectUris,
+        DateTimeOffset utcNow)
+        => new(name, applicationType, allowedAudiences, allowedGrantTypes, redirectUris, utcNow);
 
     private void ValidateInitialClient()
     {
