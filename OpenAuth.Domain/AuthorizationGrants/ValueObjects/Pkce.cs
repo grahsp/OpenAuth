@@ -45,6 +45,14 @@ public sealed record Pkce
         }
     }
 
+    public static Pkce FromVerifier(string verifier, string codeChallengeMethod)
+    {
+        if (!Enum.TryParse<CodeChallengeMethod>(codeChallengeMethod!, true, out var method))
+            throw new ArgumentException($"Invalid code challenge method: {codeChallengeMethod}", nameof(codeChallengeMethod));
+                
+        return Create(ComputeChallenge(verifier!, method), method);
+    }
+
     public bool Matches(string? codeVerifier)
     {
         if (string.IsNullOrWhiteSpace(codeVerifier))
