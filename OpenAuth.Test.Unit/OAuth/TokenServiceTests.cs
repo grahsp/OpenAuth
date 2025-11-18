@@ -118,7 +118,7 @@ public class TokenServiceTests
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(
             () => _tokenService.IssueToken(request));
 
-        Assert.Equal("Client not found or does not have access to the requested audience.", ex.Message);
+        Assert.Equal("Client not found.", ex.Message);
     }
 
     [Fact]
