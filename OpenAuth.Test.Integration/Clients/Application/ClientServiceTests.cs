@@ -7,7 +7,7 @@ using OpenAuth.Domain.Clients.ValueObjects;
 using OpenAuth.Infrastructure.Clients.Persistence;
 using OpenAuth.Infrastructure.Clients.Secrets;
 using OpenAuth.Infrastructure.Security.Hashing;
-using OpenAuth.Test.Integration.Infrastructure;
+using OpenAuth.Test.Integration.Infrastructure.Fixtures;
 
 namespace OpenAuth.Test.Integration.Clients.Application;
 

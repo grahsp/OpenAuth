@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using OpenAuth.Infrastructure.Persistence;
 using Respawn;
 
-namespace OpenAuth.Test.Integration.Infrastructure;
+namespace OpenAuth.Test.Integration.Infrastructure.Fixtures;
 
 public class SqlServerFixture : IAsyncLifetime
 {

@@ -5,7 +5,7 @@ using OpenAuth.Domain.Clients.Secrets;
 using OpenAuth.Domain.Clients.ValueObjects;
 using OpenAuth.Domain.OAuth;
 using OpenAuth.Test.Common.Builders;
-using OpenAuth.Test.Integration.Infrastructure;
+using OpenAuth.Test.Integration.Infrastructure.Fixtures;
 
 namespace OpenAuth.Test.Integration.Clients.Infrastructure;
 
