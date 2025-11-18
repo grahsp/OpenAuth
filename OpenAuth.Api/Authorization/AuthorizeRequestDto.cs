@@ -1,9 +1,8 @@
-namespace OpenAuth.Api.Controllers.OAuth;
+namespace OpenAuth.Api.Authorization;
 
-public record AuthorizationRequest
+public record AuthorizeRequestDto
 (
     string ClientId,
-    string Subject,
     string RedirectUri,
     string? Audience,
     string? Scope,
