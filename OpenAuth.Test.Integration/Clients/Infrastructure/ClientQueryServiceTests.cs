@@ -1,11 +1,10 @@
 using Microsoft.Extensions.Time.Testing;
 using OpenAuth.Domain.Clients.ApplicationType;
-using OpenAuth.Domain.Clients.Secrets.ValueObjects;
 using OpenAuth.Domain.Clients.ValueObjects;
 using OpenAuth.Infrastructure.Clients.Persistence;
 using OpenAuth.Infrastructure.Persistence;
 using OpenAuth.Test.Common.Builders;
-using OpenAuth.Test.Integration.Infrastructure;
+using OpenAuth.Test.Integration.Infrastructure.Fixtures;
 
 namespace OpenAuth.Test.Integration.Clients.Infrastructure;
 

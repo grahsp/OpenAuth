@@ -2,7 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using OpenAuth.Application.SigningKeys.Services;
 using OpenAuth.Domain.SigningKeys.Enums;
 
-namespace OpenAuth.Test.Integration.Infrastructure;
+namespace OpenAuth.Test.Integration.Infrastructure.Fixtures;
 
 public class TestApplicationFixture : IAsyncLifetime, IDisposable
 {
