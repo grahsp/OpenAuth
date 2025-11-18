@@ -10,18 +10,8 @@ namespace OpenAuth.Api.Controllers.OAuth;
 
 [ApiController]
 [Route("connect")]
-public class TokenController : ControllerBase
+public class TokenController(ITokenService tokenService) : ControllerBase
 {
-    private readonly ITokenService _tokenService;
-    private readonly IAuthorizationHandler _authorizationHandler;
-    
-    public TokenController(ITokenService tokenService, IAuthorizationHandler authorizationHandler)
-    {
-        _tokenService = tokenService;
-        _authorizationHandler = authorizationHandler;
-    }
-
-    
     [HttpPost("token")]
     public async Task<ActionResult<TokenResponse>> IssueToken([FromBody] string code)
     {
@@ -47,35 +37,7 @@ public class TokenController : ControllerBase
             // ClientSecret = "68loWhVtCow-q3AzYy3RE7vd7tV94tZ9WtX1Mj9PEJA",
         };
         
-        var result = await _tokenService.IssueToken(ccRequest);
+        var result = await tokenService.IssueToken(ccRequest);
         return Ok(new TokenResponse(result.Token, result.TokenType, result.ExpiresIn));
-    }
-
-    [HttpPost("authorize")]
-    public async Task<ActionResult> Authorize([FromBody] AuthorizationRequest request)
-    {
-        var subject = User.Identity?.Name ?? "anonymous";
-        
-        var command = new AuthorizeCommand(
-            request.ClientId,
-            subject,
-            request.RedirectUri,
-            request.Audience,
-            request.Scope,
-            request.State,
-            request.CodeChallenge,
-            request.CodeChallengeMethod
-        );
-
-        var grant = await _authorizationHandler.AuthorizeAsync(command);
-        var redirectUri = QueryHelpers.AddQueryString(
-            grant.RedirectUri.Value,
-            new Dictionary<string, string?>
-            {
-                ["code"] = grant.Code,
-                ["state"] = request.State
-            });
-        
-        return Ok(redirectUri);
     }
 }
