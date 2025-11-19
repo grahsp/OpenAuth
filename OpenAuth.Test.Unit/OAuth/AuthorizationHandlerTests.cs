@@ -43,7 +43,6 @@ public class AuthorizationHandlerTests
             "https://example.com/callback",
             "api",
             "read write",
-            null,
             "code-challenge",
             "s256"
         );

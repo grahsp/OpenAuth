@@ -19,7 +19,6 @@ public class AuthorizeCommandBuilder
             null,
             null,
             null,
-            null,
             null
         );
     }
