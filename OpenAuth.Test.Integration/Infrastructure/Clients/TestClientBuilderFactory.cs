@@ -1,5 +1,4 @@
 using OpenAuth.Application.Clients.Dtos;
-using OpenAuth.Application.Clients.Services;
 using OpenAuth.Domain.Clients.ApplicationType;
 using OpenAuth.Domain.Clients.ValueObjects;
 
@@ -7,22 +6,22 @@ namespace OpenAuth.Test.Integration.Infrastructure.Clients;
 
 public class TestClientBuilderFactory
 {
-    private readonly IClientService _service;
+    private readonly IServiceProvider _services;
     
-    public TestClientBuilderFactory(IClientService service)
+    public TestClientBuilderFactory(IServiceProvider services)
     {
-        _service = service;
+        _services = services;
     }
     
-    private CreateClientRequest CreateDefaultRequest(ClientApplicationType type, string name)
-        => new(type, ClientName.Create(name), [], []);
+    private CreateClientRequest CreateDefaultRequest(ClientApplicationType type)
+        => new(type, ClientName.Create("test-client"), [], []);
 
-    public TestClientBuilder Spa(string name = "client")
-        => new(_service, CreateDefaultRequest(ClientApplicationTypes.Spa, name));
+    public TestClientBuilder Spa()
+        => new(_services, CreateDefaultRequest(ClientApplicationTypes.Spa));
     
-    public TestClientBuilder M2M(string name = "client")
-        => new(_service, CreateDefaultRequest(ClientApplicationTypes.M2M, name));
+    public TestClientBuilder M2M()
+        => new(_services, CreateDefaultRequest(ClientApplicationTypes.M2M));
     
-    public TestClientBuilder Web(string name = "client")
-        => new(_service, CreateDefaultRequest(ClientApplicationTypes.Web, name));
+    public TestClientBuilder Web()
+        => new(_services, CreateDefaultRequest(ClientApplicationTypes.Web));
 }
