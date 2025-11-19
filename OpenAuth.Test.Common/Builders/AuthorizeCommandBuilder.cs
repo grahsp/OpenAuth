@@ -12,6 +12,7 @@ public class AuthorizeCommandBuilder
     {
         _cmd = new AuthorizeCommand
         (
+            "code",
             clientId.ToString(),
             "test-subject",
             redirectUri,
@@ -21,6 +22,12 @@ public class AuthorizeCommandBuilder
             null,
             null
         );
+    }
+    
+    public AuthorizeCommandBuilder WithResponseType(string responseType)
+    {
+        _cmd = _cmd with { ResponseType = responseType };
+        return this;
     }
 
     public AuthorizeCommandBuilder WithPkce(Pkce pkce)

@@ -37,6 +37,7 @@ public class AuthorizationHandlerTests
             .Build();
 
         _validCommand = new AuthorizeCommand(
+            "code",
             _defaultClient.Id.ToString(),
             "test-subject",
             "https://example.com/callback",
