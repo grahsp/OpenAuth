@@ -14,7 +14,6 @@ public static class AuthorizeMappings
             request.RedirectUri,
             "", // TODO: audience not required during authorization
             request.Scope,
-            request.State,
             request.CodeChallenge,
             request.CodeChallengeMethod);
     

@@ -7,7 +7,6 @@ public record AuthorizeCommand(
     string RedirectUri,
     string? Audience,
     string? Scope,
-    string? State,
     string? CodeChallenge,
     string? CodeChallengeMethod
 );
