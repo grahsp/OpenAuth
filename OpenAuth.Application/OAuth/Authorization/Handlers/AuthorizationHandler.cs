@@ -27,6 +27,11 @@ public class AuthorizationHandler : IAuthorizationHandler
 
     public async Task<AuthorizationGrant> AuthorizeAsync(AuthorizeCommand cmd, CancellationToken ct = default)
     {
+        ArgumentNullException.ThrowIfNull(cmd);
+
+        if (cmd.ResponseType != "code")
+            throw new InvalidOperationException($"Response type '{cmd.ResponseType}' not supported.");
+        
         var clientId = ClientId.Create(cmd.ClientId);
         var redirectUri = RedirectUri.Create(cmd.RedirectUri);
         
