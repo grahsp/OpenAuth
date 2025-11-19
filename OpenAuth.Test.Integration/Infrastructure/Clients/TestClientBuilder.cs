@@ -1,17 +1,19 @@
+using Microsoft.Extensions.DependencyInjection;
 using OpenAuth.Application.Clients.Dtos;
 using OpenAuth.Application.Clients.Services;
+using OpenAuth.Domain.Clients.ApplicationType;
 using OpenAuth.Domain.Clients.ValueObjects;
 
 namespace OpenAuth.Test.Integration.Infrastructure.Clients;
 
 public class TestClientBuilder
 {
-    private readonly IClientService _service;
+    private readonly IServiceProvider _services;
     private CreateClientRequest _request;
 
-    public TestClientBuilder(IClientService service, CreateClientRequest request)
+    public TestClientBuilder(IServiceProvider services, CreateClientRequest request)
     {
-        _service = service;
+        _services = services;
         _request = request;
     }
     
@@ -34,5 +36,10 @@ public class TestClientBuilder
     }
 
     public async Task<RegisteredClientResponse> CreateAsync()
-        => await _service.RegisterAsync(_request);
+    {
+        using var scope = _services.CreateScope();
+        var clientService = scope.ServiceProvider.GetRequiredService<IClientService>();
+        
+        return await clientService.RegisterAsync(_request);
+    }
 }

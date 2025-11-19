@@ -18,9 +18,7 @@ public class TestClient
     public TestClient(TestApplicationFixture fx)
     {
         _fx = fx;
-        
-        var clientService = _fx.ServiceProvider.GetRequiredService<IClientService>();
-        Clients = new TestClientBuilderFactory(clientService);
+        Clients = new TestClientBuilderFactory(_fx.ServiceProvider);
     }
 
     
