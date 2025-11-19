@@ -57,6 +57,16 @@ public class AuthorizationHandlerTests
     }
     
     [Fact]
+    public async Task RequestContainsInvalidResponseType_Throws()
+    {
+        var request = _validCommand with { ResponseType = "invalid" };
+        _clientQueryService.Add(_defaultClient);
+        
+        await Assert.ThrowsAnyAsync<InvalidOperationException>(()
+            => _sut.AuthorizeAsync(request));
+    }
+    
+    [Fact]
     public async Task RequestContainsInvalidRedirectUri_Throws()
     {
         var request = _validCommand with { RedirectUri = "http://invalid-uri.com/callback" };
