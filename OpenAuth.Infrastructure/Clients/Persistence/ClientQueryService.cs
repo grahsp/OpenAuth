@@ -69,8 +69,7 @@ public class ClientQueryService : IClientQueryService
                 c.Id,
                 c.IsPublic,
                 c.AllowedGrantTypes.ToArray(),
-                c.RedirectUris.ToArray(),
-                c.AllowedAudiences.ToArray()
+                c.RedirectUris.ToArray()
             ))
             .SingleOrDefaultAsync(ct);
 

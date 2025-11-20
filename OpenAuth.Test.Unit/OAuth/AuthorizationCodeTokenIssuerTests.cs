@@ -2,6 +2,8 @@ using System.Security.Cryptography;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
 using NSubstitute;
+using OpenAuth.Application.Clients.Dtos;
+using OpenAuth.Application.Clients.Interfaces;
 using OpenAuth.Application.OAuth.Authorization.Interfaces;
 using OpenAuth.Application.Secrets.Interfaces;
 using OpenAuth.Application.Tokens.Dtos;
@@ -13,51 +15,56 @@ using OpenAuth.Domain.Clients.ValueObjects;
 
 namespace OpenAuth.Test.Unit.OAuth;
 
+// TODO: temporary fix after refactor -- refactor whole test class!!
 public class AuthorizationCodeTokenIssuerTests
 {
     private readonly IAuthorizationGrantStore _grantStore;
+    private readonly IClientQueryService _clientQueryService;
     private readonly ISecretQueryService _secretQueryService;
     private readonly AuthorizationCodeTokenIssuer _sut;
 
     private static readonly ClientId DefaultClientId = ClientId.New();
-
+    private static readonly AudienceName DefaultAudience = new("api.example.com");
+    private static readonly ScopeCollection DefaultScopes = ScopeCollection.Parse("read write");
+    private static readonly RedirectUri DefaultRedirect = RedirectUri.Create("https://client.app/callback");
 
     public AuthorizationCodeTokenIssuerTests()
     {
         _grantStore = Substitute.For<IAuthorizationGrantStore>();
+        _clientQueryService = Substitute.For<IClientQueryService>();
         _secretQueryService = Substitute.For<ISecretQueryService>();
-        _sut = new AuthorizationCodeTokenIssuer(_grantStore, _secretQueryService);
+        _sut = new AuthorizationCodeTokenIssuer(_grantStore, _clientQueryService, _secretQueryService);
     }
-    
+
     private static AuthorizationCodeTokenRequest DefaultRequest()
-        => new() {
+        => new()
+        {
             ClientId = DefaultClientId,
             Code = "auth-code",
             Subject = "Test-Subject",
-            RedirectUri = RedirectUri.Create("https://client.app/callback"),
-            RequestedAudience = new AudienceName("api.example.com"),
-            RequestedScopes = ScopeCollection.Parse("read write"),
+            RedirectUri = DefaultRedirect,
+            RequestedAudience = DefaultAudience,
+            RequestedScopes = DefaultScopes,
             CodeVerifier = "secret-code",
             ClientSecret = "client-secret"
         };
 
     private static AuthorizationGrant DefaultGrant(string? codeVerifier = null)
     {
-        var codeChallenge =
-            Base64UrlEncoder.Encode(SHA256.HashData(Encoding.UTF8.GetBytes(codeVerifier ?? "secret-code")));
-        
-        var pkce = codeVerifier is not null
-            ? Pkce.Create(codeChallenge, CodeChallengeMethod.S256)
-            : null;
-        
+        var pkce = codeVerifier is null
+            ? null
+            : Pkce.Create(
+                Base64UrlEncoder.Encode(
+                    SHA256.HashData(Encoding.UTF8.GetBytes(codeVerifier))),
+                CodeChallengeMethod.S256);
+
         return AuthorizationGrant.Create(
             "auth-code",
             GrantType.AuthorizationCode,
             "Test-Subject",
             DefaultClientId,
-            RedirectUri.Create("https://client.app/callback"),
-            new AudienceName("api.example.com"),
-            ScopeCollection.Parse("read write"),
+            DefaultRedirect,
+            DefaultScopes,
             pkce,
             DateTimeOffset.UtcNow
         );
@@ -66,150 +73,166 @@ public class AuthorizationCodeTokenIssuerTests
     private void SetupGrantStore(AuthorizationGrant grant)
         => _grantStore.GetAsync(grant.Code).Returns(grant);
 
+    private void SetupClientWithAudienceAndScopes()
+    {
+        var audience = new Audience(
+            DefaultAudience,
+            DefaultScopes);
+
+        var clientData = new ClientTokenData(
+            AllowedAudiences: [audience],
+            AllowedGrantTypes: [],
+            TimeSpan.Zero);
+
+        _clientQueryService
+            .GetTokenDataAsync(DefaultClientId, Arg.Any<CancellationToken>())
+            .Returns(clientData);
+    }
+
+    // ---- TESTS ----
+
     [Fact]
     public async Task IssueToken_WithValidGrant_WithoutPkce_ReturnsExpectedTokenContext()
     {
-        // Arrange
         var request = DefaultRequest();
         var grant = DefaultGrant();
         SetupGrantStore(grant);
+        SetupClientWithAudienceAndScopes();
 
-        _secretQueryService.ValidateSecretAsync(grant.ClientId, request.ClientSecret!, Arg.Any<CancellationToken>())
+        _secretQueryService
+            .ValidateSecretAsync(DefaultClientId, request.ClientSecret!, Arg.Any<CancellationToken>())
             .Returns(true);
 
-        // Act
         var result = await _sut.IssueToken(request);
 
-        // Assert
         Assert.Equal(grant.ClientId, result.ClientId);
         Assert.Equal(grant.ClientId.ToString(), result.Subject);
-        Assert.Equal(grant.Audience, result.RequestedAudience);
-        Assert.Equal(grant.Scopes, result.RequestedScopes);
+        Assert.Equal(request.RequestedScopes, result.RequestedScopes);
     }
-    
+
     [Fact]
     public async Task IssueToken_WithValidGrant_WithPkce_ReturnsExpectedTokenContext()
     {
-        // Arrange
         var request = DefaultRequest() with { CodeVerifier = "code-challenge" };
         var grant = DefaultGrant("code-challenge");
-        SetupGrantStore(grant);
 
-        // Act
+        SetupGrantStore(grant);
+        SetupClientWithAudienceAndScopes();
+
         var result = await _sut.IssueToken(request);
 
-        // Assert
         Assert.Equal(grant.ClientId, result.ClientId);
         Assert.Equal(grant.ClientId.ToString(), result.Subject);
-        Assert.Equal(grant.Audience, result.RequestedAudience);
-        Assert.Equal(grant.Scopes, result.RequestedScopes);
+        Assert.Equal(request.RequestedScopes, result.RequestedScopes);
     }
 
     [Fact]
     public async Task IssueToken_CallsRemoveOfStore()
     {
-        // Arrange
-        var request = DefaultRequest() with { CodeVerifier = "secret-code" };
-        var grant = DefaultGrant("secret-code");
+        var request = DefaultRequest();
+        var grant = DefaultGrant();
         SetupGrantStore(grant);
-        
-        // Act
+        SetupClientWithAudienceAndScopes();
+
+        _secretQueryService
+            .ValidateSecretAsync(DefaultClientId, request.ClientSecret!, Arg.Any<CancellationToken>())
+            .Returns(true);
+
         await _sut.IssueToken(request);
 
-        // Assert
         await _grantStore.Received(1).RemoveAsync(grant.Code);
     }
 
     [Fact]
-    public async Task IssueToken_WithUnknownCode_ThrowsInvalidOperationException()
+    public async Task IssueToken_WithUnknownCode_Throws()
     {
-        // Arrange
         var request = DefaultRequest() with { Code = "invalid-code" };
-        _grantStore.GetAsync("invalid-code")
-            .Returns((AuthorizationGrant?)null);
-    
-        // Act & Assert
-        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => _sut.IssueToken(request));
+        _grantStore.GetAsync("invalid-code").Returns((AuthorizationGrant?)null);
+
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            _sut.IssueToken(request));
+
         Assert.Equal("Invalid authorization code.", ex.Message);
     }
-    
+
     [Fact]
-    public async Task IssueToken_WhenGrantIsConsumed_ThrowsInvalidOperationException()
+    public async Task IssueToken_WhenGrantIsConsumed_Throws()
     {
-        // Arrange
         var request = DefaultRequest();
         var grant = DefaultGrant();
-        
         grant.Consume();
+
         SetupGrantStore(grant);
-    
-        // Act & Assert
-        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => _sut.IssueToken(request));
+
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            _sut.IssueToken(request));
+
         Assert.Equal("Authorization code has already been used.", ex.Message);
     }
-    
+
     [Fact]
-    public async Task IssueToken_WithClientIdMismatch_ThrowsInvalidOperationException()
+    public async Task IssueToken_WithClientIdMismatch_Throws()
     {
-        // Arrange
         var request = DefaultRequest() with { ClientId = ClientId.New() };
-        var grant = DefaultGrant();
-        SetupGrantStore(grant);
-    
-        // Act & Assert
-        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => _sut.IssueToken(request));
+        SetupGrantStore(DefaultGrant());
+
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            _sut.IssueToken(request));
+
         Assert.Equal("Client ID mismatch.", ex.Message);
     }
-    
+
     [Fact]
-    public async Task IssueToken_WithRedirectUriMismatch_ThrowsInvalidOperationException()
+    public async Task IssueToken_WithRedirectUriMismatch_Throws()
     {
-        // Arrange
-        var request = DefaultRequest() with { RedirectUri = RedirectUri.Create("https://invalid-uri.com/callback") };
-        var grant = DefaultGrant();
-        SetupGrantStore(grant);
-    
-        // Act & Assert
-        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => _sut.IssueToken(request));
+        var request = DefaultRequest() with { RedirectUri = RedirectUri.Create("https://invalid.com") };
+        SetupGrantStore(DefaultGrant());
+
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            _sut.IssueToken(request));
+
         Assert.Equal("Redirect URI mismatch.", ex.Message);
     }
-    
+
     [Fact]
-    public async Task IssueToken_WithSubjectMismatch_ThrowsInvalidOperationException()
+    public async Task IssueToken_WithSubjectMismatch_Throws()
     {
-        // Arrange
-        var request = DefaultRequest() with { Subject = "invalid-subject" };
-        var grant = DefaultGrant();
-        SetupGrantStore(grant);
-    
-        // Act & Assert
-        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => _sut.IssueToken(request));
+        var request = DefaultRequest() with { Subject = "invalid" };
+        SetupGrantStore(DefaultGrant());
+
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            _sut.IssueToken(request));
+
         Assert.Equal("Subject mismatch.", ex.Message);
     }
 
     [Fact]
-    public async Task IssueToken_WithMissingCodeVerifier_WhenPkceRequired_ThrowsInvalidOperationException()
+    public async Task IssueToken_WithMissingCodeVerifier_WhenPkceRequired_Throws()
     {
-        // Arrange
         var request = DefaultRequest() with { CodeVerifier = null };
         var grant = DefaultGrant("code-challenge");
+
         SetupGrantStore(grant);
-        
-        // Act & Assert
-        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => _sut.IssueToken(request));
+        SetupClientWithAudienceAndScopes();
+
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            _sut.IssueToken(request));
+
         Assert.Equal("Invalid PKCE code verifier.", ex.Message);
     }
 
     [Fact]
-    public async Task IssueToken_WithInvalidCodeVerifier_WhenPkceRequired_ThrowsInvalidOperationException()
+    public async Task IssueToken_WithInvalidCodeVerifier_WhenPkceRequired_Throws()
     {
-        // Arrange
-        var request = DefaultRequest() with { CodeVerifier = "invalid-code-challenge" };
+        var request = DefaultRequest() with { CodeVerifier = "invalid" };
         var grant = DefaultGrant("code-challenge");
+
         SetupGrantStore(grant);
-        
-        // Act & Assert
-        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => _sut.IssueToken(request));
+        SetupClientWithAudienceAndScopes();
+
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            _sut.IssueToken(request));
+
         Assert.Equal("Invalid PKCE code verifier.", ex.Message);
     }
 }

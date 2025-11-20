@@ -14,13 +14,23 @@ public class AuthorizationCodeTokenRequestBuilder
         {
             ClientId = clientId,
             Subject = authorizationGrant.Subject,
-            RequestedAudience = authorizationGrant.Audience,
+            RequestedAudience = null,
             RequestedScopes = authorizationGrant.Scopes,
             RedirectUri = authorizationGrant.RedirectUri,
             Code = authorizationGrant.Code,
             CodeVerifier = null,
             ClientSecret = null
         };       
+    }
+
+    public AuthorizationCodeTokenRequestBuilder WithPermission(string name, string scopes)
+    {
+        _request = _request with
+        {
+            RequestedAudience = AudienceName.Create(name),
+            RequestedScopes = ScopeCollection.Parse(scopes)
+        };
+        return this;
     }
     
     public AuthorizationCodeTokenRequestBuilder WithCodeVerifier(string verifier)

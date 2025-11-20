@@ -45,8 +45,7 @@ public class FakeClientQueryService : IClientQueryService
             client.Id,
             client.IsPublic,
             client.AllowedGrantTypes.ToArray(),
-            client.RedirectUris.ToArray(),
-            client.AllowedAudiences.ToArray()
+            client.RedirectUris.ToArray()
         );
 
         return Task.FromResult<ClientAuthorizationData?>(data);

@@ -1,3 +1,4 @@
+using OpenAuth.Application.Clients.Interfaces;
 using OpenAuth.Application.OAuth.Authorization.Interfaces;
 using OpenAuth.Application.Secrets.Interfaces;
 using OpenAuth.Application.Tokens.Dtos;
@@ -9,13 +10,15 @@ namespace OpenAuth.Application.Tokens.Flows;
 public class AuthorizationCodeTokenIssuer : TokenIssuerBase<AuthorizationCodeTokenRequest>
 {
     private readonly IAuthorizationGrantStore _grantStore;
+    private readonly IClientQueryService _clientQueryService;
     private readonly ISecretQueryService _secretQueryService;
     
     public override GrantType GrantType => GrantType.AuthorizationCode;
 
-    public AuthorizationCodeTokenIssuer(IAuthorizationGrantStore grantStore, ISecretQueryService secretQueryService)
+    public AuthorizationCodeTokenIssuer(IAuthorizationGrantStore grantStore, IClientQueryService clientQueryService, ISecretQueryService secretQueryService)
     {
         _grantStore = grantStore;
+        _clientQueryService = clientQueryService;
         _secretQueryService = secretQueryService;
     }
     
@@ -33,11 +36,26 @@ public class AuthorizationCodeTokenIssuer : TokenIssuerBase<AuthorizationCodeTok
         if (grant.ClientId != request.ClientId)
             throw new InvalidOperationException("Client ID mismatch.");
         
+        if (grant.Subject != request.Subject)
+            throw new InvalidOperationException("Subject mismatch.");
+        
         if (grant.RedirectUri != request.RedirectUri)
             throw new InvalidOperationException("Redirect URI mismatch.");
 
-        if (grant.Subject != request.Subject)
-            throw new InvalidOperationException("Subject mismatch.");
+        if (grant.Scopes != request.RequestedScopes)
+            throw new InvalidOperationException("Scopes mismatch.");
+        
+        // TODO: add better suited query
+        var client = await _clientQueryService.GetTokenDataAsync(request.ClientId, ct)
+            ?? throw new InvalidOperationException("Client not found.");
+        
+        var audience = client.AllowedAudiences.FirstOrDefault(a => a.Name == request.RequestedAudience);
+        if (audience is null)
+            throw new InvalidOperationException("Invalid audience.");
+        
+        if (!grant.Scopes.All(s => audience.Scopes.Contains(s)))
+            throw new InvalidOperationException("Requested scopes not allowed for this audience.");
+        
 
         if (grant.Pkce is not null)
         {
@@ -58,7 +76,7 @@ public class AuthorizationCodeTokenIssuer : TokenIssuerBase<AuthorizationCodeTok
         return new TokenContext(
             grant.ClientId,
             grant.ClientId.ToString(),
-            grant.Audience,
+            request.RequestedAudience,
             grant.Scopes
         );
     }
