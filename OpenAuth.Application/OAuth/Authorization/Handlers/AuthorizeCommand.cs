@@ -39,16 +39,16 @@ public record AuthorizeCommand
         string? codeChallengeMethod)
     {
         if (!ClientId.TryCreate(clientId, out var id))
-            throw new InvalidClientException("Invalid client_id parameter.");
+            throw new MalformedClientException("Invalid client_id parameter.");
         
         if (!RedirectUri.TryCreate(redirectUri, out var uri))
-            throw new InvalidRedirectUriException("Invalid redirect_uri parameter.");
+            throw new MalformedRedirectUriException("Invalid redirect_uri parameter.");
 
         if (!ScopeCollection.TryParse(scopes, out var scope))
-            throw new InvalidRequestException("Invalid or malformed scope parameter.");
+            throw new MalformedScopeException("Invalid scope parameter.");
         
         if (!Pkce.TryParse(codeChallenge, codeChallengeMethod, out var pkce))
-            throw new InvalidRequestException("Invalid PKCE parameters.");
+            throw new MalformedPkceException("Invalid PKCE parameters.");
 
         return new AuthorizeCommand(responseType, id, subject, uri, scope, pkce);
     }
