@@ -62,6 +62,6 @@ public sealed class AuthorizeUriBuilder
             ["code_challenge_method"] = _codeChallengeMethod
         };
 
-        return QueryHelpers.AddQueryString("/authorize", parameters);
+        return QueryHelpers.AddQueryString("/connect/authorize", parameters);
     }
 }

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using OpenAuth.Api.Connect.Authorize;
 using OpenAuth.Application.Clients.Factories;
 using OpenAuth.Application.Clients.Interfaces;
 using OpenAuth.Application.Clients.Services;
@@ -152,6 +153,8 @@ public class Program
             app.UseSwagger();
             app.UseSwaggerUI();
         }
+
+        app.MapAuthorizeEndpoint();
         
         app.Run();
     }
