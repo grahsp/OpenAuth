@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 
-namespace OpenAuth.Api.Authorization;
+namespace OpenAuth.Api.Connect.Authorize;
 
 public record AuthorizeRequestDto
 {
