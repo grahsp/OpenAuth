@@ -2,9 +2,9 @@ using System.Security.Cryptography;
 using Microsoft.IdentityModel.Tokens;
 using OpenAuth.Application.Clients.Dtos;
 using OpenAuth.Application.Clients.Interfaces;
+using OpenAuth.Application.Exceptions;
 using OpenAuth.Application.OAuth.Authorization.Interfaces;
 using OpenAuth.Domain.AuthorizationGrants;
-using OpenAuth.Domain.AuthorizationGrants.ValueObjects;
 using OpenAuth.Domain.Clients.ValueObjects;
 
 namespace OpenAuth.Application.OAuth.Authorization.Handlers;
@@ -30,7 +30,7 @@ public class AuthorizationHandler : IAuthorizationHandler
         ArgumentNullException.ThrowIfNull(cmd);
         
         var authData = await _clientQueryService.GetAuthorizationDataAsync(cmd.ClientId, ct)
-                       ?? throw new InvalidOperationException("Client not found.");
+                       ?? throw new InvalidClientException("Unknown client.");
         
         ValidateRequest(authData, cmd);
 
@@ -54,17 +54,17 @@ public class AuthorizationHandler : IAuthorizationHandler
         ClientAuthorizationData authData,
         AuthorizeCommand cmd)
     {
-        if (cmd.ResponseType != "code")
-            throw new InvalidOperationException($"Response type '{cmd.ResponseType}' not supported.");
-        
         if (!authData.RedirectUris.Contains(cmd.RedirectUri))
-            throw new InvalidOperationException("Invalid redirect URI.");
+            throw new InvalidRedirectUriException("Invalid redirect uri.");
         
-        if (!cmd.Scopes.Any())
-            throw new InvalidOperationException("Scope is required.");
+        if (cmd.ResponseType != "code")
+            throw new UnsupportedResponseTypeException($"'{cmd.ResponseType}' is not a supported response type.");
+        
+        if (cmd.Scopes.Count == 0)
+            throw new InvalidScopeException("At least one scope is required.");
         
         if (authData.IsClientPublic && cmd.Pkce is null)
-            throw new InvalidOperationException("Pkce is required.");
+            throw new InvalidRequestException("PKCE is required for public client.");
     }
     
     private static string GenerateCode()
