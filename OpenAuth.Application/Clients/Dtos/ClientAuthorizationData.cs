@@ -6,6 +6,5 @@ public record ClientAuthorizationData(
     ClientId ClientId,
     bool IsClientPublic,
     GrantType[] GrantTypes,
-    RedirectUri[] RedirectUris,
-    Audience[] AllowedAudiences
+    RedirectUri[] RedirectUris
 );

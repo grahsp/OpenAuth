@@ -5,6 +5,7 @@ using OpenAuth.Application.OAuth.Authorization.Interfaces;
 using OpenAuth.Domain.AuthorizationGrants;
 using OpenAuth.Domain.Clients;
 using OpenAuth.Domain.Clients.ApplicationType;
+using OpenAuth.Domain.Clients.ValueObjects;
 using OpenAuth.Domain.OAuth;
 using OpenAuth.Test.Common.Builders;
 using OpenAuth.Test.Common.Fakes;
@@ -36,12 +37,11 @@ public class AuthorizationHandlerTests
             .WithRedirectUri("https://example.com/callback")
             .Build();
 
-        _validCommand = new AuthorizeCommand(
+        _validCommand = AuthorizeCommand.Create(
             "code",
             _defaultClient.Id.ToString(),
             "test-subject",
             "https://example.com/callback",
-            "api",
             "read write",
             "code-challenge",
             "s256"
@@ -69,17 +69,7 @@ public class AuthorizationHandlerTests
     [Fact]
     public async Task RequestContainsInvalidRedirectUri_Throws()
     {
-        var request = _validCommand with { RedirectUri = "http://invalid-uri.com/callback" };
-        _clientQueryService.Add(_defaultClient);
-        
-        await Assert.ThrowsAnyAsync<InvalidOperationException>(()
-            => _sut.AuthorizeAsync(request));
-    }
-    
-    [Fact]
-    public async Task RequestContainsInvalidAudience_Throws()
-    {
-        var request = _validCommand with { Audience = "invalid" };
+        var request = _validCommand with { RedirectUri = RedirectUri.Create("http://invalid-uri.com/callback") };
         _clientQueryService.Add(_defaultClient);
         
         await Assert.ThrowsAnyAsync<InvalidOperationException>(()
@@ -87,19 +77,19 @@ public class AuthorizationHandlerTests
     }
 
     [Fact]
-    public async Task RequestContainsInvalidScopes_Throws()
+    public async Task RequestContainsNoScopes_Throws()
     {
-        var request = _validCommand with { Scope = "invalid" };
+        var request = _validCommand with { Scopes = null! };
         _clientQueryService.Add(_defaultClient);
         
-        await Assert.ThrowsAnyAsync<InvalidOperationException>(()
+        await Assert.ThrowsAnyAsync<ArgumentNullException>(()
             => _sut.AuthorizeAsync(request));
     }
 
     [Fact]
     public async Task WhenPublicClientAndMissingPkce_ThrowsException()
     {
-        var request = _validCommand with { CodeChallenge = null };
+        var request = _validCommand with { Pkce = null };
         
         _clientQueryService.Add(_defaultClient);
         
@@ -114,7 +104,7 @@ public class AuthorizationHandlerTests
 
         var response = await _sut.AuthorizeAsync(_validCommand);
         
-        Assert.Equal(_validCommand.RedirectUri, response.RedirectUri.Value);
+        Assert.Equal(_validCommand.RedirectUri, response.RedirectUri);
         Assert.NotNull(response.Code);
         Assert.NotEmpty(response.Code);
     }

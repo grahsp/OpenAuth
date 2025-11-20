@@ -20,29 +20,16 @@ public sealed record Pkce
     public static Pkce Create(string codeChallenge, CodeChallengeMethod codeChallengeMethod)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(codeChallenge);
-        
         return new Pkce(codeChallenge, codeChallengeMethod);
     }
     
-    public static bool TryCreate(string? codeChallenge, string? codeChallengeMethod, [NotNullWhen(true)] out Pkce? pkce)
+    public static Pkce? Parse(string? codeChallenge, string? codeChallengeMethod)
     {
-        pkce = null;
-
         if (string.IsNullOrWhiteSpace(codeChallenge) || string.IsNullOrWhiteSpace(codeChallengeMethod))
-            return false;
-
-        if (!Enum.TryParse<CodeChallengeMethod>(codeChallengeMethod, true, out var method))
-            return false;
+            return null;
         
-        try
-        {
-            pkce = Create(codeChallenge, method);
-            return true;
-        }
-        catch(Exception)
-        {
-            return false;
-        }
+        var method = Enum.Parse<CodeChallengeMethod>(codeChallengeMethod, true);
+        return new Pkce(codeChallenge, method);
     }
 
     public static Pkce FromVerifier(string verifier, string codeChallengeMethod)

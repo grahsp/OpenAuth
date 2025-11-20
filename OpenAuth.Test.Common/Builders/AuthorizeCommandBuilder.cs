@@ -10,14 +10,13 @@ public class AuthorizeCommandBuilder
 
     public AuthorizeCommandBuilder(ClientId clientId, string redirectUri)
     {
-        _cmd = new AuthorizeCommand
+        _cmd = AuthorizeCommand.Create
         (
             "code",
             clientId.ToString(),
             "test-subject",
             redirectUri,
-            null,
-            null,
+            "",
             null,
             null
         );
@@ -31,27 +30,15 @@ public class AuthorizeCommandBuilder
 
     public AuthorizeCommandBuilder WithPkce(Pkce pkce)
     {
-        _cmd = _cmd with
-        {
-            CodeChallenge = pkce.CodeChallenge,
-            CodeChallengeMethod = pkce.CodeChallengeMethod.ToString()
-        };
-        return this;
-    }
-
-    public AuthorizeCommandBuilder WithAudience(string audience)
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(audience);
-        
-        _cmd = _cmd with { Audience = audience };
+        _cmd = _cmd with { Pkce = pkce };
         return this;
     }
     
-    public AuthorizeCommandBuilder WithScope(string scope)
+    public AuthorizeCommandBuilder WithScopes(string scopes)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(scope);
+        ArgumentException.ThrowIfNullOrWhiteSpace(scopes);
         
-        _cmd = _cmd with { Scope = scope };
+        _cmd = _cmd with { Scopes = ScopeCollection.Parse(scopes) };
         return this;
     }
 

@@ -7,13 +7,12 @@ namespace OpenAuth.Api.Connect.Authorize;
 public static class AuthorizeMappings
 {
     public static AuthorizeCommand ToCommand(this AuthorizeRequestDto request, string subject)
-        => new(
+        => AuthorizeCommand.Create(
             request.ResponseType,
             request.ClientId,
             subject,
             request.RedirectUri,
-            "", // TODO: audience not required during authorization
-            request.Scope,
+            request.Scopes,
             request.CodeChallenge,
             request.CodeChallengeMethod);
     

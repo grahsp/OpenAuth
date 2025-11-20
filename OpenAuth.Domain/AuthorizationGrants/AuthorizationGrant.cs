@@ -9,8 +9,7 @@ public class AuthorizationGrant
     public ClientId ClientId { get; }
     public string Subject { get; }
     public RedirectUri RedirectUri { get; }
-    public AudienceName? Audience { get; }
-    public ScopeCollection? Scopes { get; }
+    public ScopeCollection Scopes { get; }
     public DateTimeOffset CreatedAt { get; }
     public DateTimeOffset ExpiresAt { get; }
     
@@ -25,8 +24,7 @@ public class AuthorizationGrant
         ClientId clientId,
         string subject,
         RedirectUri redirectUri,
-        AudienceName? audience,
-        ScopeCollection? scopes,
+        ScopeCollection scopes,
         Pkce? pkce,
         DateTimeOffset utcNow)
     {
@@ -35,7 +33,6 @@ public class AuthorizationGrant
         Subject = subject;
         
         RedirectUri = redirectUri;
-        Audience = audience;
         Scopes = scopes;
         
         Code = code;
@@ -51,8 +48,7 @@ public class AuthorizationGrant
         string subject,
         ClientId clientId,
         RedirectUri redirectUri,
-        AudienceName? audience,
-        ScopeCollection? scopes,
+        ScopeCollection scopes,
         Pkce? pkce,
         DateTimeOffset utcNow)
     {
@@ -62,7 +58,6 @@ public class AuthorizationGrant
             clientId,
             subject,
             redirectUri,
-            audience,
             scopes,
             pkce,
             utcNow

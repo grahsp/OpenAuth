@@ -28,32 +28,21 @@ public class AuthorizationHandler : IAuthorizationHandler
     public async Task<AuthorizationGrant> AuthorizeAsync(AuthorizeCommand cmd, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(cmd);
-
-        if (cmd.ResponseType != "code")
-            throw new InvalidOperationException($"Response type '{cmd.ResponseType}' not supported.");
         
-        var clientId = ClientId.Create(cmd.ClientId);
-        var redirectUri = RedirectUri.Create(cmd.RedirectUri);
-        
-        AudienceName.TryCreate(cmd.Audience, out var audience);
-        ScopeCollection.TryParse(cmd.Scope, out var scope);
-        Pkce.TryCreate(cmd.CodeChallenge, cmd.CodeChallengeMethod, out var pkce);
-        
-        var authData = await _clientQueryService.GetAuthorizationDataAsync(clientId, ct)
+        var authData = await _clientQueryService.GetAuthorizationDataAsync(cmd.ClientId, ct)
                        ?? throw new InvalidOperationException("Client not found.");
-
-        ValidateRequest(authData, redirectUri, audience, scope, pkce);
+        
+        ValidateRequest(authData, cmd);
 
         var code = GenerateCode();
         var authorizationGrant = AuthorizationGrant.Create(
             code,
             GrantType.AuthorizationCode,
             cmd.Subject,
-            clientId,
-            redirectUri,
-            audience,
-            scope,
-            pkce,
+            cmd.ClientId,
+            cmd.RedirectUri,
+            cmd.Scopes,
+            cmd.Pkce,
             _time.GetUtcNow()
         );
         
@@ -63,34 +52,19 @@ public class AuthorizationHandler : IAuthorizationHandler
     
     private static void ValidateRequest(
         ClientAuthorizationData authData,
-        RedirectUri redirectUri,
-        AudienceName? requestedAudience,
-        ScopeCollection? requestedScope,
-        Pkce? pkce)
+        AuthorizeCommand cmd)
     {
-        if (authData.IsClientPublic && pkce is null)
-            throw new InvalidOperationException("Pkce is required.");
-
-        if (!authData.RedirectUris.Contains(redirectUri))
-            throw new InvalidOperationException("Invalid redirect URI.");
-
-        if (requestedAudience is not null)
-        {
-            var validAudience = authData.AllowedAudiences
-                .FirstOrDefault(a => a.Name == requestedAudience);
-            if (validAudience is null)
-                throw new InvalidOperationException("Invalid audience.");
-
+        if (cmd.ResponseType != "code")
+            throw new InvalidOperationException($"Response type '{cmd.ResponseType}' not supported.");
         
-            if (requestedScope is null)
-                return;
-            
-            var invalidScopes = requestedScope.Except(validAudience.Scopes)
-                .Select(s => s.Value)
-                .ToArray();
-            if (invalidScopes.Length != 0)
-                throw new InvalidOperationException($"Invalid scopes: '{ string.Join(' ', invalidScopes) }'.");
-        }
+        if (!authData.RedirectUris.Contains(cmd.RedirectUri))
+            throw new InvalidOperationException("Invalid redirect URI.");
+        
+        if (!cmd.Scopes.Any())
+            throw new InvalidOperationException("Scope is required.");
+        
+        if (authData.IsClientPublic && cmd.Pkce is null)
+            throw new InvalidOperationException("Pkce is required.");
     }
     
     private static string GenerateCode()

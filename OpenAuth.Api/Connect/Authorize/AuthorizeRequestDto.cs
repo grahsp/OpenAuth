@@ -12,9 +12,9 @@ public record AuthorizeRequestDto
     
     [FromQuery(Name = "redirect_uri")]
     public string RedirectUri { get; init; } = null!;
-    
+
     [FromQuery(Name = "scope")]
-    public string? Scope { get; init; }
+    public string Scopes { get; init; } = null!;
     
     [FromQuery(Name = "state")]
     public string? State { get; init; }
