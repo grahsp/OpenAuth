@@ -16,11 +16,13 @@ public class AuthorizeEndpointTests(ApiServerFixture fx) : IClassFixture<ApiServ
         const string redirectUri = "https://google.com";
         
         var client = await fx.CreateClientAsync(ClientApplicationTypes.Web, opts
-            => opts.WithRedirectUri(redirectUri));
+            => opts.WithRedirectUri(redirectUri)
+                .WithPermission("api", "read write"));
 
         var response = await client.AuthorizeAsync(opts
             => opts.WithClient(client.Id)
-                .WithRedirectUri(redirectUri));
+                .WithRedirectUri(redirectUri)
+                .WithScope("read"));
         
         Assert.True(response.Success);
         Assert.StartsWith(redirectUri, response.RedirectUri, StringComparison.OrdinalIgnoreCase);
@@ -36,11 +38,13 @@ public class AuthorizeEndpointTests(ApiServerFixture fx) : IClassFixture<ApiServ
         const string state = "12345";
         
         var client = await fx.CreateClientAsync(ClientApplicationTypes.Web, opts
-            => opts.WithRedirectUri(redirectUri));
+            => opts.WithRedirectUri(redirectUri)
+                .WithPermission("api", "read write"));
         
         var response = await client.AuthorizeAsync(query
             => query.WithClient(client.Id)
                 .WithRedirectUri(redirectUri)
+                .WithScope("read write")
                 .WithState(state));
         
         Assert.True(response.Success);
@@ -73,10 +77,30 @@ public class AuthorizeEndpointTests(ApiServerFixture fx) : IClassFixture<ApiServ
             => opts.WithRedirectUri(redirectUri));
         
         var response = await client.AuthorizeAsync(opts
-            => opts.WithClient("invalid-client-id")
+            => opts.WithClient(client.Id)
                 .WithRedirectUri(redirectUri + "/callback"));
         
         Assert.False(response.Success);
         Assert.Null(response.RedirectUri);
+    }
+    
+    [Fact]
+    public async Task GivenAuthenticatedUser_WhenAuthorizeIsCalled_WithInvalidResponseType_ReturnsBadRequest()
+    {
+        const string redirectUri = "https://google.com";
+        
+        var client = await fx.CreateClientAsync(ClientApplicationTypes.Web, opts
+            => opts.WithRedirectUri(redirectUri)
+                .WithPermission("api", "read write"));
+        
+        var response = await client.AuthorizeAsync(opts
+            => opts.WithClient(client.Id)
+                .WithRedirectUri(redirectUri)
+                .WithScope("read write")
+                .WithResponseType("banana"));
+        
+        Assert.False(response.Success);
+        Assert.NotNull(response.RedirectUri);
+        Assert.Contains(response.Error!, "unsupported_response_type");
     }
 }

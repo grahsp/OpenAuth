@@ -23,9 +23,12 @@ public sealed record Pkce
         return new Pkce(codeChallenge, codeChallengeMethod);
     }
     
-    public static bool TryParse(string? codeChallenge, string? codeChallengeMethod, [NotNullWhen(true)] out Pkce? pkce)
+    public static bool TryParse(string? codeChallenge, string? codeChallengeMethod, out Pkce? pkce)
     {
         pkce = null;
+
+        if (string.IsNullOrWhiteSpace(codeChallenge) && string.IsNullOrWhiteSpace(codeChallengeMethod))
+            return true;
 
         if (string.IsNullOrWhiteSpace(codeChallenge) || string.IsNullOrWhiteSpace(codeChallengeMethod))
             return false;
