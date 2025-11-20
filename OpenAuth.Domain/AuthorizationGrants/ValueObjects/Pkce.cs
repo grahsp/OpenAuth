@@ -23,13 +23,18 @@ public sealed record Pkce
         return new Pkce(codeChallenge, codeChallengeMethod);
     }
     
-    public static Pkce? Parse(string? codeChallenge, string? codeChallengeMethod)
+    public static bool TryParse(string? codeChallenge, string? codeChallengeMethod, [NotNullWhen(true)] out Pkce? pkce)
     {
+        pkce = null;
+
         if (string.IsNullOrWhiteSpace(codeChallenge) || string.IsNullOrWhiteSpace(codeChallengeMethod))
-            return null;
+            return false;
+
+        if (!Enum.TryParse<CodeChallengeMethod>(codeChallengeMethod, true, out var method))
+            return false;
         
-        var method = Enum.Parse<CodeChallengeMethod>(codeChallengeMethod, true);
-        return new Pkce(codeChallenge, method);
+        pkce = new Pkce(codeChallenge, method);
+        return true;
     }
 
     public static Pkce FromVerifier(string verifier, string codeChallengeMethod)

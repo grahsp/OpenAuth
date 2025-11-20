@@ -1,5 +1,8 @@
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.WebUtilities;
+using OpenAuth.Application.Exceptions;
 using OpenAuth.Application.OAuth.Authorization.Handlers;
+using OpenAuth.Application.Shared.Models;
 
 namespace OpenAuth.Api.Connect.Authorize;
 
@@ -26,17 +29,37 @@ public static class AuthorizeEndpoint
             var subject = user.Identity.Name;
             if (string.IsNullOrWhiteSpace(subject))
                 return Results.BadRequest("Subject is missing.");
-        
-            var command = dto.ToCommand(subject);
 
             try
             {
+                var command = dto.ToCommand(subject);
+                
                 var grant = await handler.AuthorizeAsync(command);
                 var redirectUri = grant.ToRedirectUri(dto.State);
-        
+
                 return Results.Redirect(redirectUri);
             }
-            catch (Exception ex)
+            catch (OAuthProtocolException ex)
+            {
+                return Results.BadRequest(new { error = ex.Error, description = ex.Description });
+            }
+            catch (OAuthAuthorizationException ex)
+            {
+                var parameters = new Dictionary<string, string?>
+                {
+                    ["error"] = ex.Error,
+                    ["error_description"] = ex.Description,
+                    ["state"] = dto.State
+                };
+
+                var redirectUri = QueryHelpers.AddQueryString(
+                    dto.RedirectUri,
+                    parameters
+                );
+                
+                return Results.Redirect(redirectUri);
+            }
+            catch (Exception)
             {
                 return Results.InternalServerError("An unexpected error occurred.");
             }    
