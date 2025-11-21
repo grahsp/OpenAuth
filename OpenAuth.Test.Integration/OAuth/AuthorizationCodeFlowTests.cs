@@ -1,21 +1,17 @@
-using OpenAuth.Domain.AuthorizationGrants.ValueObjects;
-using OpenAuth.Test.Common.Builders;
-using OpenAuth.Test.Integration.Infrastructure.Clients;
+using OpenAuth.Application.Exceptions;
+using OpenAuth.Domain.Clients.ApplicationType;
+using OpenAuth.Test.Common.Helpers;
 using OpenAuth.Test.Integration.Infrastructure.Fixtures;
 
 namespace OpenAuth.Test.Integration.OAuth;
 
 [Collection("sqlserver")]
-public class AuthorizationCodeFlowTests : IClassFixture<TestApplicationFixture>, IAsyncLifetime
+public class AuthorizationCodeFlowTests : IClassFixture<ApplicationFixture>, IAsyncLifetime
 {
-    private readonly TestClient _app;
-    private readonly TestApplicationFixture _fx;
+    private readonly ApplicationFixture _fx;
 
-    public AuthorizationCodeFlowTests(TestApplicationFixture fx)
-    {
-        _app = new TestClient(fx);
+    public AuthorizationCodeFlowTests(ApplicationFixture fx) =>
         _fx = fx;
-    }
 
     public async Task InitializeAsync() => await _fx.ResetAsync();
     public Task DisposeAsync() => Task.CompletedTask;
@@ -24,137 +20,62 @@ public class AuthorizationCodeFlowTests : IClassFixture<TestApplicationFixture>,
     [Fact]
     public async Task AuthorizationCodeFlow_WhenValid_Succeeds()
     {
-        const string redirectUri = "https://example.com/callback";
-        var registered = await _app.Clients
-            .Web()
-            .WithRedirectUri(redirectUri)
-            .WithPermission("api", "read write")
-            .CreateAsync();
-
-        var authorizeCommand = new AuthorizeCommandBuilder(registered.Client.Id, redirectUri)
-            .WithScopes("read write")
-            .Build();
+        var client = await _fx.CreateClientAsync(ClientApplicationTypes.Web);
         
-        var authorizationGrant = await _app.AuthorizeAsync(authorizeCommand);
-
-        var tokenRequest = TokenRequestBuilderFactory
-            .BuildAuthorizationCodeRequest(registered.Client.Id, authorizationGrant)
-            .WithClientSecret(registered.ClientSecret!)
-            .WithPermission("api", "read write")
-            .Build();
+        await client.AuthorizeAsync();
+        var result = await client.ExchangeCodeForTokenAsync();
         
-        var tokenResponse = await _app.RequestTokenAsync(tokenRequest);
-        
-        Assert.NotNull(tokenResponse.Token);
+        Assert.NotNull(result.Token);
     }
     
     [Fact]
     public async Task AuthorizationCodeFlow_WhenInvalidClientSecret_ThrowsException()
     {
-        const string redirectUri = "https://example.com/callback";
-        var registered = await _app.Clients
-            .Web()
-            .WithRedirectUri(redirectUri)
-            .WithPermission("api", "read write")
-            .CreateAsync();
-
-        var authorizeCommand = new AuthorizeCommandBuilder(registered.Client.Id, redirectUri)
-            .WithScopes("read write")
-            .Build();
+        var client = await _fx.CreateClientAsync(ClientApplicationTypes.Web);
         
-        var authorizationGrant = await _app.AuthorizeAsync(authorizeCommand);
-
-        var tokenRequest = TokenRequestBuilderFactory
-            .BuildAuthorizationCodeRequest(registered.Client.Id, authorizationGrant)
-            .WithPermission("api", "read write")
-            .WithClientSecret("invalid-client-secret")
-            .Build();
-
+        await client.AuthorizeAsync();
+    
         await Assert.ThrowsAsync<InvalidOperationException>(()
-            => _app.RequestTokenAsync(tokenRequest));
+            => client.ExchangeCodeForTokenAsync(opts =>
+                opts.WithClientSecret("invalid-client-secret")
+            ));
     }
-
+    
     [Fact]
     public async Task AuthorizationCodeFlow_WhenClientIsPublic_ThrowsException()
     {
-        const string redirectUri = "https://example.com/callback";
-
-        var registered = await _app.Clients
-            .Spa()
-            .WithRedirectUri(redirectUri)
-            .WithPermission("api", "read") // SPA clients must define an audience/scope
-            .CreateAsync();
-
-        // SPA clients require PKCE → missing PKCE must cause failure
-        var authorizeCommand = new AuthorizeCommandBuilder(registered.Client.Id, redirectUri)
-            .WithScopes("read")
-            .Build();
-        
-        await Assert.ThrowsAsync<InvalidOperationException>(()
-            => _app.AuthorizeAsync(authorizeCommand));
+        var client = await _fx.CreateClientAsync(ClientApplicationTypes.Spa);
+    
+        await Assert.ThrowsAsync<InvalidRequestException>(()
+            => client.AuthorizeAsync());
     }
-
+    
     [Fact]
     public async Task AuthorizationCodeFlowWithPkce_WhenValid_Succeeds()
     {
-        const string redirectUri = "https://example.com/callback";
-
-        var registered = await _app.Clients
-            .Spa()
-            .WithRedirectUri(redirectUri)
-            .WithPermission("api", "read write")
-            .CreateAsync();
-
-        const string codeVerifier = "this-is-a-secret-code";
-        var pkce = Pkce.FromVerifier(codeVerifier, "s256");
-
-        var authorizeCommand = new AuthorizeCommandBuilder(registered.Client.Id, redirectUri)
-            .WithPkce(pkce)
-            .WithScopes("read write")
-            .Build();
-
-        var authorizationGrant = await _app.AuthorizeAsync(authorizeCommand);
-
-        var tokenRequest = TokenRequestBuilderFactory
-            .BuildAuthorizationCodeRequest(registered.Client.Id, authorizationGrant)
-            .WithCodeVerifier(codeVerifier)
-            .WithPermission("api", "read write")
-            .Build();
-
-        var tokenResponse = await _app.RequestTokenAsync(tokenRequest);
+        var (verifier, pkce) = PkceHelpers.Create();
+        var client =  await _fx.CreateClientAsync(ClientApplicationTypes.Spa);
         
-        Assert.NotNull(tokenResponse.Token);
+        await client.AuthorizeAsync(opts =>
+            opts.WithPkce(pkce));
+        
+        var result = await client.ExchangeCodeForTokenAsync(opts =>
+            opts.WithCodeVerifier(verifier));
+ 
+        Assert.NotNull(result.Token);
     }
-
+    
     [Fact]
     public async Task AuthorizationCodeFlowWithPkce_WhenInvalidCodeVerifier_ThrowsException()
     {
-        const string redirectUri = "https://example.com/callback";
+        var (_, pkce) = PkceHelpers.Create();
+        var client = await _fx.CreateClientAsync(ClientApplicationTypes.Spa);
 
-        var registered = await _app.Clients
-            .Spa()
-            .WithRedirectUri(redirectUri)
-            .WithPermission("api", "read write")
-            .CreateAsync();
-
-        const string realCodeVerifier = "this-is-a-secret-code";
-        var pkce = Pkce.FromVerifier(realCodeVerifier, "s256");
-
-        var authorizeCommand = new AuthorizeCommandBuilder(registered.Client.Id, redirectUri)
-            .WithPkce(pkce)
-            .WithScopes("read write")
-            .Build();
-
-        var authorizationGrant = await _app.AuthorizeAsync(authorizeCommand);
-
-        // Provide invalid verifier during token request
-        var tokenRequest = TokenRequestBuilderFactory
-            .BuildAuthorizationCodeRequest(registered.Client.Id, authorizationGrant)
-            .WithCodeVerifier("invalid-code-verifier")
-            .WithPermission("api", "read write")
-            .Build();
-
-        await Assert.ThrowsAsync<InvalidOperationException>(()
-            => _app.RequestTokenAsync(tokenRequest));
+        await client.AuthorizeAsync(opts =>
+            opts.WithPkce(pkce));
+    
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            client.ExchangeCodeForTokenAsync(opts =>
+                opts.WithCodeVerifier("invalid-code-verifier")));
     }
 }
