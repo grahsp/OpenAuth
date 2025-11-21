@@ -7,7 +7,7 @@ using TokenContext = OpenAuth.Application.Tokens.Dtos.TokenContext;
 
 namespace OpenAuth.Application.Tokens.Flows;
 
-public class AuthorizationCodeTokenIssuer : TokenIssuerBase<AuthorizationCodeTokenRequest>
+public class AuthorizationCodeTokenIssuer : TokenIssuerBase<AuthorizationCodeTokenCommand>
 {
     private readonly IAuthorizationGrantStore _grantStore;
     private readonly IClientQueryService _clientQueryService;
@@ -22,34 +22,31 @@ public class AuthorizationCodeTokenIssuer : TokenIssuerBase<AuthorizationCodeTok
         _secretQueryService = secretQueryService;
     }
     
-    protected override async Task<TokenContext> IssueToken(AuthorizationCodeTokenRequest request, CancellationToken ct = default)
+    protected override async Task<TokenContext> IssueToken(AuthorizationCodeTokenCommand command, CancellationToken ct = default)
     {
-        if (string.IsNullOrWhiteSpace(request.CodeVerifier) && string.IsNullOrWhiteSpace(request.ClientSecret))
+        if (string.IsNullOrWhiteSpace(command.CodeVerifier) && string.IsNullOrWhiteSpace(command.ClientSecret))
             throw new InvalidOperationException("Client credentials are required for this grant type.");
         
-        var grant = await _grantStore.GetAsync(request.Code)
+        var grant = await _grantStore.GetAsync(command.Code)
                     ?? throw new InvalidOperationException("Invalid authorization code.");
         
         if (grant.Consumed)
             throw new InvalidOperationException("Authorization code has already been used.");
 
-        if (grant.ClientId != request.ClientId)
+        if (grant.ClientId != command.ClientId)
             throw new InvalidOperationException("Client ID mismatch.");
         
-        if (grant.Subject != request.Subject)
-            throw new InvalidOperationException("Subject mismatch.");
-        
-        if (grant.RedirectUri != request.RedirectUri)
+        if (grant.RedirectUri != command.RedirectUri)
             throw new InvalidOperationException("Redirect URI mismatch.");
 
-        if (grant.Scopes != request.RequestedScopes)
+        if (grant.Scopes != command.RequestedScopes)
             throw new InvalidOperationException("Scopes mismatch.");
         
         // TODO: add better suited query
-        var client = await _clientQueryService.GetTokenDataAsync(request.ClientId, ct)
+        var client = await _clientQueryService.GetTokenDataAsync(command.ClientId, ct)
             ?? throw new InvalidOperationException("Client not found.");
         
-        var audience = client.AllowedAudiences.FirstOrDefault(a => a.Name == request.RequestedAudience);
+        var audience = client.AllowedAudiences.FirstOrDefault(a => a.Name == command.RequestedAudience);
         if (audience is null)
             throw new InvalidOperationException("Invalid audience.");
         
@@ -59,15 +56,15 @@ public class AuthorizationCodeTokenIssuer : TokenIssuerBase<AuthorizationCodeTok
 
         if (grant.Pkce is not null)
         {
-            if (!grant.Pkce.Matches(request.CodeVerifier))
+            if (!grant.Pkce.Matches(command.CodeVerifier))
                 throw new InvalidOperationException("Invalid PKCE code verifier.");
         }
         else
         {
-            if (string.IsNullOrWhiteSpace(request.ClientSecret))
+            if (string.IsNullOrWhiteSpace(command.ClientSecret))
                 throw new InvalidOperationException("Client secret is required for this grant type.");
             
-            if (!await _secretQueryService.ValidateSecretAsync(request.ClientId, request.ClientSecret, ct))
+            if (!await _secretQueryService.ValidateSecretAsync(command.ClientId, command.ClientSecret, ct))
                 throw new InvalidOperationException("Invalid client credentials.");
         }
 
@@ -76,7 +73,7 @@ public class AuthorizationCodeTokenIssuer : TokenIssuerBase<AuthorizationCodeTok
         return new TokenContext(
             grant.ClientId,
             grant.ClientId.ToString(),
-            request.RequestedAudience,
+            command.RequestedAudience,
             grant.Scopes
         );
     }

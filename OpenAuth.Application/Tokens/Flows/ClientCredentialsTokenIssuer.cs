@@ -4,7 +4,7 @@ using OpenAuth.Domain.Clients.ValueObjects;
 
 namespace OpenAuth.Application.Tokens.Flows;
 
-public class ClientCredentialsTokenIssuer : TokenIssuerBase<ClientCredentialsTokenRequest>
+public class ClientCredentialsTokenIssuer : TokenIssuerBase<ClientCredentialsTokenCommand>
 {
     public override GrantType GrantType => GrantType.ClientCredentials;
     
@@ -16,17 +16,17 @@ public class ClientCredentialsTokenIssuer : TokenIssuerBase<ClientCredentialsTok
     }
 
 
-    protected override async Task<TokenContext> IssueToken(ClientCredentialsTokenRequest request, CancellationToken ct = default)
+    protected override async Task<TokenContext> IssueToken(ClientCredentialsTokenCommand command, CancellationToken ct = default)
     {
-        var isValid = await _secretQueryService.ValidateSecretAsync(request.ClientId, request.ClientSecret, ct);
+        var isValid = await _secretQueryService.ValidateSecretAsync(command.ClientId, command.ClientSecret, ct);
         if (!isValid)
             throw new UnauthorizedAccessException("Invalid client credentials.");
 
         return new TokenContext(
-            request.ClientId,
-            request.ClientId.ToString(),
-            request.RequestedAudience,
-            request.RequestedScopes
+            command.ClientId,
+            command.ClientId.ToString(),
+            command.RequestedAudience,
+            command.RequestedScopes
         );
     }
 }

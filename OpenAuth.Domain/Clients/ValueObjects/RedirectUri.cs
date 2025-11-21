@@ -13,7 +13,7 @@ public record RedirectUri(string Value) : ICreate<string, RedirectUri>
         return redirectUri;
     }
 
-    public static bool TryCreate(string uri, [NotNullWhen(true)] out RedirectUri? redirectUri)
+    public static bool TryCreate(string? uri, [NotNullWhen(true)] out RedirectUri? redirectUri)
     {
         redirectUri = null;
         
