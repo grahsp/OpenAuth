@@ -1,5 +1,7 @@
+using System.Net.Http.Json;
 using Microsoft.AspNetCore.WebUtilities;
 using OpenAuth.Application.Clients.Services;
+using OpenAuth.Application.Tokens.Dtos;
 using OpenAuth.Test.Common.ValueObjects;
 using OpenAuth.Test.Integration.Infrastructure.Builders;
 
@@ -10,7 +12,6 @@ public class ExternalOAuthClient
     public string ApplicationType { get; }
     public string Id { get; }
     public IReadOnlyCollection<string> RedirectUris { get; }
-    
     public string? Secret { get; }
     
     private readonly HttpClient _httpClient;
@@ -30,12 +31,14 @@ public class ExternalOAuthClient
         Secret = registered.ClientSecret;
     }
 
-    public async Task<AuthorizeResult> AuthorizeAsync(Action<AuthorizeUriBuilder> queryParameters)
+    public async Task<AuthorizeResult> AuthorizeAsync(Action<AuthorizeUriBuilder>? configure = null)
     {
         var builder = new AuthorizeUriBuilder();
-        queryParameters.Invoke(builder);
+        configure?.Invoke(builder);
 
-        var uri = builder.Build();
+        var uri = builder
+            .WithClient(Id)
+            .Build();
         
         var response = await _httpClient.GetAsync(uri);
         
@@ -48,9 +51,25 @@ public class ExternalOAuthClient
             Success: !query.ContainsKey("error"),
             Code: query.TryGetValue("code", out var code) ? code.ToString() : null,
             State: query.TryGetValue("state", out var s) ? s.ToString() : null,
-            RedirectUri: redirect?.ToString(),
+            RedirectUri: redirect.ToString(),
             Error: query.TryGetValue("error", out var e) ? e.ToString() : null);
 
         return result;
+    }
+
+    public async Task<TokenGenerationResponse?> RequestTokenAsync(Action<TokenRequestBuilder>? configure = null)
+    {
+        var builder = new TokenRequestBuilder()
+            .WithClientId(Id)
+            .WithClientSecret(Secret);
+        
+        configure?.Invoke(builder);
+
+        var request = builder.Build();
+
+        var content = new FormUrlEncodedContent(request);
+        var response = await _httpClient.PostAsync("/connect/token", content);
+
+        return await response.Content.ReadFromJsonAsync<TokenGenerationResponse>();
     }
 }
