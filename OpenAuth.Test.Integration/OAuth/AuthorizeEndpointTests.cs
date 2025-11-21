@@ -1,4 +1,4 @@
-using OpenAuth.Domain.Clients.ApplicationType;
+using OpenAuth.Test.Common.Helpers;
 using OpenAuth.Test.Integration.Infrastructure.Fixtures;
 
 namespace OpenAuth.Test.Integration.OAuth;
@@ -13,19 +13,13 @@ public class AuthorizeEndpointTests(ApiServerFixture fx) : IClassFixture<ApiServ
     [Fact]
     public async Task GivenAuthenticatedUser_WhenAuthorizeIsCalled_WithValidRequest_RedirectsWithCode()
     {
-        const string redirectUri = "https://google.com";
-        
-        var client = await fx.CreateClientAsync(ClientApplicationTypes.Web, opts
-            => opts.WithRedirectUri(redirectUri)
-                .WithPermission("api", "read write"));
+        var client = await fx.CreateClientAsync();
 
-        var response = await client.AuthorizeAsync(opts
-            => opts.WithClient(client.Id)
-                .WithRedirectUri(redirectUri)
-                .WithScope("read"));
+        var response = await client.AuthorizeAsync(opts =>
+            opts.WithClient(client.Id));
         
         Assert.True(response.Success);
-        Assert.StartsWith(redirectUri, response.RedirectUri, StringComparison.OrdinalIgnoreCase);
+        Assert.StartsWith(DefaultValues.RedirectUri, response.RedirectUri, StringComparison.OrdinalIgnoreCase);
         
         Assert.NotNull(response.Code);
         Assert.NotEmpty(response.Code);
@@ -34,35 +28,28 @@ public class AuthorizeEndpointTests(ApiServerFixture fx) : IClassFixture<ApiServ
     [Fact]
     public async Task GivenAuthenticatedUser_WhenAuthorizeIsCalled_WithState_RedirectsWithState()
     {
-        const string redirectUri = "https://google.com";
         const string state = "12345";
         
-        var client = await fx.CreateClientAsync(ClientApplicationTypes.Web, opts
-            => opts.WithRedirectUri(redirectUri)
-                .WithPermission("api", "read write"));
+        var client = await fx.CreateClientAsync();
         
-        var response = await client.AuthorizeAsync(query
-            => query.WithClient(client.Id)
-                .WithRedirectUri(redirectUri)
-                .WithScope("read write")
-                .WithState(state));
+        var response = await client.AuthorizeAsync(opts =>
+        {
+            opts.WithClient(client.Id);
+            opts.WithState(state);
+        });
         
         Assert.True(response.Success);
-        Assert.StartsWith(redirectUri, response.RedirectUri, StringComparison.OrdinalIgnoreCase);
+        Assert.StartsWith(DefaultValues.RedirectUri, response.RedirectUri, StringComparison.OrdinalIgnoreCase);
         Assert.Equal(state, response.State);
     }
     
     [Fact]
     public async Task GivenAuthenticatedUser_WhenAuthorizeIsCalled_WithInvalidClient_ReturnsBadRequest()
     {
-        const string redirectUri = "https://google.com";
+        var client = await fx.CreateClientAsync();
         
-        var client = await fx.CreateClientAsync(ClientApplicationTypes.Web, opts
-            => opts.WithRedirectUri(redirectUri));
-        
-        var response = await client.AuthorizeAsync(opts
-            => opts.WithClient("invalid-client-id")
-                .WithRedirectUri(redirectUri));
+        var response = await client.AuthorizeAsync(opts =>
+            opts.WithClient("invalid-client-id"));
         
         Assert.False(response.Success);
         Assert.Null(response.RedirectUri);
@@ -71,14 +58,13 @@ public class AuthorizeEndpointTests(ApiServerFixture fx) : IClassFixture<ApiServ
     [Fact]
     public async Task GivenAuthenticatedUser_WhenAuthorizeIsCalled_WithInvalidRedirectUri_ReturnsBadRequest()
     {
-        const string redirectUri = "https://google.com";
-        
-        var client = await fx.CreateClientAsync(ClientApplicationTypes.Web, opts
-            => opts.WithRedirectUri(redirectUri));
-        
-        var response = await client.AuthorizeAsync(opts
-            => opts.WithClient(client.Id)
-                .WithRedirectUri(redirectUri + "/callback"));
+        var client = await fx.CreateClientAsync();
+
+        var response = await client.AuthorizeAsync(opts =>
+        {
+            opts.WithClient(client.Id);
+            opts.WithRedirectUri("https://invalid-redirect.com");
+        });
         
         Assert.False(response.Success);
         Assert.Null(response.RedirectUri);
@@ -87,17 +73,13 @@ public class AuthorizeEndpointTests(ApiServerFixture fx) : IClassFixture<ApiServ
     [Fact]
     public async Task GivenAuthenticatedUser_WhenAuthorizeIsCalled_WithInvalidResponseType_ReturnsBadRequest()
     {
-        const string redirectUri = "https://google.com";
+        var client = await fx.CreateClientAsync();
         
-        var client = await fx.CreateClientAsync(ClientApplicationTypes.Web, opts
-            => opts.WithRedirectUri(redirectUri)
-                .WithPermission("api", "read write"));
-        
-        var response = await client.AuthorizeAsync(opts
-            => opts.WithClient(client.Id)
-                .WithRedirectUri(redirectUri)
-                .WithScope("read write")
-                .WithResponseType("banana"));
+        var response = await client.AuthorizeAsync(opts =>
+        {
+            opts.WithClient(client.Id);
+            opts.WithResponseType("banana");
+        });
         
         Assert.False(response.Success);
         Assert.NotNull(response.RedirectUri);

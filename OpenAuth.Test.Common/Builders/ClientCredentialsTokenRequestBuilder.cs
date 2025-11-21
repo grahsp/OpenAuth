@@ -1,14 +1,15 @@
 using OpenAuth.Application.Tokens.Dtos;
 using OpenAuth.Domain.Clients.ValueObjects;
+using OpenAuth.Test.Common.Helpers;
 
 namespace OpenAuth.Test.Common.Builders;
 
 public class ClientCredentialsTokenRequestBuilder
 {
-    private string _clientId = ClientId.New().ToString();
-    private string _clientSecret = "this-is-a-secret";
-    private string _audience = "api";
-    private string _scopes = "read write";
+    private string _clientId = DefaultValues.ClientId;
+    private string _clientSecret = DefaultValues.ClientSecret;
+    private string _audience = DefaultValues.Audience;
+    private string _scopes = DefaultValues.Scopes;
 
     public ClientCredentialsTokenRequestBuilder()
     { }

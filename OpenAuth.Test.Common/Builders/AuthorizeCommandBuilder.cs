@@ -1,16 +1,16 @@
 using OpenAuth.Application.OAuth.Authorization.Handlers;
 using OpenAuth.Domain.AuthorizationGrants.ValueObjects;
-using OpenAuth.Domain.Clients.ValueObjects;
+using OpenAuth.Test.Common.Helpers;
 
 namespace OpenAuth.Test.Common.Builders;
 
 public class AuthorizeCommandBuilder
 {
-    private string _responseType = "code";
-    private string _clientId = ClientId.New().ToString();
-    private string _subject = "test-subject";
-    private string _redirectUri = "https://example.com";
-    private string _scopes = "read write";
+    private string _responseType = DefaultValues.ResponseType;
+    private string _clientId = DefaultValues.ClientId;
+    private string _subject = DefaultValues.Subject;
+    private string _redirectUri = DefaultValues.RedirectUri;
+    private string _scopes = DefaultValues.Scopes;
     private string? _codeChallenge;
     private string? _codeMethod;
 

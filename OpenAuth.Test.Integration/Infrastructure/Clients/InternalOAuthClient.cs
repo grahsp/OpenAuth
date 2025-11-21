@@ -14,7 +14,7 @@ public class InternalOAuthClient
     public string? Secret { get; }
     public IReadOnlyCollection<string> RedirectUris { get; }
 
-    public AuthorizationGrant AuthorizationGrant;
+    public AuthorizationGrant? AuthorizationGrant;
     
 
     private readonly IAuthorizationHandler _authorizationHandler;

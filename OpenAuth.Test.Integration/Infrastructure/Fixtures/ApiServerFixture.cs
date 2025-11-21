@@ -5,9 +5,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using OpenAuth.Api;
-using OpenAuth.Application.Clients.Dtos;
-using OpenAuth.Domain.Clients.ApplicationType;
-using OpenAuth.Domain.Clients.ValueObjects;
 using OpenAuth.Infrastructure.Persistence;
 using OpenAuth.Test.Integration.Infrastructure.Clients;
 using OpenAuth.Test.Integration.Infrastructure.Fakes;
@@ -51,11 +48,9 @@ public class ApiServerFixture(SqlServerFixture sql) : WebApplicationFactory<Prog
         });
     }
 
-    public async Task<ExternalOAuthClient> CreateClientAsync(ClientApplicationType type, Action<TestClientBuilder>? configure = null)
+    public async Task<ExternalOAuthClient> CreateClientAsync(Action<OAuthClientBuilder>? configure = null)
     {
-        var request = new CreateClientRequest(type, ClientName.Create("test-client"), [], []);
-        
-        var builder = new TestClientBuilder(Services, request);
+        var builder = new OAuthClientBuilder(Services);
         configure?.Invoke(builder);
         
         var registered = await builder.CreateAsync();

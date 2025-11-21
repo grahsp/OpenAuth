@@ -1,10 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
-using OpenAuth.Application.Clients.Dtos;
 using OpenAuth.Application.OAuth.Authorization.Handlers;
 using OpenAuth.Application.SigningKeys.Services;
 using OpenAuth.Application.Tokens.Services;
-using OpenAuth.Domain.Clients.ApplicationType;
-using OpenAuth.Domain.Clients.ValueObjects;
 using OpenAuth.Domain.SigningKeys.Enums;
 using OpenAuth.Test.Integration.Infrastructure.Clients;
 
@@ -41,16 +38,9 @@ public class ApplicationFixture : IAsyncLifetime, IDisposable
     public void Dispose() => _services.Dispose();
     
     
-    public async Task<InternalOAuthClient> CreateClientAsync(ClientApplicationType type, Action<TestClientBuilder>? configure = null)
+    public async Task<InternalOAuthClient> CreateClientAsync(Action<OAuthClientBuilder>? configure = null)
     {
-        var request = new CreateClientRequest(
-            type,
-            ClientName.Create("test-client"),
-            [new Audience(AudienceName.Create("api"), ScopeCollection.Parse("read write"))],
-            [RedirectUri.Create("https://example.com")]
-        );
-        
-        var builder = new TestClientBuilder(_services, request);
+        var builder = new OAuthClientBuilder(_services);
         configure?.Invoke(builder);
 
         var registered = await builder.CreateAsync();
