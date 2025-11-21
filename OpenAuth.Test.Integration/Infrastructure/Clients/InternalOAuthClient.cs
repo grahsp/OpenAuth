@@ -49,12 +49,12 @@ public class InternalOAuthClient
         AuthorizationGrant = await _authorizationHandler.AuthorizeAsync(command);
     }
 
-    public async Task<TokenGenerationResponse> ExchangeCodeForTokenAsync(Action<AuthorizationCodeTokenRequestBuilder>? config = null)
+    public async Task<TokenGenerationResponse> ExchangeCodeForTokenAsync(Action<AuthorizationCodeTokenCommandBuilder>? config = null)
     {
         if (AuthorizationGrant is null)
             throw new InvalidOperationException("No authorization grant available. Call AuthorizeAsync first.");
  
-        var builder = new AuthorizationCodeTokenRequestBuilder()
+        var builder = new AuthorizationCodeTokenCommandBuilder()
             .WithClientId(Id)
             .FromAuthorizationGrant(AuthorizationGrant)
             .WithClientSecret(Secret);
@@ -65,12 +65,12 @@ public class InternalOAuthClient
         return await _tokenService.IssueToken(request);
     }
 
-    public async Task<TokenGenerationResponse> RequestClientCredentialsTokenAsync(Action<ClientCredentialsTokenRequestBuilder>? config = null)
+    public async Task<TokenGenerationResponse> RequestClientCredentialsTokenAsync(Action<ClientCredentialsTokenCommandBuilder>? config = null)
     {
         if (string.IsNullOrWhiteSpace(Secret))
             throw new InvalidOperationException("No secret provided. Client must be public.");
         
-        var builder = new ClientCredentialsTokenRequestBuilder()
+        var builder = new ClientCredentialsTokenCommandBuilder()
             .WithClientId(Id)
             .WithClientSecret(Secret);
 

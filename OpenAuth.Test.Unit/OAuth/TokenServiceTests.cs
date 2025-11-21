@@ -11,6 +11,8 @@ using OpenAuth.Application.Tokens.Services;
 using OpenAuth.Domain.Clients.ValueObjects;
 using OpenAuth.Domain.SigningKeys.Enums;
 using OpenAuth.Domain.SigningKeys.ValueObjects;
+using OpenAuth.Test.Common.Builders;
+using OpenAuth.Test.Common.Helpers;
 
 namespace OpenAuth.Test.Unit.OAuth;
 
@@ -35,7 +37,7 @@ public class TokenServiceTests
         _authorizationCodeIssuer.GrantType.Returns(GrantType.AuthorizationCode);
 
         _tokenService = new TokenService(
-            [_clientCredentialsIssuer],
+            [_clientCredentialsIssuer, _authorizationCodeIssuer],
             _clientQueryService,
             _signingKeyQueryService,
             _tokenGenerator);
@@ -124,7 +126,10 @@ public class TokenServiceTests
     [Fact]
     public async Task IssueToken_WithInvalidScopes_ThrowsInvalidOperationException()
     {
-        var request = CreateValidRequest() with { RequestedScopes = ScopeCollection.Parse("invalid") };
+        var request = new AuthorizationCodeTokenCommandBuilder()
+            .WithScopes("invalid_scopes")
+            .WithCodeVerifier(DefaultValues.CodeVerifier)
+            .Build();
         var tokenData = CreateValidTokenData();
 
         _clientQueryService
@@ -146,7 +151,7 @@ public class TokenServiceTests
 
         _clientQueryService.GetTokenDataAsync(Arg.Any<ClientId>(), Arg.Any<CancellationToken>())
             .Returns(tokenData);
-        _clientCredentialsIssuer.IssueToken(Arg.Any<TokenRequest>(), Arg.Any<CancellationToken>())
+        _clientCredentialsIssuer.IssueToken(Arg.Any<TokenCommand>(), Arg.Any<CancellationToken>())
             .Returns(tokenContext);
         _signingKeyQueryService.GetCurrentKeyDataAsync(Arg.Any<CancellationToken>())
             .Returns((SigningKeyData?)null);
@@ -167,7 +172,7 @@ public class TokenServiceTests
 
         _clientQueryService.GetTokenDataAsync(Arg.Any<ClientId>(), Arg.Any<CancellationToken>())
             .Returns(tokenData);
-        _clientCredentialsIssuer.IssueToken(Arg.Any<TokenRequest>(), Arg.Any<CancellationToken>())
+        _clientCredentialsIssuer.IssueToken(Arg.Any<TokenCommand>(), Arg.Any<CancellationToken>())
             .Returns(tokenContext);
         _signingKeyQueryService.GetCurrentKeyDataAsync(Arg.Any<CancellationToken>())
             .Returns(keyData);
@@ -216,7 +221,7 @@ public class TokenServiceTests
 
         _clientQueryService.GetTokenDataAsync(Arg.Any<ClientId>(), token)
             .Returns(tokenData);
-        _clientCredentialsIssuer.IssueToken(Arg.Any<TokenRequest>(), token)
+        _clientCredentialsIssuer.IssueToken(Arg.Any<TokenCommand>(), token)
             .Returns(tokenContext);
         _signingKeyQueryService.GetCurrentKeyDataAsync(token)
             .Returns(keyData);
@@ -238,7 +243,7 @@ public class TokenServiceTests
 
         _clientQueryService.GetTokenDataAsync(Arg.Any<ClientId>(), Arg.Any<CancellationToken>())
             .Returns(tokenData);
-        _clientCredentialsIssuer.IssueToken(Arg.Any<TokenRequest>(), Arg.Any<CancellationToken>())
+        _clientCredentialsIssuer.IssueToken(Arg.Any<TokenCommand>(), Arg.Any<CancellationToken>())
             .Throws(new UnauthorizedAccessException("Invalid credentials"));
 
         await Assert.ThrowsAsync<UnauthorizedAccessException>(
@@ -255,7 +260,7 @@ public class TokenServiceTests
 
         _clientQueryService.GetTokenDataAsync(Arg.Any<ClientId>(), Arg.Any<CancellationToken>())
             .Returns(tokenData);
-        _clientCredentialsIssuer.IssueToken(Arg.Any<TokenRequest>(), Arg.Any<CancellationToken>())
+        _clientCredentialsIssuer.IssueToken(Arg.Any<TokenCommand>(), Arg.Any<CancellationToken>())
             .Returns(tokenContext);
         _signingKeyQueryService.GetCurrentKeyDataAsync(Arg.Any<CancellationToken>())
             .Returns(keyData);
@@ -268,16 +273,15 @@ public class TokenServiceTests
     }
 
     
-    private static ClientCredentialsTokenRequest CreateValidRequest() => new()
-    {
-        ClientId = ClientId.New(),
-        ClientSecret = "secret",
-        RequestedAudience = new AudienceName("api.example.com"),
-        RequestedScopes = ScopeCollection.Parse("read write")
-    };
+    private static ClientCredentialsTokenCommand CreateValidRequest() => ClientCredentialsTokenCommand.Create(
+        ClientId.New(),
+        new AudienceName(DefaultValues.Audience),
+        ScopeCollection.Parse(DefaultValues.Scopes),
+        DefaultValues.ClientSecret
+    );
 
     private static ClientTokenData CreateValidTokenData() => new(
-        AllowedAudiences: [new Audience(AudienceName.Create("api.example.com"), ScopeCollection.Parse("read write admin"))],
+        AllowedAudiences: [new Audience(AudienceName.Create(DefaultValues.Audience), ScopeCollection.Parse(DefaultValues.Scopes))],
         [GrantType.ClientCredentials, GrantType.AuthorizationCode],
         TokenLifetime: TimeSpan.FromHours(1));
 
@@ -287,8 +291,8 @@ public class TokenServiceTests
         return new TokenContext(
             clientId,
             clientId.ToString(),
-            new AudienceName("api.example.com"),
-            ScopeCollection.Parse("read write admin")
+            new AudienceName(DefaultValues.Audience),
+            ScopeCollection.Parse(DefaultValues.Scopes)
         );
     }
     

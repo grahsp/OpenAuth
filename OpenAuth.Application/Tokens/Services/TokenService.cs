@@ -26,28 +26,28 @@ public class TokenService : ITokenService
     }
     
     
-    public async Task<TokenGenerationResponse> IssueToken(TokenRequest request, CancellationToken ct = default)
+    public async Task<TokenGenerationResponse> IssueToken(TokenCommand command, CancellationToken ct = default)
     {
-        if (!_strategies.TryGetValue(request.GrantType, out var issuer))
+        if (!_strategies.TryGetValue(command.GrantType, out var issuer))
             throw new InvalidOperationException("Invalid grant type.");
         
-        var tokenData = await _clientQueryService.GetTokenDataAsync(request.ClientId, ct);
+        var tokenData = await _clientQueryService.GetTokenDataAsync(command.ClientId, ct);
         if (tokenData is null)
             throw new InvalidOperationException("Client not found.");
         
-        if (!tokenData.AllowedGrantTypes.Contains(request.GrantType))
-            throw new InvalidOperationException($"Grant type '{request.GrantType}' is not allowed for this client.");
+        if (!tokenData.AllowedGrantTypes.Contains(command.GrantType))
+            throw new InvalidOperationException($"Grant type '{command.GrantType}' is not allowed for this client.");
         
-        if (request.RequestedAudience is not null)
+        if (command.RequestedAudience is not null)
         {
             var audience = tokenData.AllowedAudiences
-                .FirstOrDefault(a => a.Name == request.RequestedAudience);
+                .FirstOrDefault(a => a.Name == command.RequestedAudience);
             if (audience is null)
-                throw new InvalidOperationException($"Invalid audience: '{request.RequestedAudience}'.");
+                throw new InvalidOperationException($"Invalid audience: '{command.RequestedAudience}'.");
 
-            if (request.RequestedScopes is not null)
+            if (command.RequestedScopes is not null)
             {
-                var invalidScopes = request.RequestedScopes
+                var invalidScopes = command.RequestedScopes
                     .Except(audience.Scopes)
                     .Select(s => s.Value)
                     .ToArray();
@@ -57,7 +57,7 @@ public class TokenService : ITokenService
             }
         }
 
-        var tokenContext = await issuer.IssueToken(request, ct);
+        var tokenContext = await issuer.IssueToken(command, ct);
     
         var keyData = await _signingKeyQueryService.GetCurrentKeyDataAsync(ct);
         if (keyData is null)

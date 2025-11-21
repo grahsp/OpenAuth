@@ -6,5 +6,5 @@ namespace OpenAuth.Application.Tokens.Flows;
 public interface ITokenIssuer
 {
     GrantType GrantType { get; }
-    Task<TokenContext> IssueToken(TokenRequest request, CancellationToken ct = default);
+    Task<TokenContext> IssueToken(TokenCommand command, CancellationToken ct = default);
 }

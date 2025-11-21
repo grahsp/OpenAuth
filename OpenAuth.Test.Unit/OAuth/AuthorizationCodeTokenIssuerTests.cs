@@ -1,6 +1,3 @@
-using System.Security.Cryptography;
-using System.Text;
-using Microsoft.IdentityModel.Tokens;
 using NSubstitute;
 using OpenAuth.Application.Clients.Dtos;
 using OpenAuth.Application.Clients.Interfaces;
@@ -9,9 +6,10 @@ using OpenAuth.Application.Secrets.Interfaces;
 using OpenAuth.Application.Tokens.Dtos;
 using OpenAuth.Application.Tokens.Flows;
 using OpenAuth.Domain.AuthorizationGrants;
-using OpenAuth.Domain.AuthorizationGrants.Enums;
 using OpenAuth.Domain.AuthorizationGrants.ValueObjects;
 using OpenAuth.Domain.Clients.ValueObjects;
+using OpenAuth.Test.Common.Builders;
+using OpenAuth.Test.Common.Helpers;
 
 namespace OpenAuth.Test.Unit.OAuth;
 
@@ -24,9 +22,9 @@ public class AuthorizationCodeTokenIssuerTests
     private readonly AuthorizationCodeTokenIssuer _sut;
 
     private static readonly ClientId DefaultClientId = ClientId.New();
-    private static readonly AudienceName DefaultAudience = new("api.example.com");
-    private static readonly ScopeCollection DefaultScopes = ScopeCollection.Parse("read write");
-    private static readonly RedirectUri DefaultRedirect = RedirectUri.Create("https://client.app/callback");
+    private static readonly AudienceName DefaultAudience = new(DefaultValues.Audience);
+    private static readonly ScopeCollection DefaultScopes = ScopeCollection.Parse(DefaultValues.Scopes);
+    private static readonly RedirectUri DefaultRedirect = RedirectUri.Create(DefaultValues.RedirectUri);
 
     public AuthorizationCodeTokenIssuerTests()
     {
@@ -36,32 +34,27 @@ public class AuthorizationCodeTokenIssuerTests
         _sut = new AuthorizationCodeTokenIssuer(_grantStore, _clientQueryService, _secretQueryService);
     }
 
-    private static AuthorizationCodeTokenRequest DefaultRequest()
-        => new()
-        {
-            ClientId = DefaultClientId,
-            Code = "auth-code",
-            Subject = "Test-Subject",
-            RedirectUri = DefaultRedirect,
-            RequestedAudience = DefaultAudience,
-            RequestedScopes = DefaultScopes,
-            CodeVerifier = "secret-code",
-            ClientSecret = "client-secret"
-        };
+    private static AuthorizationCodeTokenCommand DefaultRequest()
+        => AuthorizationCodeTokenCommand.Create(
+            DefaultValues.Code,
+            DefaultClientId,
+            DefaultRedirect,
+            DefaultAudience,
+            DefaultScopes,
+            DefaultValues.CodeVerifier,
+            DefaultValues.ClientSecret
+        );
 
     private static AuthorizationGrant DefaultGrant(string? codeVerifier = null)
     {
         var pkce = codeVerifier is null
             ? null
-            : Pkce.Create(
-                Base64UrlEncoder.Encode(
-                    SHA256.HashData(Encoding.UTF8.GetBytes(codeVerifier))),
-                CodeChallengeMethod.S256);
+            : Pkce.FromVerifier(codeVerifier, DefaultValues.CodeChallengeMethod);
 
         return AuthorizationGrant.Create(
-            "auth-code",
+            DefaultValues.Code,
             GrantType.AuthorizationCode,
-            "Test-Subject",
+            DefaultValues.Subject,
             DefaultClientId,
             DefaultRedirect,
             DefaultScopes,
@@ -173,8 +166,12 @@ public class AuthorizationCodeTokenIssuerTests
     [Fact]
     public async Task IssueToken_WithClientIdMismatch_Throws()
     {
-        var request = DefaultRequest() with { ClientId = ClientId.New() };
         SetupGrantStore(DefaultGrant());
+        
+        var request = new AuthorizationCodeTokenCommandBuilder()
+            .WithClientId(ClientId.New().ToString())
+            .WithCodeVerifier(DefaultValues.CodeVerifier)
+            .Build();
 
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
             _sut.IssueToken(request));
@@ -192,18 +189,6 @@ public class AuthorizationCodeTokenIssuerTests
             _sut.IssueToken(request));
 
         Assert.Equal("Redirect URI mismatch.", ex.Message);
-    }
-
-    [Fact]
-    public async Task IssueToken_WithSubjectMismatch_Throws()
-    {
-        var request = DefaultRequest() with { Subject = "invalid" };
-        SetupGrantStore(DefaultGrant());
-
-        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
-            _sut.IssueToken(request));
-
-        Assert.Equal("Subject mismatch.", ex.Message);
     }
 
     [Fact]

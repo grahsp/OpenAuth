@@ -19,35 +19,23 @@ public class ClientCredentialsTokenIssuerTests
     }
 
     
-    private static ClientCredentialsTokenRequest CreateRequest(
+    private static ClientCredentialsTokenCommand CreateRequest(
         string? secret = "secret",
         string? audience = "api.example.com",
         IEnumerable<Scope>? scopes = null)
     {
-        return new ClientCredentialsTokenRequest
-        {
-            ClientId = ClientId.New(),
-            ClientSecret = secret ?? "secret",
-            RequestedAudience = new AudienceName(audience ?? "api.example.com"),
-            RequestedScopes = ScopeCollection.Parse("read")
-        };
+        return ClientCredentialsTokenCommand.Create(
+            ClientId.New(),
+            new AudienceName(audience ?? "api.example.com"),
+            ScopeCollection.Parse("read"),
+            secret ?? "secret"
+        );
     }
 
     [Fact]
     public void GrantType_ShouldReturnClientCredentials()
     {
         Assert.Equal(GrantType.ClientCredentials, _issuer.GrantType);
-    }
-
-    [Fact]
-    public async Task IssueToken_WithWrongRequestType_ThrowsInvalidOperationException()
-    {
-        var incorrectRequest = Substitute.For<TokenRequest>();
-
-        var ex = await Assert.ThrowsAsync<InvalidOperationException>(
-            () => _issuer.IssueToken(incorrectRequest));
-
-        Assert.Contains("does not support request type", ex.Message);
     }
 
     [Fact]
