@@ -5,30 +5,44 @@ namespace OpenAuth.Test.Common.Builders;
 
 public class ClientCredentialsTokenRequestBuilder
 {
-    private ClientCredentialsTokenRequest _request;
+    private string _clientId = ClientId.New().ToString();
+    private string _clientSecret = "this-is-a-secret";
+    private string _audience = "api";
+    private string _scopes = "read write";
 
-    public ClientCredentialsTokenRequestBuilder(ClientId clientId, string clientSecret)
+    public ClientCredentialsTokenRequestBuilder()
+    { }
+
+    public ClientCredentialsTokenRequestBuilder WithClientId(string clientId)
     {
-        _request = new ClientCredentialsTokenRequest
-        {
-            ClientId = clientId,
-            ClientSecret = clientSecret,
-            RequestedAudience = null,
-            RequestedScopes = null
-        };
+        _clientId = clientId;
+        return this;
+    }
+
+    public ClientCredentialsTokenRequestBuilder WithClientSecret(string clientSecret)
+    {
+        _clientSecret = clientSecret;
+        return this;
     }
     
     public ClientCredentialsTokenRequestBuilder WithAudience(string audience)
     {
-        _request = _request with { RequestedAudience = AudienceName.Create(audience) };
+        _audience = audience;
         return this;
     }
     
     public ClientCredentialsTokenRequestBuilder WithScopes(string scopes)
     {
-        _request = _request with { RequestedScopes = ScopeCollection.Parse(scopes)};
+        _scopes = scopes;
         return this;
     }
-    
-    public ClientCredentialsTokenRequest Build() => _request;
+
+    public TokenRequest Build()
+        => new ClientCredentialsTokenRequest
+        {
+            ClientId = ClientId.Create(_clientId),
+            ClientSecret = _clientSecret,
+            RequestedAudience = AudienceName.Create(_audience),
+            RequestedScopes = ScopeCollection.Parse(_scopes)
+        };
 }

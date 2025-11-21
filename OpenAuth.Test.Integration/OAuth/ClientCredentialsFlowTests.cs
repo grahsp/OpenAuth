@@ -1,20 +1,15 @@
-using OpenAuth.Test.Common.Builders;
-using OpenAuth.Test.Integration.Infrastructure.Clients;
+using OpenAuth.Domain.Clients.ApplicationType;
 using OpenAuth.Test.Integration.Infrastructure.Fixtures;
 
 namespace OpenAuth.Test.Integration.OAuth;
 
 [Collection("sqlserver")]
-public class ClientCredentialsFlowTests : IClassFixture<TestApplicationFixture>, IAsyncLifetime
+public class ClientCredentialsFlowTests : IClassFixture<ApplicationFixture>, IAsyncLifetime
 {
-    private readonly TestClient _app;
-    private readonly TestApplicationFixture _fx;
+    private readonly ApplicationFixture _fx;
 
-    public ClientCredentialsFlowTests(TestApplicationFixture fx)
-    {
-        _app = new TestClient(fx);
+    public ClientCredentialsFlowTests(ApplicationFixture fx) =>
         _fx = fx;
-    }
 
     public async Task InitializeAsync() => await _fx.ResetAsync();
     public Task DisposeAsync() => Task.CompletedTask;
@@ -23,44 +18,21 @@ public class ClientCredentialsFlowTests : IClassFixture<TestApplicationFixture>,
     [Fact]
     public async Task ClientCredentialsFlow_WhenValid_Succeeds()
     {
-        const string audience = "api";
-        const string scopes = "read write";
-
-        var registered = await _app.Clients
-            .M2M()
-            .WithPermission(audience, scopes)
-            .CreateAsync();
-
-        var tokenRequest = TokenRequestBuilderFactory
-            .BuildClientCredentialsRequest(registered.Client.Id, registered.ClientSecret!)
-            .WithAudience(audience)
-            .WithScopes(scopes)
-            .Build();
-
-        var token = await _app.RequestTokenAsync(tokenRequest);
+        var client = await _fx.CreateClientAsync(ClientApplicationTypes.M2M);
         
-        Assert.NotNull(token);
+        var result = await client.RequestClientCredentialsTokenAsync();
+        
+        Assert.NotNull(result.Token);
     }
-
      
-     [Fact]
-     public async Task ClientCredentialsFlow_WhenInvalidClientSecret_Fails()
-     {
-         const string audience = "api";
-         const string scopes = "read write";
-
-        var registered = await _app.Clients
-            .M2M()
-            .WithPermission(audience, scopes)
-            .CreateAsync();
-
-        var tokenRequest = TokenRequestBuilderFactory
-            .BuildClientCredentialsRequest(registered.Client.Id, "invalid-client-secret")
-            .WithAudience(audience)
-            .WithScopes(scopes)
-            .Build();
-
-         await Assert.ThrowsAsync<UnauthorizedAccessException>(()
-             => _app.RequestTokenAsync(tokenRequest));
-     }
+    [Fact]
+    public async Task ClientCredentialsFlow_WhenInvalidClientSecret_Fails()
+    {
+        var client = await _fx.CreateClientAsync(ClientApplicationTypes.M2M);
+    
+        await Assert.ThrowsAsync<UnauthorizedAccessException>(()
+            => client.RequestClientCredentialsTokenAsync(config =>
+                config.WithClientSecret("invalid-client-secret")
+            ));
+    }
 }

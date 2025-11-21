@@ -6,44 +6,95 @@ namespace OpenAuth.Test.Common.Builders;
 
 public class AuthorizationCodeTokenRequestBuilder
 {
-    private AuthorizationCodeTokenRequest _request;
+    private string _clientId = ClientId.New().ToString();
+    private string _subject = "test-subject";
+    private string _audience = "api";
+    private string _scopes = "read write";
+    private string _redirectUri = "https://example.com";
+    private string _code = "random-code";
+    private string? _codeVerifier;
+    private string? _clientSecret;
     
-    public AuthorizationCodeTokenRequestBuilder(ClientId clientId, AuthorizationGrant authorizationGrant)
+    public AuthorizationCodeTokenRequestBuilder() { }
+
+    public AuthorizationCodeTokenRequestBuilder FromAuthorizationGrant(AuthorizationGrant grant)
     {
-        _request = new AuthorizationCodeTokenRequest
-        {
-            ClientId = clientId,
-            Subject = authorizationGrant.Subject,
-            RequestedAudience = null,
-            RequestedScopes = authorizationGrant.Scopes,
-            RedirectUri = authorizationGrant.RedirectUri,
-            Code = authorizationGrant.Code,
-            CodeVerifier = null,
-            ClientSecret = null
-        };       
+        _clientId = grant.ClientId.ToString();
+        _subject = grant.Subject;
+        _scopes = grant.Scopes.ToString();
+        _redirectUri = grant.RedirectUri.ToString();
+        _code = grant.Code;
+
+        return this;
     }
 
-    public AuthorizationCodeTokenRequestBuilder WithPermission(string name, string scopes)
+    public AuthorizationCodeTokenRequestBuilder WithClientId(string clientId)
     {
-        _request = _request with
+        _clientId = clientId;
+        return this;
+    }
+    
+    public AuthorizationCodeTokenRequestBuilder WithSubject(string subject)
+    {
+        _subject = subject;
+        return this;
+    }
+    
+    public AuthorizationCodeTokenRequestBuilder WithAudience(string audience)
+    {
+        _audience = audience;
+        return this;
+    }
+
+    public AuthorizationCodeTokenRequestBuilder WithScopes(string scopes)
+    {
+        _scopes = scopes;
+        return this;
+    }
+    
+    public AuthorizationCodeTokenRequestBuilder WithRedirectUri(string redirectUri)
+    {
+        _redirectUri = redirectUri;
+        return this;
+    }
+    
+    public AuthorizationCodeTokenRequestBuilder WithCode(string code)
+    {
+        _code = code;
+        return this;
+    }
+    
+    public AuthorizationCodeTokenRequestBuilder WithCodeVerifier(string? codeVerifier)
+    {
+        _codeVerifier = codeVerifier;
+        return this;
+    }
+    
+    public AuthorizationCodeTokenRequestBuilder WithClientSecret(string? clientSecret)
+    {
+        _clientSecret = clientSecret;
+        return this;
+    }
+
+    public TokenRequest Build()
+    {
+        var clientId = ClientId.Create(_clientId);
+        var audience = AudienceName.Create(_audience);
+        var scopes = ScopeCollection.Parse(_scopes);
+        var redirectUri = RedirectUri.Create(_redirectUri);
+
+        var request = new AuthorizationCodeTokenRequest
         {
-            RequestedAudience = AudienceName.Create(name),
-            RequestedScopes = ScopeCollection.Parse(scopes)
+            ClientId = clientId,
+            Subject = _subject,
+            RequestedAudience = audience,
+            RequestedScopes = scopes,
+            RedirectUri = redirectUri,
+            Code = _code,
+            CodeVerifier = _codeVerifier,
+            ClientSecret = _clientSecret
         };
-        return this;
+
+        return request;
     }
-    
-    public AuthorizationCodeTokenRequestBuilder WithCodeVerifier(string verifier)
-    {
-        _request = _request with { CodeVerifier = verifier };
-        return this;
-    }
-    
-    public AuthorizationCodeTokenRequestBuilder WithClientSecret(string clientSecret)
-    {
-        _request = _request with { ClientSecret = clientSecret };
-        return this;
-    }
-    
-    public AuthorizationCodeTokenRequest Build() => _request;
 }

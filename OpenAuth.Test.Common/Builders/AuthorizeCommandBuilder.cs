@@ -6,49 +6,64 @@ namespace OpenAuth.Test.Common.Builders;
 
 public class AuthorizeCommandBuilder
 {
-    private AuthorizeCommand _cmd;
+    private string _responseType = "code";
+    private string _clientId = ClientId.New().ToString();
+    private string _subject = "test-subject";
+    private string _redirectUri = "https://example.com";
+    private string _scopes = "read write";
+    private string? _codeChallenge;
+    private string? _codeMethod;
 
-    public AuthorizeCommandBuilder(ClientId clientId, string redirectUri)
+    public AuthorizeCommandBuilder()
     {
-        _cmd = AuthorizeCommand.Create
-        (
-            "code",
-            clientId.ToString(),
-            "test-subject",
-            redirectUri,
-            "",
-            null,
-            null
-        );
     }
     
     public AuthorizeCommandBuilder WithResponseType(string responseType)
     {
-        _cmd = _cmd with { ResponseType = responseType };
+        _responseType = responseType;
         return this;
     }
 
-    public AuthorizeCommandBuilder WithPkce(Pkce pkce)
+    public AuthorizeCommandBuilder WithClientId(string clientId)
     {
-        _cmd = _cmd with { Pkce = pkce };
+        _clientId = clientId;
+        return this;
+    }
+    
+    public AuthorizeCommandBuilder WithSubject(string subject)
+    {
+        _subject = subject;
+        return this;
+    }
+    
+    public AuthorizeCommandBuilder WithRedirectUri(string redirectUri)
+    {
+        _redirectUri = redirectUri;
         return this;
     }
     
     public AuthorizeCommandBuilder WithScopes(string scopes)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(scopes);
-        
-        _cmd = _cmd with { Scopes = ScopeCollection.Parse(scopes) };
+        _scopes = scopes;
         return this;
     }
 
-    public AuthorizeCommandBuilder WithSubject(string subject)
+    public AuthorizeCommandBuilder WithPkce(Pkce pkce)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(subject);
-
-        _cmd = _cmd with { Subject = subject };
+        _codeChallenge = pkce.CodeChallenge;
+        _codeMethod = pkce.CodeChallengeMethod.ToString();
+        
         return this;
     }
     
-    public AuthorizeCommand Build() => _cmd;
+    public AuthorizeCommand Build()
+        => AuthorizeCommand.Create(
+            _responseType,
+            _clientId,
+            _subject,
+            _redirectUri,
+            _scopes,
+            _codeChallenge,
+            _codeMethod
+        );
 }

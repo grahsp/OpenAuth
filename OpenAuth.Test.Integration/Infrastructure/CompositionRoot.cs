@@ -37,7 +37,7 @@ using OpenAuth.Infrastructure.Tokens.SigningCredentials;
 
 namespace OpenAuth.Test.Integration.Infrastructure;
 
-public class TestCompositionRoot
+public class CompositionRoot
 {
     public static ServiceProvider BuildService(string connectionString)
     {
