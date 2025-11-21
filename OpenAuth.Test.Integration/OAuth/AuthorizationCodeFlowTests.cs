@@ -1,5 +1,4 @@
 using OpenAuth.Application.Exceptions;
-using OpenAuth.Domain.Clients.ApplicationType;
 using OpenAuth.Test.Common.Helpers;
 using OpenAuth.Test.Integration.Infrastructure.Fixtures;
 
@@ -20,7 +19,7 @@ public class AuthorizationCodeFlowTests : IClassFixture<ApplicationFixture>, IAs
     [Fact]
     public async Task AuthorizationCodeFlow_WhenValid_Succeeds()
     {
-        var client = await _fx.CreateClientAsync(ClientApplicationTypes.Web);
+        var client = await _fx.CreateClientAsync();
         
         await client.AuthorizeAsync();
         var result = await client.ExchangeCodeForTokenAsync();
@@ -31,7 +30,7 @@ public class AuthorizationCodeFlowTests : IClassFixture<ApplicationFixture>, IAs
     [Fact]
     public async Task AuthorizationCodeFlow_WhenInvalidClientSecret_ThrowsException()
     {
-        var client = await _fx.CreateClientAsync(ClientApplicationTypes.Web);
+        var client = await _fx.CreateClientAsync();
         
         await client.AuthorizeAsync();
     
@@ -44,7 +43,8 @@ public class AuthorizationCodeFlowTests : IClassFixture<ApplicationFixture>, IAs
     [Fact]
     public async Task AuthorizationCodeFlow_WhenClientIsPublic_ThrowsException()
     {
-        var client = await _fx.CreateClientAsync(ClientApplicationTypes.Spa);
+        var client = await _fx.CreateClientAsync(opts =>
+            opts.WithApplicationType("spa"));
     
         await Assert.ThrowsAsync<InvalidRequestException>(()
             => client.AuthorizeAsync());
@@ -54,7 +54,8 @@ public class AuthorizationCodeFlowTests : IClassFixture<ApplicationFixture>, IAs
     public async Task AuthorizationCodeFlowWithPkce_WhenValid_Succeeds()
     {
         var (verifier, pkce) = PkceHelpers.Create();
-        var client =  await _fx.CreateClientAsync(ClientApplicationTypes.Spa);
+        var client = await _fx.CreateClientAsync(opts =>
+            opts.WithApplicationType("spa"));
         
         await client.AuthorizeAsync(opts =>
             opts.WithPkce(pkce));
@@ -69,7 +70,8 @@ public class AuthorizationCodeFlowTests : IClassFixture<ApplicationFixture>, IAs
     public async Task AuthorizationCodeFlowWithPkce_WhenInvalidCodeVerifier_ThrowsException()
     {
         var (_, pkce) = PkceHelpers.Create();
-        var client = await _fx.CreateClientAsync(ClientApplicationTypes.Spa);
+        var client = await _fx.CreateClientAsync(opts =>
+            opts.WithApplicationType("spa"));
 
         await client.AuthorizeAsync(opts =>
             opts.WithPkce(pkce));

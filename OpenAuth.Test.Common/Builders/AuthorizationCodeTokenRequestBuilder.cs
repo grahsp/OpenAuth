@@ -1,17 +1,18 @@
 using OpenAuth.Application.Tokens.Dtos;
 using OpenAuth.Domain.AuthorizationGrants;
 using OpenAuth.Domain.Clients.ValueObjects;
+using OpenAuth.Test.Common.Helpers;
 
 namespace OpenAuth.Test.Common.Builders;
 
 public class AuthorizationCodeTokenRequestBuilder
 {
-    private string _clientId = ClientId.New().ToString();
-    private string _subject = "test-subject";
-    private string _audience = "api";
-    private string _scopes = "read write";
-    private string _redirectUri = "https://example.com";
-    private string _code = "random-code";
+    private string _clientId = DefaultValues.ClientId;
+    private string _subject = DefaultValues.Subject;
+    private string _audience = DefaultValues.Audience;
+    private string _scopes = DefaultValues.Scopes;
+    private string _redirectUri = DefaultValues.RedirectUri;
+    private string _code = DefaultValues.Code;
     private string? _codeVerifier;
     private string? _clientSecret;
     

@@ -1,13 +1,14 @@
 using Microsoft.AspNetCore.WebUtilities;
+using OpenAuth.Test.Common.Helpers;
 
 namespace OpenAuth.Test.Integration.Infrastructure.Builders;
 
 public sealed class AuthorizeUriBuilder
 {
-    private string _responseType = "code";
-    private string? _clientId;
-    private string? _redirectUri;
-    private string? _scope;
+    private string _responseType = DefaultValues.ResponseType;
+    private string _clientId = DefaultValues.ClientId;
+    private string _redirectUri = DefaultValues.RedirectUri;
+    private string _scopes = DefaultValues.Scopes;
     private string? _state;
     private string? _codeChallenge;
     private string? _codeChallengeMethod;
@@ -30,9 +31,9 @@ public sealed class AuthorizeUriBuilder
         return this;
     }
 
-    public AuthorizeUriBuilder WithScope(string? scope)
+    public AuthorizeUriBuilder WithScope(string scopes)
     {
-        _scope = scope;
+        _scopes = scopes;
         return this;
     }
 
@@ -42,7 +43,7 @@ public sealed class AuthorizeUriBuilder
         return this;
     }
 
-    public AuthorizeUriBuilder WithPkce(string? challenge, string? method = "S256")
+    public AuthorizeUriBuilder WithPkce(string? challenge, string? method = DefaultValues.CodeChallengeMethod)
     {
         _codeChallenge = challenge;
         _codeChallengeMethod = method;
@@ -56,7 +57,7 @@ public sealed class AuthorizeUriBuilder
             ["response_type"] = _responseType,
             ["client_id"] = _clientId,
             ["redirect_uri"] = _redirectUri,
-            ["scope"] = _scope,
+            ["scope"] = _scopes,
             ["state"] = _state,
             ["code_challenge"] = _codeChallenge,
             ["code_challenge_method"] = _codeChallengeMethod
