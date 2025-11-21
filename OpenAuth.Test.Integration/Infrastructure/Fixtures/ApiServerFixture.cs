@@ -5,6 +5,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using OpenAuth.Api;
+using OpenAuth.Application.SigningKeys.Services;
+using OpenAuth.Domain.SigningKeys.Enums;
 using OpenAuth.Infrastructure.Persistence;
 using OpenAuth.Test.Integration.Infrastructure.Clients;
 using OpenAuth.Test.Integration.Infrastructure.Fakes;
@@ -23,6 +25,7 @@ public class ApiServerFixture(SqlServerFixture sql) : WebApplicationFactory<Prog
         });
         
         await sql.ResetAsync();
+        await SeedSigningKeyAsync();
     }
 
     public new Task DisposeAsync() => Task.CompletedTask;
@@ -46,6 +49,14 @@ public class ApiServerFixture(SqlServerFixture sql) : WebApplicationFactory<Prog
                 options.DefaultChallengeScheme = "Test";
             });
         });
+    }
+
+    private async Task SeedSigningKeyAsync()
+    {
+        var scope = Services.CreateScope();
+        var signingService = scope.ServiceProvider.GetRequiredService<ISigningKeyService>();
+
+        await signingService.CreateAsync(SigningAlgorithm.RS256);
     }
 
     public async Task<ExternalOAuthClient> CreateClientAsync(Action<OAuthClientBuilder>? configure = null)
