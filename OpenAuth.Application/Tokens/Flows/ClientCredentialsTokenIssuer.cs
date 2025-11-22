@@ -1,3 +1,4 @@
+using OpenAuth.Application.Exceptions;
 using OpenAuth.Application.Secrets.Interfaces;
 using OpenAuth.Application.Tokens.Dtos;
 using OpenAuth.Domain.Clients.ValueObjects;
@@ -18,9 +19,8 @@ public class ClientCredentialsTokenIssuer : TokenIssuerBase<ClientCredentialsTok
 
     protected override async Task<TokenContext> IssueToken(ClientCredentialsTokenCommand command, CancellationToken ct = default)
     {
-        var isValid = await _secretQueryService.ValidateSecretAsync(command.ClientId, command.ClientSecret, ct);
-        if (!isValid)
-            throw new UnauthorizedAccessException("Invalid client credentials.");
+        if (!await _secretQueryService.ValidateSecretAsync(command.ClientId, command.ClientSecret, ct))
+                throw new InvalidClientException("Invalid client credentials.");
 
         return new TokenContext(
             command.ClientId,

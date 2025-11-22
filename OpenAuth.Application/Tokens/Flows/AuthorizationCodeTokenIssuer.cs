@@ -1,7 +1,9 @@
 using OpenAuth.Application.Clients.Interfaces;
+using OpenAuth.Application.Exceptions;
 using OpenAuth.Application.OAuth.Authorization.Interfaces;
 using OpenAuth.Application.Secrets.Interfaces;
 using OpenAuth.Application.Tokens.Dtos;
+using OpenAuth.Application.Tokens.Services;
 using OpenAuth.Domain.Clients.ValueObjects;
 using TokenContext = OpenAuth.Application.Tokens.Dtos.TokenContext;
 
@@ -25,47 +27,47 @@ public class AuthorizationCodeTokenIssuer : TokenIssuerBase<AuthorizationCodeTok
     protected override async Task<TokenContext> IssueToken(AuthorizationCodeTokenCommand command, CancellationToken ct = default)
     {
         if (string.IsNullOrWhiteSpace(command.CodeVerifier) && string.IsNullOrWhiteSpace(command.ClientSecret))
-            throw new InvalidOperationException("Client credentials are required for this grant type.");
+            throw new InvalidRequestException("Either 'code_verifier' or 'client_secret' must be provided.");
         
         var grant = await _grantStore.GetAsync(command.Code)
-                    ?? throw new InvalidOperationException("Invalid authorization code.");
+                    ?? throw new InvalidGrantException("Invalid or unknown authorization code.");
         
         if (grant.Consumed)
-            throw new InvalidOperationException("Authorization code has already been used.");
+            throw new InvalidGrantException("Authorization code has already been redeemed.");
 
         if (grant.ClientId != command.ClientId)
-            throw new InvalidOperationException("Client ID mismatch.");
+            throw new InvalidGrantException("Authorization code was issued to another client.");
         
         if (grant.RedirectUri != command.RedirectUri)
-            throw new InvalidOperationException("Redirect URI mismatch.");
+            throw new InvalidGrantException("'redirect_uri' does not match authorization request.");
 
+        // TODO: remove as authorization code does not need to send scope.
         if (grant.Scopes != command.RequestedScopes)
-            throw new InvalidOperationException("Scopes mismatch.");
+            throw new InvalidGrantException("'scope' does not match authorization request.");
         
         // TODO: add better suited query
         var client = await _clientQueryService.GetTokenDataAsync(command.ClientId, ct)
-            ?? throw new InvalidOperationException("Client not found.");
+            ?? throw new InvalidClientException("Client is not registered.");
         
-        var audience = client.AllowedAudiences.FirstOrDefault(a => a.Name == command.RequestedAudience);
-        if (audience is null)
-            throw new InvalidOperationException("Invalid audience.");
+        var audience = client.AllowedAudiences.FirstOrDefault(a => a.Name == command.RequestedAudience)
+            ?? throw new InvalidScopeException("Requested audience is not allowed.");
         
         if (!grant.Scopes.All(s => audience.Scopes.Contains(s)))
-            throw new InvalidOperationException("Requested scopes not allowed for this audience.");
+            throw new InvalidScopeException("One or more scopes are not allowed.");
         
 
         if (grant.Pkce is not null)
         {
             if (!grant.Pkce.Matches(command.CodeVerifier))
-                throw new InvalidOperationException("Invalid PKCE code verifier.");
+                throw new InvalidGrantException("Invalid PKCE code verifier.");
         }
         else
         {
             if (string.IsNullOrWhiteSpace(command.ClientSecret))
-                throw new InvalidOperationException("Client secret is required for this grant type.");
+                throw new InvalidClientException("Client secret is required.");
             
             if (!await _secretQueryService.ValidateSecretAsync(command.ClientId, command.ClientSecret, ct))
-                throw new InvalidOperationException("Invalid client credentials.");
+                throw new InvalidClientException("Invalid client credentials.");
         }
 
         await _grantStore.RemoveAsync(grant.Code);

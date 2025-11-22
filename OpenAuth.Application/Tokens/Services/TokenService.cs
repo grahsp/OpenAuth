@@ -1,4 +1,5 @@
 using OpenAuth.Application.Clients.Interfaces;
+using OpenAuth.Application.Exceptions;
 using OpenAuth.Application.SigningKeys.Interfaces;
 using OpenAuth.Application.Tokens.Dtos;
 using OpenAuth.Application.Tokens.Flows;
@@ -29,22 +30,22 @@ public class TokenService : ITokenService
     public async Task<TokenGenerationResponse> IssueToken(TokenCommand command, CancellationToken ct = default)
     {
         if (!_strategies.TryGetValue(command.GrantType, out var issuer))
-            throw new InvalidOperationException("Invalid grant type.");
+            throw new InvalidRequestException("Invalid grant type.");
         
-        var tokenData = await _clientQueryService.GetTokenDataAsync(command.ClientId, ct);
-        if (tokenData is null)
-            throw new InvalidOperationException("Client not found.");
+        var tokenData = await _clientQueryService.GetTokenDataAsync(command.ClientId, ct) ??
+                        throw new InvalidClientException("Invalid client id.");
         
         if (!tokenData.AllowedGrantTypes.Contains(command.GrantType))
-            throw new InvalidOperationException($"Grant type '{command.GrantType}' is not allowed for this client.");
+            throw new UnauthorizedClientException("grant_type not allowed on client.");
         
+        // TODO: only include in flows that depend on audience and scope like client credentials.
         if (command.RequestedAudience is not null)
         {
             var audience = tokenData.AllowedAudiences
                 .FirstOrDefault(a => a.Name == command.RequestedAudience);
             if (audience is null)
-                throw new InvalidOperationException($"Invalid audience: '{command.RequestedAudience}'.");
-
+                throw new InvalidScopeException("Invalid audience.");
+        
             if (command.RequestedScopes is not null)
             {
                 var invalidScopes = command.RequestedScopes
@@ -53,7 +54,7 @@ public class TokenService : ITokenService
                     .ToArray();
                 
                 if (invalidScopes.Length > 0)
-                    throw new InvalidOperationException($"Invalid scopes: '{ string.Join(' ', invalidScopes) }'.");
+                    throw new InvalidScopeException("Invalid scope.");
             }
         }
 
@@ -61,7 +62,7 @@ public class TokenService : ITokenService
     
         var keyData = await _signingKeyQueryService.GetCurrentKeyDataAsync(ct);
         if (keyData is null)
-            throw new InvalidOperationException("No active signing key found.");
+            throw new ServerErrorException("No active signing key available.");
         
         var accessToken = _tokenGenerator.GenerateToken(tokenContext, tokenData, keyData);
         return new TokenGenerationResponse(accessToken, "Bearer", (int)tokenData.TokenLifetime.TotalSeconds);

@@ -1,5 +1,6 @@
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
+using OpenAuth.Application.Exceptions;
 using OpenAuth.Application.Secrets.Interfaces;
 using OpenAuth.Application.Tokens.Dtos;
 using OpenAuth.Application.Tokens.Flows;
@@ -63,7 +64,7 @@ public class ClientCredentialsTokenIssuerTests
     }
 
     [Fact]
-    public async Task IssueToken_WithInvalidCredentials_ThrowsUnauthorizedAccessException()
+    public async Task IssueToken_WithInvalidCredentials_ThrowsInvalidClientException()
     {
         var request = CreateRequest("invalid-secret");
 
@@ -71,10 +72,8 @@ public class ClientCredentialsTokenIssuerTests
             .ValidateSecretAsync(Arg.Any<ClientId>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(false);
 
-        var exception = await Assert.ThrowsAsync<UnauthorizedAccessException>(
+        await Assert.ThrowsAsync<InvalidClientException>(
             () => _issuer.IssueToken(request));
-
-        Assert.Equal("Invalid client credentials.", exception.Message);
     }
 
     [Fact]
