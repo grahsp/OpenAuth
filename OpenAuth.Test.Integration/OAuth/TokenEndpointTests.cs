@@ -24,7 +24,26 @@ public class TokenEndpointTests(ApiServerFixture fx) : IClassFixture<ApiServerFi
         });
 
         Assert.NotNull(response);
-        Assert.NotNull(response.Token);
+        Assert.NotNull(response.AccessToken);
+        Assert.Null(response.Error);
+    }
+    
+    [Fact]
+    public async Task ClientCredentials_WhenInvalidSecret_ReturnsInvalidClientError()
+    {
+        var client = await fx.CreateClientAsync(opts =>
+            opts.WithApplicationType("m2m"));
+
+        var response = await client.RequestTokenAsync(opts =>
+        {
+            opts.WithGrantType("client_credentials");
+            opts.WithAudience(DefaultValues.Audience);
+            opts.WithScopes(DefaultValues.Scopes);
+            opts.WithClientSecret("invalid-client-secret");
+        });
+
+        Assert.NotNull(response);
+        Assert.Equal("invalid_client", response.Error);
     }
 
     [Fact]
@@ -35,7 +54,7 @@ public class TokenEndpointTests(ApiServerFixture fx) : IClassFixture<ApiServerFi
 
         var grant = await client.AuthorizeAsync();
 
-        var result = await client.RequestTokenAsync(opts =>
+        var response = await client.RequestTokenAsync(opts =>
         {
             opts.WithGrantType("authorization_code");
             opts.WithCode(grant.Code);
@@ -46,8 +65,33 @@ public class TokenEndpointTests(ApiServerFixture fx) : IClassFixture<ApiServerFi
             opts.WithClientSecret(client.Secret);
         });
 
-        Assert.NotNull(result);
-        Assert.NotNull(result.Token);
+        Assert.NotNull(response);
+        Assert.NotNull(response.AccessToken);
+        Assert.Null(response.Error);
+    }
+    
+    [Fact]
+    public async Task AuhtorizationCode_WhenInvalidRedirectUri_ReturnsInvalidGrantError()
+    {
+        var client = await fx.CreateClientAsync(opts =>
+            opts.WithApplicationType("web"));
+
+        var grant = await client.AuthorizeAsync();
+
+        var response = await client.RequestTokenAsync(opts =>
+        {
+            opts.WithGrantType("authorization_code");
+            opts.WithCode(grant.Code);
+            opts.WithClientId(client.Id);
+            opts.WithRedirectUri("https://invalid-uri.com");
+            opts.WithAudience(DefaultValues.Audience);
+            opts.WithScopes(DefaultValues.Scopes);
+            opts.WithClientSecret(client.Secret);
+        });
+
+        Assert.NotNull(response);
+        Assert.Equal("invalid_grant", response.Error);
+        Assert.Contains("redirect_uri", response.ErrorDescription);
     }
 
     [Fact]
@@ -61,7 +105,7 @@ public class TokenEndpointTests(ApiServerFixture fx) : IClassFixture<ApiServerFi
         var grant = await client.AuthorizeAsync(opts =>
             opts.WithPkce(pkce.CodeChallenge, pkce.CodeChallengeMethod.ToString()));
 
-        var result = await client.RequestTokenAsync(opts =>
+        var response = await client.RequestTokenAsync(opts =>
         {
             opts.WithGrantType("authorization_code");
             opts.WithCode(grant.Code);
@@ -72,7 +116,35 @@ public class TokenEndpointTests(ApiServerFixture fx) : IClassFixture<ApiServerFi
             opts.WithCodeVerifier(verifier);
         });
 
-        Assert.NotNull(result);
-        Assert.NotNull(result.Token);       
+        Assert.NotNull(response);
+        Assert.NotNull(response.AccessToken);
+        Assert.Null(response.Error);
+    }
+    
+    [Fact]
+    public async Task AuthorizationCodePkce_WithInvalidVerifier_ReturnsInvalidGrantError()
+    {
+        var client = await fx.CreateClientAsync(opts =>
+            opts.WithApplicationType("spa"));
+
+        var (verifier, pkce) = PkceHelpers.Create();
+
+        var grant = await client.AuthorizeAsync(opts =>
+            opts.WithPkce(pkce.CodeChallenge, pkce.CodeChallengeMethod.ToString()));
+
+        var response = await client.RequestTokenAsync(opts =>
+        {
+            opts.WithGrantType("authorization_code");
+            opts.WithCode(grant.Code);
+            opts.WithClientId(client.Id);
+            opts.WithRedirectUri(DefaultValues.RedirectUri);
+            opts.WithAudience(DefaultValues.Audience);
+            opts.WithScopes(DefaultValues.Scopes);
+            opts.WithCodeVerifier("invalid-code-verifier");
+        });
+
+        Assert.NotNull(response);
+        Assert.Equal("invalid_grant", response.Error);
+        Assert.Contains("code verifier", response.ErrorDescription);
     }
 }

@@ -2,6 +2,7 @@ using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using OpenAuth.Application.Clients.Dtos;
 using OpenAuth.Application.Clients.Interfaces;
+using OpenAuth.Application.Exceptions;
 using OpenAuth.Application.SigningKeys.Dtos;
 using OpenAuth.Application.SigningKeys.Interfaces;
 using OpenAuth.Application.Tokens.Dtos;
@@ -74,7 +75,7 @@ public class TokenServiceTests
     }
 
     [Fact]
-    public async Task IssueToken_WithUnsupportedGrantType_ThrowsInvalidOperationException()
+    public async Task IssueToken_WithUnsupportedGrantType_ThrowsInvalidRequestException()
     {
         var tokenService = new TokenService(
             [_authorizationCodeIssuer],
@@ -84,14 +85,12 @@ public class TokenServiceTests
 
         var request = CreateValidRequest();
 
-        var ex = await Assert.ThrowsAsync<InvalidOperationException>(
+        await Assert.ThrowsAsync<InvalidRequestException>(
             () => tokenService.IssueToken(request));
-
-        Assert.Equal("Invalid grant type.", ex.Message);
     }
 
     [Fact]
-    public async Task IssueToken_WithMismatchedGrantType_ThrowsInvalidOperationException()
+    public async Task IssueToken_WithMismatchedGrantType_ThrowsInvalidRequestException()
     {
         var otherIssuer = Substitute.For<ITokenIssuer>();
         otherIssuer.GrantType.Returns(GrantType.AuthorizationCode);
@@ -102,14 +101,12 @@ public class TokenServiceTests
             _signingKeyQueryService,
             _tokenGenerator);
 
-        var ex = await Assert.ThrowsAsync<InvalidOperationException>(
+        await Assert.ThrowsAsync<InvalidRequestException>(
             () => tokenService.IssueToken(CreateValidRequest()));
-
-        Assert.Equal("Invalid grant type.", ex.Message);
     }
 
     [Fact]
-    public async Task IssueToken_WithClientNotFound_ThrowsInvalidOperationException()
+    public async Task IssueToken_WithClientNotFound_ThrowsInvalidClientException()
     {
         var request = CreateValidRequest();
 
@@ -117,14 +114,12 @@ public class TokenServiceTests
             .GetTokenDataAsync(Arg.Any<ClientId>(), Arg.Any<CancellationToken>())
             .Returns((ClientTokenData?)null);
 
-        var ex = await Assert.ThrowsAsync<InvalidOperationException>(
+        await Assert.ThrowsAsync<InvalidClientException>(
             () => _tokenService.IssueToken(request));
-
-        Assert.Equal("Client not found.", ex.Message);
     }
 
     [Fact]
-    public async Task IssueToken_WithInvalidScopes_ThrowsInvalidOperationException()
+    public async Task IssueToken_WithInvalidScopes_ThrowsInvalidScopeException()
     {
         var request = new AuthorizationCodeTokenCommandBuilder()
             .WithScopes("invalid_scopes")
@@ -136,14 +131,12 @@ public class TokenServiceTests
             .GetTokenDataAsync(request.ClientId, Arg.Any<CancellationToken>())
             .Returns(tokenData);
 
-        var ex = await Assert.ThrowsAsync<InvalidOperationException>(
+        await Assert.ThrowsAsync<InvalidScopeException>(
             () => _tokenService.IssueToken(request));
-
-        Assert.Contains($"Invalid scopes: '{ request.RequestedScopes }'", ex.Message);
     }
 
     [Fact]
-    public async Task IssueToken_WithNoActiveSigningKey_ThrowsInvalidOperationException()
+    public async Task IssueToken_WithNoActiveSigningKey_ThrowsServerErrorException()
     {
         var request = CreateValidRequest();
         var tokenData = CreateValidTokenData();
@@ -156,10 +149,8 @@ public class TokenServiceTests
         _signingKeyQueryService.GetCurrentKeyDataAsync(Arg.Any<CancellationToken>())
             .Returns((SigningKeyData?)null);
 
-        var ex = await Assert.ThrowsAsync<InvalidOperationException>(
+        await Assert.ThrowsAsync<ServerErrorException>(
             () => _tokenService.IssueToken(request));
-
-        Assert.Equal("No active signing key found.", ex.Message);
     }
 
     [Fact]

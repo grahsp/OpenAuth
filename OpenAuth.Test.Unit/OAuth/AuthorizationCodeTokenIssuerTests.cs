@@ -1,6 +1,7 @@
 using NSubstitute;
 using OpenAuth.Application.Clients.Dtos;
 using OpenAuth.Application.Clients.Interfaces;
+using OpenAuth.Application.Exceptions;
 using OpenAuth.Application.OAuth.Authorization.Interfaces;
 using OpenAuth.Application.Secrets.Interfaces;
 using OpenAuth.Application.Tokens.Dtos;
@@ -137,19 +138,17 @@ public class AuthorizationCodeTokenIssuerTests
     }
 
     [Fact]
-    public async Task IssueToken_WithUnknownCode_Throws()
+    public async Task IssueToken_WithUnknownCode_ThrowsInvalidGrantException()
     {
         var request = DefaultRequest() with { Code = "invalid-code" };
         _grantStore.GetAsync("invalid-code").Returns((AuthorizationGrant?)null);
 
-        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+        await Assert.ThrowsAsync<InvalidGrantException>(() =>
             _sut.IssueToken(request));
-
-        Assert.Equal("Invalid authorization code.", ex.Message);
     }
 
     [Fact]
-    public async Task IssueToken_WhenGrantIsConsumed_Throws()
+    public async Task IssueToken_WhenGrantIsConsumed_ThrowsInvalidGrantException()
     {
         var request = DefaultRequest();
         var grant = DefaultGrant();
@@ -157,14 +156,12 @@ public class AuthorizationCodeTokenIssuerTests
 
         SetupGrantStore(grant);
 
-        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+        await Assert.ThrowsAsync<InvalidGrantException>(() =>
             _sut.IssueToken(request));
-
-        Assert.Equal("Authorization code has already been used.", ex.Message);
     }
 
     [Fact]
-    public async Task IssueToken_WithClientIdMismatch_Throws()
+    public async Task IssueToken_WithClientIdMismatch_ThrowsInvalidGrantException()
     {
         SetupGrantStore(DefaultGrant());
         
@@ -173,26 +170,22 @@ public class AuthorizationCodeTokenIssuerTests
             .WithCodeVerifier(DefaultValues.CodeVerifier)
             .Build();
 
-        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+        await Assert.ThrowsAsync<InvalidGrantException>(() =>
             _sut.IssueToken(request));
-
-        Assert.Equal("Client ID mismatch.", ex.Message);
     }
 
     [Fact]
-    public async Task IssueToken_WithRedirectUriMismatch_Throws()
+    public async Task IssueToken_WithRedirectUriMismatch_ThrowsInvalidGrantException()
     {
         var request = DefaultRequest() with { RedirectUri = RedirectUri.Create("https://invalid.com") };
         SetupGrantStore(DefaultGrant());
 
-        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+        await Assert.ThrowsAsync<InvalidGrantException>(() =>
             _sut.IssueToken(request));
-
-        Assert.Equal("Redirect URI mismatch.", ex.Message);
     }
 
     [Fact]
-    public async Task IssueToken_WithMissingCodeVerifier_WhenPkceRequired_Throws()
+    public async Task IssueToken_WithMissingCodeVerifier_WhenPkceRequired_ThrowsInvalidGrantException()
     {
         var request = DefaultRequest() with { CodeVerifier = null };
         var grant = DefaultGrant("code-challenge");
@@ -200,14 +193,12 @@ public class AuthorizationCodeTokenIssuerTests
         SetupGrantStore(grant);
         SetupClientWithAudienceAndScopes();
 
-        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+        await Assert.ThrowsAsync<InvalidGrantException>(() =>
             _sut.IssueToken(request));
-
-        Assert.Equal("Invalid PKCE code verifier.", ex.Message);
     }
 
     [Fact]
-    public async Task IssueToken_WithInvalidCodeVerifier_WhenPkceRequired_Throws()
+    public async Task IssueToken_WithInvalidCodeVerifier_WhenPkceRequired_ThrowsInvalidGrantException()
     {
         var request = DefaultRequest() with { CodeVerifier = "invalid" };
         var grant = DefaultGrant("code-challenge");
@@ -215,9 +206,7 @@ public class AuthorizationCodeTokenIssuerTests
         SetupGrantStore(grant);
         SetupClientWithAudienceAndScopes();
 
-        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+        await Assert.ThrowsAsync<InvalidGrantException>(() =>
             _sut.IssueToken(request));
-
-        Assert.Equal("Invalid PKCE code verifier.", ex.Message);
     }
 }

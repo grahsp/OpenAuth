@@ -28,13 +28,13 @@ public class AuthorizationCodeFlowTests : IClassFixture<ApplicationFixture>, IAs
     }
     
     [Fact]
-    public async Task AuthorizationCodeFlow_WhenInvalidClientSecret_ThrowsException()
+    public async Task AuthorizationCodeFlow_WhenInvalidClientSecret_ThrowsInvalidClientException()
     {
         var client = await _fx.CreateClientAsync();
         
         await client.AuthorizeAsync();
     
-        await Assert.ThrowsAsync<InvalidOperationException>(()
+        await Assert.ThrowsAsync<InvalidClientException>(()
             => client.ExchangeCodeForTokenAsync(opts =>
                 opts.WithClientSecret("invalid-client-secret")
             ));
@@ -67,7 +67,7 @@ public class AuthorizationCodeFlowTests : IClassFixture<ApplicationFixture>, IAs
     }
     
     [Fact]
-    public async Task AuthorizationCodeFlowWithPkce_WhenInvalidCodeVerifier_ThrowsException()
+    public async Task AuthorizationCodeFlowWithPkce_WhenInvalidCodeVerifier_ThrowsInvalidGrantException()
     {
         var (_, pkce) = PkceHelpers.Create();
         var client = await _fx.CreateClientAsync(opts =>
@@ -76,7 +76,7 @@ public class AuthorizationCodeFlowTests : IClassFixture<ApplicationFixture>, IAs
         await client.AuthorizeAsync(opts =>
             opts.WithPkce(pkce));
     
-        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+        await Assert.ThrowsAsync<InvalidGrantException>(() =>
             client.ExchangeCodeForTokenAsync(opts =>
                 opts.WithCodeVerifier("invalid-code-verifier")));
     }

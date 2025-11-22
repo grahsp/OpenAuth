@@ -1,7 +1,7 @@
-using System.Net.Http.Json;
+using System.Text.Json;
 using Microsoft.AspNetCore.WebUtilities;
+using OpenAuth.Api.Connect.Token;
 using OpenAuth.Application.Clients.Services;
-using OpenAuth.Application.Tokens.Dtos;
 using OpenAuth.Test.Common.ValueObjects;
 using OpenAuth.Test.Integration.Infrastructure.Builders;
 
@@ -33,12 +33,12 @@ public class ExternalOAuthClient
 
     public async Task<AuthorizeResult> AuthorizeAsync(Action<AuthorizeUriBuilder>? configure = null)
     {
-        var builder = new AuthorizeUriBuilder();
+        var builder = new AuthorizeUriBuilder()
+            .WithClient(Id);
+        
         configure?.Invoke(builder);
 
-        var uri = builder
-            .WithClient(Id)
-            .Build();
+        var uri = builder.Build();
         
         var response = await _httpClient.GetAsync(uri);
         
@@ -57,7 +57,7 @@ public class ExternalOAuthClient
         return result;
     }
 
-    public async Task<TokenGenerationResponse?> RequestTokenAsync(Action<TokenRequestBuilder>? configure = null)
+    public async Task<TokenResponse?> RequestTokenAsync(Action<TokenRequestBuilder>? configure = null)
     {
         var builder = new TokenRequestBuilder()
             .WithClientId(Id)
@@ -66,10 +66,12 @@ public class ExternalOAuthClient
         configure?.Invoke(builder);
 
         var request = builder.Build();
-
         var content = new FormUrlEncodedContent(request);
+        
         var response = await _httpClient.PostAsync("/connect/token", content);
 
-        return await response.Content.ReadFromJsonAsync<TokenGenerationResponse>();
+        var json = await response.Content.ReadAsStringAsync();
+
+        return JsonSerializer.Deserialize<TokenResponse>(json);
     }
 }

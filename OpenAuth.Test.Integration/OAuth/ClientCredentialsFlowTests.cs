@@ -1,3 +1,4 @@
+using OpenAuth.Application.Exceptions;
 using OpenAuth.Test.Integration.Infrastructure.Fixtures;
 
 namespace OpenAuth.Test.Integration.OAuth;
@@ -26,12 +27,12 @@ public class ClientCredentialsFlowTests : IClassFixture<ApplicationFixture>, IAs
     }
      
     [Fact]
-    public async Task ClientCredentialsFlow_WhenInvalidClientSecret_Fails()
+    public async Task ClientCredentialsFlow_WhenInvalidClientSecret_ThrowsInvalidClientException()
     {
         var client = await _fx.CreateClientAsync(opts =>
             opts.WithApplicationType("m2m"));
     
-        await Assert.ThrowsAsync<UnauthorizedAccessException>(()
+        await Assert.ThrowsAsync<InvalidClientException>(()
             => client.RequestClientCredentialsTokenAsync(config =>
                 config.WithClientSecret("invalid-client-secret")
             ));
