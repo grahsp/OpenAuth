@@ -13,6 +13,7 @@ public class AuthorizeCommandBuilder
     private string _scopes = DefaultValues.Scopes;
     private string? _codeChallenge;
     private string? _codeMethod;
+    private string? _nonce;
 
     public AuthorizeCommandBuilder()
     {
@@ -55,6 +56,12 @@ public class AuthorizeCommandBuilder
         
         return this;
     }
+
+    public AuthorizeCommandBuilder WithNonce(string nonce)
+    {
+        _nonce = nonce;
+        return this;
+    }
     
     public AuthorizeCommand Build()
         => AuthorizeCommand.Create(
@@ -64,6 +71,7 @@ public class AuthorizeCommandBuilder
             _redirectUri,
             _scopes,
             _codeChallenge,
-            _codeMethod
+            _codeMethod,
+            _nonce
         );
 }

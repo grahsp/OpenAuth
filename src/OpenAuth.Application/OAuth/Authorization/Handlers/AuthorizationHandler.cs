@@ -4,6 +4,7 @@ using OpenAuth.Application.Clients.Dtos;
 using OpenAuth.Application.Clients.Interfaces;
 using OpenAuth.Application.Exceptions;
 using OpenAuth.Application.OAuth.Authorization.Interfaces;
+using OpenAuth.Application.Oidc;
 using OpenAuth.Domain.AuthorizationGrants;
 using OpenAuth.Domain.Clients.ValueObjects;
 
@@ -43,6 +44,7 @@ public class AuthorizationHandler : IAuthorizationHandler
             cmd.RedirectUri,
             cmd.Scopes,
             cmd.Pkce,
+            cmd.Nonce,
             _time.GetUtcNow()
         );
         
@@ -65,6 +67,9 @@ public class AuthorizationHandler : IAuthorizationHandler
         
         if (authData.IsClientPublic && cmd.Pkce is null)
             throw new InvalidRequestException("PKCE is required for public client.");
+
+        if (authData.IsClientPublic && cmd.Scopes.ContainsOpenIdScope() && string.IsNullOrWhiteSpace(cmd.Nonce))
+            throw new InvalidRequestException("Nonce is required in public OIDC flow.");
     }
     
     private static string GenerateCode()

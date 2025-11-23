@@ -24,4 +24,7 @@ public record AuthorizeRequestDto
     
     [FromQuery(Name = "code_challenge_method")]
     public string? CodeChallengeMethod { get; init; }
+    
+    [FromQuery(Name = "nonce")]
+    public string? Nonce { get; init; }
 }

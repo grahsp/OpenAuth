@@ -60,6 +60,7 @@ public class AuthorizationCodeTokenIssuerTests
             DefaultRedirect,
             DefaultScopes,
             pkce,
+            null,
             DateTimeOffset.UtcNow
         );
     }

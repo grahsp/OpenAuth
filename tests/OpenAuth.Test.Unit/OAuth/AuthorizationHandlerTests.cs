@@ -52,7 +52,8 @@ public class AuthorizationHandlerTests
             p.RedirectUri,
             p.Scopes,
             p.CodeChallenge,
-            p.CodeChallengeMethod
+            p.CodeChallengeMethod,
+            p.Nonce
         );
     }
 
@@ -182,4 +183,5 @@ public class AuthorizeCommandParameters
     public string Scopes { get; set; }
     public string? CodeChallenge { get; set; }
     public string? CodeChallengeMethod { get; set; }
+    public string? Nonce { get; set; }
 }

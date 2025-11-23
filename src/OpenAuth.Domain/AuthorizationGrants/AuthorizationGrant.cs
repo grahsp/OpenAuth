@@ -9,13 +9,16 @@ public class AuthorizationGrant
     public ClientId ClientId { get; }
     public string Subject { get; }
     public RedirectUri RedirectUri { get; }
-    public ScopeCollection Scopes { get; }
-    public DateTimeOffset CreatedAt { get; }
-    public DateTimeOffset ExpiresAt { get; }
+    public ScopeCollection GrantedScopes { get; }
     
     public string Code { get; }
     public Pkce? Pkce { get; }
     
+    public string? Nonce { get; }
+    
+    public DateTimeOffset CreatedAt { get; }
+    public DateTimeOffset ExpiresAt { get; }
+
     public bool Consumed { get; private set; }
 
     private AuthorizationGrant(
@@ -24,8 +27,9 @@ public class AuthorizationGrant
         ClientId clientId,
         string subject,
         RedirectUri redirectUri,
-        ScopeCollection scopes,
+        ScopeCollection grantedScopes,
         Pkce? pkce,
+        string? nonce,
         DateTimeOffset utcNow)
     {
         GrantType = grantType;
@@ -33,10 +37,11 @@ public class AuthorizationGrant
         Subject = subject;
         
         RedirectUri = redirectUri;
-        Scopes = scopes;
+        GrantedScopes = grantedScopes;
         
         Code = code;
         Pkce = pkce;
+        Nonce = nonce;
         
         CreatedAt = utcNow;
         ExpiresAt = utcNow.AddMinutes(10);
@@ -50,6 +55,7 @@ public class AuthorizationGrant
         RedirectUri redirectUri,
         ScopeCollection scopes,
         Pkce? pkce,
+        string? nonce,
         DateTimeOffset utcNow)
     {
         return new AuthorizationGrant(
@@ -60,6 +66,7 @@ public class AuthorizationGrant
             redirectUri,
             scopes,
             pkce,
+            nonce,
             utcNow
         );
     }

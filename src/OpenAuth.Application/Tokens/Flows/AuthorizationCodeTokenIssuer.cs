@@ -1,9 +1,9 @@
 using OpenAuth.Application.Clients.Interfaces;
 using OpenAuth.Application.Exceptions;
 using OpenAuth.Application.OAuth.Authorization.Interfaces;
+using OpenAuth.Application.Oidc;
 using OpenAuth.Application.Secrets.Interfaces;
 using OpenAuth.Application.Tokens.Dtos;
-using OpenAuth.Application.Tokens.Services;
 using OpenAuth.Domain.Clients.ValueObjects;
 using TokenContext = OpenAuth.Application.Tokens.Dtos.TokenContext;
 
@@ -42,7 +42,7 @@ public class AuthorizationCodeTokenIssuer : TokenIssuerBase<AuthorizationCodeTok
             throw new InvalidGrantException("'redirect_uri' does not match authorization request.");
 
         // TODO: remove as authorization code does not need to send scope.
-        if (grant.Scopes != command.RequestedScopes)
+        if (grant.GrantedScopes != command.RequestedScopes)
             throw new InvalidGrantException("'scope' does not match authorization request.");
         
         // TODO: add better suited query
@@ -52,7 +52,7 @@ public class AuthorizationCodeTokenIssuer : TokenIssuerBase<AuthorizationCodeTok
         var audience = client.AllowedAudiences.FirstOrDefault(a => a.Name == command.RequestedAudience)
             ?? throw new InvalidScopeException("Requested audience is not allowed.");
         
-        if (!grant.Scopes.All(s => audience.Scopes.Contains(s)))
+        if (!grant.GrantedScopes.All(s => audience.Scopes.Contains(s)))
             throw new InvalidScopeException("One or more scopes are not allowed.");
         
 
@@ -76,7 +76,7 @@ public class AuthorizationCodeTokenIssuer : TokenIssuerBase<AuthorizationCodeTok
             grant.ClientId,
             grant.ClientId.ToString(),
             command.RequestedAudience,
-            grant.Scopes
+            grant.GrantedScopes
         );
     }
 }
