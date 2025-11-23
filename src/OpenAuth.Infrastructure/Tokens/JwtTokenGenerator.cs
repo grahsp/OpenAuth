@@ -5,8 +5,8 @@ using Microsoft.IdentityModel.Tokens;
 using OpenAuth.Application.Clients.Dtos;
 using OpenAuth.Application.Security.Signing;
 using OpenAuth.Application.SigningKeys.Dtos;
+using OpenAuth.Application.Tokens.Configurations;
 using OpenAuth.Application.Tokens.Interfaces;
-using OpenAuth.Infrastructure.Configurations;
 using TokenContext = OpenAuth.Application.Tokens.Dtos.TokenContext;
 
 namespace OpenAuth.Infrastructure.Tokens;
