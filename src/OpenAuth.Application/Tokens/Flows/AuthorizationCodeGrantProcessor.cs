@@ -1,3 +1,4 @@
+using OpenAuth.Application.Clients.Dtos;
 using OpenAuth.Application.Exceptions;
 using OpenAuth.Application.OAuth.Authorization.Interfaces;
 using OpenAuth.Application.Tokens.Dtos;
@@ -18,12 +19,12 @@ public class AuthorizationCodeGrantProcessor : TokenRequestProcessor<Authorizati
         _validator = validator;
     }
     
-    protected override async Task<TokenContext> ProcessAsync(AuthorizationCodeTokenCommand command, CancellationToken ct = default)
+    protected override async Task<TokenContext> ProcessAsync(AuthorizationCodeTokenCommand command, ClientTokenData tokenData, CancellationToken ct = default)
     {
         var authorizationGrant = await _grantStore.GetAsync(command.Code)
                     ?? throw new InvalidGrantException("Invalid or unknown authorization code.");
 
-        var result = await _validator.ValidateAsync(command, authorizationGrant, ct);
+        var result = await _validator.ValidateAsync(command, tokenData, authorizationGrant, ct);
 
         authorizationGrant.Consume();
         await _grantStore.RemoveAsync(authorizationGrant.Code);

@@ -1,4 +1,4 @@
-using OpenAuth.Application.Clients.Interfaces;
+using OpenAuth.Application.Clients.Dtos;
 using OpenAuth.Application.Exceptions;
 using OpenAuth.Application.Secrets.Interfaces;
 using OpenAuth.Application.Tokens.Dtos;
@@ -8,16 +8,14 @@ namespace OpenAuth.Application.Tokens.Flows;
 
 public class AuthorizationCodeValidator : IAuthorizationCodeValidator
 {
-    private readonly IClientQueryService _clientQueryService;
     private readonly ISecretQueryService _secretQueryService;
     
-    public AuthorizationCodeValidator(IClientQueryService clientQueryService, ISecretQueryService secretQueryService)
+    public AuthorizationCodeValidator(ISecretQueryService secretQueryService)
     {
-        _clientQueryService = clientQueryService;
         _secretQueryService = secretQueryService;
     }
 
-    public async Task<AuthorizationCodeValidationResult> ValidateAsync(AuthorizationCodeTokenCommand command, AuthorizationGrant authorizationGrant, CancellationToken ct = default)
+    public async Task<AuthorizationCodeValidationResult> ValidateAsync(AuthorizationCodeTokenCommand command, ClientTokenData tokenData, AuthorizationGrant authorizationGrant, CancellationToken ct = default)
     {
         if (string.IsNullOrWhiteSpace(command.CodeVerifier) && string.IsNullOrWhiteSpace(command.ClientSecret))
             throw new InvalidRequestException("Either 'code_verifier' or 'client_secret' must be provided.");
@@ -35,11 +33,7 @@ public class AuthorizationCodeValidator : IAuthorizationCodeValidator
         if (authorizationGrant.GrantedScopes != command.RequestedScopes)
             throw new InvalidGrantException("'scope' does not match authorization request.");
         
-        // TODO: add better suited query
-        var client = await _clientQueryService.GetTokenDataAsync(command.ClientId, ct)
-                     ?? throw new InvalidClientException("Client is not registered.");
-        
-        var audience = client.AllowedAudiences.FirstOrDefault(a => a.Name == command.RequestedAudience)
+        var audience = tokenData.AllowedAudiences.FirstOrDefault(a => a.Name == command.RequestedAudience)
                        ?? throw new InvalidScopeException("Requested audience is not allowed.");
         
         if (!authorizationGrant.GrantedScopes.All(s => audience.Scopes.Contains(s)))
@@ -59,6 +53,6 @@ public class AuthorizationCodeValidator : IAuthorizationCodeValidator
                 throw new InvalidClientException("Invalid client credentials.");
         }
 
-        return new AuthorizationCodeValidationResult(authorizationGrant, client, audience);
+        return new AuthorizationCodeValidationResult(authorizationGrant, tokenData, audience);
     }
 }
