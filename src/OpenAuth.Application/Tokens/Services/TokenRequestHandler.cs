@@ -1,9 +1,7 @@
 using OpenAuth.Application.Clients.Interfaces;
 using OpenAuth.Application.Exceptions;
-using OpenAuth.Application.SigningKeys.Interfaces;
 using OpenAuth.Application.Tokens.Dtos;
 using OpenAuth.Application.Tokens.Flows;
-using OpenAuth.Application.Tokens.Interfaces;
 using OpenAuth.Domain.Clients.ValueObjects;
 
 namespace OpenAuth.Application.Tokens.Services;
@@ -12,15 +10,14 @@ public class TokenRequestHandler : ITokenRequestHandler
 {
     private readonly Dictionary<GrantType, ITokenRequestProcessor> _strategies;
     private readonly IClientQueryService _clientQueryService;
-    private readonly ISigningKeyQueryService _signingKeyQueryService;
-    private readonly IJwtTokenGenerator _tokenGenerator;
+
+    private readonly ITokenHandler<AccessTokenContext> _accessTokens;
     
-    public TokenRequestHandler(IEnumerable<ITokenRequestProcessor> strategies, IClientQueryService clientQueryService, ISigningKeyQueryService signingKeyQueryService, IJwtTokenGenerator tokenGenerator)
+    public TokenRequestHandler(IEnumerable<ITokenRequestProcessor> strategies, IClientQueryService clientQueryService, ITokenHandler<AccessTokenContext> accessTokens)
     {
         _strategies = strategies.ToDictionary(i => i.GrantType);
         _clientQueryService = clientQueryService;
-        _signingKeyQueryService = signingKeyQueryService;
-        _tokenGenerator = tokenGenerator;
+        _accessTokens = accessTokens;
         
         if (_strategies.Count == 0)
             throw new ArgumentException("No token issuer strategies registered.", nameof(strategies));
@@ -40,11 +37,10 @@ public class TokenRequestHandler : ITokenRequestHandler
 
         var tokenContext = await processor.ProcessAsync(command, tokenData, ct);
 
-        var keyData = await _signingKeyQueryService.GetCurrentKeyDataAsync(ct);
-        if (keyData is null)
-            throw new ServerErrorException("No active signing key available.");
+        var accessTokenContext = new AccessTokenContext(tokenData, tokenContext.Subject, command.RequestedScopes,
+            command.RequestedAudience);
         
-        var accessToken = _tokenGenerator.GenerateToken(tokenContext, tokenData, keyData);
+        var accessToken = await _accessTokens.CreateAsync(accessTokenContext, ct);
         return new TokenGenerationResponse(accessToken, "Bearer", (int)tokenData.TokenLifetime.TotalSeconds);
     }
 }

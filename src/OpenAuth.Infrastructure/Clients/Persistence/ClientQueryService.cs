@@ -55,6 +55,7 @@ public class ClientQueryService : IClientQueryService
             .AsNoTracking()
             .Where(c => c.Id == id)
             .Select(c => new ClientTokenData(
+                c.Id,
                 c.AllowedAudiences,
                 c.AllowedGrantTypes,
                 c.TokenLifetime))

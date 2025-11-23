@@ -8,7 +8,9 @@ using OpenAuth.Application.Jwks.Interfaces;
 using OpenAuth.Application.Jwks.Services;
 using OpenAuth.Application.OAuth.Authorization.Handlers;
 using OpenAuth.Application.OAuth.Authorization.Interfaces;
+using OpenAuth.Application.OAuth.Jwts;
 using OpenAuth.Application.OAuth.Stores;
+using OpenAuth.Application.Oidc;
 using OpenAuth.Application.Secrets.Interfaces;
 using OpenAuth.Application.Secrets.Services;
 using OpenAuth.Application.Security.Signing;
@@ -26,7 +28,9 @@ using OpenAuth.Domain.Users;
 using OpenAuth.Infrastructure.Clients.Persistence;
 using OpenAuth.Infrastructure.Clients.Secrets;
 using OpenAuth.Infrastructure.Clients.Secrets.Persistence;
+using OpenAuth.Infrastructure.Identity;
 using OpenAuth.Infrastructure.Keys.Jwks;
+using OpenAuth.Infrastructure.OAuth.Jwt;
 using OpenAuth.Infrastructure.OAuth.Persistence;
 using OpenAuth.Infrastructure.Persistence;
 using OpenAuth.Infrastructure.Security.Hashing;
@@ -117,8 +121,14 @@ public class CompositionRoot
         
         // Token Generator
         builder.Configure<JwtOptions>(opts => opts.Issuer = "test-issuer");
+        builder.AddScoped<IJwtSigner, JwtSigner>();
+        builder.AddScoped<IOidcUserClaimsProvider, OidcUserClaimsProvider>();
+        
         builder.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
         builder.AddScoped<IJwtBuilderFactory, JwtBuilderFactory>();
+
+        builder.AddScoped<ITokenHandler<AccessTokenContext>, AccessTokenHandler>();
+        builder.AddScoped<ITokenHandler<IdTokenContext>, IdTokenHandler>();
 
         return builder.BuildServiceProvider();
     }
