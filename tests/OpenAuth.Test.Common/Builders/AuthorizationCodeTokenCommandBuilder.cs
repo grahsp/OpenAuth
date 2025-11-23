@@ -20,7 +20,7 @@ public class AuthorizationCodeTokenCommandBuilder
     public AuthorizationCodeTokenCommandBuilder FromAuthorizationGrant(AuthorizationGrant grant)
     {
         _clientId = grant.ClientId.ToString();
-        _scopes = grant.Scopes.ToString();
+        _scopes = grant.GrantedScopes.ToString();
         _redirectUri = grant.RedirectUri.ToString();
         _code = grant.Code;
 

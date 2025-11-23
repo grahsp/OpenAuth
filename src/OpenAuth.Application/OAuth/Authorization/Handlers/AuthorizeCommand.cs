@@ -12,6 +12,7 @@ public record AuthorizeCommand
     public RedirectUri RedirectUri { get; init; }
     public ScopeCollection Scopes { get; init; }
     public Pkce? Pkce { get; init; }
+    public string? Nonce { get; init; }
     
     private AuthorizeCommand(
         string responseType,
@@ -19,7 +20,8 @@ public record AuthorizeCommand
         string subject,
         RedirectUri redirectUri,
         ScopeCollection scopes,
-        Pkce? pkce)
+        Pkce? pkce,
+        string? nonce)
     {
         ResponseType = responseType;
         ClientId = clientId;
@@ -36,7 +38,8 @@ public record AuthorizeCommand
         string redirectUri,
         string scopes,
         string? codeChallenge,
-        string? codeChallengeMethod)
+        string? codeChallengeMethod,
+        string? nonce)
     {
         if (!ClientId.TryCreate(clientId, out var id))
             throw new MalformedClientException("Invalid client_id parameter.");
@@ -50,6 +53,6 @@ public record AuthorizeCommand
         if (!Pkce.TryParse(codeChallenge, codeChallengeMethod, out var pkce))
             throw new MalformedPkceException("Invalid PKCE parameters.");
 
-        return new AuthorizeCommand(responseType, id, subject, uri, scope, pkce);
+        return new AuthorizeCommand(responseType, id, subject, uri, scope, pkce, nonce);
     }
 }

@@ -25,7 +25,8 @@ public class AuthorizeCommandTests
             ValidRedirectUri,
             ValidScope,
             ValidPkceChallenge,
-            ValidPkceMethod
+            ValidPkceMethod,
+            null
         );
         
         Assert.Equal("code", command.ResponseType);
@@ -48,6 +49,7 @@ public class AuthorizeCommandTests
             ValidSubject,
             ValidRedirectUri,
             ValidScope,
+            null,
             null,
             null
         );
@@ -73,7 +75,8 @@ public class AuthorizeCommandTests
                 ValidRedirectUri,
                 ValidScope,
                 ValidPkceChallenge,
-                ValidPkceMethod
+                ValidPkceMethod,
+                null
             ));
     }
     
@@ -90,7 +93,8 @@ public class AuthorizeCommandTests
                 invalidRedirectUri,
                 ValidScope,
                 ValidPkceChallenge,
-                ValidPkceMethod
+                ValidPkceMethod,
+                null
             ));
     }
     
@@ -107,7 +111,8 @@ public class AuthorizeCommandTests
                 ValidRedirectUri,
                 invalidScope,
                 ValidPkceChallenge,
-                ValidPkceMethod
+                ValidPkceMethod,
+                null
             ));
     }
     
@@ -122,7 +127,8 @@ public class AuthorizeCommandTests
                 ValidRedirectUri,
                 ValidScope,
                 null,
-                ValidPkceMethod
+                ValidPkceMethod,
+                null
             ));
     }
     
@@ -137,6 +143,7 @@ public class AuthorizeCommandTests
                 ValidRedirectUri,
                 ValidScope,
                 ValidPkceChallenge,
+                null,
                 null
             ));
     }

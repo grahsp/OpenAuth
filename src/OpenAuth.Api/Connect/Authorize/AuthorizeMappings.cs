@@ -14,7 +14,8 @@ public static class AuthorizeMappings
             request.RedirectUri,
             request.Scopes,
             request.CodeChallenge,
-            request.CodeChallengeMethod);
+            request.CodeChallengeMethod,
+            request.Nonce);
     
     public static string ToRedirectUri(this AuthorizationGrant grant, string? state)
         => QueryHelpers.AddQueryString(
