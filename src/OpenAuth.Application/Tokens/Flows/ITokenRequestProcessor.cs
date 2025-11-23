@@ -3,7 +3,7 @@ using OpenAuth.Domain.Clients.ValueObjects;
 
 namespace OpenAuth.Application.Tokens.Flows;
 
-public interface ITokenIssuer
+public interface ITokenRequestProcessor
 {
     GrantType GrantType { get; }
     Task<TokenContext> IssueToken(TokenCommand command, CancellationToken ct = default);

@@ -3,10 +3,10 @@ using OpenAuth.Domain.Clients.ValueObjects;
 
 namespace OpenAuth.Application.Tokens.Flows;
 
-public abstract class TokenIssuerBase<TRequest> : ITokenIssuer where TRequest : TokenCommand
+public abstract class TokenRequestProcessor<TRequest> : ITokenRequestProcessor where TRequest : TokenCommand
 {
     public abstract GrantType GrantType { get; }
-    protected abstract Task<TokenContext> IssueToken(TRequest request, CancellationToken ct = default);
+    protected abstract Task<TokenContext> ProcessAsync(TRequest request, CancellationToken ct = default);
     
     public async Task<TokenContext> IssueToken(TokenCommand command, CancellationToken ct = default)
     {
@@ -14,6 +14,6 @@ public abstract class TokenIssuerBase<TRequest> : ITokenIssuer where TRequest : 
             throw new InvalidOperationException(
                 $"Grant type '{GrantType}' does not support request type '{command.GetType().Name}'.");
         
-        return await IssueToken(typedRequest, ct);
+        return await ProcessAsync(typedRequest, ct);
     }
 }

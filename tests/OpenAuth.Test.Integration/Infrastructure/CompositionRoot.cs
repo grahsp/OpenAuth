@@ -101,9 +101,10 @@ public class CompositionRoot
         
         // OAuth Services
         builder.AddScoped<ITokenService, TokenService>();
-        builder.AddScoped<ITokenIssuer, ClientCredentialsTokenIssuer>();
-        builder.AddScoped<ITokenIssuer, AuthorizationCodeTokenIssuer>();
+        builder.AddScoped<ITokenRequestProcessor, ClientCredentialsTokenIssuer>();
+        builder.AddScoped<ITokenRequestProcessor, AuthorizationCodeGrantProcessor>();
 
+        builder.AddScoped<IAuthorizationCodeValidator, AuthorizationCodeValidator>();
         builder.AddScoped<IAuthorizationHandler, AuthorizationHandler>();
         
         builder.AddScoped<IAuthorizationGrantStore, AuthorizationGrantStore>();
