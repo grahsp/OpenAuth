@@ -1,20 +1,20 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenAuth.Api", "OpenAuth.Api\OpenAuth.Api.csproj", "{9FEEAE9C-2013-40E4-A807-2C53B4C0D45B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenAuth.Api", "src\OpenAuth.Api\OpenAuth.Api.csproj", "{9FEEAE9C-2013-40E4-A807-2C53B4C0D45B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenAuth.Domain", "OpenAuth.Domain\OpenAuth.Domain.csproj", "{4E9227EE-E8CC-42CC-B801-58627CB4BD31}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenAuth.Domain", "src\OpenAuth.Domain\OpenAuth.Domain.csproj", "{4E9227EE-E8CC-42CC-B801-58627CB4BD31}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenAuth.Infrastructure", "OpenAuth.Infrastructure\OpenAuth.Infrastructure.csproj", "{9C4B5D4C-C3B5-4F36-847C-B4809C005633}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenAuth.Infrastructure", "src\OpenAuth.Infrastructure\OpenAuth.Infrastructure.csproj", "{9C4B5D4C-C3B5-4F36-847C-B4809C005633}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenAuth.Application", "OpenAuth.Application\OpenAuth.Application.csproj", "{9B382DBF-F8C1-40AB-9C0C-4FEEB8ED198D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenAuth.Application", "src\OpenAuth.Application\OpenAuth.Application.csproj", "{9B382DBF-F8C1-40AB-9C0C-4FEEB8ED198D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{F0ED80DE-4B27-447B-B0A5-4053B2C7BFAD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenAuth.Test.Common", "OpenAuth.Test.Common\OpenAuth.Test.Common.csproj", "{74C0AA54-2106-4E03-98A9-BC318DD0D64A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenAuth.Test.Common", "tests\OpenAuth.Test.Common\OpenAuth.Test.Common.csproj", "{74C0AA54-2106-4E03-98A9-BC318DD0D64A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenAuth.Test.Unit", "OpenAuth.Test.Unit\OpenAuth.Test.Unit.csproj", "{A76FB974-5B0C-445F-BAD8-81A7195FDEAF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenAuth.Test.Unit", "tests\OpenAuth.Test.Unit\OpenAuth.Test.Unit.csproj", "{A76FB974-5B0C-445F-BAD8-81A7195FDEAF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenAuth.Test.Integration", "OpenAuth.Test.Integration\OpenAuth.Test.Integration.csproj", "{E98058C1-3005-4DD4-8A07-09D4A969F1F6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenAuth.Test.Integration", "tests\OpenAuth.Test.Integration\OpenAuth.Test.Integration.csproj", "{E98058C1-3005-4DD4-8A07-09D4A969F1F6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
