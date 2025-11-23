@@ -49,7 +49,7 @@ public class ApplicationFixture : IAsyncLifetime, IDisposable
         var services = scope.ServiceProvider;
         
         var authorizationHandler = services.GetRequiredService<IAuthorizationHandler>();
-        var tokenService = services.GetRequiredService<ITokenService>();
+        var tokenService = services.GetRequiredService<ITokenRequestHandler>();
         
         return new InternalOAuthClient(authorizationHandler, tokenService, registered);
     }

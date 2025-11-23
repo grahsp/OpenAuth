@@ -18,12 +18,12 @@ public class InternalOAuthClient
     
 
     private readonly IAuthorizationHandler _authorizationHandler;
-    private readonly ITokenService _tokenService;
+    private readonly ITokenRequestHandler _tokenRequestHandler;
     
-    public InternalOAuthClient(IAuthorizationHandler authorizationHandler, ITokenService tokenService, RegisteredClientResponse registered)
+    public InternalOAuthClient(IAuthorizationHandler authorizationHandler, ITokenRequestHandler tokenRequestHandler, RegisteredClientResponse registered)
     {
         _authorizationHandler = authorizationHandler;
-        _tokenService = tokenService;
+        _tokenRequestHandler = tokenRequestHandler;
         
         var client = registered.Client;
         Id = client.Id.ToString();
@@ -62,7 +62,7 @@ public class InternalOAuthClient
         config?.Invoke(builder);
 
         var request = builder.Build();
-        return await _tokenService.IssueToken(request);
+        return await _tokenRequestHandler.IssueToken(request);
     }
 
     public async Task<TokenGenerationResponse> RequestClientCredentialsTokenAsync(Action<ClientCredentialsTokenCommandBuilder>? config = null)
@@ -77,6 +77,6 @@ public class InternalOAuthClient
         config?.Invoke(builder);
 
         var request = builder.Build();
-        return await _tokenService.IssueToken(request);
+        return await _tokenRequestHandler.IssueToken(request);
     }
 }

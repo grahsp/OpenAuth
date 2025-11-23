@@ -100,8 +100,8 @@ public class CompositionRoot
         builder.AddScoped<ISigningCredentialsFactory, SigningCredentialsFactory>();
         
         // OAuth Services
-        builder.AddScoped<ITokenService, TokenService>();
-        builder.AddScoped<ITokenRequestProcessor, ClientCredentialsTokenIssuer>();
+        builder.AddScoped<ITokenRequestHandler, TokenRequestHandler>();
+        builder.AddScoped<ITokenRequestProcessor, ClientCredentialsRequestProcessor>();
         builder.AddScoped<ITokenRequestProcessor, AuthorizationCodeGrantProcessor>();
 
         builder.AddScoped<IAuthorizationCodeValidator, AuthorizationCodeValidator>();

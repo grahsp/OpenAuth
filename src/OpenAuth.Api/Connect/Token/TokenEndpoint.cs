@@ -8,13 +8,13 @@ public static class TokenEndpoint
     public static IEndpointRouteBuilder MapTokenEndpoint(this IEndpointRouteBuilder app)
     {
         app.MapPost("/connect/token", async (
-                ITokenService service,
+                ITokenRequestHandler requestHandler,
                 [AsParameters] TokenRequest dto) =>
             {
                 try
                 {
                     var command = dto.ToCommand();
-                    var result = await service.IssueToken(command);
+                    var result = await requestHandler.IssueToken(command);
 
                     var response = TokenResponse.Success(result.Token, result.TokenType, result.ExpiresIn);
                     return Results.Ok(response);

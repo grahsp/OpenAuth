@@ -122,8 +122,8 @@ public class Program
         builder.Services.AddScoped<ISigningCredentialsFactory, SigningCredentialsFactory>();
         
         // OAuth Services
-        builder.Services.AddScoped<ITokenService, TokenService>();
-        builder.Services.AddScoped<ITokenRequestProcessor, ClientCredentialsTokenIssuer>();
+        builder.Services.AddScoped<ITokenRequestHandler, TokenRequestHandler>();
+        builder.Services.AddScoped<ITokenRequestProcessor, ClientCredentialsRequestProcessor>();
         builder.Services.AddScoped<ITokenRequestProcessor, AuthorizationCodeGrantProcessor>();
 
         builder.Services.AddScoped<IAuthorizationCodeValidator, AuthorizationCodeValidator>();

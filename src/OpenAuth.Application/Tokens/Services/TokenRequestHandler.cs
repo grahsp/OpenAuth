@@ -8,14 +8,14 @@ using OpenAuth.Domain.Clients.ValueObjects;
 
 namespace OpenAuth.Application.Tokens.Services;
 
-public class TokenService : ITokenService
+public class TokenRequestHandler : ITokenRequestHandler
 {
     private readonly Dictionary<GrantType, ITokenRequestProcessor> _strategies;
     private readonly IClientQueryService _clientQueryService;
     private readonly ISigningKeyQueryService _signingKeyQueryService;
     private readonly IJwtTokenGenerator _tokenGenerator;
     
-    public TokenService(IEnumerable<ITokenRequestProcessor> strategies, IClientQueryService clientQueryService, ISigningKeyQueryService signingKeyQueryService, IJwtTokenGenerator tokenGenerator)
+    public TokenRequestHandler(IEnumerable<ITokenRequestProcessor> strategies, IClientQueryService clientQueryService, ISigningKeyQueryService signingKeyQueryService, IJwtTokenGenerator tokenGenerator)
     {
         _strategies = strategies.ToDictionary(i => i.GrantType);
         _clientQueryService = clientQueryService;
@@ -29,7 +29,7 @@ public class TokenService : ITokenService
     
     public async Task<TokenGenerationResponse> IssueToken(TokenCommand command, CancellationToken ct = default)
     {
-        if (!_strategies.TryGetValue(command.GrantType, out var issuer))
+        if (!_strategies.TryGetValue(command.GrantType, out var processor))
             throw new InvalidRequestException("Invalid grant type.");
         
         var tokenData = await _clientQueryService.GetTokenDataAsync(command.ClientId, ct) ??
@@ -37,29 +37,9 @@ public class TokenService : ITokenService
         
         if (!tokenData.AllowedGrantTypes.Contains(command.GrantType))
             throw new UnauthorizedClientException("grant_type not allowed on client.");
-        
-        // TODO: only include in flows that depend on audience and scope like client credentials.
-        if (command.RequestedAudience is not null)
-        {
-            var audience = tokenData.AllowedAudiences
-                .FirstOrDefault(a => a.Name == command.RequestedAudience);
-            if (audience is null)
-                throw new InvalidScopeException("Invalid audience.");
-        
-            if (command.RequestedScopes is not null)
-            {
-                var invalidScopes = command.RequestedScopes
-                    .Except(audience.Scopes)
-                    .Select(s => s.Value)
-                    .ToArray();
-                
-                if (invalidScopes.Length > 0)
-                    throw new InvalidScopeException("Invalid scope.");
-            }
-        }
 
-        var tokenContext = await issuer.IssueToken(command, ct);
-    
+        var tokenContext = await processor.ProcessAsync(command, tokenData, ct);
+
         var keyData = await _signingKeyQueryService.GetCurrentKeyDataAsync(ct);
         if (keyData is null)
             throw new ServerErrorException("No active signing key available.");
