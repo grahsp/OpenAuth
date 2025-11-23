@@ -10,12 +10,12 @@ namespace OpenAuth.Application.Tokens.Services;
 
 public class TokenService : ITokenService
 {
-    private readonly Dictionary<GrantType, ITokenIssuer> _strategies;
+    private readonly Dictionary<GrantType, ITokenRequestProcessor> _strategies;
     private readonly IClientQueryService _clientQueryService;
     private readonly ISigningKeyQueryService _signingKeyQueryService;
     private readonly IJwtTokenGenerator _tokenGenerator;
     
-    public TokenService(IEnumerable<ITokenIssuer> strategies, IClientQueryService clientQueryService, ISigningKeyQueryService signingKeyQueryService, IJwtTokenGenerator tokenGenerator)
+    public TokenService(IEnumerable<ITokenRequestProcessor> strategies, IClientQueryService clientQueryService, ISigningKeyQueryService signingKeyQueryService, IJwtTokenGenerator tokenGenerator)
     {
         _strategies = strategies.ToDictionary(i => i.GrantType);
         _clientQueryService = clientQueryService;

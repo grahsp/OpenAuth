@@ -22,8 +22,8 @@ public class TokenServiceTests
     private readonly IClientQueryService _clientQueryService;
     private readonly ISigningKeyQueryService _signingKeyQueryService;
     private readonly IJwtTokenGenerator _tokenGenerator;
-    private readonly ITokenIssuer _clientCredentialsIssuer;
-    private readonly ITokenIssuer _authorizationCodeIssuer;
+    private readonly ITokenRequestProcessor _clientCredentialsRequestProcessor;
+    private readonly ITokenRequestProcessor _authorizationCodeRequestProcessor;
     private readonly TokenService _tokenService;
 
     public TokenServiceTests()
@@ -31,14 +31,14 @@ public class TokenServiceTests
         _clientQueryService = Substitute.For<IClientQueryService>();
         _signingKeyQueryService = Substitute.For<ISigningKeyQueryService>();
         _tokenGenerator = Substitute.For<IJwtTokenGenerator>();
-        _clientCredentialsIssuer = Substitute.For<ITokenIssuer>();
-        _authorizationCodeIssuer = Substitute.For<ITokenIssuer>();
+        _clientCredentialsRequestProcessor = Substitute.For<ITokenRequestProcessor>();
+        _authorizationCodeRequestProcessor = Substitute.For<ITokenRequestProcessor>();
 
-        _clientCredentialsIssuer.GrantType.Returns(GrantType.ClientCredentials);
-        _authorizationCodeIssuer.GrantType.Returns(GrantType.AuthorizationCode);
+        _clientCredentialsRequestProcessor.GrantType.Returns(GrantType.ClientCredentials);
+        _authorizationCodeRequestProcessor.GrantType.Returns(GrantType.AuthorizationCode);
 
         _tokenService = new TokenService(
-            [_clientCredentialsIssuer, _authorizationCodeIssuer],
+            [_clientCredentialsRequestProcessor, _authorizationCodeRequestProcessor],
             _clientQueryService,
             _signingKeyQueryService,
             _tokenGenerator);
@@ -48,8 +48,8 @@ public class TokenServiceTests
     [Fact]
     public void Constructor_WithDuplicateGrantTypes_ThrowsArgumentException()
     {
-        var issuer1 = Substitute.For<ITokenIssuer>();
-        var issuer2 = Substitute.For<ITokenIssuer>();
+        var issuer1 = Substitute.For<ITokenRequestProcessor>();
+        var issuer2 = Substitute.For<ITokenRequestProcessor>();
         issuer1.GrantType.Returns(GrantType.ClientCredentials);
         issuer2.GrantType.Returns(GrantType.ClientCredentials);
 
@@ -78,7 +78,7 @@ public class TokenServiceTests
     public async Task IssueToken_WithUnsupportedGrantType_ThrowsInvalidRequestException()
     {
         var tokenService = new TokenService(
-            [_authorizationCodeIssuer],
+            [_authorizationCodeRequestProcessor],
             _clientQueryService,
             _signingKeyQueryService,
             _tokenGenerator);
@@ -92,7 +92,7 @@ public class TokenServiceTests
     [Fact]
     public async Task IssueToken_WithMismatchedGrantType_ThrowsInvalidRequestException()
     {
-        var otherIssuer = Substitute.For<ITokenIssuer>();
+        var otherIssuer = Substitute.For<ITokenRequestProcessor>();
         otherIssuer.GrantType.Returns(GrantType.AuthorizationCode);
 
         var tokenService = new TokenService(
@@ -144,7 +144,7 @@ public class TokenServiceTests
 
         _clientQueryService.GetTokenDataAsync(Arg.Any<ClientId>(), Arg.Any<CancellationToken>())
             .Returns(tokenData);
-        _clientCredentialsIssuer.IssueToken(Arg.Any<TokenCommand>(), Arg.Any<CancellationToken>())
+        _clientCredentialsRequestProcessor.IssueToken(Arg.Any<TokenCommand>(), Arg.Any<CancellationToken>())
             .Returns(tokenContext);
         _signingKeyQueryService.GetCurrentKeyDataAsync(Arg.Any<CancellationToken>())
             .Returns((SigningKeyData?)null);
@@ -163,7 +163,7 @@ public class TokenServiceTests
 
         _clientQueryService.GetTokenDataAsync(Arg.Any<ClientId>(), Arg.Any<CancellationToken>())
             .Returns(tokenData);
-        _clientCredentialsIssuer.IssueToken(Arg.Any<TokenCommand>(), Arg.Any<CancellationToken>())
+        _clientCredentialsRequestProcessor.IssueToken(Arg.Any<TokenCommand>(), Arg.Any<CancellationToken>())
             .Returns(tokenContext);
         _signingKeyQueryService.GetCurrentKeyDataAsync(Arg.Any<CancellationToken>())
             .Returns(keyData);
@@ -185,7 +185,7 @@ public class TokenServiceTests
 
         _clientQueryService.GetTokenDataAsync(request.ClientId, Arg.Any<CancellationToken>())
             .Returns(tokenData);
-        _clientCredentialsIssuer.IssueToken(request, Arg.Any<CancellationToken>())
+        _clientCredentialsRequestProcessor.IssueToken(request, Arg.Any<CancellationToken>())
             .Returns(tokenContext);
         _signingKeyQueryService.GetCurrentKeyDataAsync(Arg.Any<CancellationToken>())
             .Returns(keyData);
@@ -212,7 +212,7 @@ public class TokenServiceTests
 
         _clientQueryService.GetTokenDataAsync(Arg.Any<ClientId>(), token)
             .Returns(tokenData);
-        _clientCredentialsIssuer.IssueToken(Arg.Any<TokenCommand>(), token)
+        _clientCredentialsRequestProcessor.IssueToken(Arg.Any<TokenCommand>(), token)
             .Returns(tokenContext);
         _signingKeyQueryService.GetCurrentKeyDataAsync(token)
             .Returns(keyData);
@@ -222,7 +222,7 @@ public class TokenServiceTests
         await _tokenService.IssueToken(request, token);
 
         await _clientQueryService.Received(1).GetTokenDataAsync(request.ClientId, token);
-        await _clientCredentialsIssuer.Received(1).IssueToken(request, token);
+        await _clientCredentialsRequestProcessor.Received(1).IssueToken(request, token);
         await _signingKeyQueryService.Received(1).GetCurrentKeyDataAsync(token);
     }
 
@@ -234,7 +234,7 @@ public class TokenServiceTests
 
         _clientQueryService.GetTokenDataAsync(Arg.Any<ClientId>(), Arg.Any<CancellationToken>())
             .Returns(tokenData);
-        _clientCredentialsIssuer.IssueToken(Arg.Any<TokenCommand>(), Arg.Any<CancellationToken>())
+        _clientCredentialsRequestProcessor.IssueToken(Arg.Any<TokenCommand>(), Arg.Any<CancellationToken>())
             .Throws(new UnauthorizedAccessException("Invalid credentials"));
 
         await Assert.ThrowsAsync<UnauthorizedAccessException>(
@@ -251,7 +251,7 @@ public class TokenServiceTests
 
         _clientQueryService.GetTokenDataAsync(Arg.Any<ClientId>(), Arg.Any<CancellationToken>())
             .Returns(tokenData);
-        _clientCredentialsIssuer.IssueToken(Arg.Any<TokenCommand>(), Arg.Any<CancellationToken>())
+        _clientCredentialsRequestProcessor.IssueToken(Arg.Any<TokenCommand>(), Arg.Any<CancellationToken>())
             .Returns(tokenContext);
         _signingKeyQueryService.GetCurrentKeyDataAsync(Arg.Any<CancellationToken>())
             .Returns(keyData);
