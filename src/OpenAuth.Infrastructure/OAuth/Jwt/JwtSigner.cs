@@ -1,5 +1,4 @@
 using System.IdentityModel.Tokens.Jwt;
-using OpenAuth.Application.OAuth;
 using OpenAuth.Application.OAuth.Jwts;
 using OpenAuth.Application.Security.Signing;
 using OpenAuth.Application.SigningKeys.Interfaces;
@@ -7,22 +6,22 @@ using OpenAuth.Domain.OAuth;
 
 namespace OpenAuth.Infrastructure.OAuth.Jwt;
 
-public class JwtFactory : IJwtFactory
+public class JwtSigner : IJwtSigner
 {
     private readonly ISigningKeyQueryService _keyService;
     private readonly ISigningCredentialsFactory _credentialsFactory;
     
-    public JwtFactory(ISigningKeyQueryService keyService, ISigningCredentialsFactory credentialsFactory)
+    public JwtSigner(ISigningKeyQueryService keyService, ISigningCredentialsFactory credentialsFactory)
     {
         _keyService = keyService;
         _credentialsFactory = credentialsFactory;
     }
 
 
-    public async Task<AccessTokenResult> Create(JwtDescriptor descriptor, CancellationToken ct = default)
+    public async Task<string> Create(JwtDescriptor descriptor, CancellationToken ct = default)
     {
         var key = await _keyService.GetCurrentKeyDataAsync(ct)
-            ?? throw new InvalidOperationException("No active signing key found.");
+                  ?? throw new InvalidOperationException("No active signing key found.");
         
         var signingCredentials = _credentialsFactory.Create(key);
         
@@ -34,7 +33,6 @@ public class JwtFactory : IJwtFactory
             signingCredentials: signingCredentials
         );
 
-        var token = new JwtSecurityTokenHandler().WriteToken(jwt);
-        return new AccessTokenResult(token, TokenType.Bearer, (int)descriptor.Lifetime.TotalSeconds);
+        return new JwtSecurityTokenHandler().WriteToken(jwt);
     }
 }
