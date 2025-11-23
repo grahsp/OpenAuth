@@ -1,18 +1,21 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
+        <RootNamespace>OpenAuth.Domain</RootNamespace>
+    </PropertyGroup>
+
+    <PropertyGroup>
         <TargetFramework>net9.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\OpenAuth.Domain\OpenAuth.Domain.csproj" />
+      <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.14.0"/>
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.14.0" />
-      <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.14.0" />
+      <PackageReference Include="Microsoft.Extensions.Identity.Stores" Version="9.0.0"/>
     </ItemGroup>
 
 </Project>

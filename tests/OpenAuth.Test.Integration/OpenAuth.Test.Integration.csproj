@@ -23,7 +23,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\OpenAuth.Api\OpenAuth.Api.csproj" />
+      <ProjectReference Include="..\..\src\OpenAuth.Api\OpenAuth.Api.csproj" />
       <ProjectReference Include="..\OpenAuth.Test.Common\OpenAuth.Test.Common.csproj" />
     </ItemGroup>
 
