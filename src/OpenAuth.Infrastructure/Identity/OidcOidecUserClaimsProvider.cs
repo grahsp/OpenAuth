@@ -6,7 +6,7 @@ using OpenAuth.Domain.Users;
 
 namespace OpenAuth.Infrastructure.Identity;
 
-public class OidcUserClaimsProvider : IUserClaimsQueryService
+public class OidcUserClaimsProvider : IOidcUserClaimsProvider
 {
     private readonly UserManager<User> _users;
     

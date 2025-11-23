@@ -9,7 +9,9 @@ using OpenAuth.Application.Jwks.Interfaces;
 using OpenAuth.Application.Jwks.Services;
 using OpenAuth.Application.OAuth.Authorization.Handlers;
 using OpenAuth.Application.OAuth.Authorization.Interfaces;
+using OpenAuth.Application.OAuth.Jwts;
 using OpenAuth.Application.OAuth.Stores;
+using OpenAuth.Application.Oidc;
 using OpenAuth.Application.Secrets.Interfaces;
 using OpenAuth.Application.Secrets.Services;
 using OpenAuth.Application.Security.Signing;
@@ -27,7 +29,9 @@ using OpenAuth.Domain.Users;
 using OpenAuth.Infrastructure.Clients.Persistence;
 using OpenAuth.Infrastructure.Clients.Secrets;
 using OpenAuth.Infrastructure.Clients.Secrets.Persistence;
+using OpenAuth.Infrastructure.Identity;
 using OpenAuth.Infrastructure.Keys.Jwks;
+using OpenAuth.Infrastructure.OAuth.Jwt;
 using OpenAuth.Infrastructure.OAuth.Persistence;
 using OpenAuth.Infrastructure.Persistence;
 using OpenAuth.Infrastructure.Security.Hashing;
@@ -139,8 +143,14 @@ public class Program
         
         // Token Generator
         builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("Auth"));
+        builder.Services.AddScoped<IJwtSigner, JwtSigner>();
+        builder.Services.AddScoped<IOidcUserClaimsProvider, OidcUserClaimsProvider>();
+        
         builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
         builder.Services.AddScoped<IJwtBuilderFactory, JwtBuilderFactory>();
+        
+        builder.Services.AddScoped<ITokenHandler<AccessTokenContext>, AccessTokenHandler>();
+        builder.Services.AddScoped<ITokenHandler<IdTokenContext>, IdTokenHandler>();
         
 
         // Configure the HTTP request pipeline.

@@ -3,7 +3,7 @@ using OpenAuth.Domain.Clients.ValueObjects;
 
 namespace OpenAuth.Application.Oidc;
 
-public interface IUserClaimsQueryService
+public interface IOidcUserClaimsProvider
 {
     Task<IEnumerable<Claim>> GetUserClaimsAsync(string subjectId, ScopeCollection scopes);
 }

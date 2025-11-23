@@ -6,13 +6,13 @@ namespace OpenAuth.Application.Oidc;
 
 public class IdTokenHandler : ITokenHandler<IdTokenContext>
 {
-    private readonly IUserClaimsQueryService _userClaims;
+    private readonly IOidcUserClaimsProvider _oidcUserClaims;
     private readonly IJwtBuilderFactory _builderFactory;
     private readonly IJwtSigner _jwtSigner;
     
-    public IdTokenHandler(IUserClaimsQueryService userClaims, IJwtBuilderFactory builderFactory, IJwtSigner jwtSigner)
+    public IdTokenHandler(IOidcUserClaimsProvider oidcUserClaims, IJwtBuilderFactory builderFactory, IJwtSigner jwtSigner)
     {
-        _userClaims = userClaims;
+        _oidcUserClaims = oidcUserClaims;
         _builderFactory = builderFactory;
         _jwtSigner = jwtSigner;
     }
@@ -21,13 +21,13 @@ public class IdTokenHandler : ITokenHandler<IdTokenContext>
     {
         var builder = _builderFactory.Create()
             .AddClaim(OAuthClaimTypes.Sub, context.AuthorizationGrant.Subject)
-            .AddClaim(OAuthClaimTypes.Aud, context.Client.Id.ToString())
+            .AddClaim(OAuthClaimTypes.Aud, context.AuthorizationGrant.ClientId.ToString())
             .AddClaim("auth_time", context.AuthorizationGrant.CreatedAt.ToUnixTimeSeconds().ToString())
             .AddOptionalClaim("nonce", context.AuthorizationGrant.Nonce)
             // TODO: add IdTokenLifetime?
-            .WithLifetime(context.Client.TokenLifetime);
+            .WithLifetime(context.TokenData.TokenLifetime);
 
-        var userClaims = await _userClaims
+        var userClaims = await _oidcUserClaims
             .GetUserClaimsAsync(context.AuthorizationGrant.Subject, context.OidcScopes);
         
         builder.AddClaims(userClaims);
