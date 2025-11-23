@@ -1,4 +1,4 @@
-namespace OpenAuth.Infrastructure.Configurations;
+namespace OpenAuth.Application.Tokens.Configurations;
 
 public class JwtOptions
 {

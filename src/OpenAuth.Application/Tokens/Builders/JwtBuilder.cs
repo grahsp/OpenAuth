@@ -1,86 +1,64 @@
 using System.Security.Claims;
 using Microsoft.IdentityModel.Tokens;
-using OpenAuth.Domain.Clients.ValueObjects;
+using OpenAuth.Domain.OAuth;
 
-namespace OpenAuth.Domain.OAuth;
+namespace OpenAuth.Application.Tokens.Builders;
 
 public class JwtBuilder
 {
     private readonly string _issuer;
-    private TimeSpan? _lifetime;
     private readonly List<Claim> _claims = [];
+    private TimeSpan? _lifetime;
+    
+    private readonly TimeProvider _time;
 
-    public JwtBuilder(string issuer)
+    public JwtBuilder(string issuer, TimeProvider time)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(issuer);
         _issuer = issuer;
+        _time = time;
     }
 
-    public JwtBuilder WithClient(ClientId id)
+    public JwtBuilder AddClaim(string type, string value)
     {
-        if (_claims.Any(c => c.Type == OAuthClaimTypes.ClientId))
-            throw new InvalidOperationException("Client ID claim already set.");
-        
-        WithClaim(OAuthClaimTypes.ClientId, id.ToString());
-        return this;
-    }
-
-    public JwtBuilder WithSubject(string subject)
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(subject);
-        
-        if (_claims.Any(c => c.Type == OAuthClaimTypes.Sub))
-            throw new InvalidOperationException("Subject claim already set.");
-        
-        WithClaim(OAuthClaimTypes.Sub, subject);
-        return this;
-    }
-
-    public JwtBuilder WithAudience(AudienceName audience)
-    {
-        ArgumentNullException.ThrowIfNull(audience);
-        
-        if (_claims.Any(c => c.Type == OAuthClaimTypes.Aud))
-            throw new InvalidOperationException("Audience claim already set.");
-        
-        WithClaim(OAuthClaimTypes.Aud, audience.Value);
-        return this;
-    }
-
-    public JwtBuilder WithScopes(params Scope[] scopes)
-    {
-        foreach (var scope in scopes)
-        {
-            ArgumentNullException.ThrowIfNull(scope);
-            WithClaim(OAuthClaimTypes.Scope, scope.Value);
-        }
-        
-        return this;
-    }
-
-    public JwtBuilder WithClaim(string type, string value)
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(type);
         ArgumentException.ThrowIfNullOrWhiteSpace(value);
+        return AddOptionalClaim(type, value);
+    }
+
+    public JwtBuilder AddOptionalClaim(string type, string? value)
+    {
+        if (!string.IsNullOrWhiteSpace(value))
+            _claims.Add(new Claim(type, value));
         
-        _claims.Add(new Claim(type, value));
+        return this;
+    }
+
+    public JwtBuilder AddClaim(Claim claim)
+    {
+        ArgumentNullException.ThrowIfNull(claim);
+        
+        _claims.Add(claim);
+        return this;
+    }
+    
+    public JwtBuilder AddClaims(IEnumerable<Claim> claims)
+    {
+        ArgumentNullException.ThrowIfNull(claims);
+        
+        _claims.AddRange(claims);
         return this;
     }
 
     public JwtBuilder WithLifetime(TimeSpan lifetime)
     {
-        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(lifetime, TimeSpan.Zero, nameof(lifetime));
-        
-        if (_lifetime is not null)
-            throw new InvalidOperationException("Lifetime already set.");
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(lifetime, TimeSpan.Zero);
         
         _lifetime = lifetime;
         return this;
     }
 
-    public JwtDescriptor Build(TimeProvider timeProvider)
+    public JwtDescriptor Build()
     {
-        var now = timeProvider.GetUtcNow();
+        var now = _time.GetUtcNow();
         
         _lifetime ??= TimeSpan.FromMinutes(30);
 
@@ -111,10 +89,6 @@ public class JwtBuilder
         ValidateSingletonClaim(claims, OAuthClaimTypes.Iat, "Issued At");
         ValidateSingletonClaim(claims, OAuthClaimTypes.Exp, "Expiration");
         ValidateSingletonClaim(claims, OAuthClaimTypes.Nbf, "Not Before");
-        
-        ValidateSingletonClaim(claims, OAuthClaimTypes.ClientId, "Client ID");
-        ValidateSingletonClaim(claims, OAuthClaimTypes.Aud, "Audience");
-        ValidateSingletonClaim(claims, OAuthClaimTypes.Sub, "Subject");
     }
 
     private static void ValidateSingletonClaim(IReadOnlyCollection<Claim> claims, string claimType, string claimName)

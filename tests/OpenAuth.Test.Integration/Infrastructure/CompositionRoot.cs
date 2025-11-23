@@ -15,6 +15,8 @@ using OpenAuth.Application.Security.Signing;
 using OpenAuth.Application.SigningKeys.Factories;
 using OpenAuth.Application.SigningKeys.Interfaces;
 using OpenAuth.Application.SigningKeys.Services;
+using OpenAuth.Application.Tokens;
+using OpenAuth.Application.Tokens.Configurations;
 using OpenAuth.Application.Tokens.Flows;
 using OpenAuth.Application.Tokens.Interfaces;
 using OpenAuth.Application.Tokens.Services;
@@ -24,7 +26,6 @@ using OpenAuth.Domain.Users;
 using OpenAuth.Infrastructure.Clients.Persistence;
 using OpenAuth.Infrastructure.Clients.Secrets;
 using OpenAuth.Infrastructure.Clients.Secrets.Persistence;
-using OpenAuth.Infrastructure.Configurations;
 using OpenAuth.Infrastructure.Keys.Jwks;
 using OpenAuth.Infrastructure.OAuth.Persistence;
 using OpenAuth.Infrastructure.Persistence;
@@ -116,6 +117,7 @@ public class CompositionRoot
         // Token Generator
         builder.Configure<JwtOptions>(opts => opts.Issuer = "test-issuer");
         builder.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
+        builder.AddScoped<IJwtBuilderFactory, JwtBuilderFactory>();
 
         return builder.BuildServiceProvider();
     }

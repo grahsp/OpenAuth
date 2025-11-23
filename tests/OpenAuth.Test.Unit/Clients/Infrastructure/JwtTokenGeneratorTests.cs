@@ -7,10 +7,10 @@ using NSubstitute;
 using OpenAuth.Application.Clients.Dtos;
 using OpenAuth.Application.Security.Signing;
 using OpenAuth.Application.SigningKeys.Dtos;
+using OpenAuth.Application.Tokens.Configurations;
 using OpenAuth.Domain.Clients.ValueObjects;
 using OpenAuth.Domain.SigningKeys.Enums;
 using OpenAuth.Domain.SigningKeys.ValueObjects;
-using OpenAuth.Infrastructure.Configurations;
 using OpenAuth.Infrastructure.Tokens;
 using TokenContext = OpenAuth.Application.Tokens.Dtos.TokenContext;
 

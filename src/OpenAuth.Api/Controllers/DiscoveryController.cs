@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using OpenAuth.Api.Dtos;
-using OpenAuth.Infrastructure.Configurations;
+using OpenAuth.Application.Tokens.Configurations;
 
 namespace OpenAuth.Api.Controllers;
 
