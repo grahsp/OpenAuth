@@ -47,6 +47,8 @@ public class CompositionRoot
     public static ServiceProvider BuildService(string connectionString)
     {
         var builder = new ServiceCollection();
+
+        builder.AddLogging();
         
         builder.AddDbContext<AppDbContext>(opts => 
             { opts.UseSqlServer(connectionString); });
