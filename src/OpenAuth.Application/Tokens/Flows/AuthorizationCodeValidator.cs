@@ -17,9 +17,6 @@ public class AuthorizationCodeValidator : IAuthorizationCodeValidator
 
     public async Task<AuthorizationCodeValidationResult> ValidateAsync(AuthorizationCodeTokenCommand command, ClientTokenData tokenData, AuthorizationGrant authorizationGrant, CancellationToken ct = default)
     {
-        if (string.IsNullOrWhiteSpace(command.CodeVerifier) && string.IsNullOrWhiteSpace(command.ClientSecret))
-            throw new InvalidRequestException("Either 'code_verifier' or 'client_secret' must be provided.");
-        
         if (authorizationGrant.Consumed)
             throw new InvalidGrantException("Authorization code has already been redeemed.");
 
@@ -38,21 +35,36 @@ public class AuthorizationCodeValidator : IAuthorizationCodeValidator
         
         if (!authorizationGrant.GrantedScopes.All(s => audience.Scopes.Contains(s)))
             throw new InvalidScopeException("One or more scopes are not allowed.");
-
-        if (authorizationGrant.Pkce is not null)
-        {
-            if (!authorizationGrant.Pkce.Matches(command.CodeVerifier))
-                throw new InvalidGrantException("Invalid PKCE code verifier.");
-        }
-        else
-        {
-            if (string.IsNullOrWhiteSpace(command.ClientSecret))
-                throw new InvalidClientException("Client secret is required.");
-            
-            if (!await _secretQueryService.ValidateSecretAsync(command.ClientId, command.ClientSecret, ct))
-                throw new InvalidClientException("Invalid client credentials.");
-        }
+        
+        await ValidateClientAuthenticationAsync(command, authorizationGrant, ct);
 
         return new AuthorizationCodeValidationResult(authorizationGrant, tokenData, audience);
+    }
+
+
+    private async Task ValidateClientAuthenticationAsync(AuthorizationCodeTokenCommand command, AuthorizationGrant authorizationGrant, CancellationToken ct)
+    {
+        if (authorizationGrant.Pkce is not null)
+            ValidatePkce(command, authorizationGrant);
+        else
+            await ValidateClientSecretAsync(command, ct);
+    }
+
+    private static void ValidatePkce(AuthorizationCodeTokenCommand command, AuthorizationGrant authorizationGrant)
+    {
+        if (string.IsNullOrWhiteSpace(command.CodeVerifier))
+            throw new InvalidGrantException("Missing 'code_verifier'.");
+        
+        if (!authorizationGrant.Pkce!.Matches(command.CodeVerifier))
+            throw new InvalidGrantException("Invalid PKCE code verifier.");
+    }
+
+    private async Task ValidateClientSecretAsync(AuthorizationCodeTokenCommand command, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(command.ClientSecret))
+            throw new InvalidClientException("Missing client secret.");
+
+        if (!await _secretQueryService.ValidateSecretAsync(command.ClientId, command.ClientSecret, ct))
+            throw new InvalidClientException("Invalid client credentials.");
     }
 }
