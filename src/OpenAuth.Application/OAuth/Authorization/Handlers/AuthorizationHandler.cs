@@ -3,8 +3,8 @@ using Microsoft.IdentityModel.Tokens;
 using OpenAuth.Application.Clients.Dtos;
 using OpenAuth.Application.Clients.Interfaces;
 using OpenAuth.Application.Exceptions;
+using OpenAuth.Application.Extensions;
 using OpenAuth.Application.OAuth.Authorization.Interfaces;
-using OpenAuth.Application.Oidc;
 using OpenAuth.Domain.AuthorizationGrants;
 using OpenAuth.Domain.Clients.ValueObjects;
 

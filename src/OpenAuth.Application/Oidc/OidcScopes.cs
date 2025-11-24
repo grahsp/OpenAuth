@@ -12,24 +12,4 @@ public static class OidcScopes
 
     public static readonly ScopeCollection All =
         new([OpenId, Profile, Email, Phone, Address]);
-
-    
-    public static bool ContainsOpenIdScope(this ScopeCollection collection) =>
-        collection.Contains(OpenId);
-    
-    public static ScopeCollection GetOidcScopes(this ScopeCollection collection)
-    {
-        var scopes = collection
-            .Where(s => All.Contains(s));
-
-        return new ScopeCollection(scopes);
-    }
-
-    public static ScopeCollection GetApiScopes(this ScopeCollection collection)
-    {
-        var scopes = collection
-            .Where(s => !All.Contains(s));
-
-        return new ScopeCollection(scopes);       
-    }
 }
