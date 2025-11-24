@@ -145,8 +145,6 @@ public class Program
         builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("Auth"));
         builder.Services.AddScoped<IJwtSigner, JwtSigner>();
         builder.Services.AddScoped<IOidcUserClaimsProvider, OidcUserClaimsProvider>();
-        
-        builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
         builder.Services.AddScoped<IJwtBuilderFactory, JwtBuilderFactory>();
         
         builder.Services.AddScoped<ITokenHandler<AccessTokenContext>, AccessTokenHandler>();

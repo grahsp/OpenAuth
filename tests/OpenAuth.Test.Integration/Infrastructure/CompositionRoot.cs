@@ -123,8 +123,6 @@ public class CompositionRoot
         builder.Configure<JwtOptions>(opts => opts.Issuer = "test-issuer");
         builder.AddScoped<IJwtSigner, JwtSigner>();
         builder.AddScoped<IOidcUserClaimsProvider, OidcUserClaimsProvider>();
-        
-        builder.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
         builder.AddScoped<IJwtBuilderFactory, JwtBuilderFactory>();
 
         builder.AddScoped<ITokenHandler<AccessTokenContext>, AccessTokenHandler>();
