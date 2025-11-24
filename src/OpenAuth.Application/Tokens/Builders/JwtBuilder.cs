@@ -8,7 +8,7 @@ public class JwtBuilder
 {
     private readonly string _issuer;
     private readonly List<Claim> _claims = [];
-    private TimeSpan? _lifetime;
+    private TimeSpan _lifetime = TimeSpan.FromMinutes(30);
     
     private readonly TimeProvider _time;
 
@@ -48,6 +48,14 @@ public class JwtBuilder
         return this;
     }
 
+    public JwtBuilder WithLifetime(int lifetime)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(lifetime, 0);
+        
+        _lifetime = TimeSpan.FromSeconds(lifetime);
+        return this;
+    }
+    
     public JwtBuilder WithLifetime(TimeSpan lifetime)
     {
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(lifetime, TimeSpan.Zero);
@@ -59,15 +67,13 @@ public class JwtBuilder
     public JwtDescriptor Build()
     {
         var now = _time.GetUtcNow();
-        
-        _lifetime ??= TimeSpan.FromMinutes(30);
 
         var claims = new List<Claim>(_claims)
         {
             new(OAuthClaimTypes.Iss, _issuer),
             new(OAuthClaimTypes.Jti, Guid.NewGuid().ToString()),
             new(OAuthClaimTypes.Iat, EpochTime.GetIntDate(now.UtcDateTime).ToString()),
-            new(OAuthClaimTypes.Exp, EpochTime.GetIntDate(now.UtcDateTime.Add(_lifetime.Value)).ToString()),
+            new(OAuthClaimTypes.Exp, EpochTime.GetIntDate(now.UtcDateTime.Add(_lifetime)).ToString()),
             new(OAuthClaimTypes.Nbf, EpochTime.GetIntDate(now.UtcDateTime).ToString())
         };
 
@@ -77,7 +83,7 @@ public class JwtBuilder
             _issuer,
             claims, 
             now, 
-            now.Add(_lifetime.Value),
+            now.Add(_lifetime),
             now
         );
     }

@@ -17,13 +17,13 @@ public class AccessTokenHandler : ITokenHandler<AccessTokenContext>
     public async Task<string> CreateAsync(AccessTokenContext context, CancellationToken ct = default)
     {
         var builder = _builderFactory.Create()
-            .AddClaim(OAuthClaimTypes.ClientId, context.TokenData.Id.ToString())
-            .AddClaim(OAuthClaimTypes.Sub, context.Subject)
-            .AddClaim(OAuthClaimTypes.Aud, context.Audience.Value)
-            .WithLifetime(context.TokenData.TokenLifetime);
+            .AddClaim(OAuthClaimTypes.ClientId, context.ClientId)
+            .AddClaim(OAuthClaimTypes.Aud, context.Audience)
+            .AddOptionalClaim(OAuthClaimTypes.Sub, context.Subject)
+            .WithLifetime(context.LifetimeInSeconds);
 
-        foreach (var scope in context.ApiScopes)
-            builder.AddClaim(OAuthClaimTypes.Scope, scope.Value);
+        foreach (var scope in context.Scopes)
+            builder.AddClaim(OAuthClaimTypes.Scope, scope);
 
         var descriptor = builder.Build();
         var token = await _jwtSigner.Create(descriptor, ct);
