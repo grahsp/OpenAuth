@@ -1,8 +1,10 @@
 using OpenAuth.Application.Clients.Dtos;
 using OpenAuth.Application.Exceptions;
+using OpenAuth.Application.Extensions;
 using OpenAuth.Application.Secrets.Interfaces;
 using OpenAuth.Application.Tokens.Dtos;
 using OpenAuth.Domain.AuthorizationGrants;
+using OpenAuth.Domain.Clients.ValueObjects;
 
 namespace OpenAuth.Application.Tokens.Flows;
 
@@ -17,37 +19,78 @@ public class AuthorizationCodeValidator : IAuthorizationCodeValidator
 
     public async Task<AuthorizationCodeValidationResult> ValidateAsync(AuthorizationCodeTokenCommand command, ClientTokenData tokenData, AuthorizationGrant authorizationGrant, CancellationToken ct = default)
     {
-        if (authorizationGrant.Consumed)
-            throw new InvalidGrantException("Authorization code has already been redeemed.");
-
-        if (authorizationGrant.ClientId != command.ClientId)
-            throw new InvalidGrantException("Authorization code was issued to another client.");
-        
-        if (authorizationGrant.RedirectUri != command.RedirectUri)
-            throw new InvalidGrantException("'redirect_uri' does not match authorization request.");
-
-        // TODO: remove as authorization code does not need to send scope.
-        if (authorizationGrant.GrantedScopes != command.RequestedScopes)
-            throw new InvalidGrantException("'scope' does not match authorization request.");
-        
-        var audience = tokenData.AllowedAudiences.FirstOrDefault(a => a.Name == command.RequestedAudience)
-                       ?? throw new InvalidScopeException("Requested audience is not allowed.");
-        
-        if (!authorizationGrant.GrantedScopes.All(s => audience.Scopes.Contains(s)))
-            throw new InvalidScopeException("One or more scopes are not allowed.");
-        
+        ValidateUnusedAuthorizationGrant(authorizationGrant);
+        ValidateAuthorizationGrantBinding(command, authorizationGrant);
         await ValidateClientAuthenticationAsync(command, authorizationGrant, ct);
+        
+        var audience = ExtractAudience(command, tokenData);
+        var (apiScopes, oidcScopes) = ExtractScopes(audience, authorizationGrant);
+        
+        ValidateOidc(authorizationGrant, oidcScopes);
 
-        return new AuthorizationCodeValidationResult(authorizationGrant, tokenData, audience);
+        return new AuthorizationCodeValidationResult(audience.Name, apiScopes, oidcScopes);
     }
 
-
+    private static void ValidateUnusedAuthorizationGrant(AuthorizationGrant authorizationGrant)
+    {
+        if (authorizationGrant.Consumed)
+            throw new InvalidGrantException("Authorization code has already been redeemed.");
+    }
+    
     private async Task ValidateClientAuthenticationAsync(AuthorizationCodeTokenCommand command, AuthorizationGrant authorizationGrant, CancellationToken ct)
     {
         if (authorizationGrant.Pkce is not null)
             ValidatePkce(command, authorizationGrant);
         else
             await ValidateClientSecretAsync(command, ct);
+    }
+
+    private static Audience ExtractAudience(AuthorizationCodeTokenCommand command, ClientTokenData tokenData)
+    {
+        if (command.RequestedAudience is null)
+            throw new InvalidRequestException("Invalid audience."); 
+        
+        var audience = tokenData.AllowedAudiences.FirstOrDefault(a => a.Name == command.RequestedAudience)
+                       ?? throw new InvalidScopeException("Invalid audience.");
+
+        return audience;
+    }
+
+    private static (ScopeCollection ApiScopes, ScopeCollection OidcScopes) ExtractScopes(Audience audience, AuthorizationGrant authorizationGrant)
+    {
+        var apiScopes = authorizationGrant.GrantedScopes
+            .GetFilteredApiScopes(audience.Scopes);
+        
+        if (apiScopes.Count == 0)
+            throw new InvalidScopeException("No valid scopes found.");
+
+        var oidcScopes = authorizationGrant.GrantedScopes
+            .GetOidcScopes();
+        
+        return (apiScopes, oidcScopes);
+    }
+
+    private static void ValidateOidc(AuthorizationGrant authorizationGrant, ScopeCollection oidcScopes)
+    {
+        if (oidcScopes.Count == 0)
+            return;
+
+        // TODO: optionally implement whitelisting of oidc scopes in client
+        if (!oidcScopes.ContainsOpenIdScope())
+            throw new InvalidScopeException("OIDC scopes require 'openid' scope.");
+        
+        if (authorizationGrant.Nonce is null)
+            throw new InvalidGrantException("Nonce is required in OIDC.");
+    }
+
+    private static void ValidateAuthorizationGrantBinding(AuthorizationCodeTokenCommand command,
+        AuthorizationGrant authorizationGrant)
+    {
+        if (authorizationGrant.ClientId != command.ClientId)
+            throw new InvalidGrantException("Authorization code was issued to another client.");
+
+        if (authorizationGrant.RedirectUri != command.RedirectUri)
+            throw new InvalidGrantException("'redirect_uri' does not match authorization request.");
     }
 
     private static void ValidatePkce(AuthorizationCodeTokenCommand command, AuthorizationGrant authorizationGrant)
