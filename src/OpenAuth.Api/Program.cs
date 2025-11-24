@@ -128,7 +128,7 @@ public class Program
         // OAuth Services
         builder.Services.AddScoped<ITokenRequestHandler, TokenRequestHandler>();
         builder.Services.AddScoped<ITokenRequestProcessor, ClientCredentialsRequestProcessor>();
-        builder.Services.AddScoped<ITokenRequestProcessor, AuthorizationCodeGrantProcessor>();
+        builder.Services.AddScoped<ITokenRequestProcessor, AuthorizationCodeProcessor>();
 
         builder.Services.AddScoped<IAuthorizationCodeValidator, AuthorizationCodeValidator>();
         builder.Services.AddScoped<IAuthorizationHandler, AuthorizationHandler>();
