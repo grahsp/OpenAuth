@@ -4,7 +4,8 @@ namespace OpenAuth.Application.Tokens.Dtos;
 
 public record TokenContext(
     ClientId ClientId,
-    string Subject,
-    AudienceName? RequestedAudience,
-    ScopeCollection? RequestedScopes
+    string? Subject,
+    string? Audience,
+    IReadOnlyCollection<string>? ApiScopes,
+    OidcContext? OidcContext = null
 );
