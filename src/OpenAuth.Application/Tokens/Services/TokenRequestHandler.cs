@@ -1,3 +1,4 @@
+using OpenAuth.Application.Clients.Dtos;
 using OpenAuth.Application.Clients.Interfaces;
 using OpenAuth.Application.Exceptions;
 using OpenAuth.Application.Tokens.Dtos;
@@ -11,13 +12,13 @@ public class TokenRequestHandler : ITokenRequestHandler
     private readonly Dictionary<GrantType, ITokenRequestProcessor> _strategies;
     private readonly IClientQueryService _clientQueryService;
 
-    private readonly ITokenHandler<AccessTokenContext> _accessTokens;
+    private readonly ITokenHandler<AccessTokenContext> _accessTokenHandler;
     
-    public TokenRequestHandler(IEnumerable<ITokenRequestProcessor> strategies, IClientQueryService clientQueryService, ITokenHandler<AccessTokenContext> accessTokens)
+    public TokenRequestHandler(IEnumerable<ITokenRequestProcessor> strategies, IClientQueryService clientQueryService, ITokenHandler<AccessTokenContext> accessTokenHandler)
     {
         _strategies = strategies.ToDictionary(i => i.GrantType);
         _clientQueryService = clientQueryService;
-        _accessTokens = accessTokens;
+        _accessTokenHandler = accessTokenHandler;
         
         if (_strategies.Count == 0)
             throw new ArgumentException("No token issuer strategies registered.", nameof(strategies));
@@ -34,13 +35,24 @@ public class TokenRequestHandler : ITokenRequestHandler
         
         if (!tokenData.AllowedGrantTypes.Contains(command.GrantType))
             throw new UnauthorizedClientException("grant_type not allowed on client.");
-
+        
         var tokenContext = await processor.ProcessAsync(command, tokenData, ct);
 
-        var accessTokenContext = new AccessTokenContext(tokenData, tokenContext.Subject, command.RequestedScopes,
-            command.RequestedAudience);
-        
-        var accessToken = await _accessTokens.CreateAsync(accessTokenContext, ct);
+        var accessToken = await CreateAccessTokenAsync(tokenContext, tokenData, ct);
+
         return new TokenGenerationResponse(accessToken, "Bearer", (int)tokenData.TokenLifetime.TotalSeconds);
+    }
+
+    private async Task<string> CreateAccessTokenAsync(TokenContext tokenContext, ClientTokenData tokenData, CancellationToken ct)
+    {
+        var accessTokenContext = new AccessTokenContext(
+            tokenContext.ClientId,
+            tokenContext.Audience,
+            tokenContext.Subject,
+            (int)tokenData.TokenLifetime.TotalSeconds,
+            tokenContext.ApiScopes
+        );
+        
+        return await _accessTokenHandler.CreateAsync(accessTokenContext, ct);
     }
 }

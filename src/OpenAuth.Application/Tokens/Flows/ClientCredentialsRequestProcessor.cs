@@ -38,7 +38,7 @@ public class ClientCredentialsRequestProcessor : TokenRequestProcessor<ClientCre
             throw new InvalidClientException("Invalid client credentials.");
 
         return new TokenContext(
-            command.ClientId,
+            command.ClientId.ToString(),
             command.ClientId.ToString(),
             command.RequestedAudience.Value,
             command.RequestedScopes.Select(s => s.Value).ToArray()
