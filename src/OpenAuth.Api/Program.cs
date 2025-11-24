@@ -56,6 +56,8 @@ public class Program
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
 
+        builder.Services.AddLogging();
+
         // Database
         builder.Services.AddDbContext<AppDbContext>(opts =>
         {
