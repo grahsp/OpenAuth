@@ -17,8 +17,12 @@ public class AuthorizationCodeValidator : IAuthorizationCodeValidator
         _secretQueryService = secretQueryService;
     }
 
-    public async Task<AuthorizationCodeValidationResult> ValidateAsync(AuthorizationCodeTokenCommand command, ClientTokenData tokenData, AuthorizationGrant authorizationGrant, CancellationToken ct = default)
+    public async Task<AuthorizationCodeValidationResult> ValidateAsync(AuthorizationCodeValidatorContext context, CancellationToken ct = default)
     {
+        var command = context.Command;
+        var tokenData = context.TokenData;
+        var authorizationGrant = context.AuthorizationGrant;
+        
         ValidateUnusedAuthorizationGrant(authorizationGrant);
         ValidateAuthorizationGrantBinding(command, authorizationGrant);
         await ValidateClientAuthenticationAsync(command, authorizationGrant, ct);
@@ -56,13 +60,14 @@ public class AuthorizationCodeValidator : IAuthorizationCodeValidator
         return audience;
     }
 
+    // TODO: No scope validation required in token request flow - move to authorization flow
     private static (ScopeCollection ApiScopes, ScopeCollection OidcScopes) ExtractScopes(Audience audience, AuthorizationGrant authorizationGrant)
     {
+        if (authorizationGrant.GrantedScopes.Count == 0)
+            throw new InvalidScopeException("No valid scopes found.");
+        
         var apiScopes = authorizationGrant.GrantedScopes
             .GetFilteredApiScopes(audience.Scopes);
-        
-        if (apiScopes.Count == 0)
-            throw new InvalidScopeException("No valid scopes found.");
 
         var oidcScopes = authorizationGrant.GrantedScopes
             .GetOidcScopes();
