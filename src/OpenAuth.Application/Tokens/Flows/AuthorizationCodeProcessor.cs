@@ -38,7 +38,7 @@ public class AuthorizationCodeProcessor : TokenRequestProcessor<AuthorizationCod
             authorizationGrant.ClientId.ToString(),
             authorizationGrant.Subject,
             result.AudienceName.Value,
-            result.ApiScopes.Select(s => s.Value).ToArray(),
+            result.ApiScopes,
             oidcContext
         );
     }
@@ -51,12 +51,11 @@ public class AuthorizationCodeProcessor : TokenRequestProcessor<AuthorizationCod
         var nonce = authorizationGrant.Nonce
                     ?? throw new InvalidOperationException("Nonce was expected to not be null after validation.");
         var authTime = (int)authorizationGrant.CreatedAt.ToUnixTimeSeconds();
-        var scopes = oidcScopes.Select(s => s.Value).ToArray();
         
         return new OidcContext(
             nonce,
             authTime,
-            scopes
+            oidcScopes
         );
     }
 }

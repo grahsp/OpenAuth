@@ -41,7 +41,7 @@ public class ClientCredentialsRequestProcessor : TokenRequestProcessor<ClientCre
             command.ClientId.ToString(),
             command.ClientId.ToString(),
             command.RequestedAudience.Value,
-            command.RequestedScopes.Select(s => s.Value).ToArray()
+            command.RequestedScopes
         );
     }
 }

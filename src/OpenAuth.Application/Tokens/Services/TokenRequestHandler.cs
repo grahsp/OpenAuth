@@ -1,6 +1,7 @@
 using OpenAuth.Application.Clients.Dtos;
 using OpenAuth.Application.Clients.Interfaces;
 using OpenAuth.Application.Exceptions;
+using OpenAuth.Application.Oidc;
 using OpenAuth.Application.Tokens.Dtos;
 using OpenAuth.Application.Tokens.Flows;
 using OpenAuth.Domain.Clients.ValueObjects;
@@ -11,14 +12,18 @@ public class TokenRequestHandler : ITokenRequestHandler
 {
     private readonly Dictionary<GrantType, ITokenRequestProcessor> _strategies;
     private readonly IClientQueryService _clientQueryService;
-
     private readonly ITokenHandler<AccessTokenContext> _accessTokenHandler;
+    private readonly ITokenHandler<IdTokenContext> _idTokenHandler;
     
-    public TokenRequestHandler(IEnumerable<ITokenRequestProcessor> strategies, IClientQueryService clientQueryService, ITokenHandler<AccessTokenContext> accessTokenHandler)
+    public TokenRequestHandler(IEnumerable<ITokenRequestProcessor> strategies,
+        IClientQueryService clientQueryService,
+        ITokenHandler<AccessTokenContext> accessTokenHandler,
+        ITokenHandler<IdTokenContext> idTokenHandler)
     {
         _strategies = strategies.ToDictionary(i => i.GrantType);
         _clientQueryService = clientQueryService;
         _accessTokenHandler = accessTokenHandler;
+        _idTokenHandler = idTokenHandler;
         
         if (_strategies.Count == 0)
             throw new ArgumentException("No token issuer strategies registered.", nameof(strategies));
@@ -39,8 +44,9 @@ public class TokenRequestHandler : ITokenRequestHandler
         var tokenContext = await processor.ProcessAsync(command, tokenData, ct);
 
         var accessToken = await CreateAccessTokenAsync(tokenContext, tokenData, ct);
+        var idToken = await CreateIdTokenAsync(tokenContext, tokenData, ct);
 
-        return new TokenGenerationResponse(accessToken, "Bearer", (int)tokenData.TokenLifetime.TotalSeconds);
+        return new TokenGenerationResponse(accessToken, "Bearer", tokenData.TokenLifetime.Seconds, idToken);
     }
 
     private async Task<string> CreateAccessTokenAsync(TokenContext tokenContext, ClientTokenData tokenData, CancellationToken ct)
@@ -50,9 +56,28 @@ public class TokenRequestHandler : ITokenRequestHandler
             tokenContext.Audience,
             tokenContext.Subject,
             (int)tokenData.TokenLifetime.TotalSeconds,
-            tokenContext.ApiScopes
+            tokenContext.Scopes
         );
         
         return await _accessTokenHandler.CreateAsync(accessTokenContext, ct);
+    }
+
+    private async Task<string?> CreateIdTokenAsync(TokenContext tokenContext, ClientTokenData tokenData, CancellationToken ct)
+    {
+        var oidcContext = tokenContext.OidcContext;
+        if (oidcContext is null)
+            return null;
+        
+        var idTokenContext = new IdTokenContext(
+            tokenContext.ClientId,
+            tokenContext.Subject ??
+                throw new InvalidOperationException("Expected subject to not be null after validation."),
+            oidcContext.Nonce,
+            oidcContext.AuthTimeInSeconds,
+            (int)tokenData.TokenLifetime.TotalSeconds,
+            oidcContext.Scopes
+        );
+        
+        return await _idTokenHandler.CreateAsync(idTokenContext, ct);
     }
 }

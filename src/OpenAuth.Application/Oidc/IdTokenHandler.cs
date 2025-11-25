@@ -20,15 +20,15 @@ public class IdTokenHandler : ITokenHandler<IdTokenContext>
     public async Task<string> CreateAsync(IdTokenContext context, CancellationToken ct = default)
     {
         var builder = _builderFactory.Create()
-            .AddClaim(OAuthClaimTypes.Sub, context.AuthorizationGrant.Subject)
-            .AddClaim(OAuthClaimTypes.Aud, context.AuthorizationGrant.ClientId.ToString())
-            .AddClaim("auth_time", context.AuthorizationGrant.CreatedAt.ToUnixTimeSeconds().ToString())
-            .AddOptionalClaim("nonce", context.AuthorizationGrant.Nonce)
+            .AddClaim(OAuthClaimTypes.Aud, context.ClientId)
+            .AddClaim(OAuthClaimTypes.Sub, context.Subject)
+            .AddClaim("auth_time", context.AuthTimeInSeconds.ToString())
+            .AddOptionalClaim("nonce", context.Nonce)
             // TODO: add IdTokenLifetime?
-            .WithLifetime(context.TokenData.TokenLifetime);
+            .WithLifetime(context.LifetimeInSeconds);
 
         var userClaims = await _oidcUserClaims
-            .GetUserClaimsAsync(context.AuthorizationGrant.Subject, context.OidcScopes);
+            .GetUserClaimsAsync(context.Subject, context.Scopes);
         
         builder.AddClaims(userClaims);
 

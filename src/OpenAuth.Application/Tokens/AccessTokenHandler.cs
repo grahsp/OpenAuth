@@ -23,7 +23,7 @@ public class AccessTokenHandler : ITokenHandler<AccessTokenContext>
             .WithLifetime(context.LifetimeInSeconds);
 
         foreach (var scope in context.Scopes)
-            builder.AddClaim(OAuthClaimTypes.Scope, scope);
+            builder.AddClaim(OAuthClaimTypes.Scope, scope.Value);
 
         var descriptor = builder.Build();
         var token = await _jwtSigner.Create(descriptor, ct);
