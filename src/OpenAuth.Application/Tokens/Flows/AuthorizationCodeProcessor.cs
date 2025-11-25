@@ -27,7 +27,8 @@ public class AuthorizationCodeProcessor : TokenRequestProcessor<AuthorizationCod
         var authorizationGrant = await _grantStore.GetAsync(command.Code)
                                  ?? throw new InvalidGrantException("Invalid or unknown authorization code.");
 
-        var result = await _validator.ValidateAsync(command, tokenData, authorizationGrant, ct);
+        var validatorContext = new AuthorizationCodeValidatorContext(command, tokenData, authorizationGrant);
+        var result = await _validator.ValidateAsync(validatorContext, ct);
 
         authorizationGrant.Consume();
         await _grantStore.RemoveAsync(authorizationGrant.Code);
