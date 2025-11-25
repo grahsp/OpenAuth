@@ -3,6 +3,7 @@ using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using OpenAuth.Test.Common.Helpers;
 
 namespace OpenAuth.Test.Integration.Infrastructure.Fakes;
 
@@ -16,8 +17,9 @@ public class FakeAuthHandler : AuthenticationHandler<AuthenticationSchemeOptions
     {
         var claims = new[]
         {
-            new Claim(ClaimTypes.NameIdentifier, "test-user"),
-            new Claim(ClaimTypes.Name, "TestUser")
+            new Claim(ClaimTypes.NameIdentifier, DefaultValues.UserId),
+            new Claim(ClaimTypes.Name, DefaultValues.UserName),
+            new Claim(ClaimTypes.Email, DefaultValues.UserEmail),
         };
 
         var identity = new ClaimsIdentity(claims, Scheme.Name);
