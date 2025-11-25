@@ -1,5 +1,6 @@
 using OpenAuth.Application.Clients.Dtos;
 using OpenAuth.Application.Tokens.Dtos;
+using OpenAuth.Application.Tokens.Flows;
 using OpenAuth.Domain.AuthorizationGrants;
 using OpenAuth.Domain.AuthorizationGrants.ValueObjects;
 using OpenAuth.Domain.Clients.ValueObjects;
@@ -31,6 +32,15 @@ public static class TestData
             ScopeCollection.Parse(DefaultValues.Scopes),
             DefaultValues.CodeVerifier,
             DefaultValues.ClientSecret
+        );
+    }
+
+    public static AuthorizationCodeValidationResult CreateValidAuthorizationCodeValidationResult()
+    {
+        return new AuthorizationCodeValidationResult(
+            AudienceName.Create(DefaultValues.Audience),
+            ScopeCollection.Parse(DefaultValues.Scopes),
+            ScopeCollection.Parse("")
         );
     }
 
