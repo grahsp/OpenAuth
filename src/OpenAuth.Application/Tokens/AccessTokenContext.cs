@@ -1,3 +1,5 @@
+using OpenAuth.Domain.Clients.ValueObjects;
+
 namespace OpenAuth.Application.Tokens;
 
 public sealed record AccessTokenContext(
@@ -5,5 +7,5 @@ public sealed record AccessTokenContext(
     string Audience,
     string? Subject,
     int LifetimeInSeconds,
-    IReadOnlyCollection<string> Scopes
+    ScopeCollection Scopes
 );

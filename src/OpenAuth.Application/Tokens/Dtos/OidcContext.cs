@@ -1,7 +1,9 @@
+using OpenAuth.Domain.Clients.ValueObjects;
+
 namespace OpenAuth.Application.Tokens.Dtos;
 
 public record OidcContext(
     string Nonce,
     int AuthTimeInSeconds,
-    IReadOnlyCollection<string>? Scopes
+    ScopeCollection Scopes
 );
