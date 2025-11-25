@@ -5,48 +5,81 @@ namespace OpenAuth.Api.Connect.Token;
 public record TokenResponse
 {
     [JsonPropertyName("access_token")]
-    public string? AccessToken { get; init; }
+    public string? AccessToken { get; }
     
     [JsonPropertyName("token_type")]
-    public string? TokenType { get; init; }
+    public string? TokenType { get; }
     
     [JsonPropertyName("expires_in")]
-    public int? ExpiresIn { get; init; }
+    public int? ExpiresIn { get; }
     
     [JsonPropertyName("scope")]
-    public string? Scope { get; init; }
+    public string? Scope { get; }
     
     [JsonPropertyName("refresh_token")]
-    public string? RefreshToken{ get; init; }
+    public string? RefreshToken{ get; }
+    
+    [JsonPropertyName("id_token")]
+    public string? IdToken{ get; }
     
     
     // Errors
     [JsonPropertyName("error")]
-    public string? Error { get; init; }
+    public string? Error { get; }
     
     [JsonPropertyName("error_description")]
-    public string? ErrorDescription { get; init; }
-    
+    public string? ErrorDescription { get; }
 
+
+    private TokenResponse(
+        string? accessToken,
+        string? tokenType,
+        int? expiresIn,
+        string? idToken,
+        string? refreshToken,
+        string? scope,
+        string? error,
+        string? errorDescription)
+    {
+        AccessToken = accessToken;
+        TokenType = tokenType;
+        ExpiresIn = expiresIn;
+        IdToken = idToken;
+        RefreshToken = refreshToken;
+        Scope = scope;
+
+        Error = error;
+        ErrorDescription = errorDescription;
+    }
     public static TokenResponse Success(string accessToken, string tokenType, int expiresIn,
-        string? refreshToken = null, string? scope = null)
+        string? idToken = null, string? refreshToken = null, string? scope = null)
     {
         return new TokenResponse
-        {
-            AccessToken = accessToken,
-            TokenType = tokenType,
-            ExpiresIn = expiresIn,
-            RefreshToken = refreshToken,
-            Scope = scope
-        };
+        (
+            accessToken: accessToken,
+            tokenType: tokenType,
+            expiresIn: expiresIn,
+            idToken: idToken,
+            refreshToken: refreshToken,
+            scope: scope,
+            error: null,
+            errorDescription: null
+        );
     }
 
     public static TokenResponse Fail(string error, string? errorDescription = null)
     {
         return new TokenResponse
-        {
-            Error = error,
-            ErrorDescription = errorDescription
-        };
+        (
+            accessToken: null,
+            tokenType: null,
+            expiresIn: null,
+            idToken: null,
+            refreshToken: null,
+            scope: null,
+            error: error,
+            errorDescription:
+            errorDescription
+        );
     }
 }

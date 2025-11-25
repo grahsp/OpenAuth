@@ -30,7 +30,7 @@ public class TokenRequestHandler : ITokenRequestHandler
     }
     
     
-    public async Task<TokenGenerationResponse> IssueToken(TokenCommand command, CancellationToken ct = default)
+    public async Task<TokenResult> IssueToken(TokenCommand command, CancellationToken ct = default)
     {
         if (!_strategies.TryGetValue(command.GrantType, out var processor))
             throw new InvalidRequestException("Invalid grant type.");
@@ -46,7 +46,7 @@ public class TokenRequestHandler : ITokenRequestHandler
         var accessToken = await CreateAccessTokenAsync(tokenContext, tokenData, ct);
         var idToken = await CreateIdTokenAsync(tokenContext, tokenData, ct);
 
-        return new TokenGenerationResponse(accessToken, "Bearer", tokenData.TokenLifetime.Seconds, idToken);
+        return new TokenResult(accessToken, "Bearer", tokenData.TokenLifetime.Seconds, idToken);
     }
 
     private async Task<string> CreateAccessTokenAsync(TokenContext tokenContext, ClientTokenData tokenData, CancellationToken ct)
