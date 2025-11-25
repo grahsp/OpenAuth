@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -7,7 +8,9 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using OpenAuth.Api;
 using OpenAuth.Application.SigningKeys.Services;
 using OpenAuth.Domain.SigningKeys.Enums;
+using OpenAuth.Domain.Users;
 using OpenAuth.Infrastructure.Persistence;
+using OpenAuth.Test.Common.Helpers;
 using OpenAuth.Test.Integration.Infrastructure.Clients;
 using OpenAuth.Test.Integration.Infrastructure.Fakes;
 
@@ -26,6 +29,7 @@ public class ApiServerFixture(SqlServerFixture sql) : WebApplicationFactory<Prog
         
         await sql.ResetAsync();
         await SeedSigningKeyAsync();
+        await SeedTestUser();
     }
 
     public new Task DisposeAsync() => Task.CompletedTask;
@@ -57,6 +61,21 @@ public class ApiServerFixture(SqlServerFixture sql) : WebApplicationFactory<Prog
         var signingService = scope.ServiceProvider.GetRequiredService<ISigningKeyService>();
 
         await signingService.CreateAsync(SigningAlgorithm.RS256);
+    }
+
+    private async Task SeedTestUser()
+    {
+        var scope = Services.CreateScope();
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
+
+        var user = new User
+        {
+            Id = Guid.Parse(DefaultValues.UserId),
+            UserName = DefaultValues.UserName,
+            Email = DefaultValues.UserEmail
+        };
+
+        await userManager.CreateAsync(user, DefaultValues.UserPassword);
     }
 
     public async Task<ExternalOAuthClient> CreateClientAsync(Action<OAuthClientBuilder>? configure = null)

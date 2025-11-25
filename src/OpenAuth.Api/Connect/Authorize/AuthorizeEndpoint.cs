@@ -1,8 +1,8 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.WebUtilities;
 using OpenAuth.Application.Exceptions;
 using OpenAuth.Application.OAuth.Authorization.Handlers;
-using OpenAuth.Application.Shared.Models;
 
 namespace OpenAuth.Api.Connect.Authorize;
 
@@ -26,7 +26,7 @@ public static class AuthorizeEndpoint
                 return Results.Challenge(new AuthenticationProperties { RedirectUri = redirectUri });
             }
 
-            var subject = user.Identity.Name;
+            var subject = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrWhiteSpace(subject))
                 return Results.BadRequest("Subject is missing.");
 

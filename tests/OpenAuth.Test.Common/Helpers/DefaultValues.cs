@@ -22,4 +22,10 @@ public static class DefaultValues
 
     public const string CodeVerifier = "code-verifier";
     public const string CodeChallengeMethod = "s256";
+
+
+    public const string UserId = "855c5e72-8fb6-4dd0-88dd-5d830b7ccc60";
+    public const string UserName = "test-user";
+    public const string UserEmail = "test-user@email.com";
+    public const string UserPassword = "Test!23";
 }
