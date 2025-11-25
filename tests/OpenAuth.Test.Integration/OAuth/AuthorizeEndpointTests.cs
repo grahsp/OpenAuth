@@ -85,4 +85,23 @@ public class AuthorizeEndpointTests(ApiServerFixture fx) : IClassFixture<ApiServ
         Assert.NotNull(response.RedirectUri);
         Assert.Contains(response.Error!, "unsupported_response_type");
     }
+    
+    [Fact]
+    public async Task AuthorizationCodePkce_WithOidcAndMissingNonce_ReturnsError()
+    {
+        var client = await fx.CreateClientAsync(opts =>
+            opts.WithApplicationType("spa"));
+
+        var (verifier, pkce) = PkceHelpers.Create();
+
+        var grant = await client.AuthorizeAsync(opts =>
+        {
+            opts.WithPkce(pkce.CodeChallenge, pkce.CodeChallengeMethod.ToString());
+            opts.WithScope(DefaultValues.Scopes + " openid profile");
+        });
+
+
+        Assert.False(grant.Success);
+        Assert.Contains("invalid_request", grant.Error);
+    }
 }

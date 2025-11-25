@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 
 namespace OpenAuth.Api.Connect.Token;
 
-public record TokenResponse
+public sealed record TokenResponse
 {
     [JsonPropertyName("access_token")]
     public string? AccessToken { get; }
@@ -31,7 +31,7 @@ public record TokenResponse
     public string? ErrorDescription { get; }
 
 
-    private TokenResponse(
+    public TokenResponse(
         string? accessToken,
         string? tokenType,
         int? expiresIn,

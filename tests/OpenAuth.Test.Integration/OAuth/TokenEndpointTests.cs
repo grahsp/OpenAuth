@@ -1,3 +1,4 @@
+using OpenAuth.Application.OAuth.Stores;
 using OpenAuth.Test.Common.Helpers;
 using OpenAuth.Test.Integration.Infrastructure.Fixtures;
 
@@ -146,5 +147,37 @@ public class TokenEndpointTests(ApiServerFixture fx) : IClassFixture<ApiServerFi
         Assert.NotNull(response);
         Assert.Equal("invalid_grant", response.Error);
         Assert.Contains("code verifier", response.ErrorDescription);
+    }
+    
+    [Fact]
+    public async Task AuthorizationCodePkce_WithOidc_Success()
+    {
+        var client = await fx.CreateClientAsync(opts =>
+            opts.WithApplicationType("spa"));
+
+        var (verifier, pkce) = PkceHelpers.Create();
+
+        var grant = await client.AuthorizeAsync(opts =>
+        {
+            opts.WithPkce(pkce.CodeChallenge, pkce.CodeChallengeMethod.ToString());
+            opts.WithScope(DefaultValues.Scopes + " openid profile");
+            opts.WithNonce("test-nonce");
+        });
+
+        var response = await client.RequestTokenAsync(opts =>
+        {
+            opts.WithGrantType("authorization_code");
+            opts.WithCode(grant.Code);
+            opts.WithClientId(client.Id);
+            opts.WithRedirectUri(DefaultValues.RedirectUri);
+            opts.WithAudience(DefaultValues.Audience);
+            opts.WithScopes(DefaultValues.Scopes);
+            opts.WithCodeVerifier(verifier);
+        });
+
+        Assert.NotNull(response);
+        Assert.NotNull(response.AccessToken);
+        Assert.NotNull(response.IdToken);
+        Assert.Null(response.Error);
     }
 }
