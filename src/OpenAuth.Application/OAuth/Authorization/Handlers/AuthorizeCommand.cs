@@ -29,6 +29,7 @@ public record AuthorizeCommand
         RedirectUri = redirectUri;
         Scopes = scopes;
         Pkce = pkce;
+        Nonce = nonce;
     }
 
     public static AuthorizeCommand Create(

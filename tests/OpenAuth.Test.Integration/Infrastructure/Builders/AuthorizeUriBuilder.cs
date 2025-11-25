@@ -10,6 +10,7 @@ public sealed class AuthorizeUriBuilder
     private string _redirectUri = DefaultValues.RedirectUri;
     private string _scopes = DefaultValues.Scopes;
     private string? _state;
+    private string? _nonce;
     private string? _codeChallenge;
     private string? _codeChallengeMethod;
 
@@ -42,6 +43,12 @@ public sealed class AuthorizeUriBuilder
         _state = state;
         return this;
     }
+    
+    public AuthorizeUriBuilder WithNonce(string? nonce)
+    {
+        _nonce = nonce;
+        return this;
+    }
 
     public AuthorizeUriBuilder WithPkce(string? challenge, string? method = DefaultValues.CodeChallengeMethod)
     {
@@ -59,6 +66,7 @@ public sealed class AuthorizeUriBuilder
             ["redirect_uri"] = _redirectUri,
             ["scope"] = _scopes,
             ["state"] = _state,
+            ["nonce"] = _nonce,
             ["code_challenge"] = _codeChallenge,
             ["code_challenge_method"] = _codeChallengeMethod
         };
