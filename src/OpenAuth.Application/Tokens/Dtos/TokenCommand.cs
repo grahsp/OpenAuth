@@ -6,9 +6,9 @@ public abstract record TokenCommand
 {
     public abstract GrantType GrantType { get; }
     
-    public ClientId ClientId { get; }
-    public AudienceName? RequestedAudience { get; }
-    public ScopeCollection? RequestedScopes { get; }
+    public ClientId ClientId { get; init; }
+    public AudienceName? RequestedAudience { get; init; }
+    public ScopeCollection? RequestedScopes { get; init; }
 
     internal TokenCommand(ClientId clientId, AudienceName? audience, ScopeCollection? scope)
     {
