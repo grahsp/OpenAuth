@@ -1,3 +1,4 @@
+using OpenAuth.Application.Exceptions;
 using OpenAuth.Application.OAuth.Jwts;
 using OpenAuth.Application.Tokens;
 using OpenAuth.Domain.OAuth;
@@ -28,7 +29,8 @@ public class IdTokenHandler : ITokenHandler<IdTokenContext>
             .WithLifetime(context.LifetimeInSeconds);
 
         var userClaims = await _oidcUserClaims
-            .GetUserClaimsAsync(context.Subject, context.Scopes);
+            .GetUserClaimsAsync(context.Subject, context.Scopes)
+            ?? throw new InvalidClientException("Client not found.");
         
         builder.AddClaims(userClaims);
 
