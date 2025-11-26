@@ -23,7 +23,7 @@ public class ClientCredentialsFlowTests : IClassFixture<ApplicationFixture>, IAs
         
         var result = await client.RequestClientCredentialsTokenAsync();
         
-        Assert.NotNull(result.Token);
+        Assert.NotNull(result.AccessToken);
     }
      
     [Fact]

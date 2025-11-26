@@ -1,7 +1,7 @@
 namespace OpenAuth.Application.Tokens.Dtos;
 
 public record TokenResult(
-    string Token,
+    string AccessToken,
     string TokenType,
     int ExpiresIn,
     string? IdToken = null,

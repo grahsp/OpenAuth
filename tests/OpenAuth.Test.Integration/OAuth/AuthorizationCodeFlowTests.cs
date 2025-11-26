@@ -24,7 +24,7 @@ public class AuthorizationCodeFlowTests : IClassFixture<ApplicationFixture>, IAs
         await client.AuthorizeAsync();
         var result = await client.ExchangeCodeForTokenAsync();
         
-        Assert.NotNull(result.Token);
+        Assert.NotNull(result.AccessToken);
     }
     
     [Fact]
@@ -63,7 +63,7 @@ public class AuthorizationCodeFlowTests : IClassFixture<ApplicationFixture>, IAs
         var result = await client.ExchangeCodeForTokenAsync(opts =>
             opts.WithCodeVerifier(verifier));
  
-        Assert.NotNull(result.Token);
+        Assert.NotNull(result.AccessToken);
     }
     
     [Fact]
