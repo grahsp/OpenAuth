@@ -1,4 +1,5 @@
 using OpenAuth.Application.Clients.Dtos;
+using OpenAuth.Application.Tokens;
 using OpenAuth.Application.Tokens.Dtos;
 using OpenAuth.Application.Tokens.Flows;
 using OpenAuth.Domain.AuthorizationGrants;
@@ -62,6 +63,17 @@ public static class TestData
             DefaultValues.Audience,
             ScopeCollection.Parse(DefaultValues.Scopes),
             CreateValidOidcContext()
+        );
+    }
+
+    public static AccessTokenContext CreateValidAccessTokenContext()
+    {
+        return new AccessTokenContext(
+            DefaultValues.ClientId,
+            DefaultValues.Audience,
+            DefaultValues.Subject,
+            3600,
+            ScopeCollection.Parse(DefaultValues.Scopes)
         );
     }
 
