@@ -53,4 +53,24 @@ public static class TestData
             TimeSpan.FromMinutes(30)
         );
     }
+
+    public static TokenContext CreateValidTokenContext()
+    {
+        return new TokenContext(
+            DefaultValues.ClientId,
+            DefaultValues.Subject,
+            DefaultValues.Audience,
+            ScopeCollection.Parse(DefaultValues.Scopes),
+            CreateValidOidcContext()
+        );
+    }
+
+    public static OidcContext CreateValidOidcContext()
+    {
+        return new OidcContext(
+            DefaultValues.Nonce,
+            3600,
+            ScopeCollection.Parse("openid profile")
+        );
+    }
 }

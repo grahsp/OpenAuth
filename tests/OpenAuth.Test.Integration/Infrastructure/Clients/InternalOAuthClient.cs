@@ -62,7 +62,7 @@ public class InternalOAuthClient
         config?.Invoke(builder);
 
         var request = builder.Build();
-        return await _tokenRequestHandler.IssueToken(request);
+        return await _tokenRequestHandler.HandleAsync(request);
     }
 
     public async Task<TokenResult> RequestClientCredentialsTokenAsync(Action<ClientCredentialsTokenCommandBuilder>? config = null)
@@ -77,6 +77,6 @@ public class InternalOAuthClient
         config?.Invoke(builder);
 
         var request = builder.Build();
-        return await _tokenRequestHandler.IssueToken(request);
+        return await _tokenRequestHandler.HandleAsync(request);
     }
 }

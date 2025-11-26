@@ -14,9 +14,9 @@ public static class TokenEndpoint
                 try
                 {
                     var command = dto.ToCommand();
-                    var result = await requestHandler.IssueToken(command);
+                    var result = await requestHandler.HandleAsync(command);
 
-                    var response = TokenResponse.Success(result.Token, result.TokenType, result.ExpiresIn, result.IdToken);
+                    var response = TokenResponse.Success(result.AccessToken, result.TokenType, result.ExpiresIn, result.IdToken);
                     return Results.Ok(response);
                 }
                 catch (OAuthException ex)
