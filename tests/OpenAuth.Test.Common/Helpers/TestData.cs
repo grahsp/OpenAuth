@@ -1,4 +1,5 @@
 using OpenAuth.Application.Clients.Dtos;
+using OpenAuth.Application.Oidc;
 using OpenAuth.Application.Tokens;
 using OpenAuth.Application.Tokens.Dtos;
 using OpenAuth.Application.Tokens.Flows;
@@ -74,6 +75,18 @@ public static class TestData
             DefaultValues.Subject,
             3600,
             ScopeCollection.Parse(DefaultValues.Scopes)
+        );
+    }
+
+    public static IdTokenContext CreateValidIdTokenContext()
+    {
+        return new IdTokenContext(
+            DefaultValues.ClientId,
+            DefaultValues.Subject,
+            DefaultValues.Nonce,
+            1000,
+            3600,
+            ScopeCollection.Parse("openid profile")
         );
     }
 
