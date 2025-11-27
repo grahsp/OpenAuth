@@ -1,4 +1,6 @@
+using System.Diagnostics;
 using OpenAuth.Application.Clients.Dtos;
+using OpenAuth.Application.OAuth.Authorization.Handlers;
 using OpenAuth.Application.Oidc;
 using OpenAuth.Application.Tokens;
 using OpenAuth.Application.Tokens.Dtos;
@@ -23,6 +25,32 @@ public static class TestData
 
     public static AuthorizationGrant CreateValidAuthorizationGrant()
         => new AuthorizationGrantBuilder().Build();
+
+    public static AuthorizeCommand CreateValidAuthorizationCommand()
+        => new AuthorizeCommandBuilder()
+            .WithPkce(CreateValidPkce())
+            .Build();
+
+    public static AuthorizationValidationResult CreateValidAuthorizationValidationResult()
+    {
+        return new AuthorizationValidationResult(
+            ClientId.Create(DefaultValues.ClientId),
+            ScopeCollection.Parse(DefaultValues.Scopes),
+            RedirectUri.Create(DefaultValues.RedirectUri),
+            CreateValidPkce(),
+            DefaultValues.Nonce
+        );
+    }
+
+    public static ClientAuthorizationData CreateValidAuthorizationData()
+    {
+        return new ClientAuthorizationData(
+            ClientId.Create(DefaultValues.ClientId),
+            true,
+            [GrantType.AuthorizationCode],
+            [RedirectUri.Create(DefaultValues.RedirectUri)]
+        );
+    }
     
     public static AuthorizationCodeTokenCommand CreateValidAuthorizationCodeTokenCommand()
     {
