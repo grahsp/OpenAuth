@@ -46,7 +46,7 @@ public class InternalOAuthClient
 
         var command = builder.Build();
 
-        AuthorizationGrant = await _authorizationHandler.AuthorizeAsync(command);
+        AuthorizationGrant = await _authorizationHandler.HandleAsync(command);
     }
 
     public async Task<TokenResult> ExchangeCodeForTokenAsync(Action<AuthorizationCodeTokenCommandBuilder>? config = null)
