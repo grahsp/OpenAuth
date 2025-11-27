@@ -112,6 +112,7 @@ public class CompositionRoot
 
         builder.AddScoped<IAuthorizationCodeValidator, AuthorizationCodeValidator>();
         builder.AddScoped<IAuthorizationHandler, AuthorizationHandler>();
+        builder.AddScoped<IAuthorizationRequestValidator, AuthorizationRequestValidator>();
         
         builder.AddScoped<IAuthorizationGrantStore, AuthorizationGrantStore>();
         builder.AddSingleton<ICache<AuthorizationGrant>, AuthorizationGrantCache>();

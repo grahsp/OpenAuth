@@ -134,6 +134,7 @@ public class Program
 
         builder.Services.AddScoped<IAuthorizationCodeValidator, AuthorizationCodeValidator>();
         builder.Services.AddScoped<IAuthorizationHandler, AuthorizationHandler>();
+        builder.Services.AddScoped<IAuthorizationRequestValidator, AuthorizationRequestValidator>();
         
         builder.Services.AddScoped<IAuthorizationGrantStore, AuthorizationGrantStore>();
         builder.Services.AddSingleton<ICache<AuthorizationGrant>, AuthorizationGrantCache>();
