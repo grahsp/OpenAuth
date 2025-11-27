@@ -39,7 +39,7 @@ public class AuthorizationRequestValidatorTests
     {
         var command = _validCommand with { ResponseType = "invalid-response-type" };
         
-        await Assert.ThrowsAsync<InvalidClientException>(() =>
+        await Assert.ThrowsAsync<UnsupportedResponseTypeException>(() =>
             _sut.ValidateAsync(command, CancellationToken.None));
     }
 
