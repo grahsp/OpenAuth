@@ -7,6 +7,9 @@ public static class ScopeCollectionExtensions
 {
     public static bool ContainsOpenIdScope(this ScopeCollection collection) =>
         collection.Contains(OidcScopes.OpenId);
+
+    public static bool ContainsOidcScopes(this ScopeCollection collection) =>
+        collection.Any(s => OidcScopes.All.Contains(s));
     
     public static ScopeCollection GetOidcScopes(this ScopeCollection collection)
     {
