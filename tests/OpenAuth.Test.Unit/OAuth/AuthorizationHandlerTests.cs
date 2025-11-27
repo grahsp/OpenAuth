@@ -1,187 +1,81 @@
 using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
-using OpenAuth.Application.Clients.Dtos;
-using OpenAuth.Application.Clients.Interfaces;
+using NSubstitute.ExceptionExtensions;
 using OpenAuth.Application.Exceptions;
 using OpenAuth.Application.OAuth.Authorization.Handlers;
 using OpenAuth.Application.OAuth.Authorization.Interfaces;
 using OpenAuth.Domain.AuthorizationGrants;
-using OpenAuth.Domain.Clients.ValueObjects;
+using OpenAuth.Test.Common.Helpers;
 
 namespace OpenAuth.Test.Unit.OAuth;
 
 public class AuthorizationHandlerTests
 {
-    private readonly IClientQueryService _clientQueryService;
+    private readonly IAuthorizationRequestValidator _validator;
     private readonly IAuthorizationGrantStore _store;
     private readonly FakeTimeProvider _time;
+
     private readonly AuthorizationHandler _sut;
+
+    private readonly AuthorizeCommand _validCommand;
 
     public AuthorizationHandlerTests()
     {
-        _clientQueryService = Substitute.For<IClientQueryService>();
+        _validator = Substitute.For<IAuthorizationRequestValidator>();
         _store = Substitute.For<IAuthorizationGrantStore>();
         _time = new FakeTimeProvider();
-        
-        _sut = new AuthorizationHandler(_clientQueryService, _store, _time);
-    }
 
-    // ------------------------------------------------------------
-    // Mothers / Builders for Unit Tests
-    // ------------------------------------------------------------
+        _sut = new AuthorizationHandler(_validator, _store, _time);
 
-    private static AuthorizeCommand ValidCommand(Action<AuthorizeCommandParameters>? overrides = null)
-    {
-        var p = new AuthorizeCommandParameters
-        {
-            ResponseType = "code",
-            ClientId = ClientId.New().ToString(),
-            Subject = "test-subject",
-            RedirectUri = "https://example.com/callback",
-            Scopes = "read write",
-            CodeChallenge = "this-is-a-code-challenge",
-            CodeChallengeMethod = "S256"
-        };
+        _validCommand = TestData.CreateValidAuthorizationCommand();
 
-        overrides?.Invoke(p);
+        _validator.ValidateAsync(Arg.Any<AuthorizeCommand>(), Arg.Any<CancellationToken>())
+            .Returns(TestData.CreateValidAuthorizationValidationResult());
 
-        return AuthorizeCommand.Create(
-            p.ResponseType,
-            p.ClientId,
-            p.Subject,
-            p.RedirectUri,
-            p.Scopes,
-            p.CodeChallenge,
-            p.CodeChallengeMethod,
-            p.Nonce
-        );
-    }
-
-    private static ClientAuthorizationData ConfidentialClient(ClientId? id = null)
-    {
-        var clientId = id ?? ClientId.New();
-
-        return new ClientAuthorizationData(
-            clientId,
-            IsClientPublic: false,
-            [],
-            RedirectUris: [RedirectUri.Create("https://example.com/callback")]
-        );
-    }
-
-    private static ClientAuthorizationData PublicClient(ClientId? id = null)
-    {
-        var clientId = id ?? ClientId.New();
-
-        return new ClientAuthorizationData(
-            clientId,
-            IsClientPublic: true,
-            [],
-            RedirectUris: [RedirectUri.Create("https://example.com/callback")]
-        );
-    }
-
-    // ------------------------------------------------------------
-    // Tests
-    // ------------------------------------------------------------
-
-    [Fact]
-    public async Task ClientNotFound_ThrowsInvalidClientException()
-    {
-        // Arrange
-        var command = ValidCommand();
-
-        // Act / Assert
-        await Assert.ThrowsAsync<InvalidClientException>(() =>
-            _sut.AuthorizeAsync(command));
+        _validCommand = TestData.CreateValidAuthorizationCommand();
     }
 
     [Fact]
-    public async Task InvalidResponseType_ThrowsUnsupportedResponseTypeException()
+    public async Task HandleAsync_WithInvalidRequest_PropagatesException()
     {
-        // Arrange
-        var command = ValidCommand(p => p.ResponseType = "invalid");
-        var client = ConfidentialClient(command.ClientId);
+        _validator.ValidateAsync(Arg.Any<AuthorizeCommand>(), Arg.Any<CancellationToken>())
+            .ThrowsAsync(new InvalidScopeException(""));
 
-        _clientQueryService
-            .GetAuthorizationDataAsync(command.ClientId)
-            .Returns(client);
-
-        // Act / Assert
-        await Assert.ThrowsAsync<UnsupportedResponseTypeException>(() =>
-            _sut.AuthorizeAsync(command));
+        await Assert.ThrowsAsync<InvalidScopeException>(() =>
+            _sut.HandleAsync(_validCommand));
     }
 
     [Fact]
-    public async Task InvalidRedirectUri_ThrowsInvalidRedirectUriException()
+    public async Task HandleAsync_WithInvalidRequest_DoesNotStoreAuthorizationGrant()
     {
-        // Arrange
-        var command = ValidCommand(p =>
-            p.RedirectUri = "https://malicious.com/callback");
+        _validator.ValidateAsync(Arg.Any<AuthorizeCommand>(), Arg.Any<CancellationToken>())
+            .ThrowsAsync(new InvalidScopeException(""));
 
-        var client = ConfidentialClient(command.ClientId);
+        await Assert.ThrowsAsync<InvalidScopeException>(() =>
+            _sut.HandleAsync(_validCommand));
 
-        _clientQueryService
-            .GetAuthorizationDataAsync(command.ClientId)
-            .Returns(client);
-
-        // Act / Assert
-        await Assert.ThrowsAsync<InvalidRedirectUriException>(() =>
-            _sut.AuthorizeAsync(command));
-    }
-    
-    [Fact]
-    public async Task ValidRequest_ReturnsAuthorizationGrant()
-    {
-        // Arrange
-        var command = ValidCommand();
-        var client = ConfidentialClient(command.ClientId);
-
-        _clientQueryService
-            .GetAuthorizationDataAsync(command.ClientId)
-            .Returns(client);
-
-        // Act
-        var grant = await _sut.AuthorizeAsync(command);
-
-        // Assert
-        Assert.Equal(command.RedirectUri, grant.RedirectUri);
-        Assert.NotNull(grant.Code);
-        Assert.NotEmpty(grant.Code);
-        Assert.Equal(command.ClientId, grant.ClientId);
+        await _store.DidNotReceive().AddAsync(Arg.Any<AuthorizationGrant>());
     }
 
     [Fact]
-    public async Task AuthorizeAsync_AddsGrantToStore()
+    public async Task HandleAsync_WithValidRequest_CreatesCorrectAuthorizationGrant()
     {
-        // Arrange
-        var command = ValidCommand();
-        var client = ConfidentialClient(command.ClientId);
+        var result = await _sut.HandleAsync(_validCommand);
 
-        _clientQueryService
-            .GetAuthorizationDataAsync(command.ClientId)
-            .Returns(client);
-
-        // Act
-        await _sut.AuthorizeAsync(command);
-
-        // Assert
-        await _store.Received(1)
-            .AddAsync(Arg.Any<AuthorizationGrant>());
+        Assert.NotEmpty(result.Code);
+        Assert.Equal(_validCommand.ClientId, result.ClientId);
+        Assert.Equal(_validCommand.RedirectUri, result.RedirectUri);
+        Assert.Equal(_validCommand.Scopes, result.GrantedScopes);
+        Assert.Equal(_validCommand.Subject, result.Subject);
+        Assert.Equal(_validCommand.Pkce, result.Pkce);
+        Assert.Equal(_validCommand.Nonce, result.Nonce);
+        Assert.Equal(_time.GetUtcNow(), result.CreatedAt);
     }
-}
 
-/// <summary>
-/// Parameter object for building AuthorizeCommand in tests.
-/// </summary>
-public class AuthorizeCommandParameters
-{
-    public string ResponseType { get; set; }
-    public string ClientId { get; set; }
-    public string Subject { get; set; }
-    public string RedirectUri { get; set; }
-    public string Scopes { get; set; }
-    public string? CodeChallenge { get; set; }
-    public string? CodeChallengeMethod { get; set; }
-    public string? Nonce { get; set; }
+    [Fact]
+    public async Task HandleAsync_WithValidRequest_StoresAuthorizationGrant()
+    {
+        var result = await _sut.HandleAsync(_validCommand);
+        await _store.Received(1).AddAsync(result);
+    }
 }

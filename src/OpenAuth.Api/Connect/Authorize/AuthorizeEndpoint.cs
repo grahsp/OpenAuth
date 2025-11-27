@@ -34,7 +34,7 @@ public static class AuthorizeEndpoint
             {
                 var command = dto.ToCommand(subject);
                 
-                var grant = await handler.AuthorizeAsync(command);
+                var grant = await handler.HandleAsync(command);
                 var redirectUri = grant.ToRedirectUri(dto.State);
 
                 return Results.Redirect(redirectUri);

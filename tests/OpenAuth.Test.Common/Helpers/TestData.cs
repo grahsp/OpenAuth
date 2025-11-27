@@ -29,6 +29,7 @@ public static class TestData
     public static AuthorizeCommand CreateValidAuthorizationCommand()
         => new AuthorizeCommandBuilder()
             .WithPkce(CreateValidPkce())
+            .WithNonce(DefaultValues.Nonce)
             .Build();
 
     public static AuthorizationValidationResult CreateValidAuthorizationValidationResult()
