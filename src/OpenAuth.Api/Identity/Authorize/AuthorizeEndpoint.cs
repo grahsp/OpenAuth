@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.WebUtilities;
 using OpenAuth.Application.Exceptions;
 using OpenAuth.Application.OAuth.Authorization.Handlers;
 
-namespace OpenAuth.Api.Connect.Authorize;
+namespace OpenAuth.Api.Identity.Authorize;
 
 public static class AuthorizeEndpoint
 {
@@ -14,7 +14,7 @@ public static class AuthorizeEndpoint
             IAuthorizationHandler handler,
             HttpContext http,
             HttpRequest request,
-            [AsParameters] AuthorizeRequestDto dto) =>
+            [AsParameters] AuthorizeRequest dto) =>
         {
             if (!dto.Validate(out var error, out var description))
                 return Results.BadRequest(new { error = error, error_description = description });

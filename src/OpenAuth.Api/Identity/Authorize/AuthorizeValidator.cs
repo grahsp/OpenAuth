@@ -1,8 +1,8 @@
-namespace OpenAuth.Api.Connect.Authorize;
+namespace OpenAuth.Api.Identity.Authorize;
 
 public static class AuthorizeValidator
 {
-    public static bool Validate(this AuthorizeRequestDto dto, out string? error, out string? description)
+    public static bool Validate(this AuthorizeRequest dto, out string? error, out string? description)
     {
         error = null;
         description = null;

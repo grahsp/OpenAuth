@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 
-namespace OpenAuth.Api.Connect.Authorize;
+namespace OpenAuth.Api.Identity.Authorize;
 
-public record AuthorizeRequestDto
+public record AuthorizeRequest
 {
     [FromQuery(Name = "response_type")]
     public string ResponseType { get; init; } = null!;

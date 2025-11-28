@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using OpenAuth.Api.Connect.Authorize;
-using OpenAuth.Api.Connect.Token;
-using OpenAuth.Api.Discovery;
+using OpenAuth.Api.Identity.Authorize;
+using OpenAuth.Api.Identity.Discovery;
+using OpenAuth.Api.Identity.Token;
 using OpenAuth.Application.Clients.Factories;
 using OpenAuth.Application.Clients.Interfaces;
 using OpenAuth.Application.Clients.Services;

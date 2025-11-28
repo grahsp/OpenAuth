@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Options;
 using OpenAuth.Application.Tokens.Configurations;
 
-namespace OpenAuth.Api.Discovery;
+namespace OpenAuth.Api.Identity.Discovery;
 
 public static class DiscoveryEndpoint
 {
@@ -11,7 +11,7 @@ public static class DiscoveryEndpoint
         {
             var cfg = config.Value;
 
-            return new DiscoveryDto(
+            return new DiscoveryDocument(
                 cfg.Issuer,
                 $"{cfg.Issuer}/connect/authorize",
                 $"{cfg.Issuer}/connect/token",
