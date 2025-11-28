@@ -2,11 +2,11 @@ using Microsoft.AspNetCore.WebUtilities;
 using OpenAuth.Application.OAuth.Authorization.Handlers;
 using OpenAuth.Domain.AuthorizationGrants;
 
-namespace OpenAuth.Api.Connect.Authorize;
+namespace OpenAuth.Api.Identity.Authorize;
 
 public static class AuthorizeMappings
 {
-    public static AuthorizeCommand ToCommand(this AuthorizeRequestDto request, string subject)
+    public static AuthorizeCommand ToCommand(this AuthorizeRequest request, string subject)
         => AuthorizeCommand.Create(
             request.ResponseType,
             request.ClientId,
