@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using OpenAuth.Api.Identity.Authorize;
 using OpenAuth.Api.Identity.Discovery;
+using OpenAuth.Api.Identity.Jwks;
 using OpenAuth.Api.Identity.Token;
 using OpenAuth.Application.Clients.Factories;
 using OpenAuth.Application.Clients.Interfaces;
@@ -173,6 +174,7 @@ public class Program
         app.MapAuthorizeEndpoint();
         app.MapTokenEndpoint();
         app.MapDiscoveryEndpoint();
+        app.MapJwksEndpoint();
         
         app.Run();
     }
