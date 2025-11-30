@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.WebUtilities;
 using OpenAuth.Application.OAuth.Authorization.Handlers;
 using OpenAuth.Domain.AuthorizationGrants;
 
-namespace OpenAuth.Api.Identity.Authorize;
+namespace OpenAuth.Api.Connect.Authorize;
 
 public static class AuthorizeMappings
 {

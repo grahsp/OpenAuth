@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 
-namespace OpenAuth.Api.Identity.Token;
+namespace OpenAuth.Api.Connect.Token;
 
 public record TokenRequest
 {

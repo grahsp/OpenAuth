@@ -1,8 +1,6 @@
-using OpenAuth.Api.Connect.Jwks;
-using OpenAuth.Api.Mappers;
 using OpenAuth.Application.Jwks.Services;
 
-namespace OpenAuth.Api.Identity.Jwks;
+namespace OpenAuth.Api.Connect.Jwks;
 
 public static class JwksEndpoint
 {

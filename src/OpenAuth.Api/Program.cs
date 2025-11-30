@@ -1,10 +1,10 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using OpenAuth.Api.Clients;
-using OpenAuth.Api.Identity.Authorize;
-using OpenAuth.Api.Identity.Discovery;
-using OpenAuth.Api.Identity.Jwks;
-using OpenAuth.Api.Identity.Token;
+using OpenAuth.Api.Connect.Authorize;
+using OpenAuth.Api.Connect.Discovery;
+using OpenAuth.Api.Connect.Jwks;
+using OpenAuth.Api.Connect.Token;
 using OpenAuth.Application.Clients.Factories;
 using OpenAuth.Application.Clients.Interfaces;
 using OpenAuth.Application.Clients.Services;
@@ -24,7 +24,6 @@ using OpenAuth.Application.SigningKeys.Services;
 using OpenAuth.Application.Tokens;
 using OpenAuth.Application.Tokens.Configurations;
 using OpenAuth.Application.Tokens.Flows;
-using OpenAuth.Application.Tokens.Interfaces;
 using OpenAuth.Application.Tokens.Services;
 using OpenAuth.Domain.AuthorizationGrants;
 using OpenAuth.Domain.Services;
@@ -41,7 +40,6 @@ using OpenAuth.Infrastructure.Security.Hashing;
 using OpenAuth.Infrastructure.SigningKeys.Jwk;
 using OpenAuth.Infrastructure.SigningKeys.KeyMaterials;
 using OpenAuth.Infrastructure.SigningKeys.Persistence;
-using OpenAuth.Infrastructure.Tokens;
 using OpenAuth.Infrastructure.Tokens.SigningCredentials;
 
 namespace OpenAuth.Api;
@@ -68,28 +66,28 @@ public class Program
         });
 
         builder.Services.AddIdentity<User, IdentityRole<Guid>>(options =>
-        {
-            // Password settings
-            options.Password.RequireDigit = false;
-            options.Password.RequireLowercase = false;
-            options.Password.RequireUppercase = false;
-            options.Password.RequireNonAlphanumeric = false;
-            options.Password.RequiredLength = 4;
-            options.Password.RequiredUniqueChars = 0;
+            {
+                // Password settings
+                options.Password.RequireDigit = false;
+                options.Password.RequireLowercase = false;
+                options.Password.RequireUppercase = false;
+                options.Password.RequireNonAlphanumeric = false;
+                options.Password.RequiredLength = 4;
+                options.Password.RequiredUniqueChars = 0;
             
-            // Lockout settings
-            options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
-            options.Lockout.MaxFailedAccessAttempts = 5;
-            options.Lockout.AllowedForNewUsers = true;
+                // Lockout settings
+                options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
+                options.Lockout.MaxFailedAccessAttempts = 5;
+                options.Lockout.AllowedForNewUsers = true;
             
-            // User settings
-            options.User.RequireUniqueEmail = true;
+                // User settings
+                options.User.RequireUniqueEmail = true;
 
-            // Sign in settings
-            options.SignIn.RequireConfirmedEmail = false;
-        })
-        .AddEntityFrameworkStores<AppDbContext>()
-        .AddDefaultTokenProviders();
+                // Sign in settings
+                options.SignIn.RequireConfirmedEmail = false;
+            })
+            .AddEntityFrameworkStores<AppDbContext>()
+            .AddDefaultTokenProviders();
 
         builder.Services.ConfigureApplicationCookie(options =>
         {
