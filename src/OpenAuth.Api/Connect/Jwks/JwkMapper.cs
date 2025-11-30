@@ -1,4 +1,3 @@
-using OpenAuth.Api.Identity.Jwks;
 using OpenAuth.Application.Jwks.Dtos;
 
 namespace OpenAuth.Api.Connect.Jwks;

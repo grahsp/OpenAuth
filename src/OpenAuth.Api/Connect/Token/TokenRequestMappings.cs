@@ -2,7 +2,7 @@ using OpenAuth.Application.Tokens.Dtos;
 using OpenAuth.Domain.Clients.ValueObjects;
 using OpenAuth.Domain.OAuth;
 
-namespace OpenAuth.Api.Identity.Token;
+namespace OpenAuth.Api.Connect.Token;
 
 public static class TokenRequestMappings
 {
