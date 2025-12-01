@@ -12,6 +12,16 @@ public class Program
         builder.RootComponents.Add<HeadOutlet>("head::after");
 
         builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
+        
+        builder.Services.AddOidcAuthentication(options =>
+        {
+            options.ProviderOptions.Authority = "http://localhost:5067";
+            options.ProviderOptions.ClientId = "7b3f1d57-2068-4b9c-b86a-ac6d99838677";
+            
+            options.ProviderOptions.ResponseType = "code";
+            options.ProviderOptions.RedirectUri = "authentication/login-callback";
+            options.ProviderOptions.MetadataUrl = "http://localhost:5067/.well-known/openid-configuration";
+        });
 
         await builder.Build().RunAsync();
     }
