@@ -4,6 +4,7 @@ using OpenAuth.Api.Clients;
 using OpenAuth.Api.Connect.Authorize;
 using OpenAuth.Api.Connect.Discovery;
 using OpenAuth.Api.Connect.Jwks;
+using OpenAuth.Api.Connect.Logout;
 using OpenAuth.Api.Connect.Token;
 using OpenAuth.Application.Clients.Factories;
 using OpenAuth.Application.Clients.Interfaces;
@@ -182,6 +183,8 @@ public class Program
 
         app.MapAuthorizeEndpoint();
         app.MapTokenEndpoint();
+        app.MapLogoutEndpoint();
+        
         app.MapDiscoveryEndpoint();
         app.MapJwksEndpoint();
 

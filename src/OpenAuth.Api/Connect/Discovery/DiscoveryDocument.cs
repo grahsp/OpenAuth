@@ -12,6 +12,9 @@ public record DiscoveryDocument
     
     [JsonPropertyName("token_endpoint")]
     public string TokenEndpoint { get; init; }
+
+    [JsonPropertyName("end_session_endpoint")]
+    public string EndSessionEndpoint { get; init; }
     
     [JsonPropertyName("userinfo_endpoint")] 
     public string UserInfoEndpoint { get; init; }
@@ -38,6 +41,7 @@ public record DiscoveryDocument
         string issuer,
         string authorization,
         string token,
+        string logout,
         string user,
         string jwks,
         IEnumerable<string> responseTypes,
@@ -49,6 +53,7 @@ public record DiscoveryDocument
         Issuer = issuer;
         AuthorizationEndpoint = authorization;
         TokenEndpoint = token;
+        EndSessionEndpoint = logout;
         UserInfoEndpoint = user;
         
         JwksUri = jwks;
