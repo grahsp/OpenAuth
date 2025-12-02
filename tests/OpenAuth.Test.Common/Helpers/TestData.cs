@@ -59,7 +59,6 @@ public static class TestData
             DefaultValues.Code,
             ClientId.Create(DefaultValues.ClientId),
             RedirectUri.Create(DefaultValues.RedirectUri),
-            AudienceName.Create(DefaultValues.Audience),
             ScopeCollection.Parse(DefaultValues.Scopes),
             DefaultValues.CodeVerifier,
             DefaultValues.ClientSecret
@@ -88,10 +87,10 @@ public static class TestData
     public static TokenContext CreateValidTokenContext()
     {
         return new TokenContext(
-            DefaultValues.ClientId,
-            DefaultValues.Subject,
-            DefaultValues.Audience,
             ScopeCollection.Parse(DefaultValues.Scopes),
+            DefaultValues.ClientId,
+            DefaultValues.Audience,
+            DefaultValues.Subject,
             CreateValidOidcContext()
         );
     }
@@ -122,9 +121,9 @@ public static class TestData
     public static OidcContext CreateValidOidcContext()
     {
         return new OidcContext(
-            DefaultValues.Nonce,
             3600,
-            ScopeCollection.Parse("openid profile")
+            ScopeCollection.Parse("openid profile"),
+            DefaultValues.Nonce
         );
     }
 }

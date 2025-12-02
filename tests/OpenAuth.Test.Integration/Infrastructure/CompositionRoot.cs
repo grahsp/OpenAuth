@@ -20,7 +20,6 @@ using OpenAuth.Application.SigningKeys.Services;
 using OpenAuth.Application.Tokens;
 using OpenAuth.Application.Tokens.Configurations;
 using OpenAuth.Application.Tokens.Flows;
-using OpenAuth.Application.Tokens.Interfaces;
 using OpenAuth.Application.Tokens.Services;
 using OpenAuth.Domain.AuthorizationGrants;
 using OpenAuth.Domain.Services;
@@ -37,7 +36,6 @@ using OpenAuth.Infrastructure.Security.Hashing;
 using OpenAuth.Infrastructure.SigningKeys.Jwk;
 using OpenAuth.Infrastructure.SigningKeys.KeyMaterials;
 using OpenAuth.Infrastructure.SigningKeys.Persistence;
-using OpenAuth.Infrastructure.Tokens;
 using OpenAuth.Infrastructure.Tokens.SigningCredentials;
 
 namespace OpenAuth.Test.Integration.Infrastructure;
@@ -126,7 +124,6 @@ public class CompositionRoot
         builder.Configure<JwtOptions>(opts => opts.Issuer = "test-issuer");
         builder.AddScoped<IJwtSigner, JwtSigner>();
         builder.AddScoped<IOidcUserClaimsProvider, OidcUserClaimsProvider>();
-        builder.AddScoped<IJwtBuilderFactory, JwtBuilderFactory>();
 
         builder.AddScoped<ITokenHandler<AccessTokenContext>, AccessTokenHandler>();
         builder.AddScoped<ITokenHandler<IdTokenContext>, IdTokenHandler>();

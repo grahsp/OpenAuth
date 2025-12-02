@@ -5,27 +5,30 @@ namespace OpenAuth.Application.Tokens;
 
 public class AccessTokenHandler : ITokenHandler<AccessTokenContext>
 {
-    private readonly IJwtBuilderFactory _builderFactory;
     private readonly IJwtSigner _jwtSigner;
     
-    public AccessTokenHandler(IJwtBuilderFactory builderFactory, IJwtSigner jwtSigner)
+    public AccessTokenHandler(IJwtSigner jwtSigner)
     {
-        _builderFactory = builderFactory;
         _jwtSigner = jwtSigner;
     }
     
     public async Task<string> CreateAsync(AccessTokenContext context, CancellationToken ct = default)
     {
-        var builder = _builderFactory.Create()
-            .AddClaim(OAuthClaimTypes.ClientId, context.ClientId)
-            .AddClaim(OAuthClaimTypes.Aud, context.Audience)
-            .AddOptionalClaim(OAuthClaimTypes.Sub, context.Subject)
-            .WithLifetime(context.LifetimeInSeconds);
+        var claims = new Dictionary<string, object>
+        {
+            { "scope", context.Scopes.ToString() },
+        };
+        
+        if (context.ClientId is not null)
+            claims.Add("client_id", context.ClientId);
 
-        foreach (var scope in context.Scopes)
-            builder.AddClaim(OAuthClaimTypes.Scope, scope.Value);
-
-        var descriptor = builder.Build();
+        var descriptor = new JwtDescriptor(
+            context.Audience,
+            context.Subject,
+            context.LifetimeInSeconds,
+            claims
+        );
+        
         var token = await _jwtSigner.Create(descriptor, ct);
 
         return token;

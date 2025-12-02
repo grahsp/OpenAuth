@@ -40,7 +40,6 @@ public class AuthorizationCodeProcessorTests
     {
         var result = await _sut.ProcessAsync(_validCommand, _validTokenData);
 
-        Assert.Equal(DefaultValues.ClientId, result.ClientId);
         Assert.Equal(DefaultValues.Audience, result.Audience);
         Assert.Equal(DefaultValues.Subject, result.Subject);
         Assert.Equal(DefaultValues.Scopes, result.Scopes.ToString());

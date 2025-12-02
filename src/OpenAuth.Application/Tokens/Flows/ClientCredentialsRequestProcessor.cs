@@ -22,14 +22,11 @@ public class ClientCredentialsRequestProcessor : TokenRequestProcessor<ClientCre
         if (string.IsNullOrWhiteSpace(command.ClientSecret))
             throw new InvalidRequestException("ClientSecret is required.");
         
-        if (command.RequestedAudience is null)
-            throw new InvalidRequestException("Audience is required.");
-
         if (command.RequestedScopes is null)
             throw new InvalidRequestException("Scopes is required.");
         
-        var audience =  tokenData.AllowedAudiences.FirstOrDefault(a => a.Name == command.RequestedAudience)
-            ?? throw new InvalidScopeException("Audience is not allowed.");
+        var audience = tokenData.AllowedAudiences.FirstOrDefault(a => command.RequestedScopes.IsSubsetOf(a.Scopes))
+            ?? throw new InvalidScopeException("Scopes must belong to a single audience.");
         
         if (!command.RequestedScopes.All(s => audience.Scopes.Contains(s)))
             throw new InvalidScopeException("One or more scopes are not allowed.");
@@ -38,10 +35,9 @@ public class ClientCredentialsRequestProcessor : TokenRequestProcessor<ClientCre
             throw new InvalidClientException("Invalid client credentials.");
 
         return new TokenContext(
+            command.RequestedScopes,
             command.ClientId.ToString(),
-            command.ClientId.ToString(),
-            command.RequestedAudience.Value,
-            command.RequestedScopes
+            audience.Name.Value
         );
     }
 }

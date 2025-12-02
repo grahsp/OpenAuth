@@ -36,10 +36,10 @@ public class AuthorizationCodeProcessor : TokenRequestProcessor<AuthorizationCod
         var oidcContext = CreateOidcContext(authorizationGrant, result.OidcScopes);
         
         return new TokenContext(
-            authorizationGrant.ClientId.ToString(),
-            authorizationGrant.Subject,
-            result.AudienceName.Value,
             result.ApiScopes,
+            authorizationGrant.ClientId.ToString(),
+            result.AudienceName?.Value,
+            authorizationGrant.Subject,
             oidcContext
         );
     }
@@ -49,14 +49,13 @@ public class AuthorizationCodeProcessor : TokenRequestProcessor<AuthorizationCod
         if (!oidcScopes.ContainsOpenIdScope())
             return null;
 
-        var nonce = authorizationGrant.Nonce
-                    ?? throw new InvalidOperationException("Nonce was expected to not be null after validation.");
+        var nonce = authorizationGrant.Nonce;
         var authTime = (int)authorizationGrant.CreatedAt.ToUnixTimeSeconds();
         
         return new OidcContext(
-            nonce,
             authTime,
-            oidcScopes
+            oidcScopes,
+            nonce
         );
     }
 }

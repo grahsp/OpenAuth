@@ -72,7 +72,6 @@ public class AuthorizationCodeTokenCommandBuilder
     public TokenCommand Build()
     {
         var clientId = ClientId.Create(_clientId);
-        var audience = AudienceName.Create(_audience);
         var scopes = ScopeCollection.Parse(_scopes);
         var redirectUri = RedirectUri.Create(_redirectUri);
 
@@ -80,7 +79,6 @@ public class AuthorizationCodeTokenCommandBuilder
             _code,
             clientId,
             redirectUri,
-            audience,
             scopes,
             _codeVerifier,
             _clientSecret

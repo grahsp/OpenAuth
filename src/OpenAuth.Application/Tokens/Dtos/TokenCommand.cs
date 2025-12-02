@@ -7,13 +7,11 @@ public abstract record TokenCommand
     public abstract GrantType GrantType { get; }
     
     public ClientId ClientId { get; init; }
-    public AudienceName? RequestedAudience { get; init; }
     public ScopeCollection? RequestedScopes { get; init; }
 
-    internal TokenCommand(ClientId clientId, AudienceName? audience, ScopeCollection? scope)
+    internal TokenCommand(ClientId clientId, ScopeCollection? scope)
     {
         ClientId = clientId;
-        RequestedAudience = audience;
         RequestedScopes = scope;
     }
 }

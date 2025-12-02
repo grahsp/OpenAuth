@@ -59,6 +59,15 @@ public class Program
 
         builder.Services.AddLogging();
 
+        builder.Services.AddCors(opts =>
+        {
+            opts.AddDefaultPolicy(policy =>
+                policy.AllowAnyHeader()
+                    .AllowAnyMethod()
+                    .AllowAnyOrigin()
+            );
+        });
+
         // Database
         builder.Services.AddDbContext<AppDbContext>(opts =>
         {
@@ -149,7 +158,6 @@ public class Program
         builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("Auth"));
         builder.Services.AddScoped<IJwtSigner, JwtSigner>();
         builder.Services.AddScoped<IOidcUserClaimsProvider, OidcUserClaimsProvider>();
-        builder.Services.AddScoped<IJwtBuilderFactory, JwtBuilderFactory>();
         
         builder.Services.AddScoped<ITokenHandler<AccessTokenContext>, AccessTokenHandler>();
         builder.Services.AddScoped<ITokenHandler<IdTokenContext>, IdTokenHandler>();
@@ -157,6 +165,8 @@ public class Program
 
         // Configure the HTTP request pipeline.
         var app = builder.Build();
+
+        app.UseCors();
 
         app.UseAuthentication();
         app.UseAuthorization();

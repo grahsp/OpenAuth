@@ -50,8 +50,11 @@ public class TokenRequestHandler : ITokenRequestHandler
         return new TokenResult(accessToken, "Bearer", (int)tokenData.TokenLifetime.TotalSeconds, idToken);
     }
 
-    private async Task<string> CreateAccessTokenAsync(TokenContext tokenContext, ClientTokenData tokenData, CancellationToken ct)
+    private async Task<string?> CreateAccessTokenAsync(TokenContext tokenContext, ClientTokenData tokenData, CancellationToken ct)
     {
+        if (tokenContext.Audience is null)
+            return null;
+        
         var accessTokenContext = new AccessTokenContext(
             tokenContext.ClientId,
             tokenContext.Audience,
@@ -68,11 +71,16 @@ public class TokenRequestHandler : ITokenRequestHandler
         var oidcContext = tokenContext.OidcContext;
         if (oidcContext is null)
             return null;
+
+        if (tokenContext.ClientId is null)
+            throw new InvalidOperationException("Expected client id to be present.");
+        
+        if (tokenContext.Subject is null)
+            throw new InvalidOperationException("Expected subject to be present.");
         
         var idTokenContext = new IdTokenContext(
             tokenContext.ClientId,
-            tokenContext.Subject ??
-                throw new InvalidOperationException("Expected subject to not be null after validation."),
+            tokenContext.Subject,
             oidcContext.Nonce,
             oidcContext.AuthTimeInSeconds,
             (int)tokenData.TokenLifetime.TotalSeconds,

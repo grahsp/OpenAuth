@@ -1,10 +1,8 @@
-using OpenAuth.Application.Clients.Dtos;
 using OpenAuth.Application.Exceptions;
 using OpenAuth.Application.Extensions;
 using OpenAuth.Application.Secrets.Interfaces;
 using OpenAuth.Application.Tokens.Dtos;
 using OpenAuth.Domain.AuthorizationGrants;
-using OpenAuth.Domain.Clients.ValueObjects;
 
 namespace OpenAuth.Application.Tokens.Flows;
 
@@ -27,12 +25,12 @@ public class AuthorizationCodeValidator : IAuthorizationCodeValidator
         ValidateAuthorizationGrantBinding(command, authorizationGrant);
         await ValidateClientAuthenticationAsync(command, authorizationGrant, ct);
         
-        var audience = ExtractAudience(command, tokenData);
-        var (apiScopes, oidcScopes) = ExtractScopes(audience, authorizationGrant);
-        
-        ValidateOidc(authorizationGrant, oidcScopes);
+        var apiScopes = authorizationGrant.GrantedScopes.GetApiScopes();
+        var oidcScopes = authorizationGrant.GrantedScopes.GetOidcScopes();
 
-        return new AuthorizationCodeValidationResult(audience.Name, apiScopes, oidcScopes);
+        var audience = tokenData.AllowedAudiences.FirstOrDefault(a => apiScopes.IsSubsetOf(a.Scopes));
+
+        return new AuthorizationCodeValidationResult(audience?.Name, apiScopes, oidcScopes);
     }
 
     private static void ValidateUnusedAuthorizationGrant(AuthorizationGrant authorizationGrant)
@@ -47,45 +45,6 @@ public class AuthorizationCodeValidator : IAuthorizationCodeValidator
             ValidatePkce(command, authorizationGrant);
         else
             await ValidateClientSecretAsync(command, ct);
-    }
-
-    private static Audience ExtractAudience(AuthorizationCodeTokenCommand command, ClientTokenData tokenData)
-    {
-        if (command.RequestedAudience is null)
-            throw new InvalidRequestException("Invalid audience."); 
-        
-        var audience = tokenData.AllowedAudiences.FirstOrDefault(a => a.Name == command.RequestedAudience)
-                       ?? throw new InvalidScopeException("Invalid audience.");
-
-        return audience;
-    }
-
-    // TODO: No scope validation required in token request flow - move to authorization flow
-    private static (ScopeCollection ApiScopes, ScopeCollection OidcScopes) ExtractScopes(Audience audience, AuthorizationGrant authorizationGrant)
-    {
-        if (authorizationGrant.GrantedScopes.Count == 0)
-            throw new InvalidScopeException("No valid scopes found.");
-        
-        var apiScopes = authorizationGrant.GrantedScopes
-            .GetFilteredApiScopes(audience.Scopes);
-
-        var oidcScopes = authorizationGrant.GrantedScopes
-            .GetOidcScopes();
-        
-        return (apiScopes, oidcScopes);
-    }
-
-    private static void ValidateOidc(AuthorizationGrant authorizationGrant, ScopeCollection oidcScopes)
-    {
-        if (oidcScopes.Count == 0)
-            return;
-
-        // TODO: optionally implement whitelisting of oidc scopes in client
-        if (!oidcScopes.ContainsOpenIdScope())
-            throw new InvalidScopeException("OIDC scopes require 'openid' scope.");
-        
-        if (authorizationGrant.Nonce is null)
-            throw new InvalidGrantException("Nonce is required in OIDC.");
     }
 
     private static void ValidateAuthorizationGrantBinding(AuthorizationCodeTokenCommand command,

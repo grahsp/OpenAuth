@@ -33,9 +33,6 @@ public static class TokenRequestMappings
         if (!RedirectUri.TryCreate(dto.RedirectUri, out var redirectUri))
             throw new InvalidOperationException("Invalid redirect_uri parameter.");
 
-        if (!AudienceName.TryCreate(dto.Audience, out var audience) && dto.Audience is not null)
-            throw new InvalidOperationException("Invalid audience parameter.");
-
         if (!ScopeCollection.TryParse(dto.Scope, out var scope) && dto.Scope is not null)
             throw new InvalidOperationException("Invalid scope parameter.");
 
@@ -43,7 +40,6 @@ public static class TokenRequestMappings
             dto.Code,
             clientId,
             redirectUri,
-            audience,
             scope,
             dto.CodeVerifier,
             dto.ClientSecret
@@ -58,15 +54,11 @@ public static class TokenRequestMappings
         if (!ClientId.TryCreate(dto.ClientId, out var clientId))
             throw new InvalidOperationException("Invalid client_id parameter.");
         
-        if (!AudienceName.TryCreate(dto.Audience, out var audience) && dto.Audience is not null)
-            throw new InvalidOperationException("Invalid audience parameter.");
-
-        if (!ScopeCollection.TryParse(dto.Scope, out var scope) && dto.Scope is not null)
+        if (!ScopeCollection.TryParse(dto.Scope, out var scope))
             throw new InvalidOperationException("Invalid scope parameter.");
 
         return ClientCredentialsTokenCommand.Create(
             clientId,
-            audience,
             scope,
             dto.ClientSecret
         );
