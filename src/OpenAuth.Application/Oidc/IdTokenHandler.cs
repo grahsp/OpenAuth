@@ -1,3 +1,4 @@
+using System.IdentityModel.Tokens.Jwt;
 using OpenAuth.Application.Exceptions;
 using OpenAuth.Application.OAuth.Jwts;
 using OpenAuth.Application.Tokens;
@@ -8,33 +9,35 @@ namespace OpenAuth.Application.Oidc;
 public class IdTokenHandler : ITokenHandler<IdTokenContext>
 {
     private readonly IOidcUserClaimsProvider _oidcUserClaims;
-    private readonly IJwtBuilderFactory _builderFactory;
     private readonly IJwtSigner _jwtSigner;
     
-    public IdTokenHandler(IOidcUserClaimsProvider oidcUserClaims, IJwtBuilderFactory builderFactory, IJwtSigner jwtSigner)
+    public IdTokenHandler(IOidcUserClaimsProvider oidcUserClaims, IJwtSigner jwtSigner)
     {
         _oidcUserClaims = oidcUserClaims;
-        _builderFactory = builderFactory;
         _jwtSigner = jwtSigner;
     }
 
     public async Task<string> CreateAsync(IdTokenContext context, CancellationToken ct = default)
     {
-        var builder = _builderFactory.Create()
-            .AddClaim(OAuthClaimTypes.Aud, context.ClientId)
-            .AddClaim(OAuthClaimTypes.Sub, context.Subject)
-            .AddClaim("auth_time", context.AuthTimeInSeconds.ToString())
-            .AddOptionalClaim("nonce", context.Nonce)
-            // TODO: add IdTokenLifetime?
-            .WithLifetime(context.LifetimeInSeconds);
-
         var userClaims = await _oidcUserClaims
-            .GetUserClaimsAsync(context.Subject, context.Scopes)
-            ?? throw new InvalidClientException("Client not found.");
-        
-        builder.AddClaims(userClaims);
+                             .GetUserClaimsAsync(context.Subject, context.Scopes)
+                         ?? throw new InvalidClientException("Client not found.");
 
-        var descriptor = builder.Build();
+        var claims = new Dictionary<string, object>
+        {
+            { JwtRegisteredClaimNames.AuthTime, context.AuthTimeInSeconds },
+        };
+
+        foreach (var claim in userClaims)
+            claims[claim.Type] = claim.Value;
+
+        var descriptor = new JwtDescriptor(
+            context.ClientId,
+            context.Subject,
+            context.LifetimeInSeconds,
+            claims
+        );
+        
         var token = await _jwtSigner.Create(descriptor, ct);
 
         return token;

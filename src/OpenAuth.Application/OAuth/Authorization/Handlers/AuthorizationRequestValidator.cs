@@ -77,7 +77,7 @@ public class AuthorizationRequestValidator : IAuthorizationRequestValidator
         if (command.Scopes.ContainsOidcScopes() && !command.Scopes.ContainsOpenIdScope())
             throw new InvalidRequestException("'openid' scope must be included for OIDC scopes.");
         
-        if (command.Scopes.ContainsOpenIdScope() && string.IsNullOrWhiteSpace(command.Nonce))
+        if (command.ResponseType != "code" && command.Scopes.ContainsOpenIdScope() && string.IsNullOrWhiteSpace(command.Nonce))
             throw new InvalidRequestException("Nonce is required for OIDC scopes.");
     }
 }

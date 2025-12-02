@@ -166,19 +166,6 @@ public class AuthorizationRequestValidatorTests
     }
 
     [Fact]
-    public async Task ValidateAsync_WithOidsScopesAndMissingNonce_ThrowsInvalidRequestException()
-    {
-        var command = _validCommand with
-        {
-            Scopes = ScopeCollection.Parse("openid profile"),
-            Nonce = null
-        };
-        
-        await Assert.ThrowsAsync<InvalidRequestException>(() =>
-            _sut.ValidateAsync(command, CancellationToken.None));              
-    }
-
-    [Fact]
     public async Task ValidateAsync_WithOidcScopesAndNonce_ReturnsResult()
     {
         var command = _validCommand with

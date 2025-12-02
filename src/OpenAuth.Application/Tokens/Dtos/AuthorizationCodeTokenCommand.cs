@@ -16,11 +16,10 @@ public record AuthorizationCodeTokenCommand : TokenCommand
         string code,
         ClientId clientId,
         RedirectUri redirectUri,
-        AudienceName? audience,
         ScopeCollection? scope,
         string? codeVerifier,
         string? clientSecret)
-        : base (clientId, audience, scope)
+        : base (clientId, scope)
     {
         Code = code;
         RedirectUri = redirectUri;
@@ -32,7 +31,6 @@ public record AuthorizationCodeTokenCommand : TokenCommand
         string code,
         ClientId clientId,
         RedirectUri redirectUri,
-        AudienceName? audience,
         ScopeCollection? scope,
         string? codeVerifier,
         string? clientSecret)
@@ -47,7 +45,6 @@ public record AuthorizationCodeTokenCommand : TokenCommand
             code,
             clientId,
             redirectUri,
-            audience,
             scope,
             codeVerifier,
             clientSecret);

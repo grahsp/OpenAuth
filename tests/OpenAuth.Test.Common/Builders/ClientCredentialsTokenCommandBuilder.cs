@@ -46,7 +46,6 @@ public class ClientCredentialsTokenCommandBuilder
         
         return ClientCredentialsTokenCommand.Create(
             clientId,
-            audience,
             scopes,
             _clientSecret
         );

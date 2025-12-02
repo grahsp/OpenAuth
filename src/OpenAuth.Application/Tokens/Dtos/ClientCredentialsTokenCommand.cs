@@ -10,23 +10,21 @@ public record ClientCredentialsTokenCommand : TokenCommand
 
     private ClientCredentialsTokenCommand(
         ClientId clientId,
-        AudienceName? audience,
-        ScopeCollection? scope,
+        ScopeCollection scope,
         string clientSecret)
-        : base(clientId, audience, scope)
+        : base(clientId, scope)
     {
         ClientSecret = clientSecret;
     }
 
     public static ClientCredentialsTokenCommand Create(
         ClientId clientId,
-        AudienceName? audience,
-        ScopeCollection? scope,
+        ScopeCollection scope,
         string clientSecret)
     {
         if (string.IsNullOrWhiteSpace(clientSecret))
             throw new InvalidOperationException("ClientSecret is required.");
 
-        return new ClientCredentialsTokenCommand(clientId, audience, scope, clientSecret);
+        return new ClientCredentialsTokenCommand(clientId, scope, clientSecret);
     }
 }
