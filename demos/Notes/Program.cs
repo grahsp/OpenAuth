@@ -13,6 +13,11 @@ public class Program
 
         builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
         
+        builder.Logging.SetMinimumLevel(LogLevel.Debug);
+        builder.Logging.AddFilter("Microsoft.AspNetCore.Components.WebAssembly.Authentication", LogLevel.Trace);
+        builder.Logging.AddFilter("Microsoft.AspNetCore.Authorization", LogLevel.Trace);
+        builder.Logging.AddFilter("Microsoft.AspNetCore.Components", LogLevel.Trace);
+        
         builder.Services.AddOidcAuthentication(options =>
         {
             options.ProviderOptions.Authority = "http://localhost:5067";
@@ -21,6 +26,8 @@ public class Program
             options.ProviderOptions.ResponseType = "code";
             options.ProviderOptions.RedirectUri = "authentication/login-callback";
             options.ProviderOptions.MetadataUrl = "http://localhost:5067/.well-known/openid-configuration";
+            
+            options.ProviderOptions.DefaultScopes.Add("email");
         });
 
         await builder.Build().RunAsync();

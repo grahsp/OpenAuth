@@ -1,4 +1,6 @@
 ﻿@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+
 <div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
         <a class="navbar-brand" href="">Notes</a>
@@ -9,10 +11,10 @@
         <AuthorizeView>
             <Authorized>
                 <span>Hello, @context.User.Claims.FirstOrDefault(c => c.Type == "preferred_username")?.Value</span>
-                <a href="authentication/logout">Logout</a>
+                <button class="btn btn-link" @onclick="Logout">Logout</button>
             </Authorized>
             <NotAuthorized>
-                <a href="authentication/login">Login</a>
+                <button class="btn btn-link" @onclick="Login">Login</button>
             </NotAuthorized>
         </AuthorizeView>
     </div>
@@ -39,6 +41,18 @@
 </div>
 
 @code {
+    [Inject] NavigationManager Nav { get; set; }
+    
+    private void Login()
+    {
+        Nav.NavigateToLogout("authentication/login");
+    }
+
+    private void Logout()
+    {
+        Nav.NavigateToLogout("authentication/logout");
+    }
+    
     private bool collapseNavMenu = true;
 
     private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
