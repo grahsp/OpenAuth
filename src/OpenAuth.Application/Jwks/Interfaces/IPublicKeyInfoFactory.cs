@@ -1,9 +1,9 @@
 using OpenAuth.Application.Jwks.Dtos;
-using OpenAuth.Application.SigningKeys.Dtos;
+using OpenAuth.Domain.SigningKeys;
 
 namespace OpenAuth.Application.Jwks.Interfaces;
 
 public interface IPublicKeyInfoFactory
 {
-    PublicKeyInfo Create(SigningKeyData keyData);
+    PublicKeyInfo Create(SigningKey signingKey);
 }

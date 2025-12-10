@@ -117,7 +117,6 @@ public class CompositionRoot
         // Jwks
         builder.AddScoped<IJwksService, JwksService>();
         builder.AddScoped<IPublicKeyInfoFactory, PublicKeyInfoFactory>();
-        builder.AddScoped<IPublicKeyInfoExtractor, RsaPublicKeyInfoExtractor>();
         
         // Token Generator
         builder.Configure<JwtOptions>(opts => opts.Issuer = "test-issuer");

@@ -1,5 +1,6 @@
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
+using OpenAuth.Application.Jwks.Dtos;
 using OpenAuth.Application.Jwks.Interfaces;
 using OpenAuth.Domain.SigningKeys;
 using OpenAuth.Domain.SigningKeys.Enums;
@@ -11,6 +12,11 @@ namespace OpenAuth.Infrastructure.SigningKeys.Handlers;
 public class HmacSigningKeyHandler : ISigningKeyHandler
 {
     public KeyType KeyType => KeyType.HMAC;
+    
+    public PublicKeyInfo CreateJwk(SigningKey signingKey)
+    {
+        throw new NotSupportedException("Symmetric keys cannot be appear in a JWKS.");
+    }
 
     public SigningCredentials CreateSigningCredentials(SigningKey signingKey)
     {
