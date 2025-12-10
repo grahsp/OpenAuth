@@ -4,5 +4,5 @@ namespace OpenAuth.Application.Jwks.Services;
 
 public interface IJwksService
 {
-    Task<IEnumerable<PublicKeyInfo>> GetJwksAsync();
+    Task<IEnumerable<BaseJwk>> GetJwksAsync();
 }

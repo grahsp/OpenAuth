@@ -37,7 +37,7 @@ public class RsaSigningKeyHandlerTests
 
             var result = Handler.CreateJwk(signingKey);
 
-            var info = Assert.IsType<RsaPublicKeyInfo>(result);
+            var info = Assert.IsType<RsaJwk>(result);
             Assert.NotEmpty(info.N);
             Assert.NotEmpty(info.E);
         }
@@ -46,7 +46,7 @@ public class RsaSigningKeyHandlerTests
         public void CreateJwk_FromPublicKey_ReturnsSameInfoAsPrivateKey()
         {
             var privateKey = TestData.CreateValidRsaSigningKey();
-            var fromPrivate = (RsaPublicKeyInfo)Handler.CreateJwk(privateKey);
+            var fromPrivate = (RsaJwk)Handler.CreateJwk(privateKey);
 
             var publicPem = CryptoTestUtils.RsaPublicKeyInfoToPem(fromPrivate);
             var publicKey = new SigningKeyBuilder()
@@ -54,7 +54,7 @@ public class RsaSigningKeyHandlerTests
                 .AsRsa()
                 .Build();
 
-            var fromPublic = (RsaPublicKeyInfo)Handler.CreateJwk(publicKey);
+            var fromPublic = (RsaJwk)Handler.CreateJwk(publicKey);
 
             Assert.Equal(fromPrivate.N, fromPublic.N);
             Assert.Equal(fromPrivate.E, fromPublic.E);
@@ -65,8 +65,8 @@ public class RsaSigningKeyHandlerTests
         {
             var signingKey = TestData.CreateValidRsaSigningKey();
 
-            var jwk1 = (RsaPublicKeyInfo)Handler.CreateJwk(signingKey);
-            var jwk2 = (RsaPublicKeyInfo)Handler.CreateJwk(signingKey);
+            var jwk1 = (RsaJwk)Handler.CreateJwk(signingKey);
+            var jwk2 = (RsaJwk)Handler.CreateJwk(signingKey);
 
             Assert.Equal(jwk1.N, jwk2.N);
             Assert.Equal(jwk1.E, jwk2.E);
@@ -246,7 +246,7 @@ public class RsaSigningKeyHandlerTests
         {
             var privateKey = TestData.CreateValidRsaSigningKey();
             var publicPem = CryptoTestUtils.RsaPublicKeyInfoToPem(
-                (RsaPublicKeyInfo)Handler.CreateJwk(privateKey));
+                (RsaJwk)Handler.CreateJwk(privateKey));
         
             var signingKey = new SigningKeyBuilder()
                 .AsRsa()

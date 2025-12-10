@@ -13,7 +13,7 @@ public class HmacSigningKeyHandler : ISigningKeyHandler
 {
     public KeyType KeyType => KeyType.HMAC;
     
-    public PublicKeyInfo CreateJwk(SigningKey signingKey)
+    public BaseJwk CreateJwk(SigningKey signingKey)
     {
         throw new NotSupportedException("Symmetric keys cannot be appear in a JWKS.");
     }
