@@ -5,13 +5,10 @@ using Microsoft.Extensions.Time.Testing;
 using Microsoft.IdentityModel.Tokens;
 using NSubstitute;
 using OpenAuth.Application.Security.Signing;
-using OpenAuth.Application.SigningKeys.Dtos;
 using OpenAuth.Application.SigningKeys.Interfaces;
 using OpenAuth.Application.Tokens.Configurations;
 using OpenAuth.Domain.OAuth;
 using OpenAuth.Domain.SigningKeys;
-using OpenAuth.Domain.SigningKeys.Enums;
-using OpenAuth.Domain.SigningKeys.ValueObjects;
 using OpenAuth.Infrastructure.OAuth.Jwt;
 using OpenAuth.Test.Common.Helpers;
 
@@ -19,8 +16,6 @@ namespace OpenAuth.Test.Unit.OAuth.Jwt;
 
 public class JwtSignerTests
 {
-    private const string SecretKey = "this-is-a-test-secret-key-and-is-super-secret!";
-    
     private readonly ISigningKeyQueryService _keyService;
     private readonly ISigningCredentialsFactory _credentialsFactory;
     private readonly JwtSigner _sut;
@@ -33,19 +28,12 @@ public class JwtSignerTests
         _credentialsFactory = Substitute.For<ISigningCredentialsFactory>();
 
         // Setup key service
-        var keyData = new SigningKeyData(
-            SigningKeyId.New(),
-            KeyType.HMAC,
-            SigningAlgorithm.HS256,
-            new Key(SecretKey)
-        );
-
         var signingKey = TestData.CreateValidHmacSigningKey();
 
         _keyService.GetCurrentKeyDataAsync(Arg.Any<CancellationToken>())
             .Returns(signingKey);
 
-        var signingCredentials = CreateSigningCredentials(keyData);
+        var signingCredentials = CreateSigningCredentials(signingKey.Id.ToString());
         _credentialsFactory.Create(signingKey).Returns(signingCredentials);
 
         _time = new FakeTimeProvider(DateTimeOffset.UtcNow);
@@ -54,13 +42,10 @@ public class JwtSignerTests
         _sut = new JwtSigner(opts, _keyService, _credentialsFactory, _time);
     }
 
-    private SigningCredentials CreateSigningCredentials(SigningKeyData keyData)
+    private SigningCredentials CreateSigningCredentials(string kid = "test-key")
     {
-        var bytes = Encoding.UTF8.GetBytes(keyData.Key.Value);
-        var securityKey = new SymmetricSecurityKey(bytes)
-        {
-            KeyId = keyData.Kid.Value.ToString()
-        };
+        var bytes = Encoding.UTF8.GetBytes(DefaultValues.Secret);
+        var securityKey = new SymmetricSecurityKey(bytes) { KeyId = kid };
 
         return new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
     }
