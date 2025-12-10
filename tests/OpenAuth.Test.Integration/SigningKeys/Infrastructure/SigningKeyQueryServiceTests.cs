@@ -1,8 +1,8 @@
 using Microsoft.Extensions.Time.Testing;
-using OpenAuth.Domain.SigningKeys;
 using OpenAuth.Domain.SigningKeys.Enums;
 using OpenAuth.Domain.SigningKeys.ValueObjects;
 using OpenAuth.Infrastructure.SigningKeys.Persistence;
+using OpenAuth.Test.Common.Builders;
 using OpenAuth.Test.Integration.Infrastructure.Fixtures;
 
 namespace OpenAuth.Test.Integration.SigningKeys.Infrastructure;
@@ -51,10 +51,10 @@ public class SigningKeyQueryServiceTests : IAsyncLifetime
 
             // Assert
             Assert.NotNull(result);
-            Assert.Equal(activeKey.Id, result.Kid);
-            Assert.Equal(KeyType.RSA, result.Kty);
-            Assert.Equal(SigningAlgorithm.RS256, result.Alg);
-            Assert.Equal(activeKey.KeyMaterial.Key, result.Key);
+            Assert.Equal(activeKey.Id, result.Id);
+            Assert.Equal(KeyType.RSA, result.KeyMaterial.Kty);
+            Assert.Equal(SigningAlgorithm.RS256, result.KeyMaterial.Alg);
+            Assert.Equal(activeKey.KeyMaterial.Key, result.KeyMaterial.Key);
         }
 
         [Fact]
@@ -132,8 +132,8 @@ public class SigningKeyQueryServiceTests : IAsyncLifetime
 
             // Assert
             Assert.NotNull(result);
-            Assert.Equal(newerKey.Id, result.Kid);
-            Assert.Equal("newer-key", result.Key.Value);
+            Assert.Equal(newerKey.Id, result.Id);
+            Assert.Equal("newer-key", result.KeyMaterial.Key.Value);
         }
     }
 
@@ -404,69 +404,5 @@ public class SigningKeyQueryServiceTests : IAsyncLifetime
             Assert.Equal(newerActive.Id, result.ElementAt(0).Id);  // Most recent first
             Assert.Equal(olderActive.Id, result.ElementAt(1).Id);
         }
-    }
-}
-
-
-
-public class SigningKeyBuilder
-{
-    private Key? _key;
-    private KeyType _kty = KeyType.RSA;
-    private SigningAlgorithm _alg = SigningAlgorithm.RS256;
-    private DateTimeOffset _createdAt = DateTimeOffset.UtcNow;
-    private DateTimeOffset? _expiresAt;
-    
-    public SigningKeyBuilder WithKey(string key)
-    {
-        _key = new Key(key);
-        return this;
-    }
-
-    public SigningKeyBuilder WithKty(KeyType kty)
-    {
-        _kty = kty;
-        return this;
-    }
-    
-    public SigningKeyBuilder WithAlg(SigningAlgorithm alg)
-    {
-        _alg = alg;
-        return this;
-    }
-
-    public SigningKeyBuilder CreatedAt(DateTimeOffset createdAt)
-    {
-        _createdAt = createdAt;
-        return this;
-    }
-
-    public SigningKeyBuilder ExpiresAt(DateTimeOffset expiresAt)
-    {
-        _expiresAt = expiresAt;
-        return this;
-    }
-
-    public SigningKeyBuilder AsRsa()
-    {
-        _kty = KeyType.RSA;
-        _alg = SigningAlgorithm.RS256;
-        return this;
-    }
-
-    public SigningKeyBuilder AsHmac()
-    {
-        _kty = KeyType.HMAC;
-        _alg = SigningAlgorithm.HS256;
-        return this;
-    }
-
-    public SigningKey Build()
-    {
-        var key = _key ?? new Key("default-private-key");
-        var keyMaterial = new KeyMaterial(key, _alg, _kty);
-        var expiresAt = _expiresAt ?? _createdAt.AddHours(24);
-        
-        return new SigningKey(keyMaterial, _createdAt, expiresAt);
     }
 }

@@ -9,6 +9,7 @@ using OpenAuth.Application.SigningKeys.Dtos;
 using OpenAuth.Application.SigningKeys.Interfaces;
 using OpenAuth.Application.Tokens.Configurations;
 using OpenAuth.Domain.OAuth;
+using OpenAuth.Domain.SigningKeys;
 using OpenAuth.Domain.SigningKeys.Enums;
 using OpenAuth.Domain.SigningKeys.ValueObjects;
 using OpenAuth.Infrastructure.OAuth.Jwt;
@@ -39,11 +40,13 @@ public class JwtSignerTests
             new Key(SecretKey)
         );
 
+        var signingKey = TestData.CreateValidHmacSigningKey();
+
         _keyService.GetCurrentKeyDataAsync(Arg.Any<CancellationToken>())
-            .Returns(keyData);
+            .Returns(signingKey);
 
         var signingCredentials = CreateSigningCredentials(keyData);
-        _credentialsFactory.Create(keyData).Returns(signingCredentials);
+        _credentialsFactory.Create(signingKey).Returns(signingCredentials);
 
         _time = new FakeTimeProvider(DateTimeOffset.UtcNow);
 
@@ -162,7 +165,7 @@ public class JwtSignerTests
         var descriptor = CreateValidDescriptor();
 
         _keyService.GetCurrentKeyDataAsync(Arg.Any<CancellationToken>())
-            .Returns((SigningKeyData)null!);
+            .Returns((SigningKey)null!);
 
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(
             () => _sut.Create(descriptor));
@@ -177,6 +180,6 @@ public class JwtSignerTests
 
         await _sut.Create(descriptor);
 
-        _credentialsFactory.Received(1).Create(Arg.Any<SigningKeyData>());
+        _credentialsFactory.Received(1).Create(Arg.Any<SigningKey>());
     }
 }

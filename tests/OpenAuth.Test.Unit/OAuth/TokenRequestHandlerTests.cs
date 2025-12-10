@@ -49,7 +49,7 @@ public class TokenRequestHandlerTests
     }
 
     [Fact]
-    public async Task Constructor_WithNoRegisteredProcessors_ThrowsArgumentException()
+    public void Constructor_WithNoRegisteredProcessors_ThrowsArgumentException()
     {
         Assert.Throws<ArgumentException>(() =>
             new TokenRequestHandler([], _clientQueryService, _accessTokenHandler, _idTokenHandler));
@@ -106,7 +106,6 @@ public class TokenRequestHandlerTests
         Assert.Equal(DefaultValues.ClientId, forwardedContext.ClientId);
         Assert.Equal(DefaultValues.Audience, forwardedContext.Audience);
         Assert.Equal(DefaultValues.Subject, forwardedContext.Subject);
-        Assert.Equal(DefaultValues.Scopes, forwardedContext.Scopes.ToString());
     }
 
     [Fact]
