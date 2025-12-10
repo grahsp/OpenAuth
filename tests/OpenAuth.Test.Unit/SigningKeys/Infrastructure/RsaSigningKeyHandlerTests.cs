@@ -1,3 +1,4 @@
+using System.IdentityModel.Tokens.Jwt;
 using Microsoft.IdentityModel.Tokens;
 using OpenAuth.Application.Jwks.Dtos;
 using OpenAuth.Infrastructure.SigningKeys.Handlers;
@@ -157,6 +158,105 @@ public class RsaSigningKeyHandlerTests
             var credentials = Handler.CreateSigningCredentials(signingKey);
 
             Assert.IsType<RsaSecurityKey>(credentials.Key);
+        }
+    }
+
+    public class CreateValidationKey
+    {
+        [Fact]
+        public void CreateValidationKey_WhenInputIsNull_ThrowsArgumentNullException()
+        {
+            Assert.Throws<ArgumentNullException>(() =>
+                Handler.CreateValidationKey(null!));
+        }
+        
+        [Fact]
+        public void CreateValidationKey_WhenKeyTypeMismatch_ThrowsInvalidOperationException()
+        {
+            var signingKey = new SigningKeyBuilder()
+                .AsHmac()
+                .Build();
+
+            var ex = Assert.Throws<InvalidOperationException>(() =>
+                Handler.CreateValidationKey(signingKey));
+
+            Assert.Contains("HMAC", ex.Message);
+            Assert.Contains("RSA", ex.Message);
+        }
+
+        
+        [Fact]
+        public void CreateValidationKey_WithValidRsaKey_ReturnsRsaSecurityKey()
+        {
+            var signingKey = TestData.CreateValidRsaSigningKey();
+
+            var key = Handler.CreateValidationKey(signingKey);
+
+            Assert.IsType<RsaSecurityKey>(key);
+        }
+
+        [Fact]
+        public void CreateValidationKey_SetsCorrectKeyId()
+        {
+            var signingKey = TestData.CreateValidRsaSigningKey();
+
+            var key = Handler.CreateValidationKey(signingKey);
+
+            Assert.Equal(signingKey.Id.ToString(), key.KeyId);
+        }
+
+        [Fact]
+        public void CreateValidationKey_DoesNotContainPrivateParameters()
+        {
+            var signingKey = TestData.CreateValidRsaSigningKey();
+            var rsaKey = (RsaSecurityKey)Handler.CreateValidationKey(signingKey);
+
+            Assert.NotNull(rsaKey.Parameters.Modulus);
+            Assert.NotNull(rsaKey.Parameters.Exponent);
+
+            Assert.Null(rsaKey.Parameters.D); // Private exponent must be missing
+        }
+
+        [Fact]
+        public void CreateValidationKey_UsesCorrectModulusAndExponent()
+        {
+            var signingKey = TestData.CreateValidRsaSigningKey();
+            var (n, e) = RsaSigningKeyHandler.ExtractPublicParameters(signingKey);
+        
+            var rsaKey = (RsaSecurityKey)Handler.CreateValidationKey(signingKey);
+        
+            Assert.Equal(rsaKey.Parameters.Modulus, Base64UrlEncoder.DecodeBytes(n));
+            Assert.Equal(rsaKey.Parameters.Exponent, Base64UrlEncoder.DecodeBytes(e));
+        }
+        
+        [Fact]
+        public void CreateValidationKey_WhenPublicParametersMissing_ThrowsArgumentException()
+        {
+            var signingKey = new SigningKeyBuilder()
+                .AsRsa()
+                .WithKey("-----BEGIN RSA PRIVATE KEY----- malformed -----END RSA PRIVATE KEY-----")
+                .Build();
+        
+            Assert.Throws<ArgumentException>(() =>
+                Handler.CreateValidationKey(signingKey));
+        }
+        
+        [Fact]
+        public void CreateValidationKey_FromPublicKeyPem_ReturnsValidRsaKey()
+        {
+            var privateKey = TestData.CreateValidRsaSigningKey();
+            var publicPem = CryptoTestUtils.RsaPublicKeyInfoToPem(
+                (RsaPublicKeyInfo)Handler.CreateJwk(privateKey));
+        
+            var signingKey = new SigningKeyBuilder()
+                .AsRsa()
+                .WithKey(publicPem.Value)
+                .Build();
+        
+            var rsaKey = (RsaSecurityKey)Handler.CreateValidationKey(signingKey);
+        
+            Assert.NotNull(rsaKey.Parameters.Modulus);
+            Assert.NotNull(rsaKey.Parameters.Exponent);
         }
     }
 }
