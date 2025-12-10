@@ -16,7 +16,7 @@ public class AccessTokenHandler : ITokenHandler<AccessTokenContext>
     {
         var claims = new Dictionary<string, object>
         {
-            { "scope", context.Scopes.ToString() },
+            { "scope", context.Scope.ToString() },
         };
         
         if (context.ClientId is not null)

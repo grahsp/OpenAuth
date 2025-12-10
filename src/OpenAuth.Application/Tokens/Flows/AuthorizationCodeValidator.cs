@@ -28,9 +28,11 @@ public class AuthorizationCodeValidator : IAuthorizationCodeValidator
         var apiScopes = authorizationGrant.GrantedScopes.GetApiScopes();
         var oidcScopes = authorizationGrant.GrantedScopes.GetOidcScopes();
 
-        var audience = tokenData.AllowedAudiences.FirstOrDefault(a => apiScopes.IsSubsetOf(a.Scopes));
+        var audience = apiScopes.Count > 0
+            ? tokenData.AllowedAudiences.FirstOrDefault(a => apiScopes.IsSubsetOf(a.Scopes))
+            : null;
 
-        return new AuthorizationCodeValidationResult(audience?.Name, apiScopes, oidcScopes);
+        return new AuthorizationCodeValidationResult(audience?.Name, authorizationGrant.GrantedScopes, oidcScopes);
     }
 
     private static void ValidateUnusedAuthorizationGrant(AuthorizationGrant authorizationGrant)
