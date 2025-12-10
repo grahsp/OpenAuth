@@ -33,10 +33,10 @@ public class AuthorizationCodeProcessor : TokenRequestProcessor<AuthorizationCod
         authorizationGrant.Consume();
         await _grantStore.RemoveAsync(authorizationGrant.Code);
 
-        var oidcContext = CreateOidcContext(authorizationGrant, result.OidcScopes);
+        var oidcContext = CreateOidcContext(authorizationGrant, result.OidcScope);
         
         return new TokenContext(
-            result.ApiScopes,
+            result.Scope,
             authorizationGrant.ClientId.ToString(),
             result.AudienceName?.Value,
             authorizationGrant.Subject,

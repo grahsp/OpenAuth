@@ -4,6 +4,6 @@ namespace OpenAuth.Application.Tokens.Flows;
 
 public sealed record AuthorizationCodeValidationResult(
     AudienceName? AudienceName,
-    ScopeCollection ApiScopes,
-    ScopeCollection OidcScopes
+    ScopeCollection Scope,
+    ScopeCollection OidcScope
 );

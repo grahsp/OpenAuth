@@ -52,15 +52,12 @@ public class TokenRequestHandler : ITokenRequestHandler
 
     private async Task<string?> CreateAccessTokenAsync(TokenContext tokenContext, ClientTokenData tokenData, CancellationToken ct)
     {
-        if (tokenContext.Audience is null)
-            return null;
-        
         var accessTokenContext = new AccessTokenContext(
             tokenContext.ClientId,
             tokenContext.Audience,
             tokenContext.Subject,
             (int)tokenData.TokenLifetime.TotalSeconds,
-            tokenContext.Scopes
+            tokenContext.Scope
         );
         
         return await _accessTokenHandler.CreateAsync(accessTokenContext, ct);

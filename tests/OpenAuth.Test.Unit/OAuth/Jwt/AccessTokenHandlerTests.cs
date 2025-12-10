@@ -37,7 +37,7 @@ public class AccessTokenHandlerTests
         Assert.NotNull(captured);
         Assert.Equal(_validContext.Audience, captured.Audience);
         Assert.Equal(_validContext.Subject, captured.Subject);
-        Assert.Equal(_validContext.Scopes.ToString(), captured.Claims.Single(c => c.Key == "scope").Value);
+        Assert.Equal(_validContext.Scope.ToString(), captured.Claims.Single(c => c.Key == "scope").Value);
     }
 
     [Fact]

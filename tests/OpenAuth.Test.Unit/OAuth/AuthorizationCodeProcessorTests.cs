@@ -42,7 +42,7 @@ public class AuthorizationCodeProcessorTests
 
         Assert.Equal(DefaultValues.Audience, result.Audience);
         Assert.Equal(DefaultValues.Subject, result.Subject);
-        Assert.Equal(DefaultValues.Scopes, result.Scopes.ToString());
+        Assert.Equal(DefaultValues.Scopes, result.Scope.ToString());
         Assert.Null(result.OidcContext);
     }
 
@@ -52,7 +52,7 @@ public class AuthorizationCodeProcessorTests
         const string scopes = "openid profile";
         var validationResult = TestData.CreateValidAuthorizationCodeValidationResult() with
         {
-            OidcScopes = ScopeCollection.Parse(scopes)
+            OidcScope = ScopeCollection.Parse(scopes)
         };
         
         _validator.ValidateAsync(Arg.Any<AuthorizationCodeValidatorContext>(), Arg.Any<CancellationToken>())
