@@ -153,7 +153,6 @@ public class Program
         // Jwks
         builder.Services.AddScoped<IJwksService, JwksService>();
         builder.Services.AddScoped<IPublicKeyInfoFactory, PublicKeyInfoFactory>();
-        builder.Services.AddScoped<IPublicKeyInfoExtractor, RsaPublicKeyInfoExtractor>();
         
         // Token Generator
         builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("Auth"));

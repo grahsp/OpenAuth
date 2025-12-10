@@ -8,6 +8,18 @@ namespace OpenAuth.Test.Unit.SigningKeys.Infrastructure;
 public class HmacSigningKeyHandlerTests
 {
     private static readonly HmacSigningKeyHandler Handler = new();
+
+    public class CreateJwk
+    {
+        [Fact]
+        public void CreateJwk_ThrowsNotSupportedException()
+        {
+            var signingKey = TestData.CreateValidHmacSigningKey();
+
+            Assert.Throws<NotSupportedException>(() =>
+                Handler.CreateJwk(signingKey));
+        }
+    }
     
     public class CreateSigningCredentials
     {
