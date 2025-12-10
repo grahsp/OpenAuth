@@ -137,6 +137,7 @@ public class Program
         builder.Services.AddScoped<ISigningKeyHandler, HmacSigningKeyHandler>();
         builder.Services.AddScoped<ISigningKeyHandler, RsaSigningKeyHandler>();
         builder.Services.AddScoped<ISigningCredentialsFactory, SigningCredentialsFactory>();
+        builder.Services.AddScoped<IValidationKeyFactory, ValidationKeyFactory>();
         
         // OAuth Services
         builder.Services.AddScoped<ITokenRequestHandler, TokenRequestHandler>();

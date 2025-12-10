@@ -101,6 +101,7 @@ public class CompositionRoot
         builder.AddScoped<ISigningKeyHandler, HmacSigningKeyHandler>();
         builder.AddScoped<ISigningKeyHandler, RsaSigningKeyHandler>();
         builder.AddScoped<ISigningCredentialsFactory, SigningCredentialsFactory>();
+        builder.AddScoped<IValidationKeyFactory, ValidationKeyFactory>();
         
         // OAuth Services
         builder.AddScoped<ITokenRequestHandler, TokenRequestHandler>();
