@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using OpenAuth.Application.SigningKeys.Dtos;
 using OpenAuth.Application.SigningKeys.Interfaces;
+using OpenAuth.Domain.SigningKeys;
 using OpenAuth.Domain.SigningKeys.ValueObjects;
 using OpenAuth.Infrastructure.Persistence;
 
@@ -18,30 +19,18 @@ public class SigningKeyQueryService : ISigningKeyQueryService
     }
     
     
-    public Task<SigningKeyData?> GetCurrentKeyDataAsync(CancellationToken ct = default)
+    public Task<SigningKey?> GetCurrentKeyDataAsync(CancellationToken ct = default)
         => _context.SigningKeys
             .AsNoTracking()
             .WhereActive(_time.GetUtcNow())
             .OrderByDescending(k => k.CreatedAt)
-            .Select(k => new SigningKeyData(
-                k.Id,
-                k.KeyMaterial.Kty,
-                k.KeyMaterial.Alg,
-                k.KeyMaterial.Key
-            ))
             .FirstOrDefaultAsync(ct);
 
-    public async Task<IReadOnlyCollection<SigningKeyData>> GetActiveKeyDataAsync(CancellationToken ct = default)
+    public async Task<IReadOnlyCollection<SigningKey>> GetActiveKeyDataAsync(CancellationToken ct = default)
         => await _context.SigningKeys
             .AsNoTracking()
             .WhereActive(_time.GetUtcNow())
             .OrderByDescending(k => k.CreatedAt)
-            .Select(k => new SigningKeyData(
-                k.Id,
-                k.KeyMaterial.Kty,
-                k.KeyMaterial.Alg,
-                k.KeyMaterial.Key
-            ))
             .ToListAsync(ct);
 
     public Task<SigningKeyInfo?> GetByIdAsync(SigningKeyId id, CancellationToken ct = default)

@@ -28,15 +28,14 @@ using OpenAuth.Infrastructure.Clients.Persistence;
 using OpenAuth.Infrastructure.Clients.Secrets;
 using OpenAuth.Infrastructure.Clients.Secrets.Persistence;
 using OpenAuth.Infrastructure.Identity;
-using OpenAuth.Infrastructure.Keys.Jwks;
 using OpenAuth.Infrastructure.OAuth.Jwt;
 using OpenAuth.Infrastructure.OAuth.Persistence;
 using OpenAuth.Infrastructure.Persistence;
 using OpenAuth.Infrastructure.Security.Hashing;
+using OpenAuth.Infrastructure.SigningKeys.Handlers;
 using OpenAuth.Infrastructure.SigningKeys.Jwk;
 using OpenAuth.Infrastructure.SigningKeys.KeyMaterials;
 using OpenAuth.Infrastructure.SigningKeys.Persistence;
-using OpenAuth.Infrastructure.Tokens.SigningCredentials;
 
 namespace OpenAuth.Test.Integration.Infrastructure;
 
@@ -99,8 +98,8 @@ public class CompositionRoot
         builder.AddScoped<IKeyMaterialGenerator, RsaKeyMaterialGenerator>();
         builder.AddScoped<ISigningKeyFactory, SigningKeyFactory>();
 
-        builder.AddScoped<ISigningCredentialsStrategy, HmacSigningCredentialsStrategy>();
-        builder.AddScoped<ISigningCredentialsStrategy, RsaSigningCredentialsStrategy>();
+        builder.AddScoped<ISigningKeyHandler, HmacSigningKeyHandler>();
+        builder.AddScoped<ISigningKeyHandler, RsaSigningKeyHandler>();
         builder.AddScoped<ISigningCredentialsFactory, SigningCredentialsFactory>();
         
         // OAuth Services

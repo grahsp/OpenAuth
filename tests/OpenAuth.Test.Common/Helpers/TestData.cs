@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using OpenAuth.Application.Clients.Dtos;
 using OpenAuth.Application.OAuth.Authorization.Handlers;
 using OpenAuth.Application.Oidc;
@@ -8,6 +7,7 @@ using OpenAuth.Application.Tokens.Flows;
 using OpenAuth.Domain.AuthorizationGrants;
 using OpenAuth.Domain.AuthorizationGrants.ValueObjects;
 using OpenAuth.Domain.Clients.ValueObjects;
+using OpenAuth.Domain.SigningKeys;
 using OpenAuth.Test.Common.Builders;
 
 namespace OpenAuth.Test.Common.Helpers;
@@ -126,4 +126,14 @@ public static class TestData
             DefaultValues.Nonce
         );
     }
+
+    public static SigningKey CreateValidRsaSigningKey()
+        => new SigningKeyBuilder()
+            .AsRsa()
+            .Build();
+
+    public static SigningKey CreateValidHmacSigningKey()
+        => new SigningKeyBuilder()
+            .AsHmac()
+            .Build();
 }

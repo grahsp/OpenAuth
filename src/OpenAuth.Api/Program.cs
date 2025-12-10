@@ -6,6 +6,7 @@ using OpenAuth.Api.Connect.Discovery;
 using OpenAuth.Api.Connect.Jwks;
 using OpenAuth.Api.Connect.Logout;
 using OpenAuth.Api.Connect.Token;
+using OpenAuth.Api.Connect.UserInfo;
 using OpenAuth.Application.Clients.Factories;
 using OpenAuth.Application.Clients.Interfaces;
 using OpenAuth.Application.Clients.Services;
@@ -33,15 +34,14 @@ using OpenAuth.Infrastructure.Clients.Persistence;
 using OpenAuth.Infrastructure.Clients.Secrets;
 using OpenAuth.Infrastructure.Clients.Secrets.Persistence;
 using OpenAuth.Infrastructure.Identity;
-using OpenAuth.Infrastructure.Keys.Jwks;
 using OpenAuth.Infrastructure.OAuth.Jwt;
 using OpenAuth.Infrastructure.OAuth.Persistence;
 using OpenAuth.Infrastructure.Persistence;
 using OpenAuth.Infrastructure.Security.Hashing;
+using OpenAuth.Infrastructure.SigningKeys.Handlers;
 using OpenAuth.Infrastructure.SigningKeys.Jwk;
 using OpenAuth.Infrastructure.SigningKeys.KeyMaterials;
 using OpenAuth.Infrastructure.SigningKeys.Persistence;
-using OpenAuth.Infrastructure.Tokens.SigningCredentials;
 
 namespace OpenAuth.Api;
 
@@ -134,8 +134,8 @@ public class Program
         builder.Services.AddScoped<IKeyMaterialGenerator, RsaKeyMaterialGenerator>();
         builder.Services.AddScoped<ISigningKeyFactory, SigningKeyFactory>();
 
-        builder.Services.AddScoped<ISigningCredentialsStrategy, HmacSigningCredentialsStrategy>();
-        builder.Services.AddScoped<ISigningCredentialsStrategy, RsaSigningCredentialsStrategy>();
+        builder.Services.AddScoped<ISigningKeyHandler, HmacSigningKeyHandler>();
+        builder.Services.AddScoped<ISigningKeyHandler, RsaSigningKeyHandler>();
         builder.Services.AddScoped<ISigningCredentialsFactory, SigningCredentialsFactory>();
         
         // OAuth Services
@@ -184,7 +184,8 @@ public class Program
         app.MapAuthorizeEndpoint();
         app.MapTokenEndpoint();
         app.MapLogoutEndpoint();
-        
+
+        app.MapUserInfoEndpoint();
         app.MapDiscoveryEndpoint();
         app.MapJwksEndpoint();
 

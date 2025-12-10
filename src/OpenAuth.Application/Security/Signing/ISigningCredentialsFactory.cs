@@ -1,5 +1,4 @@
 using Microsoft.IdentityModel.Tokens;
-using OpenAuth.Application.SigningKeys.Dtos;
 using OpenAuth.Domain.SigningKeys;
 
 namespace OpenAuth.Application.Security.Signing;
@@ -13,16 +12,16 @@ public interface ISigningCredentialsFactory
     /// <summary>
     /// Creates <see cref="SigningCredentials"/> from signing key data.
     /// </summary>
-    /// <param name="keyData">The signing key data containing the key material and algorithm information.</param>
+    /// <param name="key">The signing key containing the key material and algorithm information.</param>
     /// <returns>
     /// A <see cref="SigningCredentials"/> instance configured with the appropriate cryptographic key
     /// and algorithm for JWT token signing.
     /// </returns>
     /// <exception cref="ArgumentNullException">
-    /// Thrown when <paramref name="keyData"/> is <c>null</c>.
+    /// Thrown when <paramref name="key"/> is <c>null</c>.
     /// </exception>
     /// <exception cref="NotSupportedException">
-    /// Thrown when the key type specified in <paramref name="keyData"/> is not supported.
+    /// Thrown when the key type specified in <paramref name="key"/> is not supported.
     /// </exception>
-    SigningCredentials Create(SigningKeyData keyData);
+    SigningCredentials Create(SigningKey key);
 }

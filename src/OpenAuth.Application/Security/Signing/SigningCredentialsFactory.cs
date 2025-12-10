@@ -1,5 +1,5 @@
 using Microsoft.IdentityModel.Tokens;
-using OpenAuth.Application.SigningKeys.Dtos;
+using OpenAuth.Application.Jwks.Interfaces;
 using OpenAuth.Domain.SigningKeys;
 using OpenAuth.Domain.SigningKeys.Enums;
 
@@ -7,52 +7,50 @@ namespace OpenAuth.Application.Security.Signing;
 
 /// <summary>
 /// Default implementation of <see cref="ISigningCredentialsFactory"/>.
-/// Uses registered <see cref="ISigningCredentialsStrategy"/> implementations
+/// Uses registered <see cref="ISigningKeyHandler"/> implementations
 /// to convert domain-level <see cref="SigningKey"/> instances into framework-level
 /// <see cref="SigningCredentials"/>.
 /// </summary>
 public class SigningCredentialsFactory : ISigningCredentialsFactory
 {
-    private readonly Dictionary<KeyType, ISigningCredentialsStrategy> _strategies;
+    private readonly Dictionary<KeyType, ISigningKeyHandler> _handlers;
     
     /// <summary>
     /// Initializes a new instance of the <see cref="SigningCredentialsFactory"/> class.
     /// </summary>
-    /// <param name="strategies">
-    /// A collection of <see cref="ISigningCredentialsStrategy"/> implementations
+    /// <param name="handlers">
+    /// A collection of <see cref="ISigningKeyHandler"/> implementations
     /// that handle supported <see cref="KeyType"/> values.
     /// </param>
     /// <exception cref="ArgumentException">
-    /// Thrown if duplicate strategies are registered for the same <see cref="KeyType"/>.
+    /// Thrown if multiple handlers are registered for the same <see cref="KeyType"/>.
     /// </exception>
     /// <exception cref="InvalidOperationException">
-    /// Thrown if no strategies are provided.
+    /// Thrown if no handlers provided.
     /// </exception>
-    public SigningCredentialsFactory(IEnumerable<ISigningCredentialsStrategy> strategies)
+    public SigningCredentialsFactory(IEnumerable<ISigningKeyHandler> handlers)
     {
         try
         {
-            _strategies = strategies
-                .ToDictionary(s => s.KeyType);
+            _handlers = handlers.ToDictionary(s => s.KeyType);
         }
         catch (ArgumentException e)
         {
-            throw new ArgumentException("Duplicate signing credentials strategy registered.", e);
+            throw new ArgumentException("Multiple handlers registered using the same key type.", e);
         }
         
-        if (_strategies.Count == 0)
-            throw new InvalidOperationException("No signing credentials strategies were registered."); 
+        if (_handlers.Count == 0)
+            throw new InvalidOperationException("No signing key handlers registered."); 
     }
     
     /// <inheritdoc />
-    public Microsoft.IdentityModel.Tokens.SigningCredentials Create(SigningKeyData keyData)
+    public SigningCredentials Create(SigningKey key)
     {
-        ArgumentNullException.ThrowIfNull(keyData);
+        ArgumentNullException.ThrowIfNull(key);
         
-        if (!_strategies.TryGetValue(keyData.Kty, out var strategy))
-            throw new InvalidOperationException(
-                $"No signing credentials strategy found for key type '{ keyData.Kty }' (algorithm: { keyData.Alg }).");
-
-        return strategy.GetSigningCredentials(keyData);
+        if (!_handlers.TryGetValue(key.KeyMaterial.Kty, out var strategy))
+            throw new InvalidOperationException($"No handler registered for key type '{key.KeyMaterial.Kty}'.");
+        
+        return strategy.CreateSigningCredentials(key);
     }
 }

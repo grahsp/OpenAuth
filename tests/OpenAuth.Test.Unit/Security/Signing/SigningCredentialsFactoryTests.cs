@@ -1,103 +1,79 @@
 using System.Security.Cryptography;
 using Microsoft.IdentityModel.Tokens;
+using OpenAuth.Application.Jwks.Interfaces;
 using OpenAuth.Application.Security.Signing;
-using OpenAuth.Application.SigningKeys.Dtos;
-using OpenAuth.Domain.SigningKeys.Enums;
 using OpenAuth.Domain.SigningKeys.ValueObjects;
-using OpenAuth.Infrastructure.Tokens.SigningCredentials;
+using OpenAuth.Infrastructure.SigningKeys.Handlers;
+using OpenAuth.Test.Common.Helpers;
 
 namespace OpenAuth.Test.Unit.Security.Signing;
 
 public class SigningCredentialsFactoryTests
 {
-    private readonly ISigningCredentialsStrategy _rsaStrategy = new RsaSigningCredentialsStrategy();
-    private readonly ISigningCredentialsStrategy _hmacStrategy = new HmacSigningCredentialsStrategy();
+    private readonly ISigningKeyHandler _rsaHandler = new RsaSigningKeyHandler();
+    private readonly ISigningKeyHandler _hmacHandler = new HmacSigningKeyHandler();
 
-    public class Constructor : SigningCredentialsFactoryTests
+    [Fact]
+    public void Throws_WhenNoStrategiesRegistered()
     {
-        [Fact]
-        public void Throws_WhenNoStrategiesRegistered()
-        {
-            Assert.Throws<InvalidOperationException>(() =>
-                new SigningCredentialsFactory([]));
-        }
-
-        [Fact]
-        public void Throws_WhenDuplicateStrategyRegistered()
-        {
-            Assert.Throws<ArgumentException>(() =>
-                new SigningCredentialsFactory([_rsaStrategy, _rsaStrategy]));
-        }
+        Assert.Throws<InvalidOperationException>(() =>
+            new SigningCredentialsFactory([]));
     }
 
-    public class Create : SigningCredentialsFactoryTests
+    [Fact]
+    public void Throws_WhenDuplicateStrategyRegistered()
     {
-        [Fact]
-        public void Throws_WhenKeyDataIsNull()
-        {
-            var factory = new SigningCredentialsFactory([_rsaStrategy]);
+        Assert.Throws<ArgumentException>(() =>
+            new SigningCredentialsFactory([_rsaHandler, _rsaHandler]));
+    }
 
-            Assert.Throws<ArgumentNullException>(() =>
-                factory.Create(null!));
-        }
+    [Fact]
+    public void Throws_WhenKeyDataIsNull()
+    {
+        var factory = new SigningCredentialsFactory([_rsaHandler]);
 
-        [Fact]
-        public void Throws_WhenKeyTypeNotSupported()
-        {
-            var factory = new SigningCredentialsFactory([_rsaStrategy]);
+        Assert.Throws<ArgumentNullException>(() =>
+            factory.Create(null!));
+    }
+
+    [Fact]
+    public void Throws_WhenKeyTypeNotSupported()
+    {
+        var factory = new SigningCredentialsFactory([_rsaHandler]);
+        var signingKey = TestData.CreateValidHmacSigningKey(); // Only RSA handler registered.
             
-            var keyData = new SigningKeyData(
-                SigningKeyId.New(), 
-                KeyType.HMAC,  // Not supported - only RSA registered
-                SigningAlgorithm.HS256,
-                new Key("test-private-key")
-            );
-            
-            Assert.Throws<InvalidOperationException>(() =>
-                factory.Create(keyData));
-        }
+        Assert.Throws<InvalidOperationException>(() =>
+            factory.Create(signingKey));
+    }
         
-        [Fact]
-        public void UsesRsaStrategy_WhenKeyTypeIsRsa()
-        {
-            var factory = new SigningCredentialsFactory([_rsaStrategy, _hmacStrategy]);
+    [Fact]
+    public void UsesRsaStrategy_WhenKeyTypeIsRsa()
+    {
+        var factory = new SigningCredentialsFactory([_rsaHandler, _hmacHandler]);
+        var signingKey = TestData.CreateValidRsaSigningKey();
             
-            var keyData = new SigningKeyData(
-                SigningKeyId.New(),
-                KeyType.RSA,
-                SigningAlgorithm.RS256,
-                GenerateRsaPrivateKey()
-            );
+        var credentials = factory.Create(signingKey);
+
+        Assert.Equal("RS256", credentials.Algorithm);
+        Assert.IsType<RsaSecurityKey>(credentials.Key);
+    }
+
+    [Fact]
+    public void UsesHmacStrategy_WhenKeyTypeIsHmac()
+    {
+        var factory = new SigningCredentialsFactory([_rsaHandler, _hmacHandler]);
+        var signingKey = TestData.CreateValidHmacSigningKey();
             
-            var credentials = factory.Create(keyData);
+        var credentials = factory.Create(signingKey);
 
-            Assert.Equal("RS256", credentials.Algorithm);
-            Assert.IsType<RsaSecurityKey>(credentials.Key);
-        }
+        Assert.Equal("HS256", credentials.Algorithm);
+        Assert.IsType<SymmetricSecurityKey>(credentials.Key);
+    }
 
-        [Fact]
-        public void UsesHmacStrategy_WhenKeyTypeIsHmac()
-        {
-            var factory = new SigningCredentialsFactory([_rsaStrategy, _hmacStrategy]);
-            
-            var keyData = new SigningKeyData(
-                SigningKeyId.New(), 
-                KeyType.HMAC,
-                SigningAlgorithm.HS256,
-                new Key("my-secret-key-with-256-bits-minimum")
-            );
-            
-            var credentials = factory.Create(keyData);
-
-            Assert.Equal("HS256", credentials.Algorithm);
-            Assert.IsType<SymmetricSecurityKey>(credentials.Key);
-        }
-
-        private static Key GenerateRsaPrivateKey()
-        {
-            using var rsa = RSA.Create(2048);
-            var privateKeyPem = rsa.ExportRSAPrivateKeyPem();
-            return new Key(privateKeyPem);
-        }
+    private static Key GenerateRsaPrivateKey()
+    {
+        using var rsa = RSA.Create(2048);
+        var privateKeyPem = rsa.ExportRSAPrivateKeyPem();
+        return new Key(privateKeyPem);
     }
 }
