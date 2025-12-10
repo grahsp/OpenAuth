@@ -8,7 +8,7 @@ namespace OpenAuth.Application.Jwks.Interfaces;
 public interface ISigningKeyHandler
 {
     KeyType KeyType { get; }
-    PublicKeyInfo CreateJwk(SigningKey signingKey);
+    BaseJwk CreateJwk(SigningKey signingKey);
     SigningCredentials CreateSigningCredentials(SigningKey signingKey);
     SecurityKey CreateValidationKey(SigningKey signingKey);
 }

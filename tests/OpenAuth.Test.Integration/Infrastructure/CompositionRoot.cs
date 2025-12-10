@@ -33,7 +33,7 @@ using OpenAuth.Infrastructure.OAuth.Persistence;
 using OpenAuth.Infrastructure.Persistence;
 using OpenAuth.Infrastructure.Security.Hashing;
 using OpenAuth.Infrastructure.SigningKeys.Handlers;
-using OpenAuth.Infrastructure.SigningKeys.Jwk;
+using OpenAuth.Infrastructure.SigningKeys.Jwks;
 using OpenAuth.Infrastructure.SigningKeys.KeyMaterials;
 using OpenAuth.Infrastructure.SigningKeys.Persistence;
 
@@ -116,7 +116,7 @@ public class CompositionRoot
         
         // Jwks
         builder.AddScoped<IJwksService, JwksService>();
-        builder.AddScoped<IPublicKeyInfoFactory, PublicKeyInfoFactory>();
+        builder.AddScoped<IJwkFactory, JwkFactory>();
         
         // Token Generator
         builder.Configure<JwtOptions>(opts => opts.Issuer = "test-issuer");

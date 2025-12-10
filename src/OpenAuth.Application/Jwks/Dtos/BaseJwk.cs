@@ -3,10 +3,9 @@ using OpenAuth.Domain.SigningKeys.ValueObjects;
 
 namespace OpenAuth.Application.Jwks.Dtos;
 
-public sealed record RsaPublicKeyInfo
+public abstract record BaseJwk
 (
     SigningKeyId Kid,
     SigningAlgorithm Alg,
-    string N,
-    string E
-) : PublicKeyInfo(Kid, Alg);
+    string Use = "sig"
+);

@@ -3,7 +3,7 @@ using OpenAuth.Domain.SigningKeys;
 
 namespace OpenAuth.Application.Jwks.Interfaces;
 
-public interface IPublicKeyInfoFactory
+public interface IJwkFactory
 {
-    PublicKeyInfo Create(SigningKey signingKey);
+    BaseJwk Create(SigningKey signingKey);
 }

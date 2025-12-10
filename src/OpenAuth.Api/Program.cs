@@ -39,7 +39,7 @@ using OpenAuth.Infrastructure.OAuth.Persistence;
 using OpenAuth.Infrastructure.Persistence;
 using OpenAuth.Infrastructure.Security.Hashing;
 using OpenAuth.Infrastructure.SigningKeys.Handlers;
-using OpenAuth.Infrastructure.SigningKeys.Jwk;
+using OpenAuth.Infrastructure.SigningKeys.Jwks;
 using OpenAuth.Infrastructure.SigningKeys.KeyMaterials;
 using OpenAuth.Infrastructure.SigningKeys.Persistence;
 
@@ -152,7 +152,7 @@ public class Program
         
         // Jwks
         builder.Services.AddScoped<IJwksService, JwksService>();
-        builder.Services.AddScoped<IPublicKeyInfoFactory, PublicKeyInfoFactory>();
+        builder.Services.AddScoped<IJwkFactory, JwkFactory>();
         
         // Token Generator
         builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("Auth"));

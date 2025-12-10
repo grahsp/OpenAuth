@@ -13,13 +13,12 @@ public class RsaSigningKeyHandler : ISigningKeyHandler
 {
     public KeyType KeyType => KeyType.RSA;
     
-    public PublicKeyInfo CreateJwk(SigningKey signingKey)
+    public BaseJwk CreateJwk(SigningKey signingKey)
     {
         var material = ValidateAndExtractKeyMaterial(signingKey);
         var (n, e) = ExtractPublicParameters(signingKey);
         
-        var publicKeyInfo = new RsaPublicKeyInfo(signingKey.Id, material.Alg, n, e);
-        return publicKeyInfo;
+        return new RsaJwk(signingKey.Id, material.Alg, n, e);
     }
 
     public SigningCredentials CreateSigningCredentials(SigningKey signingKey)
