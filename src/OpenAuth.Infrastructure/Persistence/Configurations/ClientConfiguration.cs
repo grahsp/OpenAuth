@@ -34,8 +34,8 @@ public class ClientConfiguration : IEntityTypeConfiguration<Client>
         // Properties
         builder.Property(c => c.TokenLifetime)
             .HasConversion(
-                t => t.Ticks,
-                ticks => TimeSpan.FromTicks(ticks))
+                ts => (long)ts.TotalSeconds,
+                seconds => TimeSpan.FromSeconds(seconds))
             .IsRequired();
             
         builder.Property(c => c.CreatedAt).IsRequired();
