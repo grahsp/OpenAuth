@@ -21,10 +21,19 @@ public class HmacSigningKeyHandler : ISigningKeyHandler
     public SigningCredentials CreateSigningCredentials(SigningKey signingKey)
     {
         var material = ValidateAndExtractKeyMaterial(signingKey);
-        var bytes= Encoding.UTF8.GetBytes(material.Key.Value);
-        var securityKey = new SymmetricSecurityKey(bytes) { KeyId = signingKey.Id.ToString() };
+        var securityKey = CreateValidationKey(signingKey);
         
         return new SigningCredentials(securityKey, material.Alg.ToSecurityString());
+    }
+
+    public SecurityKey CreateValidationKey(SigningKey signingKey)
+    {
+        var material = ValidateAndExtractKeyMaterial(signingKey);
+        
+        var bytes= Encoding.UTF8.GetBytes(material.Key.Value);
+        var securityKey = new SymmetricSecurityKey(bytes) { KeyId = signingKey.Id.ToString() };
+
+        return securityKey;
     }
     
     private KeyMaterial ValidateAndExtractKeyMaterial(SigningKey signingKey)

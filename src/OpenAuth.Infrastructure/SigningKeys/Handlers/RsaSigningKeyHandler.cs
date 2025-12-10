@@ -33,7 +33,26 @@ public class RsaSigningKeyHandler : ISigningKeyHandler
         return new SigningCredentials(securityKey, material.Alg.ToSecurityString());
     }
 
-    private static (string N, string E) ExtractPublicParameters(SigningKey signingKey)
+    public SecurityKey CreateValidationKey(SigningKey signingKey)
+    {
+        ValidateAndExtractKeyMaterial(signingKey);
+        var (n, e) = ExtractPublicParameters(signingKey);
+
+        var rsaParams = new RSAParameters
+        {
+            Modulus = Base64UrlEncoder.DecodeBytes(n),
+            Exponent = Base64UrlEncoder.DecodeBytes(e)
+        };
+        
+        var rsa = new RsaSecurityKey(rsaParams)
+        {
+            KeyId = signingKey.Id.ToString()
+        };
+
+        return rsa;
+    }
+
+    public static (string N, string E) ExtractPublicParameters(SigningKey signingKey)
     {
         // TODO: cache modulus/exponent per keyId since RSA public parameters never change.
 
