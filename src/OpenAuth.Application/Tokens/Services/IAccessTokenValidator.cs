@@ -4,5 +4,5 @@ namespace OpenAuth.Application.Tokens.Services;
 
 public interface IAccessTokenValidator
 {
-    Task<ClaimsPrincipal?> ValidateAsync(string token);
+    Task<ClaimsPrincipal> ValidateAsync(string token);
 }
