@@ -16,7 +16,7 @@ public static class DiscoveryEndpoint
                 $"{cfg.Issuer}/connect/authorize",
                 $"{cfg.Issuer}/connect/token",
                 $"{cfg.Issuer}/connect/logout",
-                "",
+                $"{cfg.Issuer}/connect/userinfo",
                 $"{cfg.Issuer}/.well-known/jwks.json",
                 ["code"],
                 ["public"],
