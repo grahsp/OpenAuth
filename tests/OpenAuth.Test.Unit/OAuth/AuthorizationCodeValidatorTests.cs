@@ -43,7 +43,7 @@ public class AuthorizationCodeValidatorTests
         
         var result = await _sut.ValidateAsync(ctx);
 
-        Assert.Equal(DefaultValues.Audience, result.AudienceName.Value);
+        Assert.Equal(DefaultValues.Audience, result.AudienceName?.Value);
         Assert.Equal(DefaultValues.Scopes, result.Scope.ToString());
     }
     
@@ -60,7 +60,7 @@ public class AuthorizationCodeValidatorTests
         
         var result = await _sut.ValidateAsync(ctx);
 
-        Assert.Equal(DefaultValues.Audience, result.AudienceName.Value);
+        Assert.Equal(DefaultValues.Audience, result.AudienceName?.Value);
         Assert.Equal(DefaultValues.Scopes, result.Scope.ToString());
     }
     
@@ -77,8 +77,8 @@ public class AuthorizationCodeValidatorTests
         
         var result = await _sut.ValidateAsync(ctx);
 
-        Assert.Equal(DefaultValues.Audience, result.AudienceName.Value);
-        Assert.Equal(DefaultValues.Scopes, result.Scope.ToString());
+        Assert.Equal(DefaultValues.Audience, result.AudienceName?.Value);
+        Assert.Equal(ctx.AuthorizationGrant.GrantedScopes.ToString(), result.Scope.ToString());
         Assert.Equal("openid", result.OidcScope.ToString());
     }
 
