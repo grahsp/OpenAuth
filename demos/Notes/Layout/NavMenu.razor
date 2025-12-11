@@ -10,7 +10,7 @@
         
         <AuthorizeView>
             <Authorized>
-                <span>Hello, @context.User.Claims.FirstOrDefault(c => c.Type == "preferred_username")?.Value</span>
+                <span>Hello, @context.User.Claims.FirstOrDefault(c => c.Type == "nickname")?.Value</span>
                 <button class="btn btn-link" @onclick="Logout">Logout</button>
             </Authorized>
             <NotAuthorized>
