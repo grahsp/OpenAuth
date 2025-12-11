@@ -26,8 +26,6 @@ public class Program
             options.ProviderOptions.ResponseType = "code";
             options.ProviderOptions.RedirectUri = "authentication/login-callback";
             options.ProviderOptions.MetadataUrl = "http://localhost:5067/.well-known/openid-configuration";
-            
-            options.ProviderOptions.DefaultScopes.Add("email");
         });
 
         await builder.Build().RunAsync();
