@@ -5,5 +5,5 @@ namespace OpenAuth.Application.Oidc;
 
 public interface IOidcUserClaimsProvider
 {
-    Task<IEnumerable<Claim>> GetUserClaimsAsync(string subjectId, ScopeCollection scopes);
+    Task<IReadOnlyCollection<Claim>> GetUserClaimsAsync(string subjectId, ScopeCollection scopes);
 }

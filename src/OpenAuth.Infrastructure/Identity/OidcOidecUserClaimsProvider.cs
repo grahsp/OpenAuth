@@ -15,16 +15,18 @@ public class OidcUserClaimsProvider : IOidcUserClaimsProvider
         _users = users;
     }
 
-    public async Task<IEnumerable<Claim>> GetUserClaimsAsync(string subjectId, ScopeCollection scopes)
+    public async Task<IReadOnlyCollection<Claim>> GetUserClaimsAsync(string subjectId, ScopeCollection scopes)
     {
         var user = await _users.FindByIdAsync(subjectId)
                    ?? throw new InvalidOperationException("User not found.");
 
         var claims = new List<Claim>();
 
+        AddClaim(claims, "sub", user.Id.ToString());
+
         if (scopes.Contains(OidcScopes.Profile))
         {
-            AddClaim(claims, "preferred_username", user.UserName);
+            AddClaim(claims, "nickname", user.UserName);
         }
         
         if (scopes.Contains(OidcScopes.Email))

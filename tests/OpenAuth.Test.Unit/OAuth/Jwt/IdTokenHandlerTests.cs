@@ -55,7 +55,7 @@ public class IdTokenHandlerTests
     public async Task CreateAsync_WithIncorrectSubject_ThrowsInvalidClientException()
     {
         _claimsProvider.GetUserClaimsAsync(Arg.Any<string>(), Arg.Any<ScopeCollection>())
-            .Returns((IEnumerable<Claim>)null!);
+            .Returns((IReadOnlyCollection<Claim>)null!);
         
         await Assert.ThrowsAsync<InvalidClientException>(() =>
             _sut.CreateAsync(_validContext));

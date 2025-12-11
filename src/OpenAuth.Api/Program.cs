@@ -16,6 +16,7 @@ using OpenAuth.Application.Jwks.Services;
 using OpenAuth.Application.OAuth.Authorization.Handlers;
 using OpenAuth.Application.OAuth.Authorization.Interfaces;
 using OpenAuth.Application.OAuth.Jwts;
+using OpenAuth.Application.OAuth.Services;
 using OpenAuth.Application.OAuth.Stores;
 using OpenAuth.Application.Oidc;
 using OpenAuth.Application.Secrets.Interfaces;
@@ -168,6 +169,7 @@ public class Program
 
 
         builder.Services.AddScoped<IAccessTokenValidator, AccessTokenValidator>();
+        builder.Services.AddScoped<IUserInfoService, UserInfoService>();
         
 
         // Configure the HTTP request pipeline.
