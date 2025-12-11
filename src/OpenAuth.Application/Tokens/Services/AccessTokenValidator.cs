@@ -2,9 +2,9 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using OpenAuth.Application.Oidc;
 using OpenAuth.Application.SigningKeys.Interfaces;
 using OpenAuth.Application.Tokens.Configurations;
+using OpenAuth.Application.Tokens.Exceptions;
 
 namespace OpenAuth.Application.Tokens.Services;
 
@@ -23,7 +23,7 @@ public class AccessTokenValidator : IAccessTokenValidator
         _issuer = options.Value.Issuer;
     }
     
-    public async Task<ClaimsPrincipal?> ValidateAsync(string token)
+    public async Task<ClaimsPrincipal> ValidateAsync(string token)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(token);
         
@@ -44,21 +44,11 @@ public class AccessTokenValidator : IAccessTokenValidator
         try
         {
             var handler = new JwtSecurityTokenHandler();
-            var principal = handler.ValidateToken(token, tokenParams, out _);
-            
-            var scope = principal.FindFirst(c => c.Type == "scope")?.Value.Split(' ');
-            if (scope is null || scope.All(s => s != OidcScopes.OpenId.Value))
-                return null;
-
-            var subject = principal.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
-            if (string.IsNullOrWhiteSpace(subject))
-                return null;
-
-            return principal;
+            return handler.ValidateToken(token, tokenParams, out _);
         }
-        catch
+        catch (Exception ex)
         {
-            return null;
+            throw new InvalidAccessTokenException("Access token validation failed.", ex);
         }
     }
 }

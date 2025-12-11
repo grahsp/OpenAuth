@@ -6,6 +6,7 @@ using OpenAuth.Application.Security.Signing;
 using OpenAuth.Application.SigningKeys.Factories;
 using OpenAuth.Application.SigningKeys.Interfaces;
 using OpenAuth.Application.Tokens.Configurations;
+using OpenAuth.Application.Tokens.Exceptions;
 using OpenAuth.Application.Tokens.Services;
 using OpenAuth.Domain.OAuth;
 using OpenAuth.Domain.SigningKeys;
@@ -102,43 +103,18 @@ public class AccessTokenValidatorTests
     }
     
     [Fact]
-    public async Task ValidateAsync_WithoutOpenIdScope_ReturnsNull()
-    {
-        var claims = new Dictionary<string, object> { { "scope", "profile email" } };
-        var descriptor = TestData.CreateValidJwtDescriptor() with { Claims = claims };
-        var token = CreateJwt(_signingKey, descriptor);
-
-        var principal = await _sut.ValidateAsync(token);
-
-        Assert.Null(principal);
-    }
-
-    [Fact]
-    public async Task ValidateAsync_WithoutSubject_ReturnsNull()
-    {
-        var descriptor = TestData.CreateValidJwtDescriptor() with { Subject = null };
-        var token = CreateJwt(_signingKey, descriptor);
-    
-        var principal = await _sut.ValidateAsync(token);
-    
-        Assert.Null(principal);
-    }
-    
-    [Fact]
-    public async Task ValidateAsync_WithInvalidSignature_ReturnsNull()
+    public async Task ValidateAsync_WithInvalidSignature_ThrowsInvalidAccessTokenException()
     {
         // Create another signing key that the validator does NOT know about
         var otherKey = CreateSigningKey();
     
         var token = CreateJwt(otherKey);
     
-        var principal = await _sut.ValidateAsync(token);
-    
-        Assert.Null(principal);
+        await Assert.ThrowsAsync<InvalidAccessTokenException>(() => _sut.ValidateAsync(token));
     }
     
     [Fact]
-    public async Task ValidateAsync_WithWrongIssuer_ReturnsNull()
+    public async Task ValidateAsync_WithWrongIssuer_ThrowsInvalidAccessTokenException()
     {
         // Override "iss"
         var claims = new Dictionary<string, object>
@@ -149,9 +125,7 @@ public class AccessTokenValidatorTests
         var descriptor = TestData.CreateValidJwtDescriptor() with { Claims = claims };
         var token = CreateJwt(_signingKey, descriptor);
     
-        var principal = await _sut.ValidateAsync(token);
-    
-        Assert.Null(principal);
+        await Assert.ThrowsAsync<InvalidAccessTokenException>(() => _sut.ValidateAsync(token));
     }
 
     [Theory]
