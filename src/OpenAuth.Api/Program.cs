@@ -1,3 +1,4 @@
+using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using OpenAuth.Api.Clients;
@@ -51,6 +52,8 @@ public class Program
     {
         // Add services to the container.
         var builder = WebApplication.CreateBuilder(args);
+        
+        JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 
         builder.Services.AddRazorPages();
         builder.Services.AddControllers();
@@ -162,6 +165,9 @@ public class Program
         
         builder.Services.AddScoped<ITokenHandler<AccessTokenContext>, AccessTokenHandler>();
         builder.Services.AddScoped<ITokenHandler<IdTokenContext>, IdTokenHandler>();
+
+
+        builder.Services.AddScoped<IAccessTokenValidator, AccessTokenValidator>();
         
 
         // Configure the HTTP request pipeline.

@@ -7,6 +7,7 @@ using OpenAuth.Application.Tokens.Flows;
 using OpenAuth.Domain.AuthorizationGrants;
 using OpenAuth.Domain.AuthorizationGrants.ValueObjects;
 using OpenAuth.Domain.Clients.ValueObjects;
+using OpenAuth.Domain.OAuth;
 using OpenAuth.Domain.SigningKeys;
 using OpenAuth.Test.Common.Builders;
 
@@ -136,4 +137,11 @@ public static class TestData
         => new SigningKeyBuilder()
             .AsHmac()
             .Build();
+
+    public static JwtDescriptor CreateValidJwtDescriptor()
+        => new JwtDescriptor(
+            DefaultValues.Audience,
+            DefaultValues.Subject,
+            3600,
+            new Dictionary<string, object> { { "scope", "openid" } });
 }
