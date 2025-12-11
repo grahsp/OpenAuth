@@ -8,6 +8,7 @@ using OpenAuth.Api.Connect.Jwks;
 using OpenAuth.Api.Connect.Logout;
 using OpenAuth.Api.Connect.Token;
 using OpenAuth.Api.Connect.UserInfo;
+using OpenAuth.Api.Http;
 using OpenAuth.Application.Clients.Factories;
 using OpenAuth.Application.Clients.Interfaces;
 using OpenAuth.Application.Clients.Services;
@@ -168,6 +169,7 @@ public class Program
         builder.Services.AddScoped<ITokenHandler<IdTokenContext>, IdTokenHandler>();
 
 
+        builder.Services.AddScoped<IBearerTokenExtractor, BearerTokenExtractor>();
         builder.Services.AddScoped<IAccessTokenValidator, AccessTokenValidator>();
         builder.Services.AddScoped<IUserInfoService, UserInfoService>();
         
