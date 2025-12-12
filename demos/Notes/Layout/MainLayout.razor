@@ -1,12 +1,14 @@
-﻿@inherits LayoutComponentBase
-<div class="page">
+﻿@using Notes.Shared
+
+@inherits LayoutComponentBase
+<div class="page" @onclick="HandleBackgroundClick">
     <div class="sidebar">
-        <NavMenu/>
+        <NavMenu />
     </div>
 
     <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
+        <div class="top-row px-4 d-flex align-items-center justify-content-end">
+            <UserMenu @ref="_userMenuRef" />
         </div>
 
         <article class="content px-4">
@@ -14,3 +16,10 @@
         </article>
     </main>
 </div>
+
+@code {
+    private UserMenu _userMenuRef = null!;
+
+    private void HandleBackgroundClick()
+        => _userMenuRef.ClickAway();
+}
