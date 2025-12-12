@@ -1,11 +1,12 @@
-﻿@using Microsoft.AspNetCore.Components.Authorization
+﻿@using Demo.Spa.Shared
+@using Microsoft.AspNetCore.Components.Authorization
 
 <CascadingAuthenticationState>
     <Router AppAssembly="@typeof(App).Assembly">
         <Found Context="routeData">
             <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
                 <NotAuthorized>
-                    <p>You are not authorized to access this resource.</p>
+                    <RedirectToLogin />
                 </NotAuthorized>
                 <Authorizing>
                     <p>Authorizing...</p>
