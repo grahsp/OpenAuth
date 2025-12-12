@@ -1,5 +1,6 @@
 ﻿@page "/weather"
-@inject HttpClient Http
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
 
 <PageTitle>Weather</PageTitle>
 
@@ -7,7 +8,7 @@
 
 <p>This component demonstrates fetching data from the server.</p>
 
-@if (forecasts == null)
+@if (_forecasts == null)
 {
     <p>
         <em>Loading...</em>
@@ -25,7 +26,7 @@ else
         </tr>
         </thead>
         <tbody>
-        @foreach (var forecast in forecasts)
+        @foreach (var forecast in _forecasts)
         {
             <tr>
                 <td>@forecast.Date.ToShortDateString()</td>
@@ -39,11 +40,13 @@ else
 }
 
 @code {
-    private WeatherForecast[]? forecasts;
+    [Inject] IHttpClientFactory ClientFactory { get; set; } = null!;
+    private WeatherForecast[]? _forecasts;
 
     protected override async Task OnInitializedAsync()
     {
-        forecasts = await Http.GetFromJsonAsync<WeatherForecast[]>("sample-data/weather.json");
+        var client = ClientFactory.CreateClient("WeatherApi");
+        _forecasts = await client.GetFromJsonAsync<WeatherForecast[]>("http://localhost:5278/weatherforecast");
     }
 
     public class WeatherForecast
@@ -56,5 +59,4 @@ else
 
         public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
     }
-
 }
