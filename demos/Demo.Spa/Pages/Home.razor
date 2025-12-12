@@ -2,6 +2,34 @@
 
 <PageTitle>Home</PageTitle>
 
-<h1>Hello, world!</h1>
+<h1>OIDC Demo Application</h1>
 
-Welcome to your new app.
+<p class="lead">
+    This application demonstrates authentication and authorization using a custom
+    OpenID Connect identity provider.
+</p>
+
+<hr />
+
+<h3>What this demo shows</h3>
+
+<ul>
+    <li>Login and logout using standard OIDC flows</li>
+    <li>Authenticated user information via claims and the UserInfo endpoint</li>
+    <li>Access tokens issued by the identity provider</li>
+    <li>Calling a protected API using bearer tokens</li>
+</ul>
+
+<h3>How to use the demo</h3>
+
+<ol>
+    <li>Sign in using the login button in the top-right corner</li>
+    <li>Visit the <strong>Profile</strong> page to view user information</li>
+    <li>Navigate to <strong>Weather</strong> to call a protected API endpoint</li>
+    <li>Sign out to observe authentication state changes</li>
+</ol>
+
+<p>
+    This client uses the built-in Blazor WebAssembly OIDC authentication library to
+    verify compatibility with existing frameworks.
+</p>
