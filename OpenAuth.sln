@@ -16,7 +16,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenAuth.Test.Unit", "tests
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenAuth.Test.Integration", "tests\OpenAuth.Test.Integration\OpenAuth.Test.Integration.csproj", "{E98058C1-3005-4DD4-8A07-09D4A969F1F6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Notes", "demos\Notes\Notes.csproj", "{5BE15E76-64D1-460D-A419-BBF9D612D7A7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Demo.Spa", "demos\Demo.Spa\Demo.Spa.csproj", "{5BE15E76-64D1-460D-A419-BBF9D612D7A7}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Demos", "Demos", "{25EF17F7-8310-45EB-8A17-B29188611C7B}"
 EndProject
