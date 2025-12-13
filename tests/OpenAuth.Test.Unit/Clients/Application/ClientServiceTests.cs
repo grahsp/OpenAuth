@@ -29,10 +29,10 @@ public class ClientServiceTests
 
     private void SetupDefaultClientConfiguration()
     {
-        _clientFactory.Create(Arg.Any<CreateClientRequest>(), out _)
+        _clientFactory.Create(Arg.Any<CreateClientCommand>(), out _)
             .Returns(x =>
             {
-                var config = x.Arg<CreateClientRequest>();
+                var config = x.Arg<CreateClientCommand>();
                 x[1] = config.ApplicationType.AllowsClientSecrets
                     ? "plain-secret"
                     : null;
@@ -54,7 +54,7 @@ public class ClientServiceTests
             });
     }
 
-    private static CreateClientRequest CreateM2MRequest()
+    private static CreateClientCommand CreateM2MRequest()
         => new(
             ClientApplicationTypes.M2M,
             ClientName.Create("test client"),
@@ -62,7 +62,7 @@ public class ClientServiceTests
             []
         );
 
-    private static CreateClientRequest CreateSpaRequest()
+    private static CreateClientCommand CreateSpaRequest()
         => new(
             ClientApplicationTypes.Spa,
             ClientName.Create("test client"),
@@ -71,16 +71,16 @@ public class ClientServiceTests
         );
 
 
-    private async Task<RegisteredClientResponse> RegisterClientAsync(CreateClientRequest request)
+    private async Task<CreateClientResult> RegisterClientAsync(CreateClientCommand command)
     {
         SetupDefaultClientConfiguration();
-        return await _sut.RegisterAsync(request);
+        return await _sut.CreateClientAsync(command);
     }
     
-    private async Task<RegisteredClientResponse> RegisterM2MClientAsync(CreateClientRequest? request = null)
+    private async Task<CreateClientResult> RegisterM2MClientAsync(CreateClientCommand? request = null)
         => await RegisterClientAsync(request ?? CreateM2MRequest());
 
-    private async Task<RegisteredClientResponse> RegisterSpaClientAsync(CreateClientRequest? request = null)
+    private async Task<CreateClientResult> RegisterSpaClientAsync(CreateClientCommand? request = null)
         => await RegisterClientAsync(request ?? CreateSpaRequest());
     
 

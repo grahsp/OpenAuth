@@ -1,3 +1,5 @@
+using OpenAuth.Api.Management.Clients;
+
 namespace OpenAuth.Api.Management;
 
 public class Program
@@ -19,6 +21,8 @@ public class Program
             app.UseSwagger();
             app.UseSwaggerUI();
         }
+
+        app.MapClientEndpoints();
 
         app.Run();
     }

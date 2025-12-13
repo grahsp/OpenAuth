@@ -7,7 +7,7 @@ using OpenAuth.Domain.Clients.ValueObjects;
 
 namespace OpenAuth.Application.Clients.Services;
 
-public sealed record RegisteredClientResponse(Client Client, string? ClientSecret);
+public sealed record CreateClientResult(Client Client, string? ClientSecret);
 
 public class ClientService : IClientService
 {
@@ -26,16 +26,16 @@ public class ClientService : IClientService
     }
     
     
-    public async Task<RegisteredClientResponse> RegisterAsync(CreateClientRequest request, CancellationToken ct = default)
+    public async Task<CreateClientResult> CreateClientAsync(CreateClientCommand command, CancellationToken ct = default)
     {
-        ArgumentNullException.ThrowIfNull(request);
+        ArgumentNullException.ThrowIfNull(command);
         
-        var client = _clientFactory.Create(request, out var clientSecret);
+        var client = _clientFactory.Create(command, out var clientSecret);
         
         _repository.Add(client);
         await _repository.SaveChangesAsync(ct);
         
-        var response = new RegisteredClientResponse(client, clientSecret);
+        var response = new CreateClientResult(client, clientSecret);
         return response;
     }
     

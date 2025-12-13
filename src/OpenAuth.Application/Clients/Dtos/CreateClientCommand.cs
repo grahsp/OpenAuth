@@ -3,7 +3,7 @@ using OpenAuth.Domain.Clients.ValueObjects;
 
 namespace OpenAuth.Application.Clients.Dtos;
 
-public sealed record CreateClientRequest(
+public sealed record CreateClientCommand(
     ClientApplicationType ApplicationType,
     ClientName Name,
     IEnumerable<Audience> Permissions,

@@ -38,7 +38,7 @@ public class ClientServiceTests : IAsyncLifetime
     public async Task InitializeAsync() => await _fx.ResetAsync();
     public Task DisposeAsync() => Task.CompletedTask;
     
-    private static CreateClientRequest CreateM2MRequest()
+    private static CreateClientCommand CreateM2MRequest()
         => new(
             ClientApplicationTypes.M2M,
             ClientName.Create("test client"),
@@ -46,7 +46,7 @@ public class ClientServiceTests : IAsyncLifetime
             []
         );
 
-    private static CreateClientRequest CreateSpaRequest()
+    private static CreateClientCommand CreateSpaRequest()
         => new(
             ClientApplicationTypes.Spa,
             ClientName.Create("test client"),
@@ -64,7 +64,7 @@ public class ClientServiceTests : IAsyncLifetime
     [Fact]
     public async Task RegisterAsync_PersistsConfidentialClientWithSecret()
     {
-        var result = await _sut.RegisterAsync(CreateM2MRequest());
+        var result = await _sut.CreateClientAsync(CreateM2MRequest());
         
         await using var ctx = _fx.CreateContext();
         var client = await ctx.Clients.
@@ -83,7 +83,7 @@ public class ClientServiceTests : IAsyncLifetime
     [Fact]
     public async Task RegisterAsync_PersistsPublicClientWithoutSecrets()
     {
-        var result = await _sut.RegisterAsync(CreateSpaRequest());
+        var result = await _sut.CreateClientAsync(CreateSpaRequest());
         
         await using var ctx = _fx.CreateContext();
         var client = await ctx.Clients.
@@ -102,7 +102,7 @@ public class ClientServiceTests : IAsyncLifetime
     [Fact]
     public async Task RenameAsync_PersistsUpdatedName()
     {
-        var result = await _sut.RegisterAsync(CreateSpaRequest());
+        var result = await _sut.CreateClientAsync(CreateSpaRequest());
          
         var expected = new ClientName("new client");
          
@@ -117,7 +117,7 @@ public class ClientServiceTests : IAsyncLifetime
     [Fact]
     public async Task SetGrantTypesAsync_PersistsUpdate()
     {
-        var result = await _sut.RegisterAsync(CreateM2MRequest());
+        var result = await _sut.CreateClientAsync(CreateM2MRequest());
         var clientId = result.Client.Id;
              
         var grantTypes = new[] { GrantType.ClientCredentials, GrantType.RefreshToken };
@@ -134,7 +134,7 @@ public class ClientServiceTests : IAsyncLifetime
     [Fact]
     public async Task AddAndRemoveGrantTypeAsync_PersistsUpdate()
     {
-        var result = await _sut.RegisterAsync(CreateM2MRequest());
+        var result = await _sut.CreateClientAsync(CreateM2MRequest());
         var clientId = result.Client.Id;
              
         // M2M clients already contain ClientCredentials by default
@@ -151,7 +151,7 @@ public class ClientServiceTests : IAsyncLifetime
     [Fact]
     public async Task SetRedirectUrisAsync_PersistsUpdate()
     {
-        var result = await _sut.RegisterAsync(CreateSpaRequest());
+        var result = await _sut.CreateClientAsync(CreateSpaRequest());
         var clientId = result.Client.Id;
              
         var redirectUris = new[] { UriA, UriB };
@@ -168,7 +168,7 @@ public class ClientServiceTests : IAsyncLifetime
     [Fact]
     public async Task AddAndRemoveRedirectUriAsync_PersistsUpdate()
     {
-        var result = await _sut.RegisterAsync(CreateSpaRequest());
+        var result = await _sut.CreateClientAsync(CreateSpaRequest());
         var clientId = result.Client.Id;
              
         await _sut.AddRedirectUriAsync(clientId, UriA);
@@ -185,7 +185,7 @@ public class ClientServiceTests : IAsyncLifetime
     [Fact]
     public async Task SetAudiencesAsync_PersistsUpdate()
     {
-        var result = await _sut.RegisterAsync(CreateSpaRequest());
+        var result = await _sut.CreateClientAsync(CreateSpaRequest());
         var audiences = new[] { ApiAudience, WebAudience };
 
         var clientId = result.Client.Id;
@@ -202,7 +202,7 @@ public class ClientServiceTests : IAsyncLifetime
     [Fact]
     public async Task AddAndRemoveAudienceAsync_PersistsUpdate()
     {
-        var result = await _sut.RegisterAsync(CreateSpaRequest());
+        var result = await _sut.CreateClientAsync(CreateSpaRequest());
         var clientId = result.Client.Id;
         
         await _sut.AddAudienceAsync(clientId, ApiAudience);
@@ -219,7 +219,7 @@ public class ClientServiceTests : IAsyncLifetime
     [Fact]
     public async Task DeleteAsync_RemovesClient()
     {
-        var result = await _sut.RegisterAsync(CreateSpaRequest());
+        var result = await _sut.CreateClientAsync(CreateSpaRequest());
          
         var clientId = result.Client.Id;
         await _sut.DeleteAsync(clientId);
@@ -233,7 +233,7 @@ public class ClientServiceTests : IAsyncLifetime
     [Fact]
     public async Task EnableAndDisableAsync_TogglesAndPersistsFlag()
     {
-        var result = await _sut.RegisterAsync(CreateSpaRequest());
+        var result = await _sut.CreateClientAsync(CreateSpaRequest());
          
         var clientId = result.Client.Id;
          

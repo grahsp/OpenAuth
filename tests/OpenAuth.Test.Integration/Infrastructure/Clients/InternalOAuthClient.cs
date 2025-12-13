@@ -20,19 +20,19 @@ public class InternalOAuthClient
     private readonly IAuthorizationHandler _authorizationHandler;
     private readonly ITokenRequestHandler _tokenRequestHandler;
     
-    public InternalOAuthClient(IAuthorizationHandler authorizationHandler, ITokenRequestHandler tokenRequestHandler, RegisteredClientResponse registered)
+    public InternalOAuthClient(IAuthorizationHandler authorizationHandler, ITokenRequestHandler tokenRequestHandler, CreateClientResult create)
     {
         _authorizationHandler = authorizationHandler;
         _tokenRequestHandler = tokenRequestHandler;
         
-        var client = registered.Client;
+        var client = create.Client;
         Id = client.Id.ToString();
         ApplicationType = client.ApplicationType.Name;
         RedirectUris = client.RedirectUris
             .Select(uri => uri.ToString())
             .ToArray();
         
-        Secret = registered.ClientSecret;
+        Secret = create.ClientSecret;
     }
 
     

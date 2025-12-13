@@ -48,7 +48,7 @@ public class OAuthClientBuilder
         return this;       
     }
 
-    public async Task<RegisteredClientResponse> CreateAsync()
+    public async Task<CreateClientResult> CreateAsync()
     {
         using var scope = _services.CreateScope();
         var clientService = scope.ServiceProvider.GetRequiredService<IClientService>();
@@ -64,7 +64,7 @@ public class OAuthClientBuilder
             return new Audience(audience, scopes);
         });
 
-        var request = new CreateClientRequest(applicationType, name, permissions, redirectUris);
-        return await clientService.RegisterAsync(request);
+        var request = new CreateClientCommand(applicationType, name, permissions, redirectUris);
+        return await clientService.CreateClientAsync(request);
     }
 }

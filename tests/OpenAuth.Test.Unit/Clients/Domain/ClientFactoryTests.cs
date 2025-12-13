@@ -29,7 +29,7 @@ public class ClientFactoryTests
     [Fact]
     public void Create_WhenPublicClient_DoesNotGenerateSecret()
     {
-        var request = new CreateClientRequest(
+        var request = new CreateClientCommand(
             ClientApplicationTypes.Spa,
             ClientName.Create("client"),
             [],
@@ -46,7 +46,7 @@ public class ClientFactoryTests
     [Fact]
     public void Create_WhenConfidentialClient_GeneratesSecret_AndAddsToClient()
     {
-        var request = new CreateClientRequest(
+        var request = new CreateClientCommand(
             ClientApplicationTypes.M2M,
             ClientName.Create("client"),
             [new Audience(AudienceName.Create("api"), ScopeCollection.Parse("read write"))],
@@ -66,7 +66,7 @@ public class ClientFactoryTests
     [Fact]
     public void Create_CallsValidateClient()
     {
-        var invalidCmd = new CreateClientRequest(
+        var invalidCmd = new CreateClientCommand(
             ClientApplicationTypes.Spa,
             ClientName.Create("client"),
             [],
@@ -83,7 +83,7 @@ public class ClientFactoryTests
     {
         var expected = _time.GetUtcNow();
 
-        var cmd = new CreateClientRequest(
+        var cmd = new CreateClientCommand(
             ClientApplicationTypes.Spa,
             ClientName.Create("client"),
             [],

@@ -21,22 +21,22 @@ public class ClientFactory : IClientFactory
     public Client Create(ClientName name)
         => Client.Create(name, _time.GetUtcNow());
     
-    public Client Create(CreateClientRequest request, out string? plainSecret)
+    public Client Create(CreateClientCommand command, out string? plainSecret)
     {
-        ArgumentNullException.ThrowIfNull(request);
+        ArgumentNullException.ThrowIfNull(command);
         
         var now = _time.GetUtcNow();
         
         plainSecret = null;
         var client = Client.Create(
-            request.Name,
-            request.ApplicationType,
-            request.Permissions,
-            request.ApplicationType.DefaultGrantTypes,
-            request.RedirectUris,
+            command.Name,
+            command.ApplicationType,
+            command.Permissions,
+            command.ApplicationType.DefaultGrantTypes,
+            command.RedirectUris,
             now);
         
-        if (request.ApplicationType.AllowsClientSecrets)
+        if (command.ApplicationType.AllowsClientSecrets)
         {
             var result = _hashProvider.Create();
             plainSecret = result.PlainSecret;

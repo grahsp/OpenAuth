@@ -17,18 +17,18 @@ public class ExternalOAuthClient
     private readonly HttpClient _httpClient;
 
     
-    public ExternalOAuthClient(HttpClient httpClient, RegisteredClientResponse registered)
+    public ExternalOAuthClient(HttpClient httpClient, CreateClientResult create)
     {
         _httpClient = httpClient;
 
-        var client = registered.Client;
+        var client = create.Client;
         Id = client.Id.ToString();
         ApplicationType = client.ApplicationType.Name;
         RedirectUris = client.RedirectUris
             .Select(uri => uri.ToString())
             .ToArray();
         
-        Secret = registered.ClientSecret;
+        Secret = create.ClientSecret;
     }
 
     public async Task<AuthorizeResult> AuthorizeAsync(Action<AuthorizeUriBuilder>? configure = null)
