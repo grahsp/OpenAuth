@@ -24,6 +24,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Demo.Api", "demos\Demo.Api\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenAuth.Api.Management", "src\OpenAuth.Api.Management\OpenAuth.Api.Management.csproj", "{BF8EBC75-EA71-4041-9AC0-1CA0E8FA10FB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenAuth.Dashboard", "src\OpenAuth.Dashboard\OpenAuth.Dashboard.csproj", "{98582F99-652B-4220-AE34-14827F5DA210}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -70,6 +72,10 @@ Global
 		{BF8EBC75-EA71-4041-9AC0-1CA0E8FA10FB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BF8EBC75-EA71-4041-9AC0-1CA0E8FA10FB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BF8EBC75-EA71-4041-9AC0-1CA0E8FA10FB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{98582F99-652B-4220-AE34-14827F5DA210}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{98582F99-652B-4220-AE34-14827F5DA210}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{98582F99-652B-4220-AE34-14827F5DA210}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{98582F99-652B-4220-AE34-14827F5DA210}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{74C0AA54-2106-4E03-98A9-BC318DD0D64A} = {F0ED80DE-4B27-447B-B0A5-4053B2C7BFAD}
