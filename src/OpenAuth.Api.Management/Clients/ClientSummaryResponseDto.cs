@@ -1,6 +1,6 @@
-namespace OpenAuth.Application.Clients.Dtos;
+namespace OpenAuth.Api.Management.Clients;
 
-public record ClientInfo(
+public sealed record ClientSummaryResponseDto(
     string Id,
     string Name,
     string Type,

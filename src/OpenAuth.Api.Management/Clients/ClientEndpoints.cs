@@ -1,3 +1,4 @@
+using OpenAuth.Api.Management.Contracts;
 using OpenAuth.Application.Clients.Dtos;
 using OpenAuth.Application.Clients.Interfaces;
 using OpenAuth.Application.Clients.Services;
@@ -26,10 +27,18 @@ public static class ClientEndpoints
                 result.ToResponse());
         });
         
-        app.MapGet("/management/clients", async (int page, int size, IClientQueryService service) =>
+        app.MapGet("/management/clients", async (PagedRequestDto request, IClientQueryService service) =>
         {
-            var clients = await service.GetPagedAsync(page, size);
-            return Results.Ok(clients);
+            if (request.Page is <= 0 or > 100)
+                return Results.BadRequest("Page size must be between 1 and 100.");
+            
+            if (request.PageSize <= 0)
+                return Results.BadRequest("Page size must be greater than 0.");
+
+            var result = await service.GetPagedAsync(request.Page, request.PageSize);
+            var response = result.ToResponse(c => c.ToResponse());
+            
+            return Results.Ok(response);
         });
 
         app.MapGet("/management/clients/{id}", async (string id, IClientQueryService service) =>

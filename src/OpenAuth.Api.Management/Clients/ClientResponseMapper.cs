@@ -12,6 +12,15 @@ public static class ClientResponseMapper
     public static AudienceResponseDto ToResponse(this AudienceInfo audience)
         => new(audience.Name.Value, audience.Scopes.Select(s => s.Value));
 
+    public static ClientSummaryResponseDto ToResponse(this ClientInfo client)
+        => new(
+            client.Id,
+            client.Name,
+            client.Type,
+            client.Enabled,
+            client.CreatedAt
+        );
+
     public static ClientDetailsResponseDto ToResponse(this ClientDetailsResult client)
         => new(
             client.Id.ToString(),
