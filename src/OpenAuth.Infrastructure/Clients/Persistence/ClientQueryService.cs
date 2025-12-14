@@ -38,7 +38,7 @@ public class ClientQueryService : IClientQueryService
         return client?.ToClientInfo() ?? null;
     }
 
-    public async Task<ClientDetails?> GetDetailsAsync(ClientId id, CancellationToken ct = default)
+    public async Task<ClientDetailsResult?> GetDetailsAsync(ClientId id, CancellationToken ct = default)
     {
         var client = await _context.Clients
             .AsNoTracking()

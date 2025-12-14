@@ -119,56 +119,6 @@ public class ClientQueryServiceTests : IAsyncLifetime
         }
         
         [Fact]
-        public async Task IncludesSecrets_WhenClientHasSecrets()
-        {
-            // Arrange
-            var client = new ClientBuilder()
-                .WithApplicationType(ClientApplicationTypes.M2M)
-                .WithSecret("hash1")
-                .WithSecret("hash2")
-                .Build();
-            
-            _context.Clients.Add(client);
-            await _context.SaveChangesAsync();
-            
-            // Act
-            var result = await _sut.GetDetailsAsync(client.Id);
-            
-            // Assert
-            Assert.NotNull(result);
-            Assert.Equal(2, result.Secrets.Count());
-            Assert.All(result.Secrets, s =>
-            {
-                Assert.NotEqual(default, s.Id);
-                Assert.NotEqual(default, s.CreatedAt);
-                Assert.NotEqual(default, s.ExpiresAt);
-                Assert.Null(s.RevokedAt);
-            });
-        }
-        
-        [Fact]
-        public async Task OrdersSecretsNewestFirst()
-        {
-            // Arrange
-            var client = new ClientBuilder()
-                .WithApplicationType(ClientApplicationTypes.M2M)
-                .WithSecret()
-                .WithSecret()
-                .Build();
-            var utcNow = _time.GetUtcNow();
-            
-            _context.Clients.Add(client);
-            await _context.SaveChangesAsync();
-            
-            // Act
-            var result = await _sut.GetDetailsAsync(client.Id);
-            
-            // Assert
-            Assert.NotNull(result);
-            Assert.Equal(2, result.Secrets.Count());
-        }
-        
-        [Fact]
         public async Task ReturnsNull_WhenClientDoesNotExist()
         {
             // Act
@@ -192,7 +142,9 @@ public class ClientQueryServiceTests : IAsyncLifetime
             
             // Assert
             Assert.NotNull(result);
-            Assert.Empty(result.Secrets);
+            Assert.NotNull(result.Audiences);
+            Assert.NotNull(result.RedirectUris);
+            Assert.NotNull(result.GrantTypes);
         }
     }
 

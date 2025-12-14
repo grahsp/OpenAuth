@@ -51,7 +51,7 @@ public class ClientService : IClientService
     }
     
     
-    public async Task<ClientDetails> SetGrantTypesAsync(ClientId id, IEnumerable<GrantType> grantTypes,
+    public async Task<ClientDetailsResult> SetGrantTypesAsync(ClientId id, IEnumerable<GrantType> grantTypes,
         CancellationToken ct = default)
     {
         var client = await _repository.GetByIdAsync(id, ct)
@@ -63,7 +63,7 @@ public class ClientService : IClientService
         return client.ToClientDetails();
     }
 
-    public async Task<ClientDetails> AddGrantTypeAsync(ClientId id, GrantType grantType,
+    public async Task<ClientDetailsResult> AddGrantTypeAsync(ClientId id, GrantType grantType,
         CancellationToken ct = default)
     {
         var client = await _repository.GetByIdAsync(id, ct)
@@ -78,7 +78,7 @@ public class ClientService : IClientService
         return client.ToClientDetails();
     }
     
-    public async Task<ClientDetails> RemoveGrantTypeAsync(ClientId id, GrantType grantType,
+    public async Task<ClientDetailsResult> RemoveGrantTypeAsync(ClientId id, GrantType grantType,
         CancellationToken ct = default)
     {
         var client = await _repository.GetByIdAsync(id, ct)
@@ -94,7 +94,7 @@ public class ClientService : IClientService
     }
 
 
-    public async Task<ClientDetails> SetRedirectUrisAsync(ClientId id, IEnumerable<RedirectUri> redirectUris,
+    public async Task<ClientDetailsResult> SetRedirectUrisAsync(ClientId id, IEnumerable<RedirectUri> redirectUris,
         CancellationToken ct = default)
     {
         var client = await _repository.GetByIdAsync(id, ct)
@@ -106,7 +106,7 @@ public class ClientService : IClientService
         return client.ToClientDetails();
     }
 
-    public async Task<ClientDetails> AddRedirectUriAsync(ClientId id, RedirectUri redirectUri,
+    public async Task<ClientDetailsResult> AddRedirectUriAsync(ClientId id, RedirectUri redirectUri,
         CancellationToken ct = default)
     {
         var client = await _repository.GetByIdAsync(id, ct)
@@ -121,7 +121,7 @@ public class ClientService : IClientService
         return client.ToClientDetails();
     }
     
-    public async Task<ClientDetails> RemoveRedirectUriAsync(ClientId id, RedirectUri redirectUri,
+    public async Task<ClientDetailsResult> RemoveRedirectUriAsync(ClientId id, RedirectUri redirectUri,
         CancellationToken ct = default)
     {
         var client = await _repository.GetByIdAsync(id, ct)
@@ -137,7 +137,7 @@ public class ClientService : IClientService
     }
     
 
-    public async Task<ClientDetails> SetAudiencesAsync(ClientId id, IEnumerable<Audience> audiences,
+    public async Task<ClientDetailsResult> SetAudiencesAsync(ClientId id, IEnumerable<Audience> audiences,
         CancellationToken ct = default)
     {
         var client = await _repository.GetByIdAsync(id, ct)
@@ -149,7 +149,7 @@ public class ClientService : IClientService
         return client.ToClientDetails();
     }
 
-    public async Task<ClientDetails> AddAudienceAsync(ClientId id, Audience audience,
+    public async Task<ClientDetailsResult> AddAudienceAsync(ClientId id, Audience audience,
         CancellationToken ct = default)
     {
         var client = await _repository.GetByIdAsync(id, ct)
@@ -164,7 +164,7 @@ public class ClientService : IClientService
         return client.ToClientDetails();
     }
 
-    public async Task<ClientDetails> RemoveAudienceAsync(ClientId id, AudienceName name,
+    public async Task<ClientDetailsResult> RemoveAudienceAsync(ClientId id, AudienceName name,
         CancellationToken ct = default)
     {
         var client = await _repository.GetByIdAsync(id, ct)

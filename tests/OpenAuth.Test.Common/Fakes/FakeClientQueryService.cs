@@ -26,7 +26,7 @@ public class FakeClientQueryService : IClientQueryService
         throw new NotImplementedException();
     }
 
-    public Task<ClientDetails?> GetDetailsAsync(ClientId id, CancellationToken ct = default)
+    public Task<ClientDetailsResult?> GetDetailsAsync(ClientId id, CancellationToken ct = default)
     {
         throw new NotImplementedException();
     }

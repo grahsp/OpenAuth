@@ -4,6 +4,7 @@
         <TargetFramework>net9.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
+        <UserSecretsId>ecc90925-0a31-4da3-9ece-c51627e046d9</UserSecretsId>
     </PropertyGroup>
 
     <ItemGroup>
@@ -12,6 +13,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\OpenAuth.Application\OpenAuth.Application.csproj" />
+      <ProjectReference Include="..\OpenAuth.Infrastructure\OpenAuth.Infrastructure.csproj" />
     </ItemGroup>
 
 </Project>
