@@ -24,31 +24,6 @@ namespace OpenAuth.Api.Controllers;
 //         _queryService = queryService;
 //     }
 //
-//
-//      [HttpGet("{clientId:guid}")]
-//      public async Task<ActionResult<ClientResponse>> GetById(Guid clientId)
-//      {
-//          var details = await _queryService.GetDetailsAsync(new ClientId(clientId));
-//          if (details is null)
-//              return NotFound();
-//      
-//          return Ok(ClientMapper.ToResponse(details));
-//      }
-//      
-//      [HttpPost]
-//      public async Task<ActionResult<CreateClientResponse>> Create([FromBody] CreateClientCommand command)
-//      {
-//          var response = await _clientService.CreateClientAsync(command);
-//          return CreatedAtAction(nameof(GetById), new { clientId = response.Client.Id }, response);
-//      }
-//
-//      [HttpDelete("{clientId:guid}")]
-//      public async Task<ActionResult> Delete(Guid clientId)
-//      {
-//          await _clientService.DeleteAsync(new ClientId(clientId));
-//          return NoContent();
-//      }
-//      
 //      
 //      // Audiences
 //      [HttpGet("{clientId}/audiences")]

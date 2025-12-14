@@ -25,6 +25,12 @@ public static class ClientEndpoints
                 $"/management/clients/{result.Client.Id}",
                 result.ToResponse());
         });
+        
+        app.MapGet("/management/clients", async (int page, int size, IClientQueryService service) =>
+        {
+            var clients = await service.GetPagedAsync(page, size);
+            return Results.Ok(clients);
+        });
 
         app.MapGet("/management/clients/{id}", async (string id, IClientQueryService service) =>
         {
@@ -36,6 +42,15 @@ public static class ClientEndpoints
                 return Results.NotFound();
      
             return Results.Ok(client.ToResponse());
+        });
+
+        app.MapDelete("/management/clients/{id}", async (string id, IClientService service) =>
+        {
+            if (!ClientId.TryCreate(id, out var clientId))
+                return Results.BadRequest("Malformed client id.");
+
+            await service.DeleteAsync(clientId);
+            return Results.NoContent();
         });
         
         return app;
