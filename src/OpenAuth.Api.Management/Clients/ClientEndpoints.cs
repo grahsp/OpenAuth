@@ -27,7 +27,7 @@ public static class ClientEndpoints
                 result.ToResponse());
         });
         
-        app.MapGet("/management/clients", async (PagedRequestDto request, IClientQueryService service) =>
+        app.MapGet("/management/clients", async ([AsParameters] PagedRequestDto request, IClientQueryService service) =>
         {
             if (request.Page is <= 0 or > 100)
                 return Results.BadRequest("Page size must be between 1 and 100.");

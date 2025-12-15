@@ -32,6 +32,16 @@ public class Program
 
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
+
+        builder.Services.AddCors(options =>
+        {
+            options.AddDefaultPolicy(policy =>
+            {
+                policy.AllowAnyOrigin()
+                    .AllowAnyHeader()
+                    .AllowAnyMethod();
+            });
+        });
         
         
         builder.Services.AddDbContext<AppDbContext>(opts =>
@@ -71,6 +81,8 @@ public class Program
 
         // Configure the HTTP request pipeline.
         var app = builder.Build();
+
+        app.UseCors();
         
         if (app.Environment.IsDevelopment())
         {
