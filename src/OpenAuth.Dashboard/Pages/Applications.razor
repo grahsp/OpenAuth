@@ -1,0 +1,97 @@
+@page "/applications"
+
+@inject HttpClient Http
+@inject NavigationManager Nav
+
+
+<h1>Applications</h1>
+
+
+<div class="toolbar">
+    <button class="primary" @onclick="Create">+ Create Application</button>
+</div>
+
+
+@if (loading)
+{
+    <p>Loading applications...</p>
+}
+else if (error is not null)
+{
+    <p class="error">@error</p>
+}
+else
+{
+    <table class="data-table">
+        <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Client ID</th>
+            <th>Status</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var client in clients)
+        {
+            <tr @onclick="() => Navigate(client.Id)">
+                <td>@client.Name</td>
+                <td>@client.Type</td>
+                <td class="mono">@client.Id</td>
+                <td>@(client.Enabled ? "Enabled" : "Disabled")</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+
+
+@code {
+    private bool loading = true;
+    private string? error;
+    private List<ClientSummaryResponseDto> clients = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var response = await Http.GetAsync("http://localhost:5149/management/clients?page=1&pageSize=20");
+            if (!response.IsSuccessStatusCode)
+            {
+                error = response.StatusCode.ToString();
+                return;
+            }
+
+            var content = await response.Content.ReadFromJsonAsync<PagedResponseDto<ClientSummaryResponseDto>>();
+            clients = content?.Items.ToList() ?? [];
+        }
+        catch (Exception ex)
+        {
+            error = ex.Message;
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+
+    void Navigate(string id) => Nav.NavigateTo($"/applications/{id}");
+
+    void Create() => Nav.NavigateTo("/applications/create");
+
+public sealed record ClientSummaryResponseDto(
+    string Id,
+    string Name,
+    string Type,
+    bool Enabled,
+    DateTimeOffset CreatedAt
+);
+
+public record PagedResponseDto<T>(
+    IEnumerable<T> Items,
+    int TotalCount,
+    int Page,
+    int PageSize
+);
+}

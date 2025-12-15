@@ -86,3 +86,94 @@ code {
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
     text-align: start;
 }
+
+.app-root {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+
+.navbar {
+    height: 56px;
+    background: #111827;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 16px;
+}
+
+
+.env-badge {
+    margin-left: 8px;
+    font-size: 12px;
+    background: #2563eb;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+
+.app-body {
+    flex: 1;
+    display: flex;
+}
+
+
+.sidebar {
+    width: 240px;
+    background: #f9fafb;
+    padding: 16px;
+}
+
+
+.nav-link {
+    display: block;
+    padding: 8px;
+    color: #111827;
+    text-decoration: none;
+}
+
+
+.nav-link.active {
+    background: #e5e7eb;
+    border-radius: 4px;
+}
+
+
+.app-content {
+    flex: 1;
+    padding: 24px;
+}
+
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+
+.data-table th, .data-table td {
+    padding: 12px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+
+.toolbar {
+    margin-bottom: 16px;
+}
+
+
+.primary {
+    background: #2563eb;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+}
+
+
+.secondary {
+    background: #e5e7eb;
+    border: none;
+    padding: 8px 16px;
+}
