@@ -47,8 +47,8 @@ public sealed record ScopeCollection : IReadOnlyCollection<Scope>
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     
     public bool Contains(Scope scope) => _items.Contains(scope);
-    public bool IsSubsetOf(ScopeCollection other) => _items.IsSubsetOf(other);
-    public IEnumerable<Scope> Except(ScopeCollection other) => _items.Except(other);
+    public bool IsSubsetOf(IEnumerable<Scope> other) => _items.IsSubsetOf(other);
+    public IEnumerable<Scope> Except(IEnumerable<Scope> other) => _items.Except(other);
     
     public override string ToString() => string.Join(' ', _items);
 

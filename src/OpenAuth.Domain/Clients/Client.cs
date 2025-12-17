@@ -1,3 +1,4 @@
+using OpenAuth.Domain.Apis;
 using OpenAuth.Domain.Clients.ApplicationType;
 using OpenAuth.Domain.Clients.ValueObjects;
 using OpenAuth.Domain.Clients.Secrets;
@@ -14,6 +15,9 @@ public sealed class Client
     
     public const int MaxSecrets = 3;
     public List<Secret> Secrets { get; private set; } = [];
+
+    private readonly List<ClientApiAccess> _apis;
+    public IReadOnlyCollection<ClientApiAccess> Apis => _apis;
     
     
     // Authorization
@@ -28,9 +32,6 @@ public sealed class Client
 
     private HashSet<RedirectUri> _redirectUris = [];
     public IReadOnlyCollection<RedirectUri> RedirectUris => _redirectUris;
-    
-    private HashSet<Audience> _allowedAudiences = [];
-    public IReadOnlyCollection<Audience> AllowedAudiences => _allowedAudiences;
     
     
     // Token
@@ -62,7 +63,7 @@ public sealed class Client
     private Client(
         ClientName name,
         ClientApplicationType applicationType,
-        IEnumerable<Audience> allowedAudiences,
+        IEnumerable<ClientApiAccess> apis,
         IEnumerable<GrantType> allowedGrantTypes,
         IEnumerable<RedirectUri> redirectUris,
         DateTimeOffset utcNow)
@@ -70,7 +71,7 @@ public sealed class Client
         Name = name;
         ApplicationType = applicationType;
         
-        _allowedAudiences = allowedAudiences.ToHashSet();
+        _apis = apis.ToList();
         _allowedGrantTypes = allowedGrantTypes.ToHashSet();
         _redirectUris = redirectUris.ToHashSet();
         
@@ -82,15 +83,14 @@ public sealed class Client
     internal static Client Create(
         ClientName name,
         ClientApplicationType applicationType,
-        IEnumerable<Audience> allowedAudiences,
+        IEnumerable<ClientApiAccess> apis,
         IEnumerable<GrantType> allowedGrantTypes,
         IEnumerable<RedirectUri> redirectUris,
         DateTimeOffset utcNow)
-        => new(name, applicationType, allowedAudiences, allowedGrantTypes, redirectUris, utcNow);
+        => new(name, applicationType, apis, allowedGrantTypes, redirectUris, utcNow);
 
     private void ValidateInitialClient()
     {
-        ValidateAudiences();
         ValidateRedirectUris();
         ValidateGrantTypes();
     }
@@ -99,12 +99,6 @@ public sealed class Client
     {
         ValidateInitialClient();
         ValidateSecrets();
-    }
-
-    private void ValidateAudiences()
-    {
-        if (ApplicationType.RequiresPermissions && AllowedAudiences.Count == 0)
-            throw new InvalidOperationException("Client must have at least one audience.");
     }
 
     private void ValidateGrantTypes()
@@ -199,25 +193,21 @@ public sealed class Client
         _redirectUris = items.ToHashSet();
         Touch(utcNow);
     }
-    
-    
-    public Audience GetAudience(AudienceName name)
-        => _allowedAudiences.SingleOrDefault(a => a.Name == name) ??
-           throw new InvalidOperationException($"Audience {name.Value} not found.");
 
-    public void SetAudiences(IEnumerable<Audience> audiences, DateTimeOffset utcNow)
+    
+    public void AuthorizeApi(Api api, ScopeCollection scope, DateTimeOffset utcNow)
     {
-        ArgumentNullException.ThrowIfNull(audiences);
-        
-        var items = audiences.ToArray();
-        
-        if (items.Distinct().Count() != items.Length)
-            throw new InvalidOperationException("Client cannot contain duplicate audience names.");
+        ArgumentNullException.ThrowIfNull(api);
 
-        if (_allowedAudiences.SetEquals(items))
-            return;
-
-        _allowedAudiences = items.ToHashSet();
+        var access = ClientApiAccess.Create(api.Id, scope);
+        
+        if (_apis.Any(a => a.ApiId == api.Id))
+            throw new InvalidOperationException("Client already has access to this API.");
+        
+        if (!scope.IsSubsetOf(api.Permissions.Select(s => s.Scope)))
+            throw new InvalidOperationException("One or more scopes requested are now allowed.");
+        
+        _apis.Add(access);
         Touch(utcNow);
     }
 
