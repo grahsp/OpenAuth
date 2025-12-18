@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Time.Testing;
+using OpenAuth.Domain.Apis;
 using OpenAuth.Domain.Clients;
 using OpenAuth.Domain.Clients.ApplicationType;
 using OpenAuth.Domain.Clients.Secrets.ValueObjects;
@@ -207,101 +208,108 @@ public class ClientTests
                 => client.SetRedirectUris(null!, _time.GetUtcNow()));
         }
     }
-    
-    public class SetAudiences : ClientTests
+ 
+    public sealed class AuthorizeApiTests : ClientTests
     {
-        private static readonly Audience ApiAudience =
-            new(AudienceName.Create("api"), ScopeCollection.Parse("read write"));
-        
-        private static readonly Audience WebAudience =
-            new(AudienceName.Create("web"), ScopeCollection.Parse("read"));
-        
-        
-        [Fact]
-        public void WhenValid_ReplaceExistingAndUpdateTimestamp()
-        {
-            var client = new ClientBuilder()
-                .CreatedAt(_time.GetUtcNow())
+        private static readonly Api OrdersApi =
+            new ApiBuilder()
+                .WithPermission("read", "access to view data.")
+                .WithPermission("write", "access to modify data.")
                 .Build();
-            
-            _time.Advance(TimeSpan.FromMinutes(5));
-            
-            var expectedAudiences = new[] { ApiAudience, WebAudience };
-            var expectedTime = _time.GetUtcNow();
-            
-            client.SetAudiences(expectedAudiences, expectedTime);
-            
-            Assert.Equal(expectedAudiences, client.AllowedAudiences);
-            Assert.Equal(expectedTime, client.UpdatedAt);
-        }
+
+        private static readonly Api UsersApi =
+            new ApiBuilder()
+                .WithPermission("read", "access to view data.")
+                .Build();
 
         [Fact]
-        public void WhenSameAudiences_DoesNotUpdate()
+        public void WhenValid_AddsApiAccessAndUpdatesTimestamp()
         {
-            var expectedTime = _time.GetUtcNow();
-            var expectedAudiences = new[] { ApiAudience };
-            
+            var createdAt = _time.GetUtcNow();
             var client = new ClientBuilder()
-                .WithAudience(ApiAudience)
-                .CreatedAt(expectedTime)
+                .CreatedAt(createdAt)
                 .Build();
 
             _time.Advance(TimeSpan.FromMinutes(5));
-            client.SetAudiences(expectedAudiences, _time.GetUtcNow());
-            
-            Assert.Equal(expectedAudiences, client.AllowedAudiences);
-            Assert.Equal(expectedTime, client.UpdatedAt);
+            var updatedAt = _time.GetUtcNow();
+
+            client.AuthorizeApi(
+                OrdersApi,
+                ScopeCollection.Parse("read write"),
+                updatedAt);
+
+            Assert.Single(client.Apis);
+            Assert.Equal(updatedAt, client.UpdatedAt);
         }
 
         [Fact]
-        public void WhenDuplicateNames_ThrowsException()
+        public void WhenAuthorizingSecondApi_AddsBoth()
         {
             var client = new ClientBuilder().Build();
-            
-            var audiences = new[] { ApiAudience, ApiAudience };
 
-            Assert.Throws<InvalidOperationException>(()
-                => client.SetAudiences(audiences, _time.GetUtcNow()));
+            client.AuthorizeApi(
+                OrdersApi,
+                ScopeCollection.Parse("read"),
+                _time.GetUtcNow());
+
+            client.AuthorizeApi(
+                UsersApi,
+                ScopeCollection.Parse("read"),
+                _time.GetUtcNow());
+
+            Assert.Equal(2, client.Apis.Count);
         }
 
         [Fact]
-        public void WhenEmptyCollectionAndApplicationTypeDoesNotRequireIt_ClientIsInValidState()
+        public void WhenSameApiAuthorizedTwice_ThrowsException()
         {
-            var client = new ClientBuilder()
-                .WithApplicationType(ClientApplicationTypes.Spa)
-                .WithAudience(ApiAudience)
-                .Build();
-            
-            client.SetAudiences([], _time.GetUtcNow());
-            client.ValidateClient();
+            var client = new ClientBuilder().Build();
 
-            Assert.Empty(client.AllowedAudiences);
+            client.AuthorizeApi(
+                OrdersApi,
+                ScopeCollection.Parse("read"),
+                _time.GetUtcNow());
+
+            Assert.Throws<InvalidOperationException>(() =>
+                client.AuthorizeApi(
+                    OrdersApi,
+                    ScopeCollection.Parse("read"),
+                    _time.GetUtcNow()));
         }
 
         [Fact]
-        public void WhenEmptyCollectionAndApplicationTypeRequiresIt_ThrowsException()
+        public void WhenScopesNotDefinedByApi_ThrowsException()
         {
-            var client = new ClientBuilder()
-                .WithApplicationType(ClientApplicationTypes.M2M)
-                .WithAudience(ApiAudience)
-                .Build();
-            
-            client.SetAudiences([], _time.GetUtcNow());
-            
-            Assert.Throws<InvalidOperationException>(()
-                => client.ValidateClient());
+            var client = new ClientBuilder().Build();
+
+            Assert.Throws<InvalidOperationException>(() =>
+                client.AuthorizeApi(
+                    OrdersApi,
+                    ScopeCollection.Parse("delete"),
+                    _time.GetUtcNow()));
         }
 
         [Fact]
-        public void WhenAudiencesNull_ThrowsException()
+        public void WhenApiIsNull_ThrowsException()
         {
-            var client = new ClientBuilder()
-                .Build();
+            var client = new ClientBuilder().Build();
 
-            Assert.Throws<ArgumentNullException>(()
-                => client.SetAudiences(null!, _time.GetUtcNow()));
+            Assert.Throws<ArgumentNullException>(() =>
+                client.AuthorizeApi(
+                    null!,
+                    ScopeCollection.Parse("read"),
+                    _time.GetUtcNow()));
         }
+
+    [Fact]
+    public void WhenClientHasNoApis_ClientIsStillValid()
+    {
+        var client = new ClientBuilder().Build();
+
+        Assert.Empty(client.Apis);
     }
+}
+
 
     public class Rename : ClientTests
     {
