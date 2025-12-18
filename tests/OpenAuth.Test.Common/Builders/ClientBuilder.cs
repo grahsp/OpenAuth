@@ -111,7 +111,7 @@ public class ClientBuilder
         var client = Client.Create(
             name,
             applicationType,
-            _audiences,
+            [],
             applicationType.DefaultGrantTypes,
             _redirectUris,
             createdAt);
