@@ -52,7 +52,7 @@ public class AuthorizationRequestValidatorTests
 	{
 		var context = new TestContext();
 		var command = context.Command
-			.WithClientId(Guid.NewGuid())
+			.WithClientId(ClientId.New())
 			.Build();
         
 		await Assert.ThrowsAsync<InvalidClientException>(() =>
