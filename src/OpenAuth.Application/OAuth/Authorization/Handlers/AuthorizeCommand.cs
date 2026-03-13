@@ -1,4 +1,3 @@
-using OpenAuth.Application.Exceptions;
 using OpenAuth.Domain.Apis.ValueObjects;
 using OpenAuth.Domain.AuthorizationGrants.ValueObjects;
 using OpenAuth.Domain.Clients.ValueObjects;
@@ -38,30 +37,12 @@ public record AuthorizeCommand
 
     public static AuthorizeCommand Create(
         string responseType,
-        string clientId,
+        ClientId clientId,
         string subject,
-        string redirectUri,
-        string audience,
-        string scopes,
-        string? codeChallenge,
-        string? codeChallengeMethod,
-        string? nonce)
-    {
-        if (!ClientId.TryCreate(clientId, out var id))
-            throw new MalformedClientException("Invalid client_id parameter.");
-        
-        if (!RedirectUri.TryCreate(redirectUri, out var uri))
-            throw new MalformedRedirectUriException("Invalid redirect_uri parameter.");
-        
-        if (!AudienceIdentifier.TryCreate(audience, out var audienceIdentifier))
-            throw new InvalidAudienceException("Invalid audience parameter.");
-
-        if (!ScopeCollection.TryParse(scopes, out var scope))
-            throw new MalformedScopeException("Invalid scope parameter.");
-        
-        if (!Pkce.TryParse(codeChallenge, codeChallengeMethod, out var pkce))
-            throw new MalformedPkceException("Invalid PKCE parameters.");
-
-        return new AuthorizeCommand(responseType, id, subject, uri, audienceIdentifier, scope, pkce, nonce);
-    }
+        RedirectUri redirectUri,
+        AudienceIdentifier audience,
+        ScopeCollection scopes,
+        Pkce? pkce,
+        string? nonce) =>
+        new AuthorizeCommand(responseType, clientId, subject, redirectUri, audience, scopes, pkce, nonce);
 }
