@@ -43,7 +43,7 @@ public class AuthorizationRequestValidatorTests
 		{
 			ApiResourceRepository
 				.GetByAudienceAsync(Arg.Any<AudienceIdentifier>(), Arg.Any<CancellationToken>())
-				.Returns(new ApiBuilder().Build());
+				.Returns(new ApiResourceBuilder().Build());
 		}
 	}
 	

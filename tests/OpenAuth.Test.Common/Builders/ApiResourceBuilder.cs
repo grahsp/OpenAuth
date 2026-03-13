@@ -4,25 +4,25 @@ using OpenAuth.Domain.Clients.ValueObjects;
 
 namespace OpenAuth.Test.Common.Builders;
 
-public class ApiBuilder
+public class ApiResourceBuilder
 {
     private ApiName? _name;
     private AudienceIdentifier? _identifier;
     private Dictionary<string, Permission> _permissions = [];
 
-    public ApiBuilder WithName(string name)
+    public ApiResourceBuilder WithName(string name)
     {
         _name = new ApiName(name);
         return this;
     }
 
-    public ApiBuilder WithIdentifier(string identifier)
+    public ApiResourceBuilder WithIdentifier(string identifier)
     {
         _identifier = new AudienceIdentifier(identifier);
         return this;
     }
 
-    public ApiBuilder WithPermission(string scope, string description)
+    public ApiResourceBuilder WithPermission(string scope, string description)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(scope);
         ArgumentException.ThrowIfNullOrWhiteSpace(description);

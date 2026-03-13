@@ -212,13 +212,13 @@ public class ClientTests
     public sealed class AuthorizeApiTests : ClientTests
     {
         private static readonly ApiResource OrdersApiResource =
-            new ApiBuilder()
+            new ApiResourceBuilder()
                 .WithPermission("read", "access to view data.")
                 .WithPermission("write", "access to modify data.")
                 .Build();
 
         private static readonly ApiResource UsersApiResource =
-            new ApiBuilder()
+            new ApiResourceBuilder()
                 .WithPermission("read", "access to view data.")
                 .Build();
 
