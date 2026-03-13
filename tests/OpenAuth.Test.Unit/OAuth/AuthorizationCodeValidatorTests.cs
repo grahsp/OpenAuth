@@ -1,7 +1,11 @@
 using NSubstitute;
+using OpenAuth.Application.Clients.Dtos;
 using OpenAuth.Application.Exceptions;
 using OpenAuth.Application.Secrets.Interfaces;
+using OpenAuth.Application.Tokens.Dtos;
 using OpenAuth.Application.Tokens.Flows;
+using OpenAuth.Domain.Apis;
+using OpenAuth.Domain.AuthorizationGrants;
 using OpenAuth.Domain.Clients.ValueObjects;
 using OpenAuth.Test.Common.Builders;
 using OpenAuth.Test.Common.Helpers;
@@ -10,185 +14,176 @@ namespace OpenAuth.Test.Unit.OAuth;
 
 public class AuthorizationCodeValidatorTests
 {
-    private readonly ISecretQueryService _secretQueryService;
-    private readonly AuthorizationCodeValidator _sut;
-
-    private readonly AuthorizationCodeValidatorContext _validContext;
-    
-    public AuthorizationCodeValidatorTests()
+    private sealed class TestContext
     {
-        _secretQueryService = Substitute.For<ISecretQueryService>();
-        _sut = new AuthorizationCodeValidator(_secretQueryService);
-
-        _secretQueryService
-            .ValidateSecretAsync(Arg.Any<ClientId>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Returns(true);
+        public ApiResourceBuilder Api { get; } = new ApiResourceBuilder();
+        public AuthorizationGrantBuilder AuthorizationGrant { get; } = new AuthorizationGrantBuilder();
+        public AuthorizationCodeTokenCommandBuilder Command { get; } = new AuthorizationCodeTokenCommandBuilder();
+        public ClientTokenData TokenData { get; } = TestData.CreateValidTokenData();
         
-        _validContext = new AuthorizationCodeValidatorContext(
-            TestData.CreateValidAuthorizationCodeTokenCommand(),
-            TestData.CreateValidTokenData(),
-            TestData.CreateValidAuthorizationGrant());
-    }
+        public ISecretQueryService SecretQueryService { get; }
+        public AuthorizationCodeValidator Sut { get; }
+        
+        public TestContext()
+        {
+            SecretQueryService = Substitute.For<ISecretQueryService>();
 
+            WithSecret();
+            
+            Sut = new AuthorizationCodeValidator(SecretQueryService);
+        }
+        
+        public async Task<AuthorizationCodeValidationResult> ValidateAsync(
+            AuthorizationCodeTokenCommand? command = null,
+            ClientTokenData? tokenData = null,
+            AuthorizationGrant? grant = null,
+            ApiResource? api = null)
+        {
+            return await Sut.ValidateAsync(
+                command ?? Command.Build(),
+                tokenData ?? TokenData,
+                grant ?? AuthorizationGrant.Build(),
+                api ?? Api.Build());
+        }
+
+        public void WithSecret()
+        {
+            SecretQueryService
+                .ValidateSecretAsync(Arg.Any<ClientId>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+                .Returns(true);
+        }
+    }
+    
     [Fact]
     public async Task ValidateAsync_WhenPkceIsPresent_ClientSecretIsIgnored()
     {
-        var ctx = _validContext with
-        {
-            Command = _validContext.Command with
-            {
-                ClientSecret = "invalid-client-secret"
-            }
-        };
+        var context = new TestContext();
+        var command = context.Command
+            .WithClientSecret("invalid-client-secret")
+            .Build();
         
-        var result = await _sut.ValidateAsync(ctx);
-
-        Assert.Equal(DefaultValues.Audience, result.AudienceName?.Value);
+        var result = await context.ValidateAsync(command: command);
         Assert.Equal(DefaultValues.Scopes, result.Scope.ToString());
     }
     
     [Fact]
     public async Task ValidateAsync_WhenPkceIsMissing_ClientSecretIsUsed()
     {
-
-        var ctx = _validContext with
-        {
-            AuthorizationGrant = new AuthorizationGrantBuilder()
-                .WithPkce(null)
-                .Build()
-        };
+        var context = new TestContext();
+        var grant = context.AuthorizationGrant
+            .WithPkce(null)
+            .Build();
         
-        var result = await _sut.ValidateAsync(ctx);
-
-        Assert.Equal(DefaultValues.Audience, result.AudienceName?.Value);
+        var result = await context.ValidateAsync(grant: grant);
         Assert.Equal(DefaultValues.Scopes, result.Scope.ToString());
     }
     
     [Fact]
     public async Task ValidateAsync_WhenOpenIdScopes_ReturnValidationResult()
     {
-
-        var ctx = _validContext with
-        {
-            AuthorizationGrant = new AuthorizationGrantBuilder()
-                .WithScopes(DefaultValues.Scopes + " openid")
-                .Build()
-        };
+        const string expected = "openid profile";
         
-        var result = await _sut.ValidateAsync(ctx);
+        var context = new TestContext();
+        var grant = context.AuthorizationGrant
+            .WithScopes(expected)
+            .Build();
 
-        Assert.Equal(DefaultValues.Audience, result.AudienceName?.Value);
-        Assert.Equal(ctx.AuthorizationGrant.GrantedScopes.ToString(), result.Scope.ToString());
-        Assert.Equal("openid", result.OidcScope.ToString());
+        var result = await context.ValidateAsync(grant: grant);
+        Assert.Contains(expected, result.OidcScope.ToString());
     }
 
     [Fact]
     public async Task ValidateAsync_WithUsedAuthorizationGrant_ThrowsInvalidGrantException()
     {
-        var ctx = _validContext;
-        ctx.AuthorizationGrant.Consume();
+        var context = new TestContext();
+        var grant = context.AuthorizationGrant.Build();
+        
+        grant.Consume();
         
         await Assert.ThrowsAsync<InvalidGrantException>(()
-            => _sut.ValidateAsync(ctx));
+            => context.ValidateAsync());
     }
     
     [Fact]
     public async Task ValidateAsync_WithIncorrectClientId_ThrowsInvalidGrantException()
     {
+        var context = new TestContext();
+        var command = context.Command
+            .WithClientId(ClientId.New())
+            .Build();
 
-        var ctx = _validContext with
-        {
-            Command = _validContext.Command with
-            {
-                ClientId = ClientId.New()
-            }
-        };
         
         await Assert.ThrowsAsync<InvalidGrantException>(()
-            => _sut.ValidateAsync(ctx));
+            => context.ValidateAsync(command: command));
     }
 
     [Fact]
     public async Task ValidateAsync_WithIncorrectRedirectUri_ThrowsInvalidGrantException()
     {
-        var ctx = _validContext with
-        {
-            Command = _validContext.Command with
-            {
-                RedirectUri = RedirectUri.Create("https://invalid-uri.com")
-            }
-        };
+        var context = new TestContext();
+        var command = context.Command
+            .WithRedirectUri("https://invalid-uri.com")
+            .Build();
         
         await Assert.ThrowsAsync<InvalidGrantException>(()
-            => _sut.ValidateAsync(ctx));       
+            => context.ValidateAsync(command: command));       
     }
     
     [Fact]
     public async Task ValidateAsync_WithMissingCodeVerifier_ThrowsInvalidGrantException()
     {
-        var ctx = _validContext with
-        {
-            Command = _validContext.Command with
-            {
-                CodeVerifier = null
-            }
-        };
+        var context = new TestContext();
+        var command = context.Command
+            .WithCodeVerifier(null)
+            .Build();
         
         await Assert.ThrowsAsync<InvalidGrantException>(()
-            => _sut.ValidateAsync(ctx));
+            => context.ValidateAsync(command: command));
     }
     
     [Fact]
     public async Task ValidateAsync_WithIncorrectCodeVerifier_ThrowsInvalidGrantException()
     {
-        var ctx = _validContext with
-        {
-            Command = _validContext.Command with
-            {
-                CodeVerifier = "invalid-code-verifier"
-            }
-        };
+        var context = new TestContext();
+        var command = context.Command
+            .WithCodeVerifier("invalid-code-verifier")
+            .Build();
         
         await Assert.ThrowsAsync<InvalidGrantException>(()
-            => _sut.ValidateAsync(ctx));
+            => context.ValidateAsync(command: command));
     }
 
     [Fact]
     public async Task ValidateAsync_WithMissingClientSecret_ThrowsInvalidClientException()
     {
         // Set PKCE to null to force client secret for validation
-        var ctx = _validContext with
-        {
-            Command = _validContext.Command with
-            {
-                ClientSecret = null
-            },
-            AuthorizationGrant = new AuthorizationGrantBuilder()
-                .WithPkce(null)
-                .Build()
-        };
+        var context = new TestContext();
+        var command = context.Command
+            .WithClientSecret(null)
+            .Build();
 
+        var grant = context.AuthorizationGrant
+            .WithPkce(null)
+            .Build();
         
         await Assert.ThrowsAsync<InvalidClientException>(()
-            => _sut.ValidateAsync(ctx));       
+            => context.ValidateAsync(command: command, grant: grant));       
     }
 
     [Fact]
     public async Task ValidateAsync_WithInvalidClientSecret_ThrowsInvalidClientException()
     {
         // Set PKCE to null to force client secret for validation
-        var ctx = _validContext with
-        {
-            AuthorizationGrant = new AuthorizationGrantBuilder()
-                .WithPkce(null)
-                .Build()
-        };
+        var context = new TestContext();
+        var grant = context.AuthorizationGrant
+            .WithPkce(null)
+            .Build();
 
-        _secretQueryService
+        context.SecretQueryService
             .ValidateSecretAsync(Arg.Any<ClientId>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(false);
         
         await Assert.ThrowsAsync<InvalidClientException>(()
-            => _sut.ValidateAsync(ctx));
+            => context.ValidateAsync(grant: grant));
     }
 }
