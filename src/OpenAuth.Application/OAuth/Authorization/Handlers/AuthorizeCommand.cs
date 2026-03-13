@@ -1,4 +1,5 @@
 using OpenAuth.Application.Exceptions;
+using OpenAuth.Domain.Apis.ValueObjects;
 using OpenAuth.Domain.AuthorizationGrants.ValueObjects;
 using OpenAuth.Domain.Clients.ValueObjects;
 
@@ -10,6 +11,7 @@ public record AuthorizeCommand
     public ClientId ClientId { get; init; }
     public string Subject { get; init; }
     public RedirectUri RedirectUri { get; init; }
+    public AudienceIdentifier Audience { get; init; }
     public ScopeCollection Scopes { get; init; }
     public Pkce? Pkce { get; init; }
     public string? Nonce { get; init; }
@@ -19,6 +21,7 @@ public record AuthorizeCommand
         ClientId clientId,
         string subject,
         RedirectUri redirectUri,
+        AudienceIdentifier audience,
         ScopeCollection scopes,
         Pkce? pkce,
         string? nonce)
@@ -27,6 +30,7 @@ public record AuthorizeCommand
         ClientId = clientId;
         Subject = subject;
         RedirectUri = redirectUri;
+        Audience = audience;
         Scopes = scopes;
         Pkce = pkce;
         Nonce = nonce;
@@ -37,6 +41,7 @@ public record AuthorizeCommand
         string clientId,
         string subject,
         string redirectUri,
+        string audience,
         string scopes,
         string? codeChallenge,
         string? codeChallengeMethod,
@@ -47,6 +52,9 @@ public record AuthorizeCommand
         
         if (!RedirectUri.TryCreate(redirectUri, out var uri))
             throw new MalformedRedirectUriException("Invalid redirect_uri parameter.");
+        
+        if (!AudienceIdentifier.TryCreate(audience, out var audienceIdentifier))
+            throw new InvalidAudienceException("Invalid audience parameter.");
 
         if (!ScopeCollection.TryParse(scopes, out var scope))
             throw new MalformedScopeException("Invalid scope parameter.");
@@ -54,6 +62,6 @@ public record AuthorizeCommand
         if (!Pkce.TryParse(codeChallenge, codeChallengeMethod, out var pkce))
             throw new MalformedPkceException("Invalid PKCE parameters.");
 
-        return new AuthorizeCommand(responseType, id, subject, uri, scope, pkce, nonce);
+        return new AuthorizeCommand(responseType, id, subject, uri, audienceIdentifier, scope, pkce, nonce);
     }
 }

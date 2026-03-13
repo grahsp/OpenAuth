@@ -1,4 +1,5 @@
 using OpenAuth.Application.Clients.Dtos;
+using OpenAuth.Domain.Apis.ValueObjects;
 using OpenAuth.Domain.Clients.ValueObjects;
 
 namespace OpenAuth.Application.Clients.Services;
@@ -17,9 +18,8 @@ public interface IClientService
     Task<ClientDetails> AddRedirectUriAsync(ClientId id, RedirectUri redirectUri, CancellationToken ct = default);
     Task<ClientDetails> RemoveRedirectUriAsync(ClientId id, RedirectUri redirectUri, CancellationToken ct = default);
     
-    Task<ClientDetails> SetAudiencesAsync(ClientId id, IEnumerable<Audience> audiences, CancellationToken ct = default);
-    Task<ClientDetails> AddAudienceAsync(ClientId id, Audience audience, CancellationToken ct = default);
-    Task<ClientDetails> RemoveAudienceAsync(ClientId id, AudienceName name, CancellationToken ct = default);
+    Task<ClientDetails> GrantApiAccessAsync(ClientId id, ApiResourceId apiResourceId, ScopeCollection scopes, CancellationToken ct = default);
+    Task<ClientDetails> RevokeApiAccessAsync(ClientId id, ApiResourceId apiResourceId, CancellationToken ct = default);
     
     Task EnableAsync(ClientId id, CancellationToken ct = default);
     Task DisableAsync(ClientId id, CancellationToken ct = default);

@@ -23,7 +23,7 @@ public static class ClientMapper
         => new ClientResponse(
             client.Id.Value.ToString(),
             client.Name.Value,
-            client.Audiences.Select(ToResponse),
+            client.ApiAccess,
             client.Secrets.Select(ToResponse),
             client.CreatedAt,
             client.UpdatedAt

@@ -1,7 +1,9 @@
+using OpenAuth.Application.Audiences.Interfaces;
 using OpenAuth.Application.Clients.Dtos;
 using OpenAuth.Application.Clients.Factories;
 using OpenAuth.Application.Clients.Interfaces;
 using OpenAuth.Application.Clients.Mappings;
+using OpenAuth.Domain.Apis.ValueObjects;
 using OpenAuth.Domain.Clients;
 using OpenAuth.Domain.Clients.ValueObjects;
 
@@ -12,15 +14,18 @@ public sealed record RegisteredClientResponse(Client Client, string? ClientSecre
 public class ClientService : IClientService
 {
     private readonly IClientRepository _repository;
+    private readonly IApiResourceRepository _apiRepository;
     private readonly IClientFactory _clientFactory;
     private readonly TimeProvider _time;
     
     public ClientService(
         IClientRepository repository,
+        IApiResourceRepository apiRepository,
         IClientFactory clientFactory,
         TimeProvider time)
     {
         _repository = repository;
+        _apiRepository = apiRepository;
         _clientFactory = clientFactory;
         _time = time;
     }
@@ -135,45 +140,31 @@ public class ClientService : IClientService
         
         return client.ToClientDetails();
     }
-    
 
-    public async Task<ClientDetails> SetAudiencesAsync(ClientId id, IEnumerable<Audience> audiences,
-        CancellationToken ct = default)
+
+    public async Task<ClientDetails> GrantApiAccessAsync(ClientId clientId, ApiResourceId apiResourceId, ScopeCollection scopes, CancellationToken ct = default)
     {
-        var client = await _repository.GetByIdAsync(id, ct)
-                     ?? throw new InvalidOperationException("Client not found.");
+        var client = await _repository.GetByIdAsync(clientId, ct)
+            ?? throw new InvalidOperationException("Client not found.");
 
-        client.SetAudiences(audiences, _time.GetUtcNow());
+        var api = await _apiRepository.GetByIdAsync(apiResourceId, ct)
+            ?? throw new InvalidOperationException("Api not found.");
+        
+        if (!scopes.IsSubsetOf(api.Permissions.Select(s => s.Scope)))
+            throw new InvalidOperationException("One or more scopes requested are not allowed.");
+        
+        client.GrantApiAccess(api.Id, scopes, _time.GetUtcNow());
         await _repository.SaveChangesAsync(ct);
-
+        
         return client.ToClientDetails();
     }
 
-    public async Task<ClientDetails> AddAudienceAsync(ClientId id, Audience audience,
-        CancellationToken ct = default)
-    {
-        var client = await _repository.GetByIdAsync(id, ct)
-                     ?? throw new InvalidOperationException("Client not found.");
-
-        var audiences = client.AllowedAudiences
-            .Append(audience);
-        
-        client.SetAudiences(audiences, _time.GetUtcNow());
-        await _repository.SaveChangesAsync(ct);
-
-        return client.ToClientDetails();
-    }
-
-    public async Task<ClientDetails> RemoveAudienceAsync(ClientId id, AudienceName name,
-        CancellationToken ct = default)
+    public async Task<ClientDetails> RevokeApiAccessAsync(ClientId id, ApiResourceId apiResourceId, CancellationToken ct = default)
     {
         var client = await _repository.GetByIdAsync(id, ct)
                      ?? throw new InvalidOperationException("Client not found.");
         
-        var audiences = client.AllowedAudiences
-            .Where(a => a.Name != name);
-        
-        client.SetAudiences(audiences, _time.GetUtcNow());
+        client.RevokeApiAccess(apiResourceId, _time.GetUtcNow());
         await _repository.SaveChangesAsync(ct);
         
         return client.ToClientDetails();

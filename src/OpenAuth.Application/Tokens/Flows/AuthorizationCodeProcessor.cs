@@ -1,3 +1,4 @@
+using OpenAuth.Application.Audiences.Interfaces;
 using OpenAuth.Application.Clients.Dtos;
 using OpenAuth.Application.Exceptions;
 using OpenAuth.Application.Extensions;
@@ -14,10 +15,12 @@ public class AuthorizationCodeProcessor : TokenRequestProcessor<AuthorizationCod
     public override GrantType GrantType => GrantType.AuthorizationCode;
 
     private readonly IAuthorizationGrantStore _grantStore;
+    private readonly IApiResourceRepository _apiRepository;
     private readonly IAuthorizationCodeValidator _validator;
     
-    public AuthorizationCodeProcessor(IAuthorizationGrantStore grantStore, IAuthorizationCodeValidator validator)
+    public AuthorizationCodeProcessor(IAuthorizationGrantStore grantStore, IApiResourceRepository apiRepository, IAuthorizationCodeValidator validator)
     {
+        _apiRepository = apiRepository;
         _grantStore = grantStore;
         _validator = validator;
     }
@@ -25,27 +28,30 @@ public class AuthorizationCodeProcessor : TokenRequestProcessor<AuthorizationCod
     protected override async Task<TokenContext> ProcessAsync(AuthorizationCodeTokenCommand command, ClientTokenData tokenData, CancellationToken ct = default)
     {
         var authorizationGrant = await _grantStore.GetAsync(command.Code)
-                                 ?? throw new InvalidGrantException("Invalid or unknown authorization code.");
+            ?? throw new InvalidGrantException("Invalid or unknown authorization code.");
 
-        var validatorContext = new AuthorizationCodeValidatorContext(command, tokenData, authorizationGrant);
-        var result = await _validator.ValidateAsync(validatorContext, ct);
+        var api = await _apiRepository.GetByAudienceAsync(authorizationGrant.Audience, ct)
+            ?? throw new InvalidGrantException("Invalid or unknown audience.");
+
+        await _validator.ValidateAsync(command, tokenData, authorizationGrant, api, ct);
 
         authorizationGrant.Consume();
         await _grantStore.RemoveAsync(authorizationGrant.Code);
 
-        var oidcContext = CreateOidcContext(authorizationGrant, result.OidcScope);
+        var oidcContext = CreateOidcContext(authorizationGrant);
         
         return new TokenContext(
-            result.Scope,
+            authorizationGrant.GrantedScopes.GetApiScopes(),
             authorizationGrant.ClientId.ToString(),
-            result.AudienceName?.Value,
+            authorizationGrant.Audience.Value,
             authorizationGrant.Subject,
             oidcContext
         );
     }
 
-    private static OidcContext? CreateOidcContext(AuthorizationGrant authorizationGrant, ScopeCollection oidcScopes)
+    private static OidcContext? CreateOidcContext(AuthorizationGrant authorizationGrant)
     {
+        var oidcScopes = authorizationGrant.GrantedScopes;
         if (!oidcScopes.ContainsOpenIdScope())
             return null;
 

@@ -31,7 +31,6 @@ public class ClientFactory : IClientFactory
         var client = Client.Create(
             request.Name,
             request.ApplicationType,
-            request.Permissions,
             request.ApplicationType.DefaultGrantTypes,
             request.RedirectUris,
             now);

@@ -13,6 +13,9 @@ public record AuthorizeRequest
     [FromQuery(Name = "redirect_uri")]
     public string RedirectUri { get; init; } = null!;
 
+    [FromQuery(Name = "audience")]
+    public string Audience { get; init; } = null!;
+
     [FromQuery(Name = "scope")]
     public string Scopes { get; init; } = null!;
     

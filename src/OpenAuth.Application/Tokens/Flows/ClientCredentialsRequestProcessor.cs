@@ -1,3 +1,4 @@
+using OpenAuth.Application.Audiences.Interfaces;
 using OpenAuth.Application.Clients.Dtos;
 using OpenAuth.Application.Exceptions;
 using OpenAuth.Application.Secrets.Interfaces;
@@ -8,36 +9,38 @@ namespace OpenAuth.Application.Tokens.Flows;
 
 public class ClientCredentialsRequestProcessor : TokenRequestProcessor<ClientCredentialsTokenCommand>
 {
-    public override GrantType GrantType => GrantType.ClientCredentials;
+	public override GrantType GrantType => GrantType.ClientCredentials;
     
-    private readonly ISecretQueryService _secretQueryService;
+	private readonly IApiResourceRepository _apiResourceRepository;
+	private readonly ISecretQueryService _secretQueryService;
     
-    public ClientCredentialsRequestProcessor(ISecretQueryService secretQueryService)
-    {
-        _secretQueryService = secretQueryService;
-    }
+	public ClientCredentialsRequestProcessor(IApiResourceRepository apiResourceRepository, ISecretQueryService secretQueryService)
+	{
+		_apiResourceRepository = apiResourceRepository;
+		_secretQueryService = secretQueryService;
+	}
 
-    protected override async Task<TokenContext> ProcessAsync(ClientCredentialsTokenCommand command, ClientTokenData tokenData, CancellationToken ct = default)
-    {
-        if (string.IsNullOrWhiteSpace(command.ClientSecret))
-            throw new InvalidRequestException("ClientSecret is required.");
+	protected override async Task<TokenContext> ProcessAsync(ClientCredentialsTokenCommand command, ClientTokenData tokenData, CancellationToken ct = default)
+	{
+		if (string.IsNullOrWhiteSpace(command.ClientSecret))
+			throw new InvalidRequestException("ClientSecret is required.");
         
-        if (command.RequestedScopes is null)
-            throw new InvalidRequestException("Scopes is required.");
-        
-        var audience = tokenData.AllowedAudiences.FirstOrDefault(a => command.RequestedScopes.IsSubsetOf(a.Scopes))
-            ?? throw new InvalidScopeException("Scopes must belong to a single audience.");
-        
-        if (!command.RequestedScopes.All(s => audience.Scopes.Contains(s)))
-            throw new InvalidScopeException("One or more scopes are not allowed.");
-        
-        if (!await _secretQueryService.ValidateSecretAsync(command.ClientId, command.ClientSecret, ct))
-            throw new InvalidClientException("Invalid client credentials.");
+		if (command.RequestedScopes is null)
+			throw new InvalidRequestException("Scopes is required.");
 
-        return new TokenContext(
-            command.RequestedScopes,
-            command.ClientId.ToString(),
-            audience.Name.Value
-        );
-    }
+		var api = await _apiResourceRepository.GetByAudienceAsync(command.Audience, ct)
+			?? throw new InvalidOperationException("API not found.");
+		
+		var apiScopes = api.Permissions.Select(p => p.Scope).ToArray();
+		command.RequestedScopes.IsSubsetOf(apiScopes);
+        
+		if (!await _secretQueryService.ValidateSecretAsync(command.ClientId, command.ClientSecret, ct))
+			throw new InvalidClientException("Invalid client credentials.");
+
+		return new TokenContext(
+			command.RequestedScopes,
+			command.ClientId.ToString(),
+			command.Audience.Value
+		);
+	}
 }

@@ -12,6 +12,7 @@ public static class AuthorizeMappings
             request.ClientId,
             subject,
             request.RedirectUri,
+            request.Audience,
             request.Scopes,
             request.CodeChallenge,
             request.CodeChallengeMethod,

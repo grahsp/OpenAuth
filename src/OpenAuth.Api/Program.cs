@@ -9,6 +9,7 @@ using OpenAuth.Api.Connect.Logout;
 using OpenAuth.Api.Connect.Token;
 using OpenAuth.Api.Connect.UserInfo;
 using OpenAuth.Api.Http;
+using OpenAuth.Application.Audiences.Interfaces;
 using OpenAuth.Application.Clients.Factories;
 using OpenAuth.Application.Clients.Interfaces;
 using OpenAuth.Application.Clients.Services;
@@ -33,6 +34,7 @@ using OpenAuth.Application.Tokens.Services;
 using OpenAuth.Domain.AuthorizationGrants;
 using OpenAuth.Domain.Services;
 using OpenAuth.Domain.Users;
+using OpenAuth.Infrastructure.ApiResources;
 using OpenAuth.Infrastructure.Clients.Persistence;
 using OpenAuth.Infrastructure.Clients.Secrets;
 using OpenAuth.Infrastructure.Clients.Secrets.Persistence;
@@ -122,6 +124,9 @@ public class Program
         builder.Services.AddScoped<IClientService, ClientService>();
         builder.Services.AddScoped<IClientQueryService, ClientQueryService>();
         builder.Services.AddScoped<IClientFactory, ClientFactory>();
+        
+        // ApiResource Services
+        builder.Services.AddScoped<IApiResourceRepository, ApiResourceRepository>();
         
         // Secret Services
         builder.Services.AddScoped<ISecretService, SecretService>();

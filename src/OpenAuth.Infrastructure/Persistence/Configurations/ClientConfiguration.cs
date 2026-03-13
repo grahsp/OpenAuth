@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using OpenAuth.Domain.Apis.ValueObjects;
 using OpenAuth.Domain.Clients;
 using OpenAuth.Domain.Clients.ApplicationType;
 using OpenAuth.Domain.Clients.ValueObjects;
@@ -84,22 +85,24 @@ public class ClientConfiguration : IEntityTypeConfiguration<Client>
             .HasColumnName("RedirectUris")
             .HasMaxLength(2000);
         
-        builder.Ignore(c => c.AllowedAudiences);
-        builder.OwnsMany(c => c.AllowedAudiences, aud =>
+        builder.Ignore(c => c.Apis);
+        builder.OwnsMany(c => c.Apis, api =>
         {
-            aud.ToTable("Audiences");
-            aud.WithOwner().HasForeignKey("ClientId"); // Shadow property
+            api.ToTable("ClientApiAccess");
 
-            aud.Property<Guid>("Id");
-            aud.HasKey("Id");
-            
-            aud.Property(a => a.Name)
+            api.WithOwner().HasForeignKey("ClientId"); // shadow FK
+
+            api.Property<Guid>("Id");
+            api.HasKey("Id");
+
+            api.Property(a => a.ApiResourceId)
                 .HasConversion(
-                    name => name.Value,
-                    value => new AudienceName(value))
-                .HasMaxLength(100);
+                    id => id.Value,
+                    value => new ApiResourceId(value))
+                .HasColumnName("ApiResourceId")
+                .IsRequired();
 
-            aud.Property(a => a.Scopes)
+            api.Property(a => a.AllowedScopes)
                 .HasConversion(
                     scopes => scopes.ToString(),
                     value => ScopeCollection.Parse(value),
@@ -111,7 +114,7 @@ public class ClientConfiguration : IEntityTypeConfiguration<Client>
                 )
                 .HasColumnName("Scopes")
                 .HasMaxLength(2000)
-                .IsRequired(false);
+                .IsRequired();
         });
     }
 }

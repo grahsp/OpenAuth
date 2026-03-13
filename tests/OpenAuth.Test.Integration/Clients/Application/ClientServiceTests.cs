@@ -207,7 +207,7 @@ public class ClientServiceTests : IAsyncLifetime
         
         await _sut.AddAudienceAsync(clientId, ApiAudience);
         await _sut.AddAudienceAsync(clientId, WebAudience);
-        await _sut.RemoveAudienceAsync(clientId, WebAudience.Name);
+        await _sut.RevokeApiAccessAsync(clientId, WebAudience.Name);
          
         await using var ctx = _fx.CreateContext();
         var client = await ctx.Clients.SingleAsync(c => c.Id == clientId);

@@ -392,7 +392,7 @@ public class ClientServiceTests
             var client = result.Client;
 
             var expected = client.AllowedAudiences.ToArray();
-            await _sut.RemoveAudienceAsync(client.Id, AudienceName.Create("non-existent"));
+            await _sut.RevokeApiAccessAsync(client.Id, AudienceName.Create("non-existent"));
             
             Assert.Equal(expected, client.AllowedAudiences);
         }
@@ -404,7 +404,7 @@ public class ClientServiceTests
             var client = result.Client;
             
             await _sut.AddAudienceAsync(client.Id, ApiAudience);
-            await _sut.RemoveAudienceAsync(client.Id, ApiAudience.Name);
+            await _sut.RevokeApiAccessAsync(client.Id, ApiAudience.Name);
             
             Assert.DoesNotContain(client.AllowedAudiences, a => a == ApiAudience);
             Assert.True(_repo.Saved);
@@ -414,7 +414,7 @@ public class ClientServiceTests
         public async Task RemoveAudiencesAsync_WhenClientNotFound_ThrowsException()
         {
             await Assert.ThrowsAnyAsync<InvalidOperationException>(()
-                => _sut.RemoveAudienceAsync(ClientId.New(), ApiAudience.Name));
+                => _sut.RevokeApiAccessAsync(ClientId.New(), ApiAudience.Name));
         }
     }
     

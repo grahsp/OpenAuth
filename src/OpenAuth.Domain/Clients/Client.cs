@@ -1,3 +1,5 @@
+using OpenAuth.Domain.Apis;
+using OpenAuth.Domain.Apis.ValueObjects;
 using OpenAuth.Domain.Clients.ApplicationType;
 using OpenAuth.Domain.Clients.ValueObjects;
 using OpenAuth.Domain.Clients.Secrets;
@@ -14,6 +16,9 @@ public sealed class Client
     
     public const int MaxSecrets = 3;
     public List<Secret> Secrets { get; private set; } = [];
+
+    private readonly HashSet<ClientApiAccess> _apis = [];
+    public IReadOnlyCollection<ClientApiAccess> Apis => _apis;
     
     
     // Authorization
@@ -28,9 +33,6 @@ public sealed class Client
 
     private HashSet<RedirectUri> _redirectUris = [];
     public IReadOnlyCollection<RedirectUri> RedirectUris => _redirectUris;
-    
-    private HashSet<Audience> _allowedAudiences = [];
-    public IReadOnlyCollection<Audience> AllowedAudiences => _allowedAudiences;
     
     
     // Token
@@ -62,7 +64,6 @@ public sealed class Client
     private Client(
         ClientName name,
         ClientApplicationType applicationType,
-        IEnumerable<Audience> allowedAudiences,
         IEnumerable<GrantType> allowedGrantTypes,
         IEnumerable<RedirectUri> redirectUris,
         DateTimeOffset utcNow)
@@ -70,7 +71,6 @@ public sealed class Client
         Name = name;
         ApplicationType = applicationType;
         
-        _allowedAudiences = allowedAudiences.ToHashSet();
         _allowedGrantTypes = allowedGrantTypes.ToHashSet();
         _redirectUris = redirectUris.ToHashSet();
         
@@ -82,15 +82,13 @@ public sealed class Client
     internal static Client Create(
         ClientName name,
         ClientApplicationType applicationType,
-        IEnumerable<Audience> allowedAudiences,
         IEnumerable<GrantType> allowedGrantTypes,
         IEnumerable<RedirectUri> redirectUris,
-        DateTimeOffset utcNow)
-        => new(name, applicationType, allowedAudiences, allowedGrantTypes, redirectUris, utcNow);
+        DateTimeOffset utcNow) =>
+        new Client(name, applicationType, allowedGrantTypes, redirectUris, utcNow);
 
     private void ValidateInitialClient()
     {
-        ValidateAudiences();
         ValidateRedirectUris();
         ValidateGrantTypes();
     }
@@ -99,12 +97,6 @@ public sealed class Client
     {
         ValidateInitialClient();
         ValidateSecrets();
-    }
-
-    private void ValidateAudiences()
-    {
-        if (ApplicationType.RequiresPermissions && AllowedAudiences.Count == 0)
-            throw new InvalidOperationException("Client must have at least one audience.");
     }
 
     private void ValidateGrantTypes()
@@ -199,26 +191,31 @@ public sealed class Client
         _redirectUris = items.ToHashSet();
         Touch(utcNow);
     }
-    
-    
-    public Audience GetAudience(AudienceName name)
-        => _allowedAudiences.SingleOrDefault(a => a.Name == name) ??
-           throw new InvalidOperationException($"Audience {name.Value} not found.");
 
-    public void SetAudiences(IEnumerable<Audience> audiences, DateTimeOffset utcNow)
+    
+    public void GrantApiAccess(ApiResourceId apiResourceId, ScopeCollection scope, DateTimeOffset utcNow)
     {
-        ArgumentNullException.ThrowIfNull(audiences);
-        
-        var items = audiences.ToArray();
-        
-        if (items.Distinct().Count() != items.Length)
-            throw new InvalidOperationException("Client cannot contain duplicate audience names.");
+        ArgumentNullException.ThrowIfNull(apiResourceId);
 
-        if (_allowedAudiences.SetEquals(items))
-            return;
-
-        _allowedAudiences = items.ToHashSet();
+        if (_apis.Any(a => a.ApiResourceId == apiResourceId))
+            throw new InvalidOperationException("Client already has access to this API.");
+        
+        var access = ClientApiAccess.Create(apiResourceId, scope);
+        _apis.Add(access);
+        
         Touch(utcNow);
+    }
+
+    public void RevokeApiAccess(ApiResourceId apiResourceId, DateTimeOffset utcNow)
+    {
+        ArgumentNullException.ThrowIfNull(apiResourceId);
+
+        var access = _apis.FirstOrDefault(a => a.ApiResourceId == apiResourceId);
+        if (access is null)
+            return;
+        
+        _apis.Remove(access);
+        Touch(utcNow);       
     }
 
 

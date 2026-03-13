@@ -1,4 +1,6 @@
+using OpenAuth.Application.Exceptions;
 using OpenAuth.Application.Tokens.Dtos;
+using OpenAuth.Domain.Apis.ValueObjects;
 using OpenAuth.Domain.Clients.ValueObjects;
 using OpenAuth.Domain.OAuth;
 
@@ -54,11 +56,15 @@ public static class TokenRequestMappings
         if (!ClientId.TryCreate(dto.ClientId, out var clientId))
             throw new InvalidOperationException("Invalid client_id parameter.");
         
+        if (!AudienceIdentifier.TryCreate(dto.Audience, out var audienceIdentifier))
+            throw new InvalidAudienceException("Invalid audience parameter.");
+        
         if (!ScopeCollection.TryParse(dto.Scope, out var scope))
             throw new InvalidOperationException("Invalid scope parameter.");
 
         return ClientCredentialsTokenCommand.Create(
             clientId,
+            audienceIdentifier,
             scope,
             dto.ClientSecret
         );

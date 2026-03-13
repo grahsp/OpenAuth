@@ -1,7 +1,9 @@
+using OpenAuth.Application.Clients.Dtos;
 using OpenAuth.Application.Exceptions;
 using OpenAuth.Application.Extensions;
 using OpenAuth.Application.Secrets.Interfaces;
 using OpenAuth.Application.Tokens.Dtos;
+using OpenAuth.Domain.Apis;
 using OpenAuth.Domain.AuthorizationGrants;
 
 namespace OpenAuth.Application.Tokens.Flows;
@@ -15,12 +17,13 @@ public class AuthorizationCodeValidator : IAuthorizationCodeValidator
         _secretQueryService = secretQueryService;
     }
 
-    public async Task<AuthorizationCodeValidationResult> ValidateAsync(AuthorizationCodeValidatorContext context, CancellationToken ct = default)
+    public async Task<AuthorizationCodeValidationResult> ValidateAsync(
+        AuthorizationCodeTokenCommand command,
+        ClientTokenData tokenData,
+        AuthorizationGrant authorizationGrant,
+        ApiResource api,
+        CancellationToken ct = default)
     {
-        var command = context.Command;
-        var tokenData = context.TokenData;
-        var authorizationGrant = context.AuthorizationGrant;
-        
         ValidateUnusedAuthorizationGrant(authorizationGrant);
         ValidateAuthorizationGrantBinding(command, authorizationGrant);
         await ValidateClientAuthenticationAsync(command, authorizationGrant, ct);
@@ -28,11 +31,14 @@ public class AuthorizationCodeValidator : IAuthorizationCodeValidator
         var apiScopes = authorizationGrant.GrantedScopes.GetApiScopes();
         var oidcScopes = authorizationGrant.GrantedScopes.GetOidcScopes();
 
-        var audience = apiScopes.Count > 0
-            ? tokenData.AllowedAudiences.FirstOrDefault(a => apiScopes.IsSubsetOf(a.Scopes))
-            : null;
+        if (!apiScopes.All(s =>  api.Permissions.Select(p => p.Scope).Contains(s)))
+            throw new InvalidOperationException("");
+        
+        // var audience = tokenData.Api.Audience
+        //     ? tokenData.AllowedAudiences.FirstOrDefault(a => apiScopes.IsSubsetOf(a.Scopes))
+        //     : null;
 
-        return new AuthorizationCodeValidationResult(audience?.Name, authorizationGrant.GrantedScopes, oidcScopes);
+        return new AuthorizationCodeValidationResult(authorizationGrant.GrantedScopes, oidcScopes);
     }
 
     private static void ValidateUnusedAuthorizationGrant(AuthorizationGrant authorizationGrant)

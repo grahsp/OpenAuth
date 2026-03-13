@@ -5,6 +5,7 @@ using OpenAuth.Application.Clients.Dtos;
 using OpenAuth.Application.Clients.Interfaces;
 using OpenAuth.Application.Clients.Services;
 using OpenAuth.Application.Secrets.Services;
+using OpenAuth.Domain.Apis.ValueObjects;
 using OpenAuth.Domain.Clients.ValueObjects;
 
 namespace OpenAuth.Api.Controllers;
@@ -48,70 +49,84 @@ public class ClientController : ControllerBase
          await _clientService.DeleteAsync(new ClientId(clientId));
          return NoContent();
      }
+
+     [HttpPost("{clientId:guid}/authorize-api")]
+     public async Task<ActionResult> AuthorizeApi(Guid clientId, [FromBody] AuthorizeApiRequest request)
+     {
+         var id = new ClientId(clientId);
+         var apiResourceId = ApiResourceId.Create(request.ApiResourceId);
+         var scopes = ScopeCollection.Parse(request.Scopes);
+         
+         var result = await _clientService.GrantApiAccessAsync(id, apiResourceId, scopes);
+
+         return Ok(result);
+     }
+
+     public sealed record AuthorizeApiRequest(string ApiResourceId, string Scopes);
      
      
      // Audiences
-     [HttpGet("{clientId}/audiences")]
-     public async Task<IActionResult> GetAudiences(string clientId, CancellationToken ct)
-     {
-         if (!ClientId.TryCreate(clientId, out var id))
-             return BadRequest();
-
-         var details = await _queryService.GetDetailsAsync(id, ct);
-         return Ok(details?.Audiences
-             .Select(a => new
-             {
-                 Audience = a.Name.NormalizedValue,
-                 Scopes = a.Scopes.ToString()
-             }) ?? []);
-     }
-    
-     [HttpPost("{clientId}/audiences")]
-     public async Task<IActionResult> AddAudience(string clientId, [FromBody] AudienceDto request, CancellationToken ct)
-     {
-         if (!ClientId.TryCreate(clientId, out var id))
-             return BadRequest();
-        
-         if (!AudienceName.TryCreate(request.Name, out var name))
-             return BadRequest();
-        
-         var audience = new Audience(name, ScopeCollection.Parse(request.Scopes));
-         var details = await _clientService.AddAudienceAsync(id, audience, ct);
-
-         return Ok(details);
-     }
-
-     [HttpPut("{clientId}/audiences")]
-     public async Task<IActionResult> SetAudiences(string clientId, [FromBody] IEnumerable<AudienceDto> request,
-         CancellationToken ct)
-     {
-         if (!ClientId.TryCreate(clientId, out var id))
-             return BadRequest();
-
-         var audiences = new List<Audience>();
-         foreach (var dto in request)
-         {
-             if (!AudienceName.TryCreate(dto.Name, out var name))
-                 return BadRequest();
-             
-             var audience = new Audience(name, ScopeCollection.Parse(dto.Scopes));
-             audiences.Add(audience);
-         }
-         
-         var details = await _clientService.SetAudiencesAsync(id, audiences, ct);
-         return Ok(details);
-     }
-    
-     [HttpDelete("{clientId}/audiences/{audience}")]
-     public async Task<IActionResult> RemoveAudience(string clientId, string audience, CancellationToken ct)
-     {
-         if (!ClientId.TryCreate(clientId, out var id))
-             return BadRequest();
-
-         if (!AudienceName.TryCreate(audience, out var name))
-             return BadRequest();
-
-         await _clientService.RemoveAudienceAsync(id, name, ct);
-         return NoContent();
-     }
+     // [HttpGet("{clientId}/audiences")]
+     // public async Task<IActionResult> GetAudiences(string clientId, CancellationToken ct)
+     // {
+     //     if (!ClientId.TryCreate(clientId, out var id))
+     //         return BadRequest();
+     //
+     //     var details = await _queryService.GetDetailsAsync(id, ct);
+     //     return Ok(details?.Audiences
+     //         .Select(a => new
+     //         {
+     //             Audience = a.Name.NormalizedValue,
+     //             Scopes = a.Scopes.ToString()
+     //         }) ?? []);
+     // }
+     //
+     // [HttpPost("{clientId}/audiences")]
+     // public async Task<IActionResult> AddAudience(string clientId, [FromBody] AudienceDto request, CancellationToken ct)
+     // {
+     //     if (!ClientId.TryCreate(clientId, out var id))
+     //         return BadRequest();
+     //    
+     //     if (!AudienceName.TryCreate(request.Name, out var name))
+     //         return BadRequest();
+     //    
+     //     var audience = new Audience(name, ScopeCollection.Parse(request.Scopes));
+     //     var details = await _clientService.AddAudienceAsync(id, audience, ct);
+     //
+     //     return Ok(details);
+     // }
+     //
+     // [HttpPut("{clientId}/audiences")]
+     // public async Task<IActionResult> SetAudiences(string clientId, [FromBody] IEnumerable<AudienceDto> request,
+     //     CancellationToken ct)
+     // {
+     //     if (!ClientId.TryCreate(clientId, out var id))
+     //         return BadRequest();
+     //
+     //     var audiences = new List<Audience>();
+     //     foreach (var dto in request)
+     //     {
+     //         if (!AudienceName.TryCreate(dto.Name, out var name))
+     //             return BadRequest();
+     //         
+     //         var audience = new Audience(name, ScopeCollection.Parse(dto.Scopes));
+     //         audiences.Add(audience);
+     //     }
+     //     
+     //     var details = await _clientService.SetAudiencesAsync(id, audiences, ct);
+     //     return Ok(details);
+     // }
+     //
+     // [HttpDelete("{clientId}/audiences/{audience}")]
+     // public async Task<IActionResult> RemoveAudience(string clientId, string audience, CancellationToken ct)
+     // {
+     //     if (!ClientId.TryCreate(clientId, out var id))
+     //         return BadRequest();
+     //
+     //     if (!AudienceName.TryCreate(audience, out var name))
+     //         return BadRequest();
+     //
+     //     await _clientService.RemoveAudienceAsync(id, name, ct);
+     //     return NoContent();
+     // }
 }

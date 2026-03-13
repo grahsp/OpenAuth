@@ -3,6 +3,7 @@ using OpenAuth.Application.Clients.Dtos;
 using OpenAuth.Application.Clients.Interfaces;
 using OpenAuth.Application.Clients.Mappings;
 using OpenAuth.Application.Shared.Models;
+using OpenAuth.Domain.Apis.ValueObjects;
 using OpenAuth.Domain.Clients.ValueObjects;
 using OpenAuth.Infrastructure.Persistence;
 
@@ -43,7 +44,7 @@ public class ClientQueryService : IClientQueryService
         var client = await _context.Clients
             .AsNoTracking()
             .Where(x => x.Id == id)
-            .Include(c => c.AllowedAudiences)
+            .Include(c => c.Apis)
             .Include(c => c.Secrets)
             .SingleOrDefaultAsync(ct);
         
@@ -51,15 +52,15 @@ public class ClientQueryService : IClientQueryService
     }
 
     public async Task<ClientTokenData?> GetTokenDataAsync(ClientId id, CancellationToken ct = default)
-        => await _context.Clients
+    {
+        var client = await _context.Clients
             .AsNoTracking()
             .Where(c => c.Id == id)
-            .Select(c => new ClientTokenData(
-                c.Id,
-                c.AllowedAudiences,
-                c.AllowedGrantTypes,
-                c.TokenLifetime))
-            .SingleOrDefaultAsync(ct);
+            .SingleOrDefaultAsync(ct)
+            ?? throw new InvalidOperationException("Client not found.");
+
+        return new ClientTokenData(client.Id, client.AllowedGrantTypes, client.TokenLifetime);
+    }
 
     public async Task<ClientAuthorizationData?> GetAuthorizationDataAsync(ClientId id, CancellationToken ct = default)
     {
