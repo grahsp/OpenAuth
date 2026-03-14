@@ -12,7 +12,7 @@ public sealed class AuthorizeCommandBuilder
 	private ClientId _clientId = ClientId.Create(DefaultValues.ClientId);
 	private string _subject = DefaultValues.Subject;
 	private string _redirectUri = DefaultValues.RedirectUri;
-	private string _audience = DefaultValues.Audience;
+	private string _audience = DefaultValues.ApiAudience;
 	private string _scope = DefaultValues.Scopes;
 	private Pkce? _pkce;
 	private string? _nonce;

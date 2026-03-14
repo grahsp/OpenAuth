@@ -20,7 +20,7 @@ public class TokenEndpointTests(ApiServerFixture fx) : IClassFixture<ApiServerFi
         var response = await client.RequestTokenAsync(opts =>
         {
             opts.WithGrantType("client_credentials");
-            opts.WithAudience(DefaultValues.Audience);
+            opts.WithAudience(DefaultValues.ApiAudience);
             opts.WithScopes(DefaultValues.Scopes);
         });
 
@@ -38,7 +38,7 @@ public class TokenEndpointTests(ApiServerFixture fx) : IClassFixture<ApiServerFi
         var response = await client.RequestTokenAsync(opts =>
         {
             opts.WithGrantType("client_credentials");
-            opts.WithAudience(DefaultValues.Audience);
+            opts.WithAudience(DefaultValues.ApiAudience);
             opts.WithScopes(DefaultValues.Scopes);
             opts.WithClientSecret("invalid-client-secret");
         });
@@ -61,7 +61,7 @@ public class TokenEndpointTests(ApiServerFixture fx) : IClassFixture<ApiServerFi
             opts.WithCode(grant.Code);
             opts.WithClientId(client.Id);
             opts.WithRedirectUri(DefaultValues.RedirectUri);
-            opts.WithAudience(DefaultValues.Audience);
+            opts.WithAudience(DefaultValues.ApiAudience);
             opts.WithScopes(DefaultValues.Scopes);
             opts.WithClientSecret(client.Secret);
         });
@@ -85,7 +85,7 @@ public class TokenEndpointTests(ApiServerFixture fx) : IClassFixture<ApiServerFi
             opts.WithCode(grant.Code);
             opts.WithClientId(client.Id);
             opts.WithRedirectUri("https://invalid-uri.com");
-            opts.WithAudience(DefaultValues.Audience);
+            opts.WithAudience(DefaultValues.ApiAudience);
             opts.WithScopes(DefaultValues.Scopes);
             opts.WithClientSecret(client.Secret);
         });
@@ -112,7 +112,7 @@ public class TokenEndpointTests(ApiServerFixture fx) : IClassFixture<ApiServerFi
             opts.WithCode(grant.Code);
             opts.WithClientId(client.Id);
             opts.WithRedirectUri(DefaultValues.RedirectUri);
-            opts.WithAudience(DefaultValues.Audience);
+            opts.WithAudience(DefaultValues.ApiAudience);
             opts.WithScopes(DefaultValues.Scopes);
             opts.WithCodeVerifier(verifier);
         });
@@ -139,7 +139,7 @@ public class TokenEndpointTests(ApiServerFixture fx) : IClassFixture<ApiServerFi
             opts.WithCode(grant.Code);
             opts.WithClientId(client.Id);
             opts.WithRedirectUri(DefaultValues.RedirectUri);
-            opts.WithAudience(DefaultValues.Audience);
+            opts.WithAudience(DefaultValues.ApiAudience);
             opts.WithScopes(DefaultValues.Scopes);
             opts.WithCodeVerifier("invalid-code-verifier");
         });
@@ -170,7 +170,7 @@ public class TokenEndpointTests(ApiServerFixture fx) : IClassFixture<ApiServerFi
             opts.WithCode(grant.Code);
             opts.WithClientId(client.Id);
             opts.WithRedirectUri(DefaultValues.RedirectUri);
-            opts.WithAudience(DefaultValues.Audience);
+            opts.WithAudience(DefaultValues.ApiAudience);
             opts.WithScopes(DefaultValues.Scopes);
             opts.WithCodeVerifier(verifier);
         });

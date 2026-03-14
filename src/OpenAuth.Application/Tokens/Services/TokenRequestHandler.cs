@@ -54,7 +54,7 @@ public class TokenRequestHandler : ITokenRequestHandler
     {
         var accessTokenContext = new AccessTokenContext(
             tokenContext.ClientId,
-            tokenContext.Audience,
+            tokenContext.Audience?.Value,
             tokenContext.Subject,
             (int)tokenData.TokenLifetime.TotalSeconds,
             tokenContext.Scope

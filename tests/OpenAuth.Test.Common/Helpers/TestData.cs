@@ -16,9 +16,6 @@ namespace OpenAuth.Test.Common.Helpers;
 
 public static class TestData
 {
-    public static Audience CreateValidAudience()
-        => new(AudienceName.Create(DefaultValues.Audience), ScopeCollection.Parse(DefaultValues.Scopes));
-
     public static Pkce CreateValidPkce(string? codeVerifier = null)
     {
         var verifier = codeVerifier ?? DefaultValues.CodeVerifier;
@@ -38,7 +35,7 @@ public static class TestData
     {
         return new AuthorizationValidationResult(
             ClientId.Create(DefaultValues.ClientId),
-            AudienceIdentifier.Create(DefaultValues.Audience),
+            AudienceIdentifier.Create(DefaultValues.ApiAudience),
             ScopeCollection.Parse(DefaultValues.Scopes),
             RedirectUri.Create(DefaultValues.RedirectUri),
             CreateValidPkce(),
@@ -90,7 +87,7 @@ public static class TestData
         return new TokenContext(
             ScopeCollection.Parse(DefaultValues.Scopes),
             DefaultValues.ClientId,
-            DefaultValues.Audience,
+            AudienceIdentifier.Create(DefaultValues.ApiAudience),
             DefaultValues.Subject,
             CreateValidOidcContext()
         );
@@ -100,7 +97,7 @@ public static class TestData
     {
         return new AccessTokenContext(
             DefaultValues.ClientId,
-            DefaultValues.Audience,
+            DefaultValues.ApiAudience,
             DefaultValues.Subject,
             3600,
             ScopeCollection.Parse(DefaultValues.Scopes)
@@ -140,7 +137,7 @@ public static class TestData
 
     public static JwtDescriptor CreateValidJwtDescriptor()
         => new JwtDescriptor(
-            DefaultValues.Audience,
+            DefaultValues.ApiAudience,
             DefaultValues.Subject,
             3600,
             new Dictionary<string, object> { { "scope", "openid" } });

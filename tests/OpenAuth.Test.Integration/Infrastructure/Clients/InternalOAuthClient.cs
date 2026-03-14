@@ -2,6 +2,7 @@ using OpenAuth.Application.Clients.Services;
 using OpenAuth.Application.Tokens.Dtos;
 using OpenAuth.Application.Tokens.Services;
 using OpenAuth.Domain.AuthorizationGrants;
+using OpenAuth.Domain.Clients.ValueObjects;
 using OpenAuth.Test.Common.Builders;
 using IAuthorizationHandler = OpenAuth.Application.OAuth.Authorization.Handlers.IAuthorizationHandler;
 
@@ -10,7 +11,7 @@ namespace OpenAuth.Test.Integration.Infrastructure.Clients;
 public class InternalOAuthClient
 {
     public string ApplicationType { get; }
-    public string Id { get; }
+    public ClientId Id { get; }
     public string? Secret { get; }
     public IReadOnlyCollection<string> RedirectUris { get; }
 
@@ -26,7 +27,7 @@ public class InternalOAuthClient
         _tokenRequestHandler = tokenRequestHandler;
         
         var client = registered.Client;
-        Id = client.Id.ToString();
+        Id = client.Id;
         ApplicationType = client.ApplicationType.Name;
         RedirectUris = client.RedirectUris
             .Select(uri => uri.ToString())

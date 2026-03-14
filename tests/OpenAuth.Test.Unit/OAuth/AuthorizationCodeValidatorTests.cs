@@ -27,6 +27,8 @@ public class AuthorizationCodeValidatorTests
             SecretQueryService = Substitute.For<ISecretQueryService>();
 
             WithSecret();
+
+            Command.WithCodeVerifier(DefaultValues.CodeVerifier);
             
             Sut = new AuthorizationCodeValidator(SecretQueryService);
         }
@@ -56,6 +58,10 @@ public class AuthorizationCodeValidatorTests
     public async Task ValidateAsync_WhenPkceIsMissing_ClientSecretIsUsed()
     {
         var context = new TestContext();
+        context.Command
+            .WithCodeVerifier(null)
+            .WithClientSecret(DefaultValues.ClientSecret);
+        
         context.AuthorizationGrant.WithPkce(null);
         
         var result = await context.ValidateAsync();
@@ -72,23 +78,25 @@ public class AuthorizationCodeValidatorTests
     }
 
     [Fact]
-    public async Task ValidateAsync_WhenScopeHasNotBeenGranted()
+    public async Task ValidateAsync_WhenScopeHasNotBeenGranted_Throws()
     {
         var context = new TestContext();
         
         context.AuthorizationGrant.WithScopes("read write");
         context.Command.WithScopes("read write invalid-scope");
         
-        await Assert.ThrowsAsync<InvalidGrantException>(() => context.ValidateAsync());
+        await Assert.ThrowsAsync<InvalidScopeException>(() => context.ValidateAsync());
     }
 
     [Fact]
-    public async Task ValidateAsync_WhenScopeIsMissing_Succeeds()
+    public async Task ValidateAsync_WhenScopeIsMissing_ReturnsAllGrantedScopes()
     {
         var context = new TestContext();
-        context.Command.WithScopes(null);
         
-        var grant = context.AuthorizationGrant.Build();
+        context.Command.WithScopes(null);
+        var grant = context.AuthorizationGrant
+            .WithScopes("read write")
+            .Build();
         
         var result = await context.ValidateAsync();
         Assert.Equal(grant.GrantedScopes, result.Scope);
@@ -100,6 +108,7 @@ public class AuthorizationCodeValidatorTests
         var context = new TestContext();
         
         const string expected = "openid profile";
+        context.Command.WithScopes(expected);
         context.AuthorizationGrant.WithScopes(expected);
 
         var result = await context.ValidateAsync();
@@ -140,7 +149,9 @@ public class AuthorizationCodeValidatorTests
     public async Task ValidateAsync_WithMissingCodeVerifier_ThrowsInvalidGrantException()
     {
         var context = new TestContext();
-        context.Command.WithCodeVerifier(null);
+        context.Command
+            .WithCodeVerifier(null)
+            .WithClientSecret("plain-client-secret");
         
         await Assert.ThrowsAsync<InvalidGrantException>(() => context.ValidateAsync());
     }

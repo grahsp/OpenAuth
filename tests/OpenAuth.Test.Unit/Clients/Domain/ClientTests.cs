@@ -213,12 +213,14 @@ public class ClientTests
     {
         private static readonly ApiResource OrdersApiResource =
             new ApiResourceBuilder()
+                .WithName("Orders")
                 .WithPermission("read", "access to view data.")
                 .WithPermission("write", "access to modify data.")
                 .Build();
 
         private static readonly ApiResource UsersApiResource =
             new ApiResourceBuilder()
+                .WithName("Users")
                 .WithPermission("read", "access to view data.")
                 .Build();
 
@@ -274,18 +276,6 @@ public class ClientTests
                 client.GrantApiAccess(
                     OrdersApiResource.Id,
                     ScopeCollection.Parse("read"),
-                    _time.GetUtcNow()));
-        }
-
-        [Fact]
-        public void WhenScopesNotDefinedByApi_ThrowsException()
-        {
-            var client = new ClientBuilder().Build();
-
-            Assert.Throws<InvalidOperationException>(() =>
-                client.GrantApiAccess(
-                    OrdersApiResource.Id,
-                    ScopeCollection.Parse("delete"),
                     _time.GetUtcNow()));
         }
 

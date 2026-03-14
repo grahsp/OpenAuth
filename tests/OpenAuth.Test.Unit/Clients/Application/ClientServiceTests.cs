@@ -4,6 +4,7 @@ using OpenAuth.Application.Audiences.Interfaces;
 using OpenAuth.Application.Clients.Dtos;
 using OpenAuth.Application.Clients.Factories;
 using OpenAuth.Application.Clients.Services;
+using OpenAuth.Domain.Apis;
 using OpenAuth.Domain.Apis.ValueObjects;
 using OpenAuth.Domain.Clients.ApplicationType;
 using OpenAuth.Domain.Clients.ValueObjects;
@@ -384,7 +385,8 @@ public class ClientServiceTests
 
             var scope = ScopeCollection.Parse("read");
             
-            await _sut.GrantApiAccessAsync(client.Id, api.Id, scope);
+            await Assert.ThrowsAsync<InvalidOperationException>(() =>
+                _sut.GrantApiAccessAsync(client.Id, api.Id, scope));
         }
 
         [Fact]
@@ -408,6 +410,9 @@ public class ClientServiceTests
         {
             var result = await RegisterSpaClientAsync();
             var client = result.Client;
+
+            _apiRepository.GetByIdAsync(Arg.Any<ApiResourceId>(), Arg.Any<CancellationToken>())
+                .Returns((ApiResource?)null);
 
             var scope = ScopeCollection.Parse("read");
             

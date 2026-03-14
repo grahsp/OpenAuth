@@ -56,7 +56,7 @@ public class JwtSignerTests
         configure?.Invoke(claims);
 
         return new JwtDescriptor(
-            DefaultValues.Audience,
+            DefaultValues.ApiAudience,
             DefaultValues.Subject,
             600,
             claims

@@ -104,7 +104,7 @@ public class TokenRequestHandlerTests
         
         Assert.NotNull(forwardedContext);
         Assert.Equal(DefaultValues.ClientId, forwardedContext.ClientId);
-        Assert.Equal(DefaultValues.Audience, forwardedContext.Audience);
+        Assert.Equal(DefaultValues.ApiAudience, forwardedContext.Audience);
         Assert.Equal(DefaultValues.Subject, forwardedContext.Subject);
     }
 

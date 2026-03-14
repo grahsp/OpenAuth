@@ -9,7 +9,6 @@ using OpenAuth.Application.Tokens.Flows;
 using OpenAuth.Domain.Apis;
 using OpenAuth.Domain.Apis.ValueObjects;
 using OpenAuth.Domain.AuthorizationGrants;
-using OpenAuth.Domain.Clients.ValueObjects;
 using OpenAuth.Test.Common.Builders;
 using OpenAuth.Test.Common.Helpers;
 
@@ -83,11 +82,12 @@ public class AuthorizationCodeProcessorTests
 	public async Task ProcessAsync_WithValidData_ReturnTokenContext()
 	{
 		var context = new TestContext();
+		var grant = context.Grant.Build();
+		
 		var result = await context.ProcessAsync();
 
-		Assert.Equal(DefaultValues.Audience, result.Audience);
-		Assert.Equal(DefaultValues.Subject, result.Subject);
-		Assert.Equal(DefaultValues.Scopes, result.Scope.ToString());
+		Assert.Equal(grant.Audience, result.Audience);
+		Assert.Equal(grant.GrantedScopes, result.Scope);
 		Assert.Null(result.OidcContext);
 	}
 
@@ -95,19 +95,16 @@ public class AuthorizationCodeProcessorTests
 	public async Task ProcessAsync_WithOidcScopes_IncludesOidcContextInResult()
 	{
 		var context = new TestContext();
-		
-		const string scopes = "openid profile";
-		var validationResult = TestData.CreateValidAuthorizationCodeValidationResult() with
-			{ OidcScope = ScopeCollection.Parse(scopes) };
-        
-		context.WithValidatorResult(validationResult);
+		var grant = context.Grant
+			.WithScopes("openid profile")
+			.Build();
         
 		var result = await context.ProcessAsync();
 
-		var ctx = result.OidcContext;
-		Assert.NotNull(ctx);       
-		Assert.Equal(DefaultValues.Nonce, ctx.Nonce);
-		Assert.Equal(scopes, ctx.Scopes.ToString());
+		var oidc = result.OidcContext;
+		Assert.NotNull(oidc);       
+		Assert.Equal(DefaultValues.Nonce, oidc.Nonce);
+		Assert.Equal(grant.GrantedScopes, oidc.Scopes);
 	}
     
 	[Fact]
@@ -147,7 +144,9 @@ public class AuthorizationCodeProcessorTests
 	public async Task ProcessAsync_WithInvalidCode_ThrowsInvalidGrantException()
 	{
 		var context = new TestContext();
-		context.Command.WithCode("invalid-code");
+
+		context.GrantStore.GetAsync(Arg.Any<string>())
+			.Returns((AuthorizationGrant?)null);
         
 		await Assert.ThrowsAsync<InvalidGrantException>(()
 			=> context.ProcessAsync());

@@ -43,7 +43,7 @@ public class AuthorizationCodeProcessor : TokenRequestProcessor<AuthorizationCod
         return new TokenContext(
             authorizationGrant.GrantedScopes.GetApiScopes(),
             authorizationGrant.ClientId.ToString(),
-            authorizationGrant.Audience.Value,
+            authorizationGrant.Audience,
             authorizationGrant.Subject,
             oidcContext
         );

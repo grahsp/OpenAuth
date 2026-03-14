@@ -14,7 +14,7 @@ public class OAuthClientBuilder
     private readonly List<string> _redirectUris = [DefaultValues.RedirectUri];
     private readonly Dictionary<string, string> _permissions = new()
     {
-        { DefaultValues.Audience, DefaultValues.Scopes }
+        { DefaultValues.ApiAudience, DefaultValues.Scopes }
     };
     
     private readonly IServiceProvider _services;

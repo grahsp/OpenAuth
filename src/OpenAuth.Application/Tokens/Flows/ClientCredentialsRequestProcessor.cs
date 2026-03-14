@@ -40,7 +40,7 @@ public class ClientCredentialsRequestProcessor : TokenRequestProcessor<ClientCre
 		return new TokenContext(
 			command.RequestedScopes,
 			command.ClientId.ToString(),
-			command.Audience.Value
+			command.Audience
 		);
 	}
 }

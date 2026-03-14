@@ -46,7 +46,7 @@ public class AuthorizationCodeValidator : IAuthorizationCodeValidator
         if (requested is null)
             return granted;
         
-        if (!requested.IsSubsetOf(granted))
+        if (!requested.GetApiScopes().IsSubsetOf(granted))
             throw new InvalidScopeException("Request contained an invalid scope.");
 
         return requested;

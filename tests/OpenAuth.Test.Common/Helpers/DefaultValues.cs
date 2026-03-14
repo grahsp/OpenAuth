@@ -4,6 +4,9 @@ namespace OpenAuth.Test.Common.Helpers;
 
 public static class DefaultValues
 {
+    public const string ApiName = "test-api";
+    public const string ApiAudience = "api";
+    
     public const string ApplicationType = "web";
 
     public const string ClientName = "test-client";
@@ -17,7 +20,6 @@ public static class DefaultValues
     public const string Subject = "test-subject";
     
     public const string RedirectUri = "https://example.com/callback";
-    public const string Audience = "api";
     public const string Scopes = "read write";
 
     public const string CodeVerifier = "code-verifier";

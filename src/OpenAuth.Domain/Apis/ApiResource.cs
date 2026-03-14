@@ -26,8 +26,8 @@ public class ApiResource
     {
         var permissionSet = permissions.ToHashSet();
         
-        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(0, permissionSet.Count);
-        ArgumentOutOfRangeException.ThrowIfGreaterThan(50, permissionSet.Count);
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(permissionSet.Count, 0);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(permissionSet.Count, 50);
         
         return new ApiResource(name, audience, permissionSet);
     }

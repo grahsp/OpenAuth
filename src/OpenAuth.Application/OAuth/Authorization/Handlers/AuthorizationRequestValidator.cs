@@ -20,7 +20,7 @@ public class AuthorizationRequestValidator : IAuthorizationRequestValidator
         _clientQueryService = clientQueryService;
     }
     
-    public async Task<AuthorizationValidationResult> ValidateAsync(AuthorizeCommand command, CancellationToken ct)
+    public async Task<AuthorizationValidationResult> ValidateAsync(AuthorizeCommand command, CancellationToken ct = default)
     {
         var authData =  await _clientQueryService.GetAuthorizationDataAsync(command.ClientId, ct)
                         ?? throw new InvalidClientException("Unknown client.");
@@ -28,11 +28,11 @@ public class AuthorizationRequestValidator : IAuthorizationRequestValidator
         ValidateResponseType(command.ResponseType);
         var redirectUri = ValidateRedirectUri(command.RedirectUri, authData);
 
-        var apiScopes = await ValidateAudienceAsync(command.Audience);
-        ValidateScopes(command.Scopes, apiScopes);
+        var allowedScopes = await ValidateAudienceAsync(command.Audience);
+        ValidateScope(command.Scopes, allowedScopes);
+        ValidateOidc(command.Scopes, command.Nonce);
         
         ValidatePkce(command.Pkce, authData);
-        ValidateOidc(command, authData);
 
         return new AuthorizationValidationResult(
             command.ClientId,
@@ -50,11 +50,8 @@ public class AuthorizationRequestValidator : IAuthorizationRequestValidator
             throw new UnsupportedResponseTypeException($"'{responseType}' is not a supported response type.");
     }
 
-    private static RedirectUri ValidateRedirectUri(RedirectUri? requested, ClientAuthorizationData authData)
+    private static RedirectUri ValidateRedirectUri(RedirectUri requested, ClientAuthorizationData authData)
     {
-        if (requested is null && authData.RedirectUris.Length == 1)
-            return authData.RedirectUris.First();
-        
         if (requested is null)
             throw new InvalidRedirectUriException("Missing redirect uri.");
         
@@ -76,12 +73,13 @@ public class AuthorizationRequestValidator : IAuthorizationRequestValidator
         return new ScopeCollection(scopes);
     }
 
-    private static void ValidateScopes(ScopeCollection requested, ScopeCollection allowed)
+    private static void ValidateScope(ScopeCollection requested, ScopeCollection allowed)
     {
         if (requested.Count == 0)
             throw new InvalidScopeException("At least one scope is required.");
         
-        if (!requested.IsSubsetOf(allowed))
+        var scope = requested.GetApiScopes();
+        if (!scope.IsSubsetOf(allowed))
             throw new InvalidScopeException("Request contained an invalid scope.");
     }
 
@@ -91,12 +89,12 @@ public class AuthorizationRequestValidator : IAuthorizationRequestValidator
             throw new InvalidRequestException("PKCE is required for public client.");
     }
 
-    private static void ValidateOidc(AuthorizeCommand command, ClientAuthorizationData authData)
+    private static void ValidateOidc(ScopeCollection scopes, string? nonce)
     {
-        if (command.Scopes.ContainsOidcScopes() && !command.Scopes.ContainsOpenIdScope())
+        if (scopes.ContainsOidcScopes() && !scopes.ContainsOpenIdScope())
             throw new InvalidRequestException("'openid' scope must be included for OIDC scopes.");
         
-        if (command.ResponseType != "code" && command.Scopes.ContainsOpenIdScope() && string.IsNullOrWhiteSpace(command.Nonce))
+        if (scopes.ContainsOpenIdScope() && string.IsNullOrWhiteSpace(nonce))
             throw new InvalidRequestException("Nonce is required for OIDC scopes.");
     }
 }
