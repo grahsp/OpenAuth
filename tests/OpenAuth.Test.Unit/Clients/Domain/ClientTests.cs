@@ -234,7 +234,7 @@ public class ClientTests
             var updatedAt = _time.GetUtcNow();
 
             client.GrantApiAccess(
-                OrdersApiResource,
+                OrdersApiResource.Id,
                 ScopeCollection.Parse("read write"),
                 updatedAt);
 
@@ -248,12 +248,12 @@ public class ClientTests
             var client = new ClientBuilder().Build();
 
             client.GrantApiAccess(
-                OrdersApiResource,
+                OrdersApiResource.Id,
                 ScopeCollection.Parse("read"),
                 _time.GetUtcNow());
 
             client.GrantApiAccess(
-                UsersApiResource,
+                UsersApiResource.Id,
                 ScopeCollection.Parse("read"),
                 _time.GetUtcNow());
 
@@ -266,13 +266,13 @@ public class ClientTests
             var client = new ClientBuilder().Build();
 
             client.GrantApiAccess(
-                OrdersApiResource,
+                OrdersApiResource.Id,
                 ScopeCollection.Parse("read"),
                 _time.GetUtcNow());
 
             Assert.Throws<InvalidOperationException>(() =>
                 client.GrantApiAccess(
-                    OrdersApiResource,
+                    OrdersApiResource.Id,
                     ScopeCollection.Parse("read"),
                     _time.GetUtcNow()));
         }
@@ -284,7 +284,7 @@ public class ClientTests
 
             Assert.Throws<InvalidOperationException>(() =>
                 client.GrantApiAccess(
-                    OrdersApiResource,
+                    OrdersApiResource.Id,
                     ScopeCollection.Parse("delete"),
                     _time.GetUtcNow()));
         }
