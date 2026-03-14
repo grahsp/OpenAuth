@@ -11,6 +11,7 @@ namespace OpenAuth.Application.Clients.Services;
 
 public sealed record RegisteredClientResponse(Client Client, string? ClientSecret);
 
+// TODO: Break down into separate handlers
 public class ClientService : IClientService
 {
     private readonly IClientRepository _repository;

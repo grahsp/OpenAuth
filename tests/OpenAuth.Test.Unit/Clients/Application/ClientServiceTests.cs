@@ -1,8 +1,10 @@
 using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
+using OpenAuth.Application.Audiences.Interfaces;
 using OpenAuth.Application.Clients.Dtos;
 using OpenAuth.Application.Clients.Factories;
 using OpenAuth.Application.Clients.Services;
+using OpenAuth.Domain.Apis.ValueObjects;
 using OpenAuth.Domain.Clients.ApplicationType;
 using OpenAuth.Domain.Clients.ValueObjects;
 using OpenAuth.Test.Common.Builders;
@@ -10,10 +12,13 @@ using OpenAuth.Test.Common.Fakes;
 
 namespace OpenAuth.Test.Unit.Clients.Application;
 
+// TODO: Add a TestContext
+// TODO: Break tests down into smaller sections
 public class ClientServiceTests
 {
     private FakeClientRepository _repo;
     private IClientFactory _clientFactory;
+    private IApiResourceRepository _apiRepository;
     
     private IClientService _sut;
 
@@ -23,8 +28,9 @@ public class ClientServiceTests
         
         _repo = new FakeClientRepository();
         _clientFactory = Substitute.For<IClientFactory>();
+        _apiRepository = Substitute.For<IApiResourceRepository>();
         
-        _sut = new ClientService(_repo, _clientFactory, time);
+        _sut = new ClientService(_repo, _apiRepository, _clientFactory, time);
     }
 
     private void SetupDefaultClientConfiguration()
@@ -52,6 +58,9 @@ public class ClientServiceTests
 
                 return client.Build();
             });
+        
+        _apiRepository.GetByIdAsync(Arg.Any<ApiResourceId>(), Arg.Any<CancellationToken>())
+            .Returns(x => new ApiResourceBuilder().Build());
     }
 
     private static CreateClientRequest CreateM2MRequest()
@@ -336,85 +345,132 @@ public class ClientServiceTests
         }
     }
 
-    public class AudienceMethods : ClientServiceTests
+    public class ApiMethods : ClientServiceTests
     {
-        private static readonly Audience ApiAudience = new(AudienceName.Create("api"), ScopeCollection.Parse("read write"));
-        private static readonly Audience WebAudience = new(AudienceName.Create("web"), ScopeCollection.Parse("read"));
-        
-        
         [Fact]
-        public async Task SetAudiencesAsync_WhenValidAudiences_ReplaceExistingAudiences()
+        public async Task GrantApiAccessAsync_Succeeds()
         {
             var result = await RegisterSpaClientAsync();
             var client = result.Client;
             
-            var audiences = new[] { ApiAudience, WebAudience };
+            var api = new ApiResourceBuilder()
+                .WithPermission("read", "read stuff")
+                .Build();
             
-            await _sut.SetAudiencesAsync(client.Id, audiences);
-
-            Assert.Equal(2, client.AllowedAudiences.Count);
-            Assert.Contains(client.AllowedAudiences, a => a == ApiAudience);
-            Assert.Contains(client.AllowedAudiences, a => a == WebAudience);
+            _apiRepository.GetByIdAsync(Arg.Any<ApiResourceId>(), Arg.Any<CancellationToken>())
+                .Returns(api);
             
-            Assert.True(_repo.Saved);
-        }
-        
-        [Fact]
-        public async Task SetAudiencesAsync_WhenClientNotFound_ThrowsException()
-        {
-            await Assert.ThrowsAnyAsync<InvalidOperationException>(()
-                => _sut.SetAudiencesAsync(ClientId.New(), []));
+            var scope = ScopeCollection.Parse("read");
+            
+            await _sut.GrantApiAccessAsync(client.Id, api.Id, scope);
+            
+            var access = Assert.Single(client.Apis);
+            Assert.Equal(api.Id, access.ApiResourceId);
+            Assert.Equal(scope, access.AllowedScopes);
         }
 
         [Fact]
-        public async Task AddAudienceAsync_WhenValid_AppendsWithoutAffectingExistingAudiences()
+        public async Task GrantApiAccessAsync_WhenScopeInvalid_Throws()
         {
             var result = await RegisterSpaClientAsync();
             var client = result.Client;
             
-            await _sut.AddAudienceAsync(client.Id, ApiAudience);
+            var api = new ApiResourceBuilder()
+                .WithPermission("write", "write stuff")
+                .Build();
             
-            Assert.Contains(client.AllowedAudiences, a => a == ApiAudience);
-            Assert.True(_repo.Saved);
+            _apiRepository.GetByIdAsync(Arg.Any<ApiResourceId>(), Arg.Any<CancellationToken>())
+                .Returns(api);
+
+            var scope = ScopeCollection.Parse("read");
+            
+            await _sut.GrantApiAccessAsync(client.Id, api.Id, scope);
         }
 
         [Fact]
-        public async Task AddAudienceAsync_WhenClientNotFound_ThrowsException()
+        public async Task GrantApiAccessAsync_WhenClientNotFound_Throws()
         {
-            await Assert.ThrowsAnyAsync<InvalidOperationException>(()
-                => _sut.AddAudienceAsync(ClientId.New(), ApiAudience));
+            var api = new ApiResourceBuilder()
+                .WithPermission("write", "write stuff")
+                .Build();
+            
+            _apiRepository.GetByIdAsync(Arg.Any<ApiResourceId>(), Arg.Any<CancellationToken>())
+                .Returns(api);
+
+            var scope = ScopeCollection.Parse("read");
+            
+            await Assert.ThrowsAsync<InvalidOperationException>(() =>
+                _sut.GrantApiAccessAsync(ClientId.New(), api.Id, scope));
         }
-        
+
         [Fact]
-        public async Task RemoveAudienceAsync_WhenAudienceNotFound_DoesNothing()
+        public async Task GrantApiAccessAsync_WhenApiNotFound_Throws()
         {
             var result = await RegisterSpaClientAsync();
             var client = result.Client;
 
-            var expected = client.AllowedAudiences.ToArray();
-            await _sut.RevokeApiAccessAsync(client.Id, AudienceName.Create("non-existent"));
+            var scope = ScopeCollection.Parse("read");
             
-            Assert.Equal(expected, client.AllowedAudiences);
+            await Assert.ThrowsAsync<InvalidOperationException>(() =>
+                _sut.GrantApiAccessAsync(client.Id, ApiResourceId.New(), scope));           
         }
 
+
         [Fact]
-        public async Task RemoveAudienceAsync_WhenAudienceExists_RemoveAudience()
+        public async Task RevokeApiAccessAsync_WhenClientHasAccess_RevokesIt()
         {
             var result = await RegisterSpaClientAsync();
             var client = result.Client;
             
-            await _sut.AddAudienceAsync(client.Id, ApiAudience);
-            await _sut.RevokeApiAccessAsync(client.Id, ApiAudience.Name);
+            var api = new ApiResourceBuilder()
+                .WithPermission("read", "read stuff")
+                .Build();
             
-            Assert.DoesNotContain(client.AllowedAudiences, a => a == ApiAudience);
-            Assert.True(_repo.Saved);
+            _apiRepository.GetByIdAsync(Arg.Any<ApiResourceId>(), Arg.Any<CancellationToken>())
+                .Returns(api);
+            
+            var scope = ScopeCollection.Parse("read");
+            
+            await _sut.GrantApiAccessAsync(client.Id, api.Id, scope);
+            Assert.Single(client.Apis);
+            
+            await _sut.RevokeApiAccessAsync(client.Id, api.Id);
+            Assert.Empty(client.Apis);
         }
-        
+
         [Fact]
-        public async Task RemoveAudiencesAsync_WhenClientNotFound_ThrowsException()
+        public async Task RevokeApiAccessAsync_WhenClientHasNoAccess_DoesNothing()
         {
-            await Assert.ThrowsAnyAsync<InvalidOperationException>(()
-                => _sut.RevokeApiAccessAsync(ClientId.New(), ApiAudience.Name));
+            var result = await RegisterSpaClientAsync();
+            var client = result.Client;
+            
+            var api = new ApiResourceBuilder()
+                .WithPermission("read", "read stuff")
+                .Build();
+            
+            _apiRepository.GetByIdAsync(Arg.Any<ApiResourceId>(), Arg.Any<CancellationToken>())
+                .Returns(api);
+            
+            var scope = ScopeCollection.Parse("read");
+            
+            await _sut.GrantApiAccessAsync(client.Id, api.Id, scope);
+            var initial = Assert.Single(client.Apis);
+            
+            await _sut.RevokeApiAccessAsync(client.Id, ApiResourceId.New());
+            var post = Assert.Single(client.Apis);
+            Assert.Equal(initial, post);
+        }
+
+        [Fact]
+        public async Task RevokeApiAccessAsync_WhenClientNotFound_Throws()
+        {
+            var api = new ApiResourceBuilder().Build();
+            
+            _apiRepository.GetByIdAsync(Arg.Any<ApiResourceId>(), Arg.Any<CancellationToken>())
+                .Returns(api);
+            
+            await Assert.ThrowsAsync<InvalidOperationException>(() =>
+                _sut.RevokeApiAccessAsync(ClientId.New(), api.Id));
         }
     }
     
