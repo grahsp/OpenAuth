@@ -11,12 +11,13 @@ using OpenAuth.Domain.SigningKeys.Enums;
 using OpenAuth.Domain.Users;
 using OpenAuth.Infrastructure.Persistence;
 using OpenAuth.Test.Common.Helpers;
+using OpenAuth.Test.Common.Infrastructure;
 using OpenAuth.Test.Integration.Infrastructure.Clients;
 using OpenAuth.Test.Integration.Infrastructure.Fakes;
 
 namespace OpenAuth.Test.Integration.Infrastructure.Fixtures;
 
-public class ApiServerFixture(SqlServerFixture sql) : WebApplicationFactory<Program>, IAsyncLifetime
+public class ApiServerFixture(SqlServer sql) : WebApplicationFactory<Program>, IAsyncLifetime
 {
     private HttpClient _client = null!;
 

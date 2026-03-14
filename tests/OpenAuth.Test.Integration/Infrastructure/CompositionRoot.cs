@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using OpenAuth.Application.Audiences.Interfaces;
 using OpenAuth.Application.Clients.Factories;
 using OpenAuth.Application.Clients.Interfaces;
 using OpenAuth.Application.Clients.Services;
@@ -24,6 +25,7 @@ using OpenAuth.Application.Tokens.Services;
 using OpenAuth.Domain.AuthorizationGrants;
 using OpenAuth.Domain.Services;
 using OpenAuth.Domain.Users;
+using OpenAuth.Infrastructure.ApiResources;
 using OpenAuth.Infrastructure.Clients.Persistence;
 using OpenAuth.Infrastructure.Clients.Secrets;
 using OpenAuth.Infrastructure.Clients.Secrets.Persistence;
@@ -81,6 +83,9 @@ public class CompositionRoot
         builder.AddScoped<IClientService, ClientService>();
         builder.AddScoped<IClientQueryService, ClientQueryService>();
         builder.AddScoped<IClientFactory, ClientFactory>();
+        
+        // Api Services
+        builder.AddScoped<IApiResourceRepository, ApiResourceRepository>();
         
         // Secret Services
         builder.AddScoped<ISecretService, SecretService>();

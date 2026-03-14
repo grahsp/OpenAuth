@@ -4,17 +4,18 @@ using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using OpenAuth.Infrastructure.Persistence;
 using Respawn;
+using Xunit;
 
-namespace OpenAuth.Test.Integration.Infrastructure.Fixtures;
+namespace OpenAuth.Test.Common.Infrastructure;
 
-public class SqlServerFixture : IAsyncLifetime
+public class SqlServer : IAsyncLifetime
 {
     private IContainer _container = null!;
     private int _port;
     private Respawner _respawner = null!;
 
     public string ConnectionString =>
-        $"Server=127.0.0.1,{_port};Database=IntegrationTest;User Id=sa;Password=Passw0rd!123;TrustServerCertificate=True;Encrypt=False;";
+        $"Server=127.0.0.1,{_port};Database=IntegrationTests;User Id=sa;Password=Passw0rd!123;TrustServerCertificate=True;Encrypt=False;";
 
     public async Task InitializeAsync()
     {
@@ -30,7 +31,7 @@ public class SqlServerFixture : IAsyncLifetime
         _port = _container.GetMappedPublicPort(1433);
 
         await using var ctx = CreateContext();
-        await ctx.Database.EnsureCreatedAsync();
+        await ctx.Database.MigrateAsync();
 
         await using var connection = new SqlConnection(ConnectionString);
         await connection.OpenAsync();

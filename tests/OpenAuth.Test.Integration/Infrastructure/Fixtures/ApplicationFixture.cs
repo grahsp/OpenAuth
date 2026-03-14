@@ -3,16 +3,17 @@ using OpenAuth.Application.OAuth.Authorization.Handlers;
 using OpenAuth.Application.SigningKeys.Services;
 using OpenAuth.Application.Tokens.Services;
 using OpenAuth.Domain.SigningKeys.Enums;
+using OpenAuth.Test.Common.Infrastructure;
 using OpenAuth.Test.Integration.Infrastructure.Clients;
 
 namespace OpenAuth.Test.Integration.Infrastructure.Fixtures;
 
 public class ApplicationFixture : IAsyncLifetime, IDisposable
 {
-    private readonly SqlServerFixture _sql;
+    private readonly SqlServer _sql;
     private ServiceProvider _services;
     
-    public ApplicationFixture(SqlServerFixture sql)
+    public ApplicationFixture(SqlServer sql)
     {
         _sql = sql;
         _services = CompositionRoot.BuildService(_sql.ConnectionString);
