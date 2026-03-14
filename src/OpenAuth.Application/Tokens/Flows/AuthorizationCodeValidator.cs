@@ -5,6 +5,7 @@ using OpenAuth.Application.Secrets.Interfaces;
 using OpenAuth.Application.Tokens.Dtos;
 using OpenAuth.Domain.Apis;
 using OpenAuth.Domain.AuthorizationGrants;
+using OpenAuth.Domain.Clients.ValueObjects;
 
 namespace OpenAuth.Application.Tokens.Flows;
 
@@ -28,17 +29,27 @@ public class AuthorizationCodeValidator : IAuthorizationCodeValidator
         ValidateAuthorizationGrantBinding(command, authorizationGrant);
         await ValidateClientAuthenticationAsync(command, authorizationGrant, ct);
         
-        var apiScopes = authorizationGrant.GrantedScopes.GetApiScopes();
-        var oidcScopes = authorizationGrant.GrantedScopes.GetOidcScopes();
-
-        if (!apiScopes.All(s =>  api.Permissions.Select(p => p.Scope).Contains(s)))
-            throw new InvalidOperationException("");
+        ValidateAudience(authorizationGrant, api);
+        var scope = ValidateScopes(command.RequestedScopes, authorizationGrant.GrantedScopes);
         
-        // var audience = tokenData.Api.Audience
-        //     ? tokenData.AllowedAudiences.FirstOrDefault(a => apiScopes.IsSubsetOf(a.Scopes))
-        //     : null;
+        return new AuthorizationCodeValidationResult(scope.GetApiScopes(), scope.GetOidcScopes());
+    }
+    
+    private static void ValidateAudience(AuthorizationGrant grant, ApiResource api)
+    {
+        if (grant.Audience != api.Audience)
+            throw new InvalidGrantException("Audience mismatch.");
+    }
+    
+    private static ScopeCollection ValidateScopes(ScopeCollection? requested, ScopeCollection granted)
+    {
+        if (requested is null)
+            return granted;
+        
+        if (!requested.IsSubsetOf(granted))
+            throw new InvalidScopeException("Request contained an invalid scope.");
 
-        return new AuthorizationCodeValidationResult(authorizationGrant.GrantedScopes, oidcScopes);
+        return requested;
     }
 
     private static void ValidateUnusedAuthorizationGrant(AuthorizationGrant authorizationGrant)

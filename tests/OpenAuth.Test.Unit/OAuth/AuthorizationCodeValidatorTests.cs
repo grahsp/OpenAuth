@@ -2,9 +2,7 @@ using NSubstitute;
 using OpenAuth.Application.Clients.Dtos;
 using OpenAuth.Application.Exceptions;
 using OpenAuth.Application.Secrets.Interfaces;
-using OpenAuth.Application.Tokens.Dtos;
 using OpenAuth.Application.Tokens.Flows;
-using OpenAuth.Domain.Apis;
 using OpenAuth.Domain.AuthorizationGrants;
 using OpenAuth.Domain.Clients.ValueObjects;
 using OpenAuth.Test.Common.Builders;
@@ -33,24 +31,14 @@ public class AuthorizationCodeValidatorTests
             Sut = new AuthorizationCodeValidator(SecretQueryService);
         }
         
-        public async Task<AuthorizationCodeValidationResult> ValidateAsync(
-            AuthorizationCodeTokenCommand? command = null,
-            ClientTokenData? tokenData = null,
-            AuthorizationGrant? grant = null,
-            ApiResource? api = null)
-        {
-            return await Sut.ValidateAsync(
-                command ?? Command.Build(),
-                tokenData ?? TokenData,
-                grant ?? AuthorizationGrant.Build(),
-                api ?? Api.Build());
-        }
+        public async Task<AuthorizationCodeValidationResult> ValidateAsync(AuthorizationGrant? grant = null) =>
+            await Sut.ValidateAsync(Command.Build(), TokenData, grant ?? AuthorizationGrant.Build(), Api.Build());
 
-        public void WithSecret()
+        public void WithSecret(bool exists = true)
         {
             SecretQueryService
                 .ValidateSecretAsync(Arg.Any<ClientId>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
-                .Returns(true);
+                .Returns(exists);
         }
     }
     
@@ -58,11 +46,9 @@ public class AuthorizationCodeValidatorTests
     public async Task ValidateAsync_WhenPkceIsPresent_ClientSecretIsIgnored()
     {
         var context = new TestContext();
-        var command = context.Command
-            .WithClientSecret("invalid-client-secret")
-            .Build();
+        context.Command.WithClientSecret("invalid-client-secret");
         
-        var result = await context.ValidateAsync(command: command);
+        var result = await context.ValidateAsync();
         Assert.Equal(DefaultValues.Scopes, result.Scope.ToString());
     }
     
@@ -70,25 +56,53 @@ public class AuthorizationCodeValidatorTests
     public async Task ValidateAsync_WhenPkceIsMissing_ClientSecretIsUsed()
     {
         var context = new TestContext();
-        var grant = context.AuthorizationGrant
-            .WithPkce(null)
-            .Build();
+        context.AuthorizationGrant.WithPkce(null);
         
-        var result = await context.ValidateAsync(grant: grant);
+        var result = await context.ValidateAsync();
         Assert.Equal(DefaultValues.Scopes, result.Scope.ToString());
+    }
+
+    [Fact]
+    public async Task ValidateAsync_WhenAudienceMismatch()
+    {
+        var context = new TestContext();
+        context.AuthorizationGrant.WithAudience("invalid-audience");
+        
+        await Assert.ThrowsAsync<InvalidGrantException>(() => context.ValidateAsync());
+    }
+
+    [Fact]
+    public async Task ValidateAsync_WhenScopeHasNotBeenGranted()
+    {
+        var context = new TestContext();
+        
+        context.AuthorizationGrant.WithScopes("read write");
+        context.Command.WithScopes("read write invalid-scope");
+        
+        await Assert.ThrowsAsync<InvalidGrantException>(() => context.ValidateAsync());
+    }
+
+    [Fact]
+    public async Task ValidateAsync_WhenScopeIsMissing_Succeeds()
+    {
+        var context = new TestContext();
+        context.Command.WithScopes(null);
+        
+        var grant = context.AuthorizationGrant.Build();
+        
+        var result = await context.ValidateAsync();
+        Assert.Equal(grant.GrantedScopes, result.Scope);
     }
     
     [Fact]
     public async Task ValidateAsync_WhenOpenIdScopes_ReturnValidationResult()
     {
-        const string expected = "openid profile";
-        
         var context = new TestContext();
-        var grant = context.AuthorizationGrant
-            .WithScopes(expected)
-            .Build();
+        
+        const string expected = "openid profile";
+        context.AuthorizationGrant.WithScopes(expected);
 
-        var result = await context.ValidateAsync(grant: grant);
+        var result = await context.ValidateAsync();
         Assert.Contains(expected, result.OidcScope.ToString());
     }
 
@@ -101,56 +115,43 @@ public class AuthorizationCodeValidatorTests
         grant.Consume();
         
         await Assert.ThrowsAsync<InvalidGrantException>(()
-            => context.ValidateAsync());
+            => context.ValidateAsync(grant: grant));
     }
     
     [Fact]
     public async Task ValidateAsync_WithIncorrectClientId_ThrowsInvalidGrantException()
     {
         var context = new TestContext();
-        var command = context.Command
-            .WithClientId(ClientId.New())
-            .Build();
-
+        context.Command.WithClientId(ClientId.New());
         
-        await Assert.ThrowsAsync<InvalidGrantException>(()
-            => context.ValidateAsync(command: command));
+        await Assert.ThrowsAsync<InvalidGrantException>(() => context.ValidateAsync());
     }
 
     [Fact]
     public async Task ValidateAsync_WithIncorrectRedirectUri_ThrowsInvalidGrantException()
     {
         var context = new TestContext();
-        var command = context.Command
-            .WithRedirectUri("https://invalid-uri.com")
-            .Build();
+        context.Command.WithRedirectUri("https://invalid-uri.com");
         
-        await Assert.ThrowsAsync<InvalidGrantException>(()
-            => context.ValidateAsync(command: command));       
+        await Assert.ThrowsAsync<InvalidGrantException>(() => context.ValidateAsync());
     }
     
     [Fact]
     public async Task ValidateAsync_WithMissingCodeVerifier_ThrowsInvalidGrantException()
     {
         var context = new TestContext();
-        var command = context.Command
-            .WithCodeVerifier(null)
-            .Build();
+        context.Command.WithCodeVerifier(null);
         
-        await Assert.ThrowsAsync<InvalidGrantException>(()
-            => context.ValidateAsync(command: command));
+        await Assert.ThrowsAsync<InvalidGrantException>(() => context.ValidateAsync());
     }
     
     [Fact]
     public async Task ValidateAsync_WithIncorrectCodeVerifier_ThrowsInvalidGrantException()
     {
         var context = new TestContext();
-        var command = context.Command
-            .WithCodeVerifier("invalid-code-verifier")
-            .Build();
+        context.Command.WithCodeVerifier("invalid-code-verifier");
         
-        await Assert.ThrowsAsync<InvalidGrantException>(()
-            => context.ValidateAsync(command: command));
+        await Assert.ThrowsAsync<InvalidGrantException>(() => context.ValidateAsync());
     }
 
     [Fact]
@@ -158,16 +159,11 @@ public class AuthorizationCodeValidatorTests
     {
         // Set PKCE to null to force client secret for validation
         var context = new TestContext();
-        var command = context.Command
-            .WithClientSecret(null)
-            .Build();
-
-        var grant = context.AuthorizationGrant
-            .WithPkce(null)
-            .Build();
         
-        await Assert.ThrowsAsync<InvalidClientException>(()
-            => context.ValidateAsync(command: command, grant: grant));       
+        context.Command.WithClientSecret(null);
+        context.AuthorizationGrant.WithPkce(null);
+        
+        await Assert.ThrowsAsync<InvalidClientException>(() => context.ValidateAsync());
     }
 
     [Fact]
@@ -175,15 +171,10 @@ public class AuthorizationCodeValidatorTests
     {
         // Set PKCE to null to force client secret for validation
         var context = new TestContext();
-        var grant = context.AuthorizationGrant
-            .WithPkce(null)
-            .Build();
-
-        context.SecretQueryService
-            .ValidateSecretAsync(Arg.Any<ClientId>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Returns(false);
         
-        await Assert.ThrowsAsync<InvalidClientException>(()
-            => context.ValidateAsync(grant: grant));
+        context.AuthorizationGrant.WithPkce(null);
+        context.WithSecret(false);
+        
+        await Assert.ThrowsAsync<InvalidClientException>(() => context.ValidateAsync());
     }
 }
