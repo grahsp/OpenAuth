@@ -4,6 +4,7 @@ using OpenAuth.Application.Oidc;
 using OpenAuth.Application.Tokens;
 using OpenAuth.Application.Tokens.Dtos;
 using OpenAuth.Application.Tokens.Flows;
+using OpenAuth.Domain.Apis.ValueObjects;
 using OpenAuth.Domain.AuthorizationGrants;
 using OpenAuth.Domain.AuthorizationGrants.ValueObjects;
 using OpenAuth.Domain.Clients.ValueObjects;
@@ -37,6 +38,7 @@ public static class TestData
     {
         return new AuthorizationValidationResult(
             ClientId.Create(DefaultValues.ClientId),
+            AudienceIdentifier.Create(DefaultValues.Audience),
             ScopeCollection.Parse(DefaultValues.Scopes),
             RedirectUri.Create(DefaultValues.RedirectUri),
             CreateValidPkce(),
@@ -69,7 +71,6 @@ public static class TestData
     public static AuthorizationCodeValidationResult CreateValidAuthorizationCodeValidationResult()
     {
         return new AuthorizationCodeValidationResult(
-            AudienceName.Create(DefaultValues.Audience),
             ScopeCollection.Parse(DefaultValues.Scopes),
             ScopeCollection.Parse("")
         );
@@ -79,7 +80,6 @@ public static class TestData
     {
         return new ClientTokenData(
             ClientId.Create(DefaultValues.ClientId),
-            [CreateValidAudience()],
             [GrantType.Create(DefaultValues.GrantType)],
             TimeSpan.FromMinutes(30)
         );

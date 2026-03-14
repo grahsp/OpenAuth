@@ -9,7 +9,7 @@ public class AuthorizationCodeTokenCommandBuilder
 {
     private ClientId _clientId = ClientId.Create(DefaultValues.ClientId);
     private string _audience = DefaultValues.Audience;
-    private string _scopes = DefaultValues.Scopes;
+    private string? _scopes = DefaultValues.Scopes;
     private string _redirectUri = DefaultValues.RedirectUri;
     private string _code = DefaultValues.Code;
     private string? _codeVerifier;
@@ -39,7 +39,7 @@ public class AuthorizationCodeTokenCommandBuilder
         return this;
     }
 
-    public AuthorizationCodeTokenCommandBuilder WithScopes(string scopes)
+    public AuthorizationCodeTokenCommandBuilder WithScopes(string? scopes)
     {
         _scopes = scopes;
         return this;
