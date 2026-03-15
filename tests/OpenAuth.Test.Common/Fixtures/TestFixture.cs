@@ -10,11 +10,10 @@ namespace OpenAuth.Test.Common.Fixtures;
 
 public sealed class TestFixture : IAsyncLifetime
 {
-	private SqlServer _database = null!;
+	private readonly SqlServer _database = new SqlServer();
 
 	public async Task InitializeAsync()
 	{
-		_database = new SqlServer();
 		await _database.InitializeAsync();
 	}
 

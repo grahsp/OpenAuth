@@ -5,17 +5,12 @@ using OpenAuth.Test.E2E.Extensions;
 
 namespace OpenAuth.Test.E2E.OAuth;
 
-public class AuthorizeEndpointTests(TestFixture fixture) : IClassFixture<TestFixture>, IAsyncLifetime
+[Collection("integration")]
+public class AuthorizeEndpointTests(TestFixture fixture) : IAsyncLifetime
 {
-    private TestHost _host = null!;
-
-    public async Task InitializeAsync()
-    {
-        _host = fixture.CreateDefaultHost();
-        await fixture.ResetAsync(_host);
-    }
-    
-    public async Task DisposeAsync() => await _host.DisposeAsync();
+	private readonly TestHost _host = fixture.CreateDefaultHost();
+	public async Task InitializeAsync() => await fixture.ResetAsync(_host);
+	public async Task DisposeAsync() => await _host.DisposeAsync();
     
 
     [Fact]

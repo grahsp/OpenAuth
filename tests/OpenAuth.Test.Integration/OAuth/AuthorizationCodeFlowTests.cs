@@ -6,16 +6,11 @@ using OpenAuth.Test.Integration.Extensions;
 
 namespace OpenAuth.Test.Integration.OAuth;
 
-public class AuthorizationCodeFlowTests(TestFixture fixture) : IClassFixture<TestFixture>, IAsyncLifetime
+[Collection("integration")]
+public class AuthorizationCodeFlowTests(TestFixture fixture) : IAsyncLifetime
 {
-	private TestHost _host = null!;
-
-	public async Task InitializeAsync()
-	{
-		_host = fixture.CreateDefaultHost();
-		await fixture.ResetAsync(_host);
-	}
-
+	private readonly TestHost _host = fixture.CreateDefaultHost();
+	public async Task InitializeAsync() => await fixture.ResetAsync(_host);
 	public async Task DisposeAsync() => await _host.DisposeAsync();
 
 

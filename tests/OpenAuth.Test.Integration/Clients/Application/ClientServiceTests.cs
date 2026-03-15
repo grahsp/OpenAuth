@@ -12,16 +12,11 @@ using OpenAuth.Test.Common.Hosting;
 namespace OpenAuth.Test.Integration.Clients.Application;
 
 // TODO: add missing tests for api methods
-public class ClientServiceTests(TestFixture fixture) : IClassFixture<TestFixture>, IAsyncLifetime
+[Collection("integration")]
+public class ClientServiceTests(TestFixture fixture) : IAsyncLifetime
 {
-	private TestHost _host = null!;
-
-	public async Task InitializeAsync()
-	{
-		_host = fixture.CreateDefaultHost();
-		await fixture.ResetAsync(_host);
-	}
-    
+	private readonly TestHost _host = fixture.CreateDefaultHost();
+	public async Task InitializeAsync() => await fixture.ResetAsync(_host);
 	public async Task DisposeAsync() => await _host.DisposeAsync();
 
 
