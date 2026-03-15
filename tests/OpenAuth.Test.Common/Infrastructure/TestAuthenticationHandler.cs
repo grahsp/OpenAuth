@@ -3,6 +3,7 @@ using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using OpenAuth.Test.Common.Helpers;
 
 namespace OpenAuth.Test.Common.Infrastructure;
 
@@ -34,17 +35,14 @@ public class TestAuthenticationHandler : AuthenticationHandler<AuthenticationSch
     /// <returns>The authentication result.</returns>
     protected override Task<AuthenticateResult> HandleAuthenticateAsync()
     {
-        var userId = Request.Headers["X-Test-UserId"].FirstOrDefault();
-
-        if (string.IsNullOrWhiteSpace(userId))
-            return Task.FromResult(
-                AuthenticateResult.Fail("Missing X-Test-UserId header."));
+        var userId = Request.Headers["X-Test-UserId"].FirstOrDefault()
+            ?? DefaultValues.UserId;
 
         var claims = new[]
         {
             new Claim(ClaimTypes.NameIdentifier, userId),
-            new Claim(ClaimTypes.Name, "test-user"),
-            new Claim(ClaimTypes.Email, "test@example.com")
+            new Claim(ClaimTypes.Name, DefaultValues.UserName),
+            new Claim(ClaimTypes.Email, DefaultValues.UserEmail)
         };
 
         var identity = new ClaimsIdentity(claims, SchemeName);
