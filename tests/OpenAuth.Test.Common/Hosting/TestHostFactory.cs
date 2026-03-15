@@ -5,7 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Time.Testing;
-using OpenAuth.Api;
+using OpenAuth.AuthorizationApi;
 using OpenAuth.Infrastructure.Persistence;
 
 namespace OpenAuth.Test.Common.Hosting;

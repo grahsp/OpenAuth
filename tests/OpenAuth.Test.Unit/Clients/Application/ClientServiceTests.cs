@@ -49,7 +49,7 @@ public class ClientServiceTests
                     .WithApplicationType(config.ApplicationType);
                 
                 foreach (var grantType in config.ApplicationType.DefaultGrantTypes)
-                    client.WithGrantType(grantType.Value);
+                    client.WithGrantType(grantType);
 
                 foreach (var redirectUri in config.RedirectUris)
                     client.WithRedirectUri(redirectUri.Value);

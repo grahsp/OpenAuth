@@ -1,7 +1,7 @@
 using System.Text.Json;
 using Microsoft.AspNetCore.WebUtilities;
-using OpenAuth.Api.Connect.Token;
 using OpenAuth.Application.Clients.Services;
+using OpenAuth.AuthorizationApi.Connect.Token;
 using OpenAuth.Test.Common.Builders;
 using OpenAuth.Test.Common.ValueObjects;
 

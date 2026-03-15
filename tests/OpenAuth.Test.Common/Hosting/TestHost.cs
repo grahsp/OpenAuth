@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
-using OpenAuth.Api;
+using OpenAuth.AuthorizationApi;
 
 namespace OpenAuth.Test.Common.Hosting;
 

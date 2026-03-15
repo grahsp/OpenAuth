@@ -134,7 +134,7 @@ public class ClientTests
             
             _time.Advance(TimeSpan.FromMinutes(5));
             
-            var expectedUris = new[] { Uri };
+            var expectedUris = new[] { RedirectUri.Create("https://invalid.com/")};
             var expectedTime = _time.GetUtcNow();
             
             client.SetRedirectUris(expectedUris, expectedTime);
