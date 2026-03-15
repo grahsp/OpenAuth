@@ -1,19 +1,26 @@
 using Microsoft.AspNetCore.WebUtilities;
+using OpenAuth.Domain.AuthorizationGrants.ValueObjects;
 using OpenAuth.Test.Common.Helpers;
 
-namespace OpenAuth.Test.Integration.Infrastructure.Builders;
+namespace OpenAuth.Test.Common.Builders;
 
 public sealed class AuthorizeUriBuilder
 {
     private string _responseType = DefaultValues.ResponseType;
     private string _clientId = DefaultValues.ClientId;
     private string _redirectUri = DefaultValues.RedirectUri;
+    private string _audience = DefaultValues.ApiAudience;
     private string _scopes = DefaultValues.Scopes;
     private string? _state;
     private string? _nonce;
-    private string? _codeChallenge;
-    private string? _codeChallengeMethod;
+    private Pkce? _pkce = TestData.CreateValidPkce();
 
+    public AuthorizeUriBuilder WithResponseType(string responseType)
+    {
+        _responseType = responseType;
+        return this;
+    }
+    
     public AuthorizeUriBuilder WithClient(string clientId)
     {
         _clientId = clientId;
@@ -25,10 +32,10 @@ public sealed class AuthorizeUriBuilder
         _redirectUri = redirectUri;
         return this;
     }
-
-    public AuthorizeUriBuilder WithResponseType(string responseType)
+    
+    public AuthorizeUriBuilder WithAudience(string audience)
     {
-        _responseType = responseType;
+        _audience = audience;
         return this;
     }
 
@@ -50,10 +57,9 @@ public sealed class AuthorizeUriBuilder
         return this;
     }
 
-    public AuthorizeUriBuilder WithPkce(string? challenge, string? method = DefaultValues.CodeChallengeMethod)
+    public AuthorizeUriBuilder WithPkce(Pkce? pkce)
     {
-        _codeChallenge = challenge;
-        _codeChallengeMethod = method;
+        _pkce = pkce;
         return this;
     }
 
@@ -64,11 +70,12 @@ public sealed class AuthorizeUriBuilder
             ["response_type"] = _responseType,
             ["client_id"] = _clientId,
             ["redirect_uri"] = _redirectUri,
+            ["audience"] = _audience,
             ["scope"] = _scopes,
             ["state"] = _state,
             ["nonce"] = _nonce,
-            ["code_challenge"] = _codeChallenge,
-            ["code_challenge_method"] = _codeChallengeMethod
+            ["code_challenge"] = _pkce?.CodeChallenge,
+            ["code_challenge_method"] = _pkce?.CodeChallengeMethod.ToString()
         };
 
         return QueryHelpers.AddQueryString("/connect/authorize", parameters);

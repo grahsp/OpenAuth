@@ -13,7 +13,6 @@ public static class AuthorizeMappings
 	public static AuthorizeCommand ToCommand(this AuthorizeRequest request, string subject)
 	{
 		ArgumentException.ThrowIfNullOrWhiteSpace(request.ResponseType, nameof(request.ResponseType));
-		ArgumentException.ThrowIfNullOrWhiteSpace(request.Nonce, nameof(request.Nonce));
 		ArgumentException.ThrowIfNullOrWhiteSpace(subject);
         
 		if (!ClientId.TryCreate(request.ClientId, out var id))

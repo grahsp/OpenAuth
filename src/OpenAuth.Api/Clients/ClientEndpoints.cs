@@ -15,7 +15,6 @@ public static class ClientEndpoints
             var request = new CreateClientRequest(
                 ClientApplicationTypes.Parse(dto.Type),
                 ClientName.Create(dto.Name),
-                [],
                 dto.RedirectUris.Select(RedirectUri.Create)
             );
             

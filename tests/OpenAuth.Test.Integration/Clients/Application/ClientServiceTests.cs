@@ -49,17 +49,13 @@ public class ClientServiceTests(TestFixture fixture) : IClassFixture<TestFixture
 		=> new CreateClientRequest(
 			ClientApplicationTypes.M2M,
 			ClientName.Create("test client"),
-			[new Audience(AudienceName.Create("api"), ScopeCollection.Parse("read write"))],
-			[]
-		);
+			[RedirectUri.Create("https://example.com/callback")]);
 
 	private static CreateClientRequest CreateSpaRequest()
 		=> new CreateClientRequest(
 			ClientApplicationTypes.Spa,
 			ClientName.Create("test client"),
-			[],
-			[RedirectUri.Create("https://example.com/callback")]
-		);
+			[RedirectUri.Create("https://example.com/callback")]);
     
 	private static readonly RedirectUri UriA = RedirectUri.Create("https://a.com/callback");
 	private static readonly RedirectUri UriB = RedirectUri.Create("https://b.com/callback");

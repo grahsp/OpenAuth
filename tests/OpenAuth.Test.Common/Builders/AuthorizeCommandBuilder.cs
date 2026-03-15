@@ -67,9 +67,9 @@ public sealed class AuthorizeCommandBuilder
 
 	public AuthorizeCommand Build()
 	{
-		var redirectUri = RedirectUri.Create(_redirectUri );
-		var audience = AudienceIdentifier.Create(_audience );
-		var scope = ScopeCollection.Parse(_scope );
+		var redirectUri = RedirectUri.Create(_redirectUri);
+		var audience = AudienceIdentifier.Create(_audience);
+		var scope = ScopeCollection.Parse(_scope);
 
 		return AuthorizeCommand.Create(
 			_responseType,

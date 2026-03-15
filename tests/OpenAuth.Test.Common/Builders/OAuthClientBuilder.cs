@@ -5,17 +5,13 @@ using OpenAuth.Domain.Clients.ApplicationType;
 using OpenAuth.Domain.Clients.ValueObjects;
 using OpenAuth.Test.Common.Helpers;
 
-namespace OpenAuth.Test.Integration.Infrastructure.Clients;
+namespace OpenAuth.Test.Common.Builders;
 
 public class OAuthClientBuilder
 {
     private string _applicationType = DefaultValues.ApplicationType;
     private string _name = DefaultValues.ClientName;
     private readonly List<string> _redirectUris = [DefaultValues.RedirectUri];
-    private readonly Dictionary<string, string> _permissions = new()
-    {
-        { DefaultValues.ApiAudience, DefaultValues.Scopes }
-    };
     
     private readonly IServiceProvider _services;
 
@@ -42,29 +38,15 @@ public class OAuthClientBuilder
         return this;
     }
 
-    public OAuthClientBuilder WithPermission(string audience, string scopes)
-    {
-        _permissions.TryAdd(audience, scopes);
-        return this;       
-    }
-
     public async Task<RegisteredClientResponse> CreateAsync()
     {
-        using var scope = _services.CreateScope();
-        var clientService = scope.ServiceProvider.GetRequiredService<IClientService>();
+        var clientService = _services.GetRequiredService<IClientService>();
 
         var applicationType = ClientApplicationTypes.Parse(_applicationType);
         var name = ClientName.Create(_name);
         var redirectUris = _redirectUris.Select(x => new RedirectUri(x)).ToList();
-        var permissions = _permissions.Select(kvp =>
-        {
-            var audience = AudienceName.Create(kvp.Key);
-            var scopes = ScopeCollection.Parse(kvp.Value);
 
-            return new Audience(audience, scopes);
-        });
-
-        var request = new CreateClientRequest(applicationType, name, permissions, redirectUris);
+        var request = new CreateClientRequest(applicationType, name, redirectUris);
         return await clientService.RegisterAsync(request);
     }
 }

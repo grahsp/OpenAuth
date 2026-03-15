@@ -1,4 +1,4 @@
-namespace OpenAuth.Test.Integration.Infrastructure.Builders;
+namespace OpenAuth.Test.Common.Builders;
 
 public class TokenRequestBuilder
 {

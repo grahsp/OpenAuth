@@ -48,9 +48,6 @@ public class ClientServiceTests
                     .WithName(config.Name)
                     .WithApplicationType(config.ApplicationType);
                 
-                foreach (var audience in config.Permissions)
-                    client.WithAudience(audience.Name.ToString(), audience.Scopes.Select(s => s.ToString()).ToArray());
-
                 foreach (var grantType in config.ApplicationType.DefaultGrantTypes)
                     client.WithGrantType(grantType.Value);
 
@@ -68,7 +65,6 @@ public class ClientServiceTests
         => new(
             ClientApplicationTypes.M2M,
             ClientName.Create("test client"),
-            [new Audience(AudienceName.Create("api"), ScopeCollection.Parse("read write"))],
             []
         );
 
@@ -76,7 +72,6 @@ public class ClientServiceTests
         => new(
             ClientApplicationTypes.Spa,
             ClientName.Create("test client"),
-            [],
             [RedirectUri.Create("https://example.com/callback")]
         );
 

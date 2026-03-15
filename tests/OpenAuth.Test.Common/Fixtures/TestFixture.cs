@@ -51,11 +51,6 @@ public sealed class TestFixture : IAsyncLifetime
 		{
 			builder.ConfigureServices(services =>
 			{
-				services.RemoveAll<ISecretGenerator>();
-				services.AddSingleton<ISecretGenerator, FakeGenerator>(_ => new FakeGenerator("secret"));
-				
-				services.RemoveAll<ISigningKeyFactory>();
-				services.AddSingleton<ISigningKeyFactory, FakeSigningKeyFactory>();
 			});
             
 			configure?.Invoke(builder);

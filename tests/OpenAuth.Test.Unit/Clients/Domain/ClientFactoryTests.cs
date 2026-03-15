@@ -32,7 +32,6 @@ public class ClientFactoryTests
         var request = new CreateClientRequest(
             ClientApplicationTypes.Spa,
             ClientName.Create("client"),
-            [],
             [RedirectUri.Create("https://example.com/callback")]
         );
 
@@ -49,7 +48,6 @@ public class ClientFactoryTests
         var request = new CreateClientRequest(
             ClientApplicationTypes.M2M,
             ClientName.Create("client"),
-            [new Audience(AudienceName.Create("api"), ScopeCollection.Parse("read write"))],
             []
         );
 
@@ -69,7 +67,6 @@ public class ClientFactoryTests
         var invalidCmd = new CreateClientRequest(
             ClientApplicationTypes.Spa,
             ClientName.Create("client"),
-            [],
             []
         );
 
@@ -86,7 +83,6 @@ public class ClientFactoryTests
         var cmd = new CreateClientRequest(
             ClientApplicationTypes.Spa,
             ClientName.Create("client"),
-            [],
             [RedirectUri.Create("https://example.com/callback")]
         );
 

@@ -11,7 +11,6 @@ using OpenAuth.Infrastructure.Clients.Persistence;
 using OpenAuth.Infrastructure.Clients.Secrets;
 using OpenAuth.Infrastructure.Security.Hashing;
 using OpenAuth.Test.Common.Builders;
-using OpenAuth.Test.Integration.Infrastructure;
 
 namespace OpenAuth.Test.Integration.Clients.Application;
 

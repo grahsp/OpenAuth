@@ -1,25 +1,35 @@
+using OpenAuth.Test.Common.Fixtures;
 using OpenAuth.Test.Common.Helpers;
-using OpenAuth.Test.Integration.Infrastructure.Fixtures;
+using OpenAuth.Test.Common.Hosting;
+using OpenAuth.Test.E2E.Extensions;
 
-namespace OpenAuth.Test.Integration.OAuth;
+namespace OpenAuth.Test.E2E.OAuth;
 
-[Collection("sqlserver")]
-public class AuthorizeEndpointTests(ApiServerFixture fx) : IClassFixture<ApiServerFixture>, IAsyncLifetime
+public class AuthorizeEndpointTests(TestFixture fixture) : IClassFixture<TestFixture>, IAsyncLifetime
 {
-    public Task InitializeAsync() => fx.InitializeAsync();
-    public Task DisposeAsync() => Task.CompletedTask;
+    private TestHost _host = null!;
+
+    public async Task InitializeAsync()
+    {
+        _host = fixture.CreateDefaultHost();
+        await fixture.ResetAsync();
+
+        await _host.SeedSigningKeyAsync();
+    }
+    
+    public async Task DisposeAsync() => await _host.DisposeAsync();
     
 
     [Fact]
     public async Task GivenAuthenticatedUser_WhenAuthorizeIsCalled_WithValidRequest_RedirectsWithCode()
     {
-        var client = await fx.CreateClientAsync();
+        var client = await _host.CreateApiClientAsync();
 
         var response = await client.AuthorizeAsync(opts =>
             opts.WithClient(client.Id));
         
-        Assert.True(response.Success);
-        Assert.StartsWith(DefaultValues.RedirectUri, response.RedirectUri, StringComparison.OrdinalIgnoreCase);
+        Assert.True((bool)response.Success);
+        Assert.StartsWith((string?)DefaultValues.RedirectUri, (string?)response.RedirectUri, StringComparison.OrdinalIgnoreCase);
         
         Assert.NotNull(response.Code);
         Assert.NotEmpty(response.Code);
@@ -30,7 +40,7 @@ public class AuthorizeEndpointTests(ApiServerFixture fx) : IClassFixture<ApiServ
     {
         const string state = "12345";
         
-        var client = await fx.CreateClientAsync();
+        var client = await _host.CreateApiClientAsync();
         
         var response = await client.AuthorizeAsync(opts =>
         {
@@ -38,27 +48,27 @@ public class AuthorizeEndpointTests(ApiServerFixture fx) : IClassFixture<ApiServ
             opts.WithState(state);
         });
         
-        Assert.True(response.Success);
-        Assert.StartsWith(DefaultValues.RedirectUri, response.RedirectUri, StringComparison.OrdinalIgnoreCase);
-        Assert.Equal(state, response.State);
+        Assert.True((bool)response.Success);
+        Assert.StartsWith((string?)DefaultValues.RedirectUri, (string?)response.RedirectUri, StringComparison.OrdinalIgnoreCase);
+        Assert.Equal((string?)state, (string?)response.State);
     }
     
     [Fact]
     public async Task GivenAuthenticatedUser_WhenAuthorizeIsCalled_WithInvalidClient_ReturnsBadRequest()
     {
-        var client = await fx.CreateClientAsync();
+        var client = await _host.CreateApiClientAsync();
         
         var response = await client.AuthorizeAsync(opts =>
             opts.WithClient("invalid-client-id"));
         
-        Assert.False(response.Success);
+        Assert.False((bool)response.Success);
         Assert.Null(response.RedirectUri);
     }
     
     [Fact]
     public async Task GivenAuthenticatedUser_WhenAuthorizeIsCalled_WithInvalidRedirectUri_ReturnsBadRequest()
     {
-        var client = await fx.CreateClientAsync();
+        var client = await _host.CreateApiClientAsync();
 
         var response = await client.AuthorizeAsync(opts =>
         {
@@ -66,14 +76,14 @@ public class AuthorizeEndpointTests(ApiServerFixture fx) : IClassFixture<ApiServ
             opts.WithRedirectUri("https://invalid-redirect.com");
         });
         
-        Assert.False(response.Success);
+        Assert.False((bool)response.Success);
         Assert.Null(response.RedirectUri);
     }
     
     [Fact]
     public async Task GivenAuthenticatedUser_WhenAuthorizeIsCalled_WithInvalidResponseType_ReturnsBadRequest()
     {
-        var client = await fx.CreateClientAsync();
+        var client = await _host.CreateApiClientAsync();
         
         var response = await client.AuthorizeAsync(opts =>
         {
@@ -81,8 +91,8 @@ public class AuthorizeEndpointTests(ApiServerFixture fx) : IClassFixture<ApiServ
             opts.WithResponseType("banana");
         });
         
-        Assert.False(response.Success);
+        Assert.False((bool)response.Success);
         Assert.NotNull(response.RedirectUri);
-        Assert.Contains(response.Error!, "unsupported_response_type");
+        Assert.Contains((string)response.Error!, "unsupported_response_type");
     }
 }

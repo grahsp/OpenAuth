@@ -1,3 +1,4 @@
+using OpenAuth.Domain.Apis;
 using OpenAuth.Domain.Clients;
 using OpenAuth.Domain.Clients.ApplicationType;
 using OpenAuth.Domain.Clients.Secrets.ValueObjects;
@@ -13,7 +14,7 @@ public class ClientBuilder
     private DateTimeOffset? _createdAt;
     
     private List<SecretHash> _secrets = [];
-    private List<Audience> _audiences = [];
+    private List<(ApiResource, ScopeCollection)> _apiAccess = [];
     private List<RedirectUri> _redirectUris = [];
     private List<GrantType> _grantTypes = [];
 
@@ -67,18 +68,11 @@ public class ClientBuilder
         return this;
     }
 
-    public ClientBuilder WithAudience(Audience audience)
+    public ClientBuilder WithApi(ApiResource api, string? scopes = null)
     {
-        _audiences.Add(audience);
-        return this;
-    }
-
-    public ClientBuilder WithAudience(string audienceName, params string[] scopes)
-    {
-        var scopeCollection = new ScopeCollection(scopes.Select(s => new Scope(s)));
-        var audience = new Audience(AudienceName.Create(audienceName), scopeCollection);
+        var collection = ScopeCollection.Parse(scopes ?? "read write");
         
-        _audiences.Add(audience);
+        _apiAccess.Add((api, collection));
         return this;
     }
 
@@ -98,9 +92,6 @@ public class ClientBuilder
         if (_grantTypes.Count == 0)
             _grantTypes = applicationType.DefaultGrantTypes.ToList();
 
-        if (applicationType.RequiresPermissions && _audiences.Count == 0)
-            WithAudience("test-audience", "read", "write");
-        
         if (_grantTypes.Any(g => g.RequiresRedirectUri) && _redirectUris.Count == 0)
             WithRedirectUri();
 
@@ -117,6 +108,9 @@ public class ClientBuilder
         
         foreach (var secret in _secrets)
             client.AddSecret(secret, createdAt);
+        
+        foreach (var (api, scopes) in _apiAccess)
+            client.GrantApiAccess(api.Id, scopes, createdAt);
 
         return client;
     }
