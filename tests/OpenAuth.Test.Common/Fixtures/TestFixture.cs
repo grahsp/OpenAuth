@@ -1,10 +1,7 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
-using OpenAuth.Application.SigningKeys.Factories;
-using OpenAuth.Infrastructure.Clients.Secrets;
-using OpenAuth.Test.Common.Fakes;
+using OpenAuth.Test.Common.Helpers;
 using OpenAuth.Test.Common.Hosting;
 using OpenAuth.Test.Common.Infrastructure;
 using Xunit;
@@ -57,7 +54,13 @@ public sealed class TestFixture : IAsyncLifetime
 		});
 	}
 
-	public async Task ResetAsync() => await _database.ResetAsync();
+	public async Task ResetAsync(TestHost host)
+	{
+		await _database.ResetAsync();
+		
+		await using var scope = host.CreateScope();
+		await Given.SigningKeyAsync(scope);
+	}
 
 	public async Task DisposeAsync() => await _database.DisposeAsync();
 }

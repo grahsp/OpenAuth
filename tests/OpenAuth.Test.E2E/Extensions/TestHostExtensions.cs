@@ -32,10 +32,7 @@ public static class TestHostExtensions
 			var scopes = new ScopeCollection(api.Permissions.Select(p => p.Scope));
 			await clientService.GrantApiAccessAsync(registered.Client.Id, api.Id, scopes);
 
-			var client = host.CreateClient();
-			client.DefaultRequestHeaders.Add("X-Test-UserId", DefaultValues.UserId);
-			
-			return new ExternalOAuthModule(client, registered);
+			return new ExternalOAuthModule(host.CreateClient(), registered);
 		});
 	}
 }

@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using OpenAuth.Application.Clients.Dtos;
 using OpenAuth.Application.Clients.Services;
 using OpenAuth.Domain.Clients;
@@ -20,30 +19,28 @@ public class ClientServiceTests(TestFixture fixture) : IClassFixture<TestFixture
 	public async Task InitializeAsync()
 	{
 		_host = fixture.CreateDefaultHost();
-		await fixture.ResetAsync();
+		await fixture.ResetAsync(_host);
 	}
     
 	public async Task DisposeAsync() => await _host.DisposeAsync();
-    
-	
-	private async Task<Client> GetClient(ClientId id) =>
-		await _host.WithScopeAsync<Client>(async sp =>
-		{
-			await using var context = sp.GetRequiredService<AppDbContext>();
-			var client = await context.Clients
-				.SingleOrDefaultAsync(c => c.Id == id);
 
-			return client!;
-		});
-	
-	private async Task<IEnumerable<Secret>> GetClientSecrets(ClientId id) =>
-		await _host.WithScopeAsync<IEnumerable<Secret>>(async sp =>
-		{
-			await using var context = sp.GetRequiredService<AppDbContext>();
-			return await context.ClientSecrets
-				.Where(s => s.ClientId == id)
-				.ToListAsync();
-		});
+
+	private async Task<Client> GetClient(TestScope scope, ClientId id)
+	{
+		var context = scope.Resolve<AppDbContext>();
+		var client = await context.Clients
+			.SingleOrDefaultAsync(c => c.Id == id);
+
+		return client!;
+	}
+
+	private async Task<IEnumerable<Secret>> GetClientSecrets(TestScope scope, ClientId id)
+	{
+		await using var context = scope.Resolve<AppDbContext>();
+		return await context.ClientSecrets
+			.Where(s => s.ClientId == id)
+			.ToListAsync();
+	}
     
 	private static CreateClientRequest CreateM2MRequest()
 		=> new CreateClientRequest(
@@ -64,34 +61,31 @@ public class ClientServiceTests(TestFixture fixture) : IClassFixture<TestFixture
 	[Fact]
 	public async Task RegisterAsync_PersistsConfidentialClientWithSecret()
 	{
-		var result = await _host.WithScopeAsync<RegisteredClientResponse>(async sp =>
-		{
-			var sut = sp.GetRequiredService<IClientService>();
-			return await sut.RegisterAsync(CreateM2MRequest());
-		});
+		await using var scope = _host.CreateScope();
+		
+		var sut = scope.Resolve<IClientService>();
+		var result = await sut.RegisterAsync(CreateM2MRequest());
         
-		var client = await GetClient(result.Client.Id);
+		var client = await GetClient(scope, result.Client.Id);
 		Assert.NotNull(client);
 		Assert.Equal(result.Client.Name, client.Name);
         
-		var secrets = await GetClientSecrets(result.Client.Id);
+		var secrets = await GetClientSecrets(scope, result.Client.Id);
 		Assert.Single(secrets);
 	}
 
 	[Fact]
 	public async Task RegisterAsync_PersistsPublicClientWithoutSecrets()
 	{
-		var result = await _host.WithScopeAsync<RegisteredClientResponse>(async sp =>
-		{
-			var sut = sp.GetRequiredService<IClientService>();
-			return await sut.RegisterAsync(CreateSpaRequest());
-		});
+		await using var scope = _host.CreateScope();
+		var sut = scope.Resolve<IClientService>();
+		var result = await sut.RegisterAsync(CreateSpaRequest());
         
-		var client = await GetClient(result.Client.Id);
+		var client = await GetClient(scope, result.Client.Id);
 		Assert.NotNull(client);
 		Assert.Equal(result.Client.Name, client.Name);
 
-		var secrets = await GetClientSecrets(result.Client.Id);
+		var secrets = await GetClientSecrets(scope, result.Client.Id);
 		Assert.Empty(secrets);
 	}
     
@@ -99,19 +93,14 @@ public class ClientServiceTests(TestFixture fixture) : IClassFixture<TestFixture
 	public async Task RenameAsync_PersistsUpdatedName()
 	{
 		var expected = new ClientName("new client");
-        
-		var result = await _host.WithScopeAsync<RegisteredClientResponse>(async sp =>
-		{
-			var sut = sp.GetRequiredService<IClientService>();
-			var result = await sut.RegisterAsync(CreateSpaRequest());
+		
+		await using var scope = _host.CreateScope();
+		var sut = scope.Resolve<IClientService>();
+		var result = await sut.RegisterAsync(CreateSpaRequest());
             
-			await sut.RenameAsync(result.Client.Id, expected);
+		await sut.RenameAsync(result.Client.Id, expected);
 
-			return result;
-		});
-         
-
-		var client = await GetClient(result.Client.Id);
+		var client = await GetClient(scope, result.Client.Id);
 		Assert.Equal(expected, client.Name);
 	}
     
@@ -120,17 +109,13 @@ public class ClientServiceTests(TestFixture fixture) : IClassFixture<TestFixture
 	{
 		var grantTypes = new[] { GrantType.ClientCredentials, GrantType.RefreshToken };
         
-		var result = await _host.WithScopeAsync<RegisteredClientResponse>(async sp =>
-		{
-			var sut = sp.GetRequiredService<IClientService>();
-			var result = await sut.RegisterAsync(CreateM2MRequest());
+		await using var scope = _host.CreateScope();
+		var sut = scope.Resolve<IClientService>();
+		var result = await sut.RegisterAsync(CreateM2MRequest());
             
-			await sut.SetGrantTypesAsync(result.Client.Id, grantTypes);
-
-			return result;
-		});
-
-		var client = await GetClient(result.Client.Id);
+		await sut.SetGrantTypesAsync(result.Client.Id, grantTypes);
+			
+		var client = await GetClient(scope, result.Client.Id);
 		Assert.Equal(grantTypes.Length, client.AllowedGrantTypes.Count);
 		Assert.All(grantTypes, r => Assert.Contains(r, client.AllowedGrantTypes));
 	}
@@ -138,19 +123,15 @@ public class ClientServiceTests(TestFixture fixture) : IClassFixture<TestFixture
 	[Fact]
 	public async Task AddAndRemoveGrantTypeAsync_PersistsUpdate()
 	{
-		var result = await _host.WithScopeAsync<RegisteredClientResponse>(async sp =>
-		{
-			var sut = sp.GetRequiredService<IClientService>();
-			var result = await sut.RegisterAsync(CreateM2MRequest());
+		await using var scope = _host.CreateScope();
+		var sut = scope.Resolve<IClientService>();
+		var result = await sut.RegisterAsync(CreateM2MRequest());
             
-			// M2M clients already contain ClientCredentials by default
-			await sut.AddGrantTypeAsync(result.Client.Id, GrantType.RefreshToken);
-			await sut.RemoveGrantTypeAsync(result.Client.Id, GrantType.ClientCredentials);
+		// M2M clients already contain ClientCredentials by default
+		await sut.AddGrantTypeAsync(result.Client.Id, GrantType.RefreshToken);
+		await sut.RemoveGrantTypeAsync(result.Client.Id, GrantType.ClientCredentials);
 
-			return result;
-		});
-             
-		var client = await GetClient(result.Client.Id);
+		var client = await GetClient(scope, result.Client.Id);
 		Assert.Null(client.AllowedGrantTypes.SingleOrDefault(r => r == GrantType.ClientCredentials));
 		Assert.NotNull(client.AllowedGrantTypes.SingleOrDefault(r => r == GrantType.RefreshToken));
 	}
@@ -160,17 +141,13 @@ public class ClientServiceTests(TestFixture fixture) : IClassFixture<TestFixture
 	{
 		var redirectUris = new[] { UriA, UriB };
         
-		var result = await _host.WithScopeAsync<RegisteredClientResponse>(async sp =>
-		{
-			var sut = sp.GetRequiredService<IClientService>();
-			var result = await sut.RegisterAsync(CreateSpaRequest());
+		await using var scope = _host.CreateScope();
+		var sut = scope.Resolve<IClientService>();
+		var result = await sut.RegisterAsync(CreateSpaRequest());
 
-			await sut.SetRedirectUrisAsync(result.Client.Id, redirectUris);
+		await sut.SetRedirectUrisAsync(result.Client.Id, redirectUris);
 
-			return result;
-		});
-
-		var client = await GetClient(result.Client.Id);
+		var client = await GetClient(scope, result.Client.Id);
 		Assert.Equal(redirectUris.Length, client.RedirectUris.Count);
 		Assert.All(redirectUris, r => Assert.Contains(r, client.RedirectUris));
 	}
@@ -178,19 +155,15 @@ public class ClientServiceTests(TestFixture fixture) : IClassFixture<TestFixture
 	[Fact]
 	public async Task AddAndRemoveRedirectUriAsync_PersistsUpdate()
 	{
-		var result = await _host.WithScopeAsync<RegisteredClientResponse>(async sp =>
-		{
-			var sut = sp.GetRequiredService<IClientService>();
-			var result = await sut.RegisterAsync(CreateSpaRequest());
+		await using var scope = _host.CreateScope();
+		var sut = scope.Resolve<IClientService>();
+		var result = await sut.RegisterAsync(CreateSpaRequest());
 
-			await sut.AddRedirectUriAsync(result.Client.Id, UriA);
-			await sut.AddRedirectUriAsync(result.Client.Id, UriB);
-			await sut.RemoveRedirectUriAsync(result.Client.Id, UriA);
-            
-			return result;
-		});
-
-		var client = await GetClient(result.Client.Id);
+		await sut.AddRedirectUriAsync(result.Client.Id, UriA);
+		await sut.AddRedirectUriAsync(result.Client.Id, UriB);
+		await sut.RemoveRedirectUriAsync(result.Client.Id, UriA);
+			
+		var client = await GetClient(scope, result.Client.Id);
 		Assert.Null(client.RedirectUris.SingleOrDefault(r => r == UriA));
 		Assert.NotNull(client.RedirectUris.SingleOrDefault(r => r == UriB));
 	}
@@ -198,35 +171,29 @@ public class ClientServiceTests(TestFixture fixture) : IClassFixture<TestFixture
 	[Fact]
 	public async Task DeleteAsync_RemovesClient()
 	{
-		var result = await _host.WithScopeAsync<RegisteredClientResponse>(async sp =>
-		{
-			var sut = sp.GetRequiredService<IClientService>();
-			var result = await sut.RegisterAsync(CreateSpaRequest());
+		await using var scope = _host.CreateScope();
+		var sut = scope.Resolve<IClientService>();
+		var result = await sut.RegisterAsync(CreateSpaRequest());
             
-			await sut.DeleteAsync(result.Client.Id);
-            
-			return result;
-		});
+		await sut.DeleteAsync(result.Client.Id);
 
-		var client = await GetClient(result.Client.Id);
+		var client = await GetClient(scope, result.Client.Id);
 		Assert.Null(client);
 	}
      
 	[Fact]
 	public async Task EnableAndDisableAsync_TogglesAndPersistsFlag()
 	{
-		await _host.WithScopeAsync(async sp =>
-		{
-			var sut = sp.GetRequiredService<IClientService>();
-			var result = await sut.RegisterAsync(CreateSpaRequest());
+		await using var scope = _host.CreateScope();
+		var sut = scope.Resolve<IClientService>();
+		var result = await sut.RegisterAsync(CreateSpaRequest());
 
-			await sut.DisableAsync(result.Client.Id);
-			var disabledClient = await GetClient(result.Client.Id);
-			Assert.False(disabledClient.Enabled);
+		await sut.DisableAsync(result.Client.Id);
+		var disabledClient = await GetClient(scope, result.Client.Id);
+		Assert.False(disabledClient.Enabled);
          
-			await sut.EnableAsync(result.Client.Id);
-			var enabledClient = await GetClient(result.Client.Id);
-			Assert.True(enabledClient.Enabled);
-		});
+		await sut.EnableAsync(result.Client.Id);
+		var enabledClient = await GetClient(scope, result.Client.Id);
+		Assert.True(enabledClient.Enabled);
 	}
 }

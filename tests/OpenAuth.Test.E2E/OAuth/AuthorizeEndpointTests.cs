@@ -12,9 +12,7 @@ public class AuthorizeEndpointTests(TestFixture fixture) : IClassFixture<TestFix
     public async Task InitializeAsync()
     {
         _host = fixture.CreateDefaultHost();
-        await fixture.ResetAsync();
-
-        await _host.SeedSigningKeyAsync();
+        await fixture.ResetAsync(_host);
     }
     
     public async Task DisposeAsync() => await _host.DisposeAsync();
@@ -23,13 +21,13 @@ public class AuthorizeEndpointTests(TestFixture fixture) : IClassFixture<TestFix
     [Fact]
     public async Task GivenAuthenticatedUser_WhenAuthorizeIsCalled_WithValidRequest_RedirectsWithCode()
     {
-        var client = await _host.CreateApiClientAsync();
+        var module = await _host.CreateApiClientAsync();
 
-        var response = await client.AuthorizeAsync(opts =>
-            opts.WithClient(client.Id));
+        var response = await module.AuthorizeAsync(opts =>
+            opts.WithClient(module.Id));
         
-        Assert.True((bool)response.Success);
-        Assert.StartsWith((string?)DefaultValues.RedirectUri, (string?)response.RedirectUri, StringComparison.OrdinalIgnoreCase);
+        Assert.True(response.Success);
+        Assert.StartsWith(DefaultValues.RedirectUri, response.RedirectUri, StringComparison.OrdinalIgnoreCase);
         
         Assert.NotNull(response.Code);
         Assert.NotEmpty(response.Code);
@@ -40,59 +38,59 @@ public class AuthorizeEndpointTests(TestFixture fixture) : IClassFixture<TestFix
     {
         const string state = "12345";
         
-        var client = await _host.CreateApiClientAsync();
+        var module = await _host.CreateApiClientAsync();
         
-        var response = await client.AuthorizeAsync(opts =>
+        var response = await module.AuthorizeAsync(opts =>
         {
-            opts.WithClient(client.Id);
+            opts.WithClient(module.Id);
             opts.WithState(state);
         });
         
-        Assert.True((bool)response.Success);
-        Assert.StartsWith((string?)DefaultValues.RedirectUri, (string?)response.RedirectUri, StringComparison.OrdinalIgnoreCase);
-        Assert.Equal((string?)state, (string?)response.State);
+        Assert.True(response.Success);
+        Assert.StartsWith(DefaultValues.RedirectUri, response.RedirectUri, StringComparison.OrdinalIgnoreCase);
+        Assert.Equal(state, response.State);
     }
     
     [Fact]
     public async Task GivenAuthenticatedUser_WhenAuthorizeIsCalled_WithInvalidClient_ReturnsBadRequest()
     {
-        var client = await _host.CreateApiClientAsync();
+        var module = await _host.CreateApiClientAsync();
         
-        var response = await client.AuthorizeAsync(opts =>
+        var response = await module.AuthorizeAsync(opts =>
             opts.WithClient("invalid-client-id"));
         
-        Assert.False((bool)response.Success);
+        Assert.False(response.Success);
         Assert.Null(response.RedirectUri);
     }
     
     [Fact]
     public async Task GivenAuthenticatedUser_WhenAuthorizeIsCalled_WithInvalidRedirectUri_ReturnsBadRequest()
     {
-        var client = await _host.CreateApiClientAsync();
+        var module = await _host.CreateApiClientAsync();
 
-        var response = await client.AuthorizeAsync(opts =>
+        var response = await module.AuthorizeAsync(opts =>
         {
-            opts.WithClient(client.Id);
+            opts.WithClient(module.Id);
             opts.WithRedirectUri("https://invalid-redirect.com");
         });
         
-        Assert.False((bool)response.Success);
+        Assert.False(response.Success);
         Assert.Null(response.RedirectUri);
     }
     
     [Fact]
     public async Task GivenAuthenticatedUser_WhenAuthorizeIsCalled_WithInvalidResponseType_ReturnsBadRequest()
     {
-        var client = await _host.CreateApiClientAsync();
+        var module = await _host.CreateApiClientAsync();
         
-        var response = await client.AuthorizeAsync(opts =>
+        var response = await module.AuthorizeAsync(opts =>
         {
-            opts.WithClient(client.Id);
+            opts.WithClient(module.Id);
             opts.WithResponseType("banana");
         });
         
-        Assert.False((bool)response.Success);
+        Assert.False(response.Success);
         Assert.NotNull(response.RedirectUri);
-        Assert.Contains((string)response.Error!, "unsupported_response_type");
+        Assert.Contains(response.Error!, "unsupported_response_type");
     }
 }

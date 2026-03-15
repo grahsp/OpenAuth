@@ -13,9 +13,7 @@ public class AuthorizationCodeFlowTests(TestFixture fixture) : IClassFixture<Tes
 	public async Task InitializeAsync()
 	{
 		_host = fixture.CreateDefaultHost();
-		await fixture.ResetAsync();
-		
-		await _host.SeedSigningKeyAsync();
+		await fixture.ResetAsync(_host);
 	}
 
 	public async Task DisposeAsync() => await _host.DisposeAsync();
@@ -24,10 +22,10 @@ public class AuthorizationCodeFlowTests(TestFixture fixture) : IClassFixture<Tes
 	[Fact]
 	public async Task AuthorizationCodeFlow_WhenValid_Succeeds()
 	{
-		var client = await _host.CreateClientAsync();
-		await client.AuthorizeAsync();
+		var module = await _host.CreateClientAsync();
+		await module.AuthorizeAsync();
 		
-		var result = await client.ExchangeCodeForTokenAsync();
+		var result = await module.ExchangeCodeForTokenAsync();
 		
 		Assert.NotNull(result.AccessToken);
 	}
@@ -35,35 +33,36 @@ public class AuthorizationCodeFlowTests(TestFixture fixture) : IClassFixture<Tes
 	[Fact]
 	public async Task AuthorizationCodeFlow_WhenInvalidClientSecret_ThrowsInvalidClientException()
 	{
-		var client = await _host.CreateClientAsync();
-		await client.AuthorizeAsync();
+		var module = await _host.CreateClientAsync();
+		await module.AuthorizeAsync();
 	   
 		await Assert.ThrowsAsync<InvalidClientException>(()
-			=> client.ExchangeCodeForTokenAsync(opts =>
+			=> module.ExchangeCodeForTokenAsync(opts =>
 				opts.WithClientSecret("invalid-client-secret")));
 	}
 	
 	[Fact]
 	public async Task AuthorizationCodeFlow_WhenClientIsPublic_ThrowsException()
 	{
-		var client = await _host.CreateClientAsync(opts =>
+		var module = await _host.CreateClientAsync(opts =>
 			opts.WithApplicationType("spa"));
 	   
 		await Assert.ThrowsAsync<InvalidRequestException>(()
-			=> client.AuthorizeAsync());
+			=> module.AuthorizeAsync());
 	}
 	
 	[Fact]
 	public async Task AuthorizationCodeFlowWithPkce_WhenValid_Succeeds()
 	{
-		var (verifier, pkce) = PkceHelpers.Create();
-		var client = await _host.CreateClientAsync(opts =>
+		var module = await _host.CreateClientAsync(opts =>
 			opts.WithApplicationType("spa"));
+		
+		var (verifier, pkce) = PkceHelpers.Create();
 	       
-		await client.AuthorizeAsync(opts =>
+		await module.AuthorizeAsync(opts =>
 			opts.WithPkce(pkce));
 	       
-		var result = await client.ExchangeCodeForTokenAsync(opts =>
+		var result = await module.ExchangeCodeForTokenAsync(opts =>
 			opts.WithCodeVerifier(verifier));
 	
 		Assert.NotNull(result.AccessToken);
@@ -72,15 +71,16 @@ public class AuthorizationCodeFlowTests(TestFixture fixture) : IClassFixture<Tes
 	[Fact]
 	public async Task AuthorizationCodeFlowWithPkce_WhenInvalidCodeVerifier_ThrowsInvalidGrantException()
 	{
-		var (_, pkce) = PkceHelpers.Create();
-		var client = await _host.CreateClientAsync(opts =>
+		var module = await _host.CreateClientAsync(opts =>
 			opts.WithApplicationType("spa"));
+		
+		var (_, pkce) = PkceHelpers.Create();
 	
-		await client.AuthorizeAsync(opts =>
+		await module.AuthorizeAsync(opts =>
 			opts.WithPkce(pkce));
 	   
 		await Assert.ThrowsAsync<InvalidGrantException>(() =>
-			client.ExchangeCodeForTokenAsync(opts =>
+			module.ExchangeCodeForTokenAsync(opts =>
 				opts.WithCodeVerifier("invalid-code-verifier")));
 	}
 }
