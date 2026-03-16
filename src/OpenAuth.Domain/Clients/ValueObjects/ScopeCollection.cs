@@ -19,7 +19,7 @@ public sealed record ScopeCollection : IReadOnlyCollection<Scope>
         var scopes = spaceSeparatedScopes
             .Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
             .Select(s => new Scope(s))
-            .ToArray();
+            .ToHashSet();
         
         return new ScopeCollection(scopes);
     }

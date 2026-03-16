@@ -192,12 +192,12 @@ public sealed class Client
     }
 
     
-    public void GrantApiAccess(ApiResourceId apiResourceId, ScopeCollection scope, DateTimeOffset utcNow)
+    public void GrantApiAccess(ApiResourceId apiResourceId, ScopeCollection scopes, DateTimeOffset utcNow)
     {
         if (_apis.Any(a => a.ApiResourceId == apiResourceId))
             throw new InvalidOperationException("Client already has access to this API.");
         
-        var access = ClientApiAccess.Create(apiResourceId, scope);
+        var access = ClientApiAccess.Create(apiResourceId, scopes);
         _apis.Add(access);
         
         Touch(utcNow);
