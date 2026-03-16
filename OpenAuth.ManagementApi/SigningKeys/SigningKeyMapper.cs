@@ -1,7 +1,6 @@
 using OpenAuth.Application.SigningKeys.Dtos;
-using OpenAuth.ManagementApi.Dtos;
 
-namespace OpenAuth.ManagementApi.Mappers;
+namespace OpenAuth.ManagementApi.SigningKeys;
 
 public static class SigningKeyMapper
 {
