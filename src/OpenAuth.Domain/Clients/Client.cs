@@ -1,4 +1,3 @@
-using OpenAuth.Domain.Apis;
 using OpenAuth.Domain.Apis.ValueObjects;
 using OpenAuth.Domain.Clients.ApplicationType;
 using OpenAuth.Domain.Clients.ValueObjects;
@@ -195,8 +194,6 @@ public sealed class Client
     
     public void GrantApiAccess(ApiResourceId apiResourceId, ScopeCollection scope, DateTimeOffset utcNow)
     {
-        ArgumentNullException.ThrowIfNull(apiResourceId);
-
         if (_apis.Any(a => a.ApiResourceId == apiResourceId))
             throw new InvalidOperationException("Client already has access to this API.");
         
@@ -208,8 +205,6 @@ public sealed class Client
 
     public void RevokeApiAccess(ApiResourceId apiResourceId, DateTimeOffset utcNow)
     {
-        ArgumentNullException.ThrowIfNull(apiResourceId);
-
         var access = _apis.FirstOrDefault(a => a.ApiResourceId == apiResourceId);
         if (access is null)
             return;
@@ -234,7 +229,7 @@ public sealed class Client
     
     
     // Secrets
-    public SecretId AddSecret(SecretHash hash, DateTimeOffset utcNow)
+    public Secret AddSecret(SecretHash hash, DateTimeOffset utcNow)
     {
         var secret = Secret.Create(Id, hash, utcNow, TimeSpan.FromDays(7));
         
@@ -250,7 +245,7 @@ public sealed class Client
         Secrets.Add(secret);
         Touch(utcNow);
 
-        return secret.Id;
+        return secret;
     }
     
     public void RevokeSecret(SecretId secretId, DateTimeOffset utcNow)

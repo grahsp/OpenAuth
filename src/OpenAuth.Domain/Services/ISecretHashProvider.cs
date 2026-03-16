@@ -4,5 +4,5 @@ namespace OpenAuth.Domain.Services;
 
 public interface ISecretHashProvider
 {
-    SecretCreationResult Create();
+    SecretHashResult Create();
 }

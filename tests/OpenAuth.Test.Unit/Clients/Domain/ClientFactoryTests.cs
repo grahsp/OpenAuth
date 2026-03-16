@@ -51,7 +51,7 @@ public class ClientFactoryTests
             []
         );
 
-        var hashResult = new SecretCreationResult("plain-secret", SecretHash.FromHash("hashed-value"));
+        var hashResult = new SecretHashResult(SecretHash.FromHash("hashed-value"), "plain-secret");
         _hashProvider.Create().Returns(hashResult);
 
         var client = _sut.Create(request, out var plainSecret);
@@ -86,7 +86,7 @@ public class ClientFactoryTests
             [RedirectUri.Parse("https://example.com/callback")]
         );
 
-        var hashResult = new SecretCreationResult("plain", SecretHash.FromHash("hash"));
+        var hashResult = new SecretHashResult(SecretHash.FromHash("hashed-value"), "plain-secret");
         _hashProvider.Create().Returns(hashResult);
 
         var client = _sut.Create(cmd, out _);

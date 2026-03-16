@@ -15,11 +15,11 @@ public class SecretHashProvider : ISecretHashProvider
         _hasher = hasher;
     }
     
-    public SecretCreationResult Create()
+    public SecretHashResult Create()
     {
         var plain = _generator.Generate();
         var hash = SecretHash.Create(plain, _hasher);
         
-        return new SecretCreationResult(plain, hash);
+        return new SecretHashResult(hash, plain);
     }
 }

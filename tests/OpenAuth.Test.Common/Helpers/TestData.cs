@@ -7,8 +7,10 @@ using OpenAuth.Application.Tokens.Flows;
 using OpenAuth.Domain.Apis.ValueObjects;
 using OpenAuth.Domain.AuthorizationGrants;
 using OpenAuth.Domain.AuthorizationGrants.ValueObjects;
+using OpenAuth.Domain.Clients.Secrets.ValueObjects;
 using OpenAuth.Domain.Clients.ValueObjects;
 using OpenAuth.Domain.OAuth;
+using OpenAuth.Domain.Services.Dtos;
 using OpenAuth.Domain.SigningKeys;
 using OpenAuth.Test.Common.Builders;
 
@@ -21,9 +23,6 @@ public static class TestData
         var verifier = codeVerifier ?? DefaultValues.CodeVerifier;
         return Pkce.FromVerifier(verifier, DefaultValues.CodeChallengeMethod);
     }
-
-    public static AuthorizationGrant CreateValidAuthorizationGrant()
-        => new AuthorizationGrantBuilder().Build();
 
     public static AuthorizeCommand CreateValidAuthorizationCommand()
         => new AuthorizeCommandBuilder()

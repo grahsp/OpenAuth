@@ -127,8 +127,8 @@ public class ClientServiceTests(TestFixture fixture) : IAsyncLifetime
 		await sut.RemoveGrantTypeAsync(result.Client.Id, GrantType.ClientCredentials);
 
 		var client = await GetClient(scope, result.Client.Id);
-		Assert.Null(client.AllowedGrantTypes.SingleOrDefault(r => r == GrantType.ClientCredentials));
-		Assert.NotNull(client.AllowedGrantTypes.SingleOrDefault(r => r == GrantType.RefreshToken));
+		Assert.DoesNotContain(client.AllowedGrantTypes, grant => grant == GrantType.ClientCredentials);
+		Assert.Contains(client.AllowedGrantTypes, grant => grant == GrantType.RefreshToken);
 	}
     
 	[Fact]
@@ -159,8 +159,8 @@ public class ClientServiceTests(TestFixture fixture) : IAsyncLifetime
 		await sut.RemoveRedirectUriAsync(result.Client.Id, UriA);
 			
 		var client = await GetClient(scope, result.Client.Id);
-		Assert.Null(client.RedirectUris.SingleOrDefault(r => r == UriA));
-		Assert.NotNull(client.RedirectUris.SingleOrDefault(r => r == UriB));
+		Assert.DoesNotContain(client.RedirectUris, uri => uri == UriA);
+		Assert.Contains(client.RedirectUris, uri => uri == UriB);
 	}
     
 	[Fact]

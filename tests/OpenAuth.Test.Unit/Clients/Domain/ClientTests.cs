@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Time.Testing;
 using OpenAuth.Domain.Apis;
+using OpenAuth.Domain.Apis.ValueObjects;
 using OpenAuth.Domain.Clients;
 using OpenAuth.Domain.Clients.ApplicationType;
 using OpenAuth.Domain.Clients.Secrets.ValueObjects;
@@ -279,18 +280,6 @@ public class ClientTests
                     _time.GetUtcNow()));
         }
 
-        [Fact]
-        public void WhenApiIsNull_ThrowsException()
-        {
-            var client = new ClientBuilder().Build();
-
-            Assert.Throws<ArgumentNullException>(() =>
-                client.GrantApiAccess(
-                    null!,
-                    ScopeCollection.Parse("read"),
-                    _time.GetUtcNow()));
-        }
-
     [Fact]
     public void WhenClientHasNoApis_ClientIsStillValid()
     {
@@ -405,9 +394,9 @@ public class ClientTests
             var hash = new SecretHash("hash");
             
             var utcNow = _time.GetUtcNow();
-            var secretId = client.AddSecret(hash, utcNow);
+            var secret = client.AddSecret(hash, utcNow);
 
-            Assert.Contains(client.Secrets, s => s.Id == secretId && s.IsActive(utcNow));
+            Assert.Contains(client.Secrets, s => s.Id == secret.Id && s.IsActive(utcNow));
         }
         
         [Fact]

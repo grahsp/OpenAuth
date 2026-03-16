@@ -38,7 +38,7 @@ public class ClientFactory : IClientFactory
         if (request.ApplicationType.AllowsClientSecrets)
         {
             var result = _hashProvider.Create();
-            plainSecret = result.PlainSecret;
+            plainSecret = result.PlainTextSecret;
             client.AddSecret(result.Hash, now);
         }
         
