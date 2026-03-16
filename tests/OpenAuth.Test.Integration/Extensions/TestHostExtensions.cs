@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
-using OpenAuth.Application.Clients.Services;
+using OpenAuth.Application.Abstractions;
+using OpenAuth.Application.Clients.Commands.GrantApiAccess;
 using OpenAuth.Domain.Clients.ValueObjects;
 using OpenAuth.Infrastructure.Persistence;
 using OpenAuth.Test.Common.Builders;
@@ -27,9 +28,11 @@ public static class TestHostExtensions
 			context.ApiResources.Add(api);
 			await context.SaveChangesAsync();
 			
-			var clientService = sp.GetRequiredService<IClientService>();
+			var handler = sp.GetRequiredService<ICommandHandler<GrantApiAccessCommand>>();
 			var scopes = new ScopeCollection(api.Permissions.Select(p => p.Scope));
-			await clientService.GrantApiAccessAsync(registered.Client.Id, api.Id, scopes);
+			
+			var command = new GrantApiAccessCommand(registered.Client.Id, api.Id, scopes);
+			await handler.HandleAsync(command, CancellationToken.None);
 
 			return new InternalOAuthModule(scope, registered);
 		});

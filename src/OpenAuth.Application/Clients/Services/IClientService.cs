@@ -18,7 +18,6 @@ public interface IClientService
     Task<ClientDetails> AddRedirectUriAsync(ClientId id, RedirectUri redirectUri, CancellationToken ct = default);
     Task<ClientDetails> RemoveRedirectUriAsync(ClientId id, RedirectUri redirectUri, CancellationToken ct = default);
     
-    Task<ClientDetails> GrantApiAccessAsync(ClientId id, ApiResourceId apiResourceId, ScopeCollection scopes, CancellationToken ct = default);
     Task<ClientDetails> RevokeApiAccessAsync(ClientId id, ApiResourceId apiResourceId, CancellationToken ct = default);
     
     Task EnableAsync(ClientId id, CancellationToken ct = default);

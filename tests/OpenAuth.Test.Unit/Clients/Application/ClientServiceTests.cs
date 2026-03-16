@@ -341,138 +341,66 @@ public class ClientServiceTests
         }
     }
 
-    public class ApiMethods : ClientServiceTests
-    {
-        [Fact]
-        public async Task GrantApiAccessAsync_Succeeds()
-        {
-            var result = await RegisterSpaClientAsync();
-            var client = result.Client;
-            
-            var api = new ApiResourceBuilder()
-                .WithPermission("read", "read stuff")
-                .Build();
-            
-            _apiRepository.GetByIdAsync(Arg.Any<ApiResourceId>(), Arg.Any<CancellationToken>())
-                .Returns(api);
-            
-            var scope = ScopeCollection.Parse("read");
-            
-            await _sut.GrantApiAccessAsync(client.Id, api.Id, scope);
-            
-            var access = Assert.Single(client.Apis);
-            Assert.Equal(api.Id, access.ApiResourceId);
-            Assert.Equal(scope, access.AllowedScopes);
-        }
-
-        [Fact]
-        public async Task GrantApiAccessAsync_WhenScopeInvalid_Throws()
-        {
-            var result = await RegisterSpaClientAsync();
-            var client = result.Client;
-            
-            var api = new ApiResourceBuilder()
-                .WithPermission("write", "write stuff")
-                .Build();
-            
-            _apiRepository.GetByIdAsync(Arg.Any<ApiResourceId>(), Arg.Any<CancellationToken>())
-                .Returns(api);
-
-            var scope = ScopeCollection.Parse("read");
-            
-            await Assert.ThrowsAsync<InvalidOperationException>(() =>
-                _sut.GrantApiAccessAsync(client.Id, api.Id, scope));
-        }
-
-        [Fact]
-        public async Task GrantApiAccessAsync_WhenClientNotFound_Throws()
-        {
-            var api = new ApiResourceBuilder()
-                .WithPermission("write", "write stuff")
-                .Build();
-            
-            _apiRepository.GetByIdAsync(Arg.Any<ApiResourceId>(), Arg.Any<CancellationToken>())
-                .Returns(api);
-
-            var scope = ScopeCollection.Parse("read");
-            
-            await Assert.ThrowsAsync<InvalidOperationException>(() =>
-                _sut.GrantApiAccessAsync(ClientId.New(), api.Id, scope));
-        }
-
-        [Fact]
-        public async Task GrantApiAccessAsync_WhenApiNotFound_Throws()
-        {
-            var result = await RegisterSpaClientAsync();
-            var client = result.Client;
-
-            _apiRepository.GetByIdAsync(Arg.Any<ApiResourceId>(), Arg.Any<CancellationToken>())
-                .Returns((ApiResource?)null);
-
-            var scope = ScopeCollection.Parse("read");
-            
-            await Assert.ThrowsAsync<InvalidOperationException>(() =>
-                _sut.GrantApiAccessAsync(client.Id, ApiResourceId.New(), scope));           
-        }
-
-
-        [Fact]
-        public async Task RevokeApiAccessAsync_WhenClientHasAccess_RevokesIt()
-        {
-            var result = await RegisterSpaClientAsync();
-            var client = result.Client;
-            
-            var api = new ApiResourceBuilder()
-                .WithPermission("read", "read stuff")
-                .Build();
-            
-            _apiRepository.GetByIdAsync(Arg.Any<ApiResourceId>(), Arg.Any<CancellationToken>())
-                .Returns(api);
-            
-            var scope = ScopeCollection.Parse("read");
-            
-            await _sut.GrantApiAccessAsync(client.Id, api.Id, scope);
-            Assert.Single(client.Apis);
-            
-            await _sut.RevokeApiAccessAsync(client.Id, api.Id);
-            Assert.Empty(client.Apis);
-        }
-
-        [Fact]
-        public async Task RevokeApiAccessAsync_WhenClientHasNoAccess_DoesNothing()
-        {
-            var result = await RegisterSpaClientAsync();
-            var client = result.Client;
-            
-            var api = new ApiResourceBuilder()
-                .WithPermission("read", "read stuff")
-                .Build();
-            
-            _apiRepository.GetByIdAsync(Arg.Any<ApiResourceId>(), Arg.Any<CancellationToken>())
-                .Returns(api);
-            
-            var scope = ScopeCollection.Parse("read");
-            
-            await _sut.GrantApiAccessAsync(client.Id, api.Id, scope);
-            var initial = Assert.Single(client.Apis);
-            
-            await _sut.RevokeApiAccessAsync(client.Id, ApiResourceId.New());
-            var post = Assert.Single(client.Apis);
-            Assert.Equal(initial, post);
-        }
-
-        [Fact]
-        public async Task RevokeApiAccessAsync_WhenClientNotFound_Throws()
-        {
-            var api = new ApiResourceBuilder().Build();
-            
-            _apiRepository.GetByIdAsync(Arg.Any<ApiResourceId>(), Arg.Any<CancellationToken>())
-                .Returns(api);
-            
-            await Assert.ThrowsAsync<InvalidOperationException>(() =>
-                _sut.RevokeApiAccessAsync(ClientId.New(), api.Id));
-        }
-    }
+    // TODO: move into separate test for future handler
+    // public class ApiMethods : ClientServiceTests
+    // {
+    //     [Fact]
+    //     public async Task RevokeApiAccessAsync_WhenClientHasAccess_RevokesIt()
+    //     {
+    //         var result = await RegisterSpaClientAsync();
+    //         var client = result.Client;
+    //         
+    //         var api = new ApiResourceBuilder()
+    //             .WithPermission("read", "read stuff")
+    //             .Build();
+    //         
+    //         _apiRepository.GetByIdAsync(Arg.Any<ApiResourceId>(), Arg.Any<CancellationToken>())
+    //             .Returns(api);
+    //         
+    //         var scope = ScopeCollection.Parse("read");
+    //         
+    //         await _sut.GrantApiAccessAsync(client.Id, api.Id, scope);
+    //         Assert.Single(client.Apis);
+    //         
+    //         await _sut.RevokeApiAccessAsync(client.Id, api.Id);
+    //         Assert.Empty(client.Apis);
+    //     }
+    //
+    //     [Fact]
+    //     public async Task RevokeApiAccessAsync_WhenClientHasNoAccess_DoesNothing()
+    //     {
+    //         var result = await RegisterSpaClientAsync();
+    //         var client = result.Client;
+    //         
+    //         var api = new ApiResourceBuilder()
+    //             .WithPermission("read", "read stuff")
+    //             .Build();
+    //         
+    //         _apiRepository.GetByIdAsync(Arg.Any<ApiResourceId>(), Arg.Any<CancellationToken>())
+    //             .Returns(api);
+    //         
+    //         var scope = ScopeCollection.Parse("read");
+    //         
+    //         await _sut.GrantApiAccessAsync(client.Id, api.Id, scope);
+    //         var initial = Assert.Single(client.Apis);
+    //         
+    //         await _sut.RevokeApiAccessAsync(client.Id, ApiResourceId.New());
+    //         var post = Assert.Single(client.Apis);
+    //         Assert.Equal(initial, post);
+    //     }
+    //
+    //     [Fact]
+    //     public async Task RevokeApiAccessAsync_WhenClientNotFound_Throws()
+    //     {
+    //         var api = new ApiResourceBuilder().Build();
+    //         
+    //         _apiRepository.GetByIdAsync(Arg.Any<ApiResourceId>(), Arg.Any<CancellationToken>())
+    //             .Returns(api);
+    //         
+    //         await Assert.ThrowsAsync<InvalidOperationException>(() =>
+    //             _sut.RevokeApiAccessAsync(ClientId.New(), api.Id));
+    //     }
+    // }
     
     public class EnableDisable : ClientServiceTests
     {

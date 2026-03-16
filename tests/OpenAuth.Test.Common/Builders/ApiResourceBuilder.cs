@@ -51,10 +51,19 @@ public class ApiResourceBuilder
 	{
 		var name = new ApiName(_name);
 		var audience = new AudienceIdentifier(_audience);
+		
+		var permissions = _permissions.Values.ToList();
 
-		if (_permissions.Count == 0)
-			WithScopes(DefaultValues.Scopes);
+		if (permissions.Count == 0)
+		{
+			var defaults = ScopeCollection.Parse(DefaultValues.Scopes);
 			
-		return ApiResource.Create(name, audience, _permissions.Values);
+			permissions = defaults.Select(scope => new Permission(
+				scope,
+				new ScopeDescription(scope.Value))
+			).ToList();
+		}
+			
+		return ApiResource.Create(name, audience, permissions);
 	}
 }
