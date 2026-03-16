@@ -1,8 +1,11 @@
+using Microsoft.AspNetCore.Mvc;
 using OpenAuth.Application.Abstractions;
 using OpenAuth.Application.ApiResources.Commands.AddApiResourcePermissions;
 using OpenAuth.Application.ApiResources.Commands.CreateApiResource;
 using OpenAuth.Application.ApiResources.Commands.DeleteApiResource;
+using OpenAuth.Application.ApiResources.Commands.RemoveApiResourcePermissions;
 using OpenAuth.Domain.ApiResources.ValueObjects;
+using OpenAuth.Domain.Clients.ValueObjects;
 
 namespace OpenAuth.ManagementApi.ApiResources;
 
@@ -18,6 +21,7 @@ public static class ApiResourceEndpoints
 		group.MapDelete("/{apiResourceId}", DeleteApiResource);
 		
 		group.MapPost("/{apiResourceId}/permissions", AddApiResourcePermissions);
+		group.MapDelete("/{apiResourceId}/permissions", RemoveApiResourcePermissions);
 
 		return app;
 	}
@@ -56,16 +60,30 @@ public static class ApiResourceEndpoints
 
 	public static async Task<IResult> AddApiResourcePermissions(
 		ApiResourceId apiResourceId,
-		AddApiResourcePermissionRequest request,
+		AddApiResourcePermissionsRequest request,
 		ICommandHandler<AddApiResourcePermissionCommand> handler,
 		CancellationToken ct)
 	{
 		var permissions = request.Permissions
-			.Select(p => Permission.Parse(p.Key, p.Value));
+			.Select(permission => Permission.Parse(permission.Key, permission.Value));
 		
 		var command = new AddApiResourcePermissionCommand(apiResourceId, permissions);
 		await handler.HandleAsync(command, ct);
 		
-		return Results.Ok();
+		return Results.NoContent();
+	}
+
+	public static async Task<IResult> RemoveApiResourcePermissions(
+		ApiResourceId apiResourceId,
+		[FromBody] RemoveApiResourcePermissionsRequest request,
+		[FromServices] ICommandHandler<RemoveApiResourcePermissionsCommand> handler,
+		CancellationToken ct)
+	{
+		var scopes = request.Scopes.Select(x => new Scope(x));
+	
+		var command = new RemoveApiResourcePermissionsCommand(apiResourceId, scopes);
+		await handler.HandleAsync(command, ct);
+		
+		return Results.NoContent();
 	}
 }

@@ -3,6 +3,7 @@ using OpenAuth.Application.Abstractions;
 using OpenAuth.Application.ApiResources.Commands.AddApiResourcePermissions;
 using OpenAuth.Application.ApiResources.Commands.CreateApiResource;
 using OpenAuth.Application.ApiResources.Commands.DeleteApiResource;
+using OpenAuth.Application.ApiResources.Commands.RemoveApiResourcePermissions;
 using OpenAuth.Application.Audiences.Interfaces;
 using OpenAuth.Infrastructure.ApiResources;
 
@@ -23,6 +24,7 @@ public static class ApiResourceModule
 		services.AddScoped<ICommandHandler<DeleteApiResourceCommand>, DeleteApiResourceHandler>();
 		
 		services.AddScoped<ICommandHandler<AddApiResourcePermissionCommand>, AddApiResourcePermissionsHandler>();
+		services.AddScoped<ICommandHandler<RemoveApiResourcePermissionsCommand>, RemoveApiResourcePermissionsHandler>();
 		
 		return services;
 	}
