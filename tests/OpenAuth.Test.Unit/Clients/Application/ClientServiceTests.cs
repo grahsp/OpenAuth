@@ -1,8 +1,10 @@
 using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
+using OpenAuth.Application.Audiences.Interfaces;
 using OpenAuth.Application.Clients.Dtos;
 using OpenAuth.Application.Clients.Factories;
 using OpenAuth.Application.Clients.Services;
+using OpenAuth.Domain.ApiResources.ValueObjects;
 using OpenAuth.Domain.Clients.ApplicationType;
 using OpenAuth.Domain.Clients.ValueObjects;
 using OpenAuth.Test.Common.Builders;
@@ -10,10 +12,13 @@ using OpenAuth.Test.Common.Fakes;
 
 namespace OpenAuth.Test.Unit.Clients.Application;
 
+// TODO: Add a TestContext
+// TODO: Break tests down into smaller sections
 public class ClientServiceTests
 {
     private FakeClientRepository _repo;
     private IClientFactory _clientFactory;
+    private IApiResourceRepository _apiRepository;
     
     private IClientService _sut;
 
@@ -23,8 +28,9 @@ public class ClientServiceTests
         
         _repo = new FakeClientRepository();
         _clientFactory = Substitute.For<IClientFactory>();
+        _apiRepository = Substitute.For<IApiResourceRepository>();
         
-        _sut = new ClientService(_repo, _clientFactory, time);
+        _sut = new ClientService(_repo, _apiRepository, _clientFactory, time);
     }
 
     private void SetupDefaultClientConfiguration()
@@ -41,33 +47,31 @@ public class ClientServiceTests
                     .WithName(config.Name)
                     .WithApplicationType(config.ApplicationType);
                 
-                foreach (var audience in config.Permissions)
-                    client.WithAudience(audience.Name.ToString(), audience.Scopes.Select(s => s.ToString()).ToArray());
-
                 foreach (var grantType in config.ApplicationType.DefaultGrantTypes)
-                    client.WithGrantType(grantType.Value);
+                    client.WithGrantType(grantType);
 
                 foreach (var redirectUri in config.RedirectUris)
                     client.WithRedirectUri(redirectUri.Value);
 
                 return client.Build();
             });
+        
+        _apiRepository.GetByIdAsync(Arg.Any<ApiResourceId>(), Arg.Any<CancellationToken>())
+            .Returns(x => new ApiResourceBuilder().Build());
     }
 
     private static CreateClientRequest CreateM2MRequest()
         => new(
             ClientApplicationTypes.M2M,
-            ClientName.Create("test client"),
-            [new Audience(AudienceName.Create("api"), ScopeCollection.Parse("read write"))],
+            new ClientName("test client"),
             []
         );
 
     private static CreateClientRequest CreateSpaRequest()
         => new(
             ClientApplicationTypes.Spa,
-            ClientName.Create("test client"),
-            [],
-            [RedirectUri.Create("https://example.com/callback")]
+            new ClientName("test client"),
+            [RedirectUri.Parse("https://example.com/callback")]
         );
 
 
@@ -255,8 +259,8 @@ public class ClientServiceTests
     
     public class RedirectUriMethods : ClientServiceTests
     {
-        private static readonly RedirectUri UriA = RedirectUri.Create("https://a.com/callback");
-        private static readonly RedirectUri UriB = RedirectUri.Create("https://b.com/callback");
+        private static readonly RedirectUri UriA = RedirectUri.Parse("https://a.com/callback");
+        private static readonly RedirectUri UriB = RedirectUri.Parse("https://b.com/callback");
         
         
         [Fact]
@@ -333,88 +337,6 @@ public class ClientServiceTests
         {
             await Assert.ThrowsAnyAsync<InvalidOperationException>(()
                 => _sut.RemoveRedirectUriAsync(ClientId.New(), UriA));
-        }
-    }
-
-    public class AudienceMethods : ClientServiceTests
-    {
-        private static readonly Audience ApiAudience = new(AudienceName.Create("api"), ScopeCollection.Parse("read write"));
-        private static readonly Audience WebAudience = new(AudienceName.Create("web"), ScopeCollection.Parse("read"));
-        
-        
-        [Fact]
-        public async Task SetAudiencesAsync_WhenValidAudiences_ReplaceExistingAudiences()
-        {
-            var result = await RegisterSpaClientAsync();
-            var client = result.Client;
-            
-            var audiences = new[] { ApiAudience, WebAudience };
-            
-            await _sut.SetAudiencesAsync(client.Id, audiences);
-
-            Assert.Equal(2, client.AllowedAudiences.Count);
-            Assert.Contains(client.AllowedAudiences, a => a == ApiAudience);
-            Assert.Contains(client.AllowedAudiences, a => a == WebAudience);
-            
-            Assert.True(_repo.Saved);
-        }
-        
-        [Fact]
-        public async Task SetAudiencesAsync_WhenClientNotFound_ThrowsException()
-        {
-            await Assert.ThrowsAnyAsync<InvalidOperationException>(()
-                => _sut.SetAudiencesAsync(ClientId.New(), []));
-        }
-
-        [Fact]
-        public async Task AddAudienceAsync_WhenValid_AppendsWithoutAffectingExistingAudiences()
-        {
-            var result = await RegisterSpaClientAsync();
-            var client = result.Client;
-            
-            await _sut.AddAudienceAsync(client.Id, ApiAudience);
-            
-            Assert.Contains(client.AllowedAudiences, a => a == ApiAudience);
-            Assert.True(_repo.Saved);
-        }
-
-        [Fact]
-        public async Task AddAudienceAsync_WhenClientNotFound_ThrowsException()
-        {
-            await Assert.ThrowsAnyAsync<InvalidOperationException>(()
-                => _sut.AddAudienceAsync(ClientId.New(), ApiAudience));
-        }
-        
-        [Fact]
-        public async Task RemoveAudienceAsync_WhenAudienceNotFound_DoesNothing()
-        {
-            var result = await RegisterSpaClientAsync();
-            var client = result.Client;
-
-            var expected = client.AllowedAudiences.ToArray();
-            await _sut.RemoveAudienceAsync(client.Id, AudienceName.Create("non-existent"));
-            
-            Assert.Equal(expected, client.AllowedAudiences);
-        }
-
-        [Fact]
-        public async Task RemoveAudienceAsync_WhenAudienceExists_RemoveAudience()
-        {
-            var result = await RegisterSpaClientAsync();
-            var client = result.Client;
-            
-            await _sut.AddAudienceAsync(client.Id, ApiAudience);
-            await _sut.RemoveAudienceAsync(client.Id, ApiAudience.Name);
-            
-            Assert.DoesNotContain(client.AllowedAudiences, a => a == ApiAudience);
-            Assert.True(_repo.Saved);
-        }
-        
-        [Fact]
-        public async Task RemoveAudiencesAsync_WhenClientNotFound_ThrowsException()
-        {
-            await Assert.ThrowsAnyAsync<InvalidOperationException>(()
-                => _sut.RemoveAudienceAsync(ClientId.New(), ApiAudience.Name));
         }
     }
     

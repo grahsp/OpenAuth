@@ -1,3 +1,4 @@
+using OpenAuth.Domain.ApiResources.ValueObjects;
 using OpenAuth.Domain.AuthorizationGrants;
 using OpenAuth.Domain.AuthorizationGrants.ValueObjects;
 using OpenAuth.Domain.Clients.ValueObjects;
@@ -8,14 +9,14 @@ namespace OpenAuth.Test.Common.Builders;
 public class AuthorizationGrantBuilder
 {
     private GrantType _grantType = GrantType.AuthorizationCode;
-    private ClientId _clientId = ClientId.Create(DefaultValues.ClientId);
+    private ClientId _clientId = ClientId.Parse(DefaultValues.ClientId);
     private string _subject = DefaultValues.Subject;
-    private RedirectUri _redirectUri = RedirectUri.Create(DefaultValues.RedirectUri);
-    private ScopeCollection _scopes = ScopeCollection.Parse(DefaultValues.Scopes);
+    private string _redirectUri = DefaultValues.RedirectUri;
+    private string _audience = DefaultValues.ApiAudience;
+    private string _scopes = DefaultValues.Scopes;
 
     private string _code = DefaultValues.Code;
     private Pkce? _pkce = TestData.CreateValidPkce();
-
     private string? _nonce = DefaultValues.Nonce;
 
     private DateTimeOffset _utcNow = DateTime.UtcNow;
@@ -40,13 +41,19 @@ public class AuthorizationGrantBuilder
 
     public AuthorizationGrantBuilder WithRedirectUri(string redirectUri)
     {
-        _redirectUri = RedirectUri.Create(redirectUri);
+        _redirectUri = redirectUri;
+        return this;
+    }
+    
+    public AuthorizationGrantBuilder WithAudience(string audience)
+    {
+        _audience = audience;
         return this;
     }
 
     public AuthorizationGrantBuilder WithScopes(string scopes)
     {
-        _scopes = ScopeCollection.Parse(scopes);
+        _scopes = scopes;
         return this;
     }
 
@@ -75,15 +82,22 @@ public class AuthorizationGrantBuilder
     }
 
     public AuthorizationGrant Build()
-        => AuthorizationGrant.Create(
+    {
+        var redirectUri = RedirectUri.Parse(_redirectUri);
+        var audience = new AudienceIdentifier(_audience);
+        var scopes = ScopeCollection.Parse(_scopes);
+        
+        return AuthorizationGrant.Create(
             _code,
             _grantType,
             _subject,
             _clientId,
-            _redirectUri,
-            _scopes,
+            redirectUri,
+            audience,
+            scopes,
             _pkce,
             _nonce,
             _utcNow
         );
+    }
 }

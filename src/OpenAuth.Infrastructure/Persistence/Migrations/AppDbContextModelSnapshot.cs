@@ -153,6 +153,29 @@ namespace OpenAuth.Infrastructure.Persistence.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("OpenAuth.Domain.Apis.ApiResource", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Audience")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("ResourceName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Audience")
+                        .IsUnique();
+
+                    b.ToTable("ApiResources", (string)null);
+                });
+
             modelBuilder.Entity("OpenAuth.Domain.Clients.Client", b =>
                 {
                     b.Property<Guid>("Id")
@@ -168,15 +191,9 @@ namespace OpenAuth.Infrastructure.Persistence.Migrations
                     b.Property<bool>("Enabled")
                         .HasColumnType("bit");
 
-                    b.Property<bool>("IsPublic")
-                        .HasColumnType("bit");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
-
-                    b.Property<bool>("RequirePkce")
-                        .HasColumnType("bit");
 
                     b.Property<long>("TokenLifetime")
                         .HasColumnType("bigint");
@@ -368,38 +385,70 @@ namespace OpenAuth.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("OpenAuth.Domain.Clients.Client", b =>
+            modelBuilder.Entity("OpenAuth.Domain.Apis.ApiResource", b =>
                 {
-                    b.OwnsMany("OpenAuth.Domain.Clients.ValueObjects.Audience", "AllowedAudiences", b1 =>
+                    b.OwnsMany("OpenAuth.Domain.Apis.ValueObjects.Permission", "Permissions", b1 =>
                         {
                             b1.Property<Guid>("Id")
                                 .ValueGeneratedOnAdd()
                                 .HasColumnType("uniqueidentifier");
 
-                            b1.Property<Guid>("ClientId")
+                            b1.Property<Guid>("ApiResourceId")
                                 .HasColumnType("uniqueidentifier");
 
-                            b1.Property<string>("Name")
+                            b1.Property<string>("Description")
                                 .IsRequired()
-                                .HasMaxLength(100)
-                                .HasColumnType("nvarchar(100)");
+                                .HasColumnType("nvarchar(max)");
 
-                            b1.Property<string>("Scopes")
+                            b1.Property<string>("Scope")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.HasKey("Id");
+
+                            b1.HasIndex("ApiResourceId");
+
+                            b1.ToTable("ApiPermissions", (string)null);
+
+                            b1.WithOwner()
+                                .HasForeignKey("ApiResourceId");
+                        });
+
+                    b.Navigation("Permissions");
+                });
+
+            modelBuilder.Entity("OpenAuth.Domain.Clients.Client", b =>
+                {
+                    b.OwnsMany("OpenAuth.Domain.Clients.ClientApiAccess", "Apis", b1 =>
+                        {
+                            b1.Property<Guid>("Id")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<string>("AllowedScopes")
+                                .IsRequired()
                                 .HasMaxLength(2000)
                                 .HasColumnType("nvarchar(2000)")
                                 .HasColumnName("Scopes");
+
+                            b1.Property<Guid>("ApiResourceId")
+                                .HasColumnType("uniqueidentifier")
+                                .HasColumnName("ApiResourceId");
+
+                            b1.Property<Guid>("ClientId")
+                                .HasColumnType("uniqueidentifier");
 
                             b1.HasKey("Id");
 
                             b1.HasIndex("ClientId");
 
-                            b1.ToTable("Audiences", (string)null);
+                            b1.ToTable("ClientApiAccess", (string)null);
 
                             b1.WithOwner()
                                 .HasForeignKey("ClientId");
                         });
 
-                    b.Navigation("AllowedAudiences");
+                    b.Navigation("Apis");
                 });
 
             modelBuilder.Entity("OpenAuth.Domain.Clients.Secrets.Secret", b =>

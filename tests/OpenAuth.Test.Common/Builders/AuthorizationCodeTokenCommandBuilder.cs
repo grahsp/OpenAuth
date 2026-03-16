@@ -7,19 +7,17 @@ namespace OpenAuth.Test.Common.Builders;
 
 public class AuthorizationCodeTokenCommandBuilder
 {
-    private string _clientId = DefaultValues.ClientId;
-    private string _audience = DefaultValues.Audience;
-    private string _scopes = DefaultValues.Scopes;
+    private ClientId _clientId = ClientId.Parse(DefaultValues.ClientId);
+    private string _audience = DefaultValues.ApiAudience;
+    private string? _scopes;
     private string _redirectUri = DefaultValues.RedirectUri;
     private string _code = DefaultValues.Code;
-    private string? _codeVerifier;
+    private string? _codeVerifier = DefaultValues.CodeVerifier;
     private string? _clientSecret;
-    
-    public AuthorizationCodeTokenCommandBuilder() { }
 
     public AuthorizationCodeTokenCommandBuilder FromAuthorizationGrant(AuthorizationGrant grant)
     {
-        _clientId = grant.ClientId.ToString();
+        _clientId = grant.ClientId;
         _scopes = grant.GrantedScopes.ToString();
         _redirectUri = grant.RedirectUri.ToString();
         _code = grant.Code;
@@ -27,7 +25,7 @@ public class AuthorizationCodeTokenCommandBuilder
         return this;
     }
 
-    public AuthorizationCodeTokenCommandBuilder WithClientId(string clientId)
+    public AuthorizationCodeTokenCommandBuilder WithClientId(ClientId clientId)
     {
         _clientId = clientId;
         return this;
@@ -39,7 +37,7 @@ public class AuthorizationCodeTokenCommandBuilder
         return this;
     }
 
-    public AuthorizationCodeTokenCommandBuilder WithScopes(string scopes)
+    public AuthorizationCodeTokenCommandBuilder WithScopes(string? scopes)
     {
         _scopes = scopes;
         return this;
@@ -69,15 +67,14 @@ public class AuthorizationCodeTokenCommandBuilder
         return this;
     }
 
-    public TokenCommand Build()
+    public AuthorizationCodeTokenCommand Build()
     {
-        var clientId = ClientId.Create(_clientId);
-        var scopes = ScopeCollection.Parse(_scopes);
-        var redirectUri = RedirectUri.Create(_redirectUri);
+        ScopeCollection.TryParse(_scopes, out var scopes);
+        var redirectUri = RedirectUri.Parse(_redirectUri);
 
         var request = AuthorizationCodeTokenCommand.Create(
             _code,
-            clientId,
+            _clientId,
             redirectUri,
             scopes,
             _codeVerifier,

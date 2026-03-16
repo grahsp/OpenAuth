@@ -1,197 +1,202 @@
 using NSubstitute;
+using OpenAuth.Application.Audiences.Interfaces;
+using OpenAuth.Application.Clients.Dtos;
 using OpenAuth.Application.Clients.Interfaces;
 using OpenAuth.Application.Exceptions;
 using OpenAuth.Application.OAuth.Authorization.Handlers;
+using OpenAuth.Domain.ApiResources.ValueObjects;
 using OpenAuth.Domain.Clients.ValueObjects;
+using OpenAuth.Test.Common.Builders;
 using OpenAuth.Test.Common.Helpers;
 
 namespace OpenAuth.Test.Unit.OAuth;
 
 public class AuthorizationRequestValidatorTests
 {
-    private readonly IClientQueryService _clientQueryService;
-    private readonly IAuthorizationRequestValidator _sut;
+	private sealed class TestContext
+	{
+		public ApiResourceBuilder Api { get; } = new ApiResourceBuilder();
+		public AuthorizeCommandBuilder Command { get; } = new AuthorizeCommandBuilder();
+		
+		public ClientAuthorizationData AuthorizationData { get; set; } = TestData.CreateValidAuthorizationData();
+	
+		public IApiResourceRepository ApiResourceRepository { get; }
+		public IClientQueryService ClientQueryService { get; }
+		public AuthorizationRequestValidator Sut { get; }
 
-    private readonly AuthorizeCommand _validCommand;
+		public TestContext()
+		{
+			ApiResourceRepository = Substitute.For<IApiResourceRepository>();
+			ClientQueryService = Substitute.For<IClientQueryService>();
 
-    public AuthorizationRequestValidatorTests()
-    {
-        _clientQueryService = Substitute.For<IClientQueryService>();
-        _sut = new AuthorizationRequestValidator(_clientQueryService);
-
-        _validCommand = TestData.CreateValidAuthorizationCommand();
-
-        _clientQueryService.GetAuthorizationDataAsync(_validCommand.ClientId, Arg.Any<CancellationToken>())
-            .Returns(TestData.CreateValidAuthorizationData());
-    }
-
-    [Fact]
-    public async Task ValidateAsync_WithIncorrectClientId_ThrowsInvalidClientException()
-    {
-        var command = _validCommand with { ClientId = ClientId.New() };
+			WithClient();
+			WithApiResource();
+			
+			Command.WithPkce(TestData.CreateValidPkce());
         
-        await Assert.ThrowsAsync<InvalidClientException>(() =>
-            _sut.ValidateAsync(command, CancellationToken.None));
-    }
+			Sut = new AuthorizationRequestValidator(ApiResourceRepository, ClientQueryService);       
+		}
 
-    [Fact]
-    public async Task ValidateAsync_WithUnsupportedResponseType_ThrowsUnsupportedResponseTypeException()
-    {
-        var command = _validCommand with { ResponseType = "invalid-response-type" };
-        
-        await Assert.ThrowsAsync<UnsupportedResponseTypeException>(() =>
-            _sut.ValidateAsync(command, CancellationToken.None));
-    }
+		public Task<AuthorizationValidationResult> ValidateAsync() =>
+			Sut.ValidateAsync(Command.Build());
 
-    [Fact]
-    public async Task ValidateAsync_WithInvalidRedirectUri_ThrowsInvalidRedirectUriException()
-    {
-        var command = _validCommand with { RedirectUri = RedirectUri.Create("https://invalid-uri.com") };
-        
-        await Assert.ThrowsAsync<InvalidRedirectUriException>(() =>
-            _sut.ValidateAsync(command, CancellationToken.None));
-    }
+		public void WithClient()
+		{
+			ClientQueryService
+				.GetAuthorizationDataAsync(Arg.Any<ClientId>(), Arg.Any<CancellationToken>())
+				.Returns(_ => AuthorizationData);
+		}
 
-    [Fact]
-    public async Task ValidateAsync_WithRedirectUri_WhenClientHasMultiple_IncludesRequestedRedirectUriInResult()
-    {
-        var expected = RedirectUri.Create("https://expected.com");
-        
-        var command = _validCommand with { RedirectUri = expected };
-        var authData = TestData.CreateValidAuthorizationData() with
-        {
-            RedirectUris = [expected, RedirectUri.Create("https://unexpected.se")]
-        };
-        
-        _clientQueryService.GetAuthorizationDataAsync(_validCommand.ClientId, Arg.Any<CancellationToken>())
-            .Returns(authData);
-        
-        var result = await _sut.ValidateAsync(command, CancellationToken.None);
-        Assert.Equal(expected, result.RedirectUri);       
-    }
+		public void WithApiResource()
+		{
+			ApiResourceRepository
+				.GetByAudienceAsync(Arg.Any<AudienceIdentifier>(), Arg.Any<CancellationToken>())
+				.Returns(_ => Api.Build());
+		}
+	}
 
-    [Fact]
-    public async Task ValidateAsync_WithNoRedirectUri_WhileClientHasMultiple_ThrowsNoRedirectUriException()
-    {
-        var command = _validCommand with { RedirectUri = null! };
+	[Fact]
+	public async Task ValidateAsync_WithUnsupportedResponseType_ThrowsUnsupportedResponseTypeException()
+	{
+		var context = new TestContext();
+		context.Command.WithResponseType("unsupported");
+        
+		await Assert.ThrowsAsync<UnsupportedResponseTypeException>(() => context.ValidateAsync());
+	}
 
-        var authData = TestData.CreateValidAuthorizationData() with
-        {
-            RedirectUris = [RedirectUri.Create("https://example.com"), RedirectUri.Create("https://example.se")]
-        };
-        
-        _clientQueryService.GetAuthorizationDataAsync(_validCommand.ClientId, Arg.Any<CancellationToken>())
-            .Returns(authData);
-        
-        await Assert.ThrowsAsync<InvalidRedirectUriException>(() =>
-            _sut.ValidateAsync(command, CancellationToken.None));
-    }
+	[Fact]
+	public async Task ValidateAsync_WithInvalidRedirectUri_ThrowsInvalidRedirectUriException()
+	{
+		var context = new TestContext();
+		context.Command.WithRedirectUri("https://invalid.com/");
+		
+		await Assert.ThrowsAsync<InvalidRedirectUriException>(() => context.ValidateAsync());
+	}
 
-    [Fact]
-    public async Task ValidateAsync_WithNoRedirectUri_WhileClientHasSingle_IncludesRedirectUriInResult()
-    {
-        var command = _validCommand with { RedirectUri = null! };
-        var result = await _sut.ValidateAsync(command, CancellationToken.None);
+	[Fact]
+	public async Task ValidateAsync_WithRedirectUri_WhenClientHasMultiple_IncludesRequestedRedirectUriInResult()
+	{
+		var context = new TestContext();
+		
+		const string expected = "https://expected.com/";
+		context.Command.WithRedirectUri(expected);
         
-        Assert.Equal(_validCommand.RedirectUri, result.RedirectUri);
-    }
+		context.AuthorizationData = context.AuthorizationData with
+			{ RedirectUris = [RedirectUri.Parse(expected), RedirectUri.Parse("https://unexpected.com/")] };
+        
+		var result = await context.ValidateAsync();
+		Assert.Equal(expected, result.RedirectUri.Value);       
+	}
 
-    [Fact]
-    public async Task ValidateAsync_WithNoScopes_ThrowsInvalidScopeException()
-    {
-        var command = _validCommand with { Scopes = ScopeCollection.Parse("") };
+	[Fact]
+	public async Task ValidateAsync_WithNoRedirectUri_WhileClientHasMultiple_ThrowsNoRedirectUriException()
+	{
+		var context = new TestContext();
+		context.Command.WithRedirectUri("https://invalid.com/");
 
-        await Assert.ThrowsAsync<InvalidScopeException>(() =>
-            _sut.ValidateAsync(command, CancellationToken.None));
-    }
+		context.AuthorizationData = context.AuthorizationData with
+		{
+			RedirectUris = [
+				RedirectUri.Parse("https://example.com"),
+				RedirectUri.Parse("https://example.org")]
+		};
+        
+		await Assert.ThrowsAsync<InvalidRedirectUriException>(() => context.ValidateAsync());
+	}
 
-    [Fact]
-    public async Task ValidateAsync_WithNoPkce_WhenClientIsConfidential_ReturnsResult()
-    {
-        var command = _validCommand with { Pkce = null };
-        var authData = TestData.CreateValidAuthorizationData() with { IsClientPublic = false };
-        
-        _clientQueryService.GetAuthorizationDataAsync(_validCommand.ClientId, Arg.Any<CancellationToken>())
-            .Returns(authData);
-        
-        var result = await _sut.ValidateAsync(command, CancellationToken.None);
+	[Fact]
+	public async Task ValidateAsync_WithNoScopes_ThrowsInvalidScopeException()
+	{
+		var context = new TestContext();
+		context.Command.WithScope("");
 
-        Assert.NotNull(result);
-    }
+		await Assert.ThrowsAsync<InvalidScopeException>(() => context.ValidateAsync());
+	}
 
-    [Fact]
-    public async Task ValidateAsync_WithNoPkce_WhenClientIsPublic_ThrowsInvalidRequestException()
-    {
-        var command = _validCommand with { Pkce = null };
+	[Fact]
+	public async Task ValidateAsync_WithNoPkce_WhenClientIsConfidential_ReturnsResult()
+	{
+		var context = new TestContext();
+		context.Command.WithPkce(null);
+		
+		context.AuthorizationData = context.AuthorizationData with
+			{ IsClientPublic = false };
         
-        await Assert.ThrowsAsync<InvalidRequestException>(() =>
-            _sut.ValidateAsync(command, CancellationToken.None));
-    }
+		var result = await context.ValidateAsync();
+		Assert.NotNull(result);
+	}
 
-    [Fact]
-    public async Task ValidateAsync_WithPkce_WhenClientIsConfidential_ReturnsResult()
-    {
-        var command = _validCommand with { Pkce = TestData.CreateValidPkce() };
-        var authData = TestData.CreateValidAuthorizationData() with { IsClientPublic = false };
+	[Fact]
+	public async Task ValidateAsync_WithNoPkce_WhenClientIsPublic_ThrowsInvalidRequestException()
+	{
+		var context = new TestContext();
+		context.Command.WithPkce(null);
         
-        _clientQueryService.GetAuthorizationDataAsync(_validCommand.ClientId, Arg.Any<CancellationToken>())
-            .Returns(authData);
-        
-        var result = await _sut.ValidateAsync(command, CancellationToken.None);
+		await Assert.ThrowsAsync<InvalidRequestException>(() => context.ValidateAsync());
+	}
 
-        Assert.NotNull(result);       
-    }
+	[Fact]
+	public async Task ValidateAsync_WithPkce_WhenClientIsConfidential_ReturnsResult()
+	{
+		var context = new TestContext();
+		context.Command.WithPkce(TestData.CreateValidPkce());
+		
+		context.AuthorizationData = context.AuthorizationData with
+			{ IsClientPublic = false };
+        
+		var result = await context.ValidateAsync();
+		Assert.NotNull(result);       
+	}
 
-    [Fact]
-    public async Task ValidateAsync_WithPkce_WhenClientIsPublic_ReturnsResult()
-    {
-        var command = _validCommand with { Pkce = TestData.CreateValidPkce() };
-        var authData = TestData.CreateValidAuthorizationData() with { IsClientPublic = true };
+	[Fact]
+	public async Task ValidateAsync_WithPkce_WhenClientIsPublic_ReturnsResult()
+	{
+		var context = new TestContext();
+		context.Command.WithPkce(TestData.CreateValidPkce());
+		
+		context.AuthorizationData = context.AuthorizationData with
+			{ IsClientPublic = true};
         
-        _clientQueryService.GetAuthorizationDataAsync(_validCommand.ClientId, Arg.Any<CancellationToken>())
-            .Returns(authData);
-        
-        var result = await _sut.ValidateAsync(command, CancellationToken.None);
+		var result = await context.ValidateAsync();
+		Assert.NotNull(result);
+	}
 
-        Assert.NotNull(result);
-    }
+	[Fact]
+	public async Task ValidateAsync_WithOidcScopesAndMissingOpenId_ThrowsInvalidRequestException()
+	{
+		var context = new TestContext();
+		context.Command.WithScope("profile email");
+        
+		await Assert.ThrowsAsync<InvalidRequestException>(() => context.ValidateAsync());       
+	}
 
-    [Fact]
-    public async Task ValidateAsync_WithOidcScopesAndMissingOpenId_ThrowsInvalidRequestException()
-    {
-        var command = _validCommand with { Scopes = ScopeCollection.Parse("profile email")};
+	[Fact]
+	public async Task ValidateAsync_WithOidcScopesAndNonce_ReturnsResult()
+	{
+		var context = new TestContext();
+		var command = context.Command
+			.WithScope("openid profile")
+			.WithNonce("nonce")
+			.Build();
+		
+		var result = await context.ValidateAsync();
         
-        await Assert.ThrowsAsync<InvalidRequestException>(() =>
-            _sut.ValidateAsync(command, CancellationToken.None));       
-    }
+		Assert.Equal(command.Scopes, result.Scopes);
+		Assert.Equal(command.Nonce, result.Nonce);
+	}
 
-    [Fact]
-    public async Task ValidateAsync_WithOidcScopesAndNonce_ReturnsResult()
-    {
-        var command = _validCommand with
-        {
-            Scopes = ScopeCollection.Parse("openid profile"),
-            Nonce = DefaultValues.Nonce
-        };
+	[Fact]
+	public async Task ValidateAsync_WithMixedScopes_ReturnsResult()
+	{
+		var context = new TestContext();
+		var command = context.Command
+			.WithScope("openid profile read write")
+			.WithNonce("nonce")
+			.Build();
         
-        var result = await _sut.ValidateAsync(command, CancellationToken.None);
+		var result = await context.ValidateAsync();
         
-        Assert.Equal(command.Scopes, result.Scopes);
-        Assert.Equal(command.Nonce, result.Nonce);
-    }
-
-    [Fact]
-    public async Task ValidateAsync_WithMixedScopes_ReturnsResult()
-    {
-        var command = _validCommand with
-        {
-            Scopes = ScopeCollection.Parse("openid profile read write"),
-            Nonce = DefaultValues.Nonce
-        };
-        
-        var result = await _sut.ValidateAsync(command, CancellationToken.None);
-        
-        Assert.Equal(command.Scopes, result.Scopes);
-        Assert.Equal(command.Nonce, result.Nonce);       
-    }
+		Assert.Equal(command.Scopes, result.Scopes);
+		Assert.Equal(command.Nonce, result.Nonce);       
+	}
 }

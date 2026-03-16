@@ -3,17 +3,17 @@ using Microsoft.Extensions.Time.Testing;
 using OpenAuth.Domain.Clients.ApplicationType;
 using OpenAuth.Domain.Clients.Secrets;
 using OpenAuth.Test.Common.Builders;
-using OpenAuth.Test.Integration.Infrastructure.Fixtures;
+using OpenAuth.Test.Common.Infrastructure;
 
 namespace OpenAuth.Test.Integration.Clients.Persistence;
 
 [Collection("sqlserver")]
 public class SecretMappingTests : IAsyncLifetime
 {
-    private readonly SqlServerFixture _fx;
+    private readonly SqlServer _fx;
     private readonly TimeProvider _time = new FakeTimeProvider();
     
-    public SecretMappingTests(SqlServerFixture fx) => _fx = fx;
+    public SecretMappingTests(SqlServer fx) => _fx = fx;
 
     public Task InitializeAsync() => _fx.ResetAsync();
     public Task DisposeAsync() => Task.CompletedTask;

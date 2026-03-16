@@ -1,3 +1,4 @@
+using OpenAuth.Domain.ApiResources.ValueObjects;
 using OpenAuth.Domain.Clients.ValueObjects;
 
 namespace OpenAuth.Application.Tokens.Dtos;
@@ -5,7 +6,7 @@ namespace OpenAuth.Application.Tokens.Dtos;
 public sealed record TokenContext(
     ScopeCollection Scope,
     string? ClientId,
-    string? Audience = null,
+    AudienceIdentifier? Audience = null,
     string? Subject = null,
     OidcContext? OidcContext = null
 );

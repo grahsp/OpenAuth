@@ -1,77 +1,84 @@
 using OpenAuth.Application.OAuth.Authorization.Handlers;
+using OpenAuth.Domain.ApiResources.ValueObjects;
 using OpenAuth.Domain.AuthorizationGrants.ValueObjects;
+using OpenAuth.Domain.Clients.ValueObjects;
 using OpenAuth.Test.Common.Helpers;
 
 namespace OpenAuth.Test.Common.Builders;
 
-public class AuthorizeCommandBuilder
+public sealed class AuthorizeCommandBuilder
 {
-    private string _responseType = DefaultValues.ResponseType;
-    private string _clientId = DefaultValues.ClientId;
-    private string _subject = DefaultValues.Subject;
-    private string _redirectUri = DefaultValues.RedirectUri;
-    private string _scopes = DefaultValues.Scopes;
-    private string? _codeChallenge;
-    private string? _codeMethod;
-    private string? _nonce;
+	private string _responseType = DefaultValues.ResponseType;
+	private ClientId _clientId = ClientId.Parse(DefaultValues.ClientId);
+	private string _subject = DefaultValues.Subject;
+	private string _redirectUri = DefaultValues.RedirectUri;
+	private string _audience = DefaultValues.ApiAudience;
+	private string _scope = DefaultValues.Scopes;
+	private Pkce? _pkce;
+	private string? _nonce;
 
-    public AuthorizeCommandBuilder()
-    {
-    }
+	public AuthorizeCommandBuilder WithResponseType(string responseType)
+	{
+		_responseType = responseType;
+		return this;
+	}
     
-    public AuthorizeCommandBuilder WithResponseType(string responseType)
-    {
-        _responseType = responseType;
-        return this;
-    }
+	public AuthorizeCommandBuilder WithClientId(ClientId clientId)
+	{
+		_clientId = clientId;
+		return this;
+	}
 
-    public AuthorizeCommandBuilder WithClientId(string clientId)
-    {
-        _clientId = clientId;
-        return this;
-    }
+	public AuthorizeCommandBuilder WithSubject(string subject)
+	{
+		_subject = subject;
+		return this;
+	}
     
-    public AuthorizeCommandBuilder WithSubject(string subject)
-    {
-        _subject = subject;
-        return this;
-    }
+	public AuthorizeCommandBuilder WithRedirectUri(string redirectUri)
+	{
+		_redirectUri = redirectUri;
+		return this;
+	}
     
-    public AuthorizeCommandBuilder WithRedirectUri(string redirectUri)
-    {
-        _redirectUri = redirectUri;
-        return this;
-    }
+	public AuthorizeCommandBuilder WithAudience(string audience)
+	{
+		_audience = audience;
+		return this;
+	}
     
-    public AuthorizeCommandBuilder WithScopes(string scopes)
-    {
-        _scopes = scopes;
-        return this;
-    }
+	public AuthorizeCommandBuilder WithScope(string scope)
+	{
+		_scope = scope;
+		return this;
+	}
+    
+	public AuthorizeCommandBuilder WithPkce(Pkce? pkce)
+	{
+		_pkce = pkce;
+		return this;
+	}
+    
+	public AuthorizeCommandBuilder WithNonce(string? nonce)
+	{
+		_nonce = nonce;
+		return this;
+	}
 
-    public AuthorizeCommandBuilder WithPkce(Pkce pkce)
-    {
-        _codeChallenge = pkce.CodeChallenge;
-        _codeMethod = pkce.CodeChallengeMethod.ToString();
-        
-        return this;
-    }
+	public AuthorizeCommand Build()
+	{
+		var redirectUri = RedirectUri.Parse(_redirectUri);
+		var audience = new AudienceIdentifier(_audience);
+		var scope = ScopeCollection.Parse(_scope);
 
-    public AuthorizeCommandBuilder WithNonce(string nonce)
-    {
-        _nonce = nonce;
-        return this;
-    }
-    
-    public AuthorizeCommand Build()
-        => AuthorizeCommand.Create(
-            _responseType,
-            _clientId,
-            _subject,
-            _redirectUri,
-            _scopes,
-            _codeChallenge,
-            _codeMethod,
-            _nonce
-        );
+		return AuthorizeCommand.Create(
+			_responseType,
+			_clientId,
+			_subject,
+			redirectUri,
+			audience,
+			scope,
+			_pkce,
+			_nonce);
+	}
 }

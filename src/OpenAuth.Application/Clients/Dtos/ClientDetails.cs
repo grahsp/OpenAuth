@@ -1,4 +1,4 @@
-using OpenAuth.Application.Audiences.Dtos;
+using OpenAuth.Application.Clients.Mappings;
 using OpenAuth.Application.Secrets.Dtos;
 using OpenAuth.Domain.Clients.ValueObjects;
 
@@ -10,5 +10,5 @@ public record ClientDetails(
     DateTimeOffset CreatedAt,
     DateTimeOffset UpdatedAt,
     IEnumerable<SecretInfo> Secrets,
-    IEnumerable<AudienceInfo> Audiences
+    IEnumerable<ClientApiAccessDetails> ApiAccess
 );

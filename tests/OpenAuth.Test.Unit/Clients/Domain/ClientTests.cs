@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Time.Testing;
+using OpenAuth.Domain.ApiResources;
 using OpenAuth.Domain.Clients;
 using OpenAuth.Domain.Clients.ApplicationType;
 using OpenAuth.Domain.Clients.Secrets.ValueObjects;
@@ -121,7 +122,7 @@ public class ClientTests
     
     public class SetRedirectUris : ClientTests
     {
-        private static readonly RedirectUri Uri = RedirectUri.Create("https://example.com/callback");
+        private static readonly RedirectUri Uri = RedirectUri.Parse("https://example.com/callback");
         
         
         [Fact]
@@ -133,7 +134,7 @@ public class ClientTests
             
             _time.Advance(TimeSpan.FromMinutes(5));
             
-            var expectedUris = new[] { Uri };
+            var expectedUris = new[] { RedirectUri.Parse("https://invalid.com/")};
             var expectedTime = _time.GetUtcNow();
             
             client.SetRedirectUris(expectedUris, expectedTime);
@@ -207,101 +208,86 @@ public class ClientTests
                 => client.SetRedirectUris(null!, _time.GetUtcNow()));
         }
     }
-    
-    public class SetAudiences : ClientTests
+ 
+    public sealed class AuthorizeApiTests : ClientTests
     {
-        private static readonly Audience ApiAudience =
-            new(AudienceName.Create("api"), ScopeCollection.Parse("read write"));
-        
-        private static readonly Audience WebAudience =
-            new(AudienceName.Create("web"), ScopeCollection.Parse("read"));
-        
-        
-        [Fact]
-        public void WhenValid_ReplaceExistingAndUpdateTimestamp()
-        {
-            var client = new ClientBuilder()
-                .CreatedAt(_time.GetUtcNow())
+        private static readonly ApiResource OrdersApiResource =
+            new ApiResourceBuilder()
+                .WithName("Orders")
+                .WithPermission("read", "access to view data.")
+                .WithPermission("write", "access to modify data.")
                 .Build();
-            
-            _time.Advance(TimeSpan.FromMinutes(5));
-            
-            var expectedAudiences = new[] { ApiAudience, WebAudience };
-            var expectedTime = _time.GetUtcNow();
-            
-            client.SetAudiences(expectedAudiences, expectedTime);
-            
-            Assert.Equal(expectedAudiences, client.AllowedAudiences);
-            Assert.Equal(expectedTime, client.UpdatedAt);
-        }
+
+        private static readonly ApiResource UsersApiResource =
+            new ApiResourceBuilder()
+                .WithName("Users")
+                .WithPermission("read", "access to view data.")
+                .Build();
 
         [Fact]
-        public void WhenSameAudiences_DoesNotUpdate()
+        public void WhenValid_AddsApiAccessAndUpdatesTimestamp()
         {
-            var expectedTime = _time.GetUtcNow();
-            var expectedAudiences = new[] { ApiAudience };
-            
+            var createdAt = _time.GetUtcNow();
             var client = new ClientBuilder()
-                .WithAudience(ApiAudience)
-                .CreatedAt(expectedTime)
+                .CreatedAt(createdAt)
                 .Build();
 
             _time.Advance(TimeSpan.FromMinutes(5));
-            client.SetAudiences(expectedAudiences, _time.GetUtcNow());
-            
-            Assert.Equal(expectedAudiences, client.AllowedAudiences);
-            Assert.Equal(expectedTime, client.UpdatedAt);
+            var updatedAt = _time.GetUtcNow();
+
+            client.GrantApiAccess(
+                OrdersApiResource.Id,
+                ScopeCollection.Parse("read write"),
+                updatedAt);
+
+            Assert.Single(client.Apis);
+            Assert.Equal(updatedAt, client.UpdatedAt);
         }
 
         [Fact]
-        public void WhenDuplicateNames_ThrowsException()
+        public void WhenAuthorizingSecondApi_AddsBoth()
         {
             var client = new ClientBuilder().Build();
-            
-            var audiences = new[] { ApiAudience, ApiAudience };
 
-            Assert.Throws<InvalidOperationException>(()
-                => client.SetAudiences(audiences, _time.GetUtcNow()));
+            client.GrantApiAccess(
+                OrdersApiResource.Id,
+                ScopeCollection.Parse("read"),
+                _time.GetUtcNow());
+
+            client.GrantApiAccess(
+                UsersApiResource.Id,
+                ScopeCollection.Parse("read"),
+                _time.GetUtcNow());
+
+            Assert.Equal(2, client.Apis.Count);
         }
 
         [Fact]
-        public void WhenEmptyCollectionAndApplicationTypeDoesNotRequireIt_ClientIsInValidState()
+        public void WhenSameApiAuthorizedTwice_ThrowsException()
         {
-            var client = new ClientBuilder()
-                .WithApplicationType(ClientApplicationTypes.Spa)
-                .WithAudience(ApiAudience)
-                .Build();
-            
-            client.SetAudiences([], _time.GetUtcNow());
-            client.ValidateClient();
+            var client = new ClientBuilder().Build();
 
-            Assert.Empty(client.AllowedAudiences);
+            client.GrantApiAccess(
+                OrdersApiResource.Id,
+                ScopeCollection.Parse("read"),
+                _time.GetUtcNow());
+
+            Assert.Throws<InvalidOperationException>(() =>
+                client.GrantApiAccess(
+                    OrdersApiResource.Id,
+                    ScopeCollection.Parse("read"),
+                    _time.GetUtcNow()));
         }
 
-        [Fact]
-        public void WhenEmptyCollectionAndApplicationTypeRequiresIt_ThrowsException()
-        {
-            var client = new ClientBuilder()
-                .WithApplicationType(ClientApplicationTypes.M2M)
-                .WithAudience(ApiAudience)
-                .Build();
-            
-            client.SetAudiences([], _time.GetUtcNow());
-            
-            Assert.Throws<InvalidOperationException>(()
-                => client.ValidateClient());
-        }
+    [Fact]
+    public void WhenClientHasNoApis_ClientIsStillValid()
+    {
+        var client = new ClientBuilder().Build();
 
-        [Fact]
-        public void WhenAudiencesNull_ThrowsException()
-        {
-            var client = new ClientBuilder()
-                .Build();
-
-            Assert.Throws<ArgumentNullException>(()
-                => client.SetAudiences(null!, _time.GetUtcNow()));
-        }
+        Assert.Empty(client.Apis);
     }
+}
+
 
     public class Rename : ClientTests
     {
@@ -407,9 +393,9 @@ public class ClientTests
             var hash = new SecretHash("hash");
             
             var utcNow = _time.GetUtcNow();
-            var secretId = client.AddSecret(hash, utcNow);
+            var secret = client.AddSecret(hash, utcNow);
 
-            Assert.Contains(client.Secrets, s => s.Id == secretId && s.IsActive(utcNow));
+            Assert.Contains(client.Secrets, s => s.Id == secret.Id && s.IsActive(utcNow));
         }
         
         [Fact]

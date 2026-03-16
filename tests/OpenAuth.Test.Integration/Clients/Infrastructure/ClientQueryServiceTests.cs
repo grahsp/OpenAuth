@@ -4,19 +4,19 @@ using OpenAuth.Domain.Clients.ValueObjects;
 using OpenAuth.Infrastructure.Clients.Persistence;
 using OpenAuth.Infrastructure.Persistence;
 using OpenAuth.Test.Common.Builders;
-using OpenAuth.Test.Integration.Infrastructure.Fixtures;
+using OpenAuth.Test.Common.Infrastructure;
 
 namespace OpenAuth.Test.Integration.Clients.Infrastructure;
 
 [Collection("sqlserver")]
 public class ClientQueryServiceTests : IAsyncLifetime
 {
-    private SqlServerFixture _fx;
+    private SqlServer _fx;
     private AppDbContext _context;
     private FakeTimeProvider _time;
     private ClientQueryService _sut;
 
-    public ClientQueryServiceTests(SqlServerFixture fx)
+    public ClientQueryServiceTests(SqlServer fx)
     {
         _fx = fx;
         _context = _fx.CreateContext();
@@ -31,7 +31,7 @@ public class ClientQueryServiceTests : IAsyncLifetime
         => Task.CompletedTask;
 
     
-    public class GetByIdAsync(SqlServerFixture fx) : ClientQueryServiceTests(fx)
+    public class GetByIdAsync(SqlServer fx) : ClientQueryServiceTests(fx)
     {
         [Fact]
         public async Task ReturnsClientSummary_WhenClientExists()
@@ -64,7 +64,7 @@ public class ClientQueryServiceTests : IAsyncLifetime
         }
     }
     
-    public class GetByNameAsync(SqlServerFixture fx) : ClientQueryServiceTests(fx)
+    public class GetByNameAsync(SqlServer fx) : ClientQueryServiceTests(fx)
     {
         [Fact]
         public async Task ReturnsClientSummary_WhenClientExists()
@@ -97,7 +97,7 @@ public class ClientQueryServiceTests : IAsyncLifetime
         }
     }
 
-    public class GetDetailsAsync(SqlServerFixture fx) : ClientQueryServiceTests(fx)
+    public class GetDetailsAsync(SqlServer fx) : ClientQueryServiceTests(fx)
     {
         [Fact]
         public async Task ReturnsClientDetails_WhenClientExists()
@@ -196,7 +196,7 @@ public class ClientQueryServiceTests : IAsyncLifetime
         }
     }
 
-    public class GetPagedAsync(SqlServerFixture fx) : ClientQueryServiceTests(fx)
+    public class GetPagedAsync(SqlServer fx) : ClientQueryServiceTests(fx)
     {
         [Fact]
         public async Task ReturnsCorrectPage()
@@ -285,7 +285,7 @@ public class ClientQueryServiceTests : IAsyncLifetime
     // ExistsAsync
     // ============================================
     
-    public class ExistsAsync(SqlServerFixture fx) : ClientQueryServiceTests(fx)
+    public class ExistsAsync(SqlServer fx) : ClientQueryServiceTests(fx)
     {
         [Fact]
         public async Task ReturnsTrue_WhenClientExists()
@@ -333,7 +333,7 @@ public class ClientQueryServiceTests : IAsyncLifetime
         }
     }
     
-    public class NameExistsAsync(SqlServerFixture fx) : ClientQueryServiceTests(fx)
+    public class NameExistsAsync(SqlServer fx) : ClientQueryServiceTests(fx)
     {
         [Fact]
         public async Task ReturnsTrue_WhenNameExists()

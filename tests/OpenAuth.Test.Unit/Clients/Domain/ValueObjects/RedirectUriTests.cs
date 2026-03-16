@@ -12,7 +12,7 @@ public class RedirectUriTests
     public void Create_WithValidUri_Succeeds(string uri)
     {
         // Act
-        var redirectUri = RedirectUri.Create(uri);
+        var redirectUri = RedirectUri.Parse(uri);
         
         // Assert
         Assert.Equal(uri, redirectUri.Value);
@@ -25,7 +25,7 @@ public class RedirectUriTests
     public void Create_WithNullOrWhitespace_ThrowsArgumentException(string? uri)
     {
         // Act & Assert
-        var exception = Assert.Throws<ArgumentException>(() => RedirectUri.Create(uri!));
+        var exception = Assert.Throws<ArgumentException>(() => RedirectUri.Parse(uri!));
         Assert.Contains("invalid redirect uri", exception.Message, StringComparison.OrdinalIgnoreCase);
     }
     
@@ -37,7 +37,7 @@ public class RedirectUriTests
     public void Create_WithInvalidScheme_ThrowsArgumentException(string uri)
     {
         // Act & Assert
-        Assert.Throws<ArgumentException>(() => RedirectUri.Create(uri));
+        Assert.Throws<ArgumentException>(() => RedirectUri.Parse(uri));
     }
     
     [Theory]
@@ -49,17 +49,17 @@ public class RedirectUriTests
     public void Create_BehavesConsistentlyWithTryCreate(string uri)
     {
         // Arrange
-        var tryResult = RedirectUri.TryCreate(uri, out var redirectUri);
+        var tryResult = RedirectUri.TryParse(uri, out var redirectUri);
 
         // Act
         if (tryResult)
         {
-            var created = RedirectUri.Create(uri);
+            var created = RedirectUri.Parse(uri);
             Assert.Equal(redirectUri, created);
         }
         else
         {
-            Assert.Throws<ArgumentException>(() => RedirectUri.Create(uri));
+            Assert.Throws<ArgumentException>(() => RedirectUri.Parse(uri));
         }
     }
     
@@ -67,8 +67,8 @@ public class RedirectUriTests
     public void TwoRedirectUris_WithSameValue_AreEqual()
     {
         // Arrange
-        var uri1 = RedirectUri.Create("https://app.com/callback");
-        var uri2 = RedirectUri.Create("https://app.com/callback");
+        var uri1 = RedirectUri.Parse("https://app.com/callback");
+        var uri2 = RedirectUri.Parse("https://app.com/callback");
         
         // Assert
         Assert.Equal(uri1, uri2);
@@ -81,8 +81,8 @@ public class RedirectUriTests
         // Arrange
         var set = new HashSet<RedirectUri>
         {
-            RedirectUri.Create("https://app.com/callback"),
-            RedirectUri.Create("https://app.com/callback") // duplicate
+            RedirectUri.Parse("https://app.com/callback"),
+            RedirectUri.Parse("https://app.com/callback") // duplicate
         };
         
         // Assert
@@ -93,8 +93,8 @@ public class RedirectUriTests
     public void TwoRedirectUris_WithDifferentValues_AreNotEqual()
     {
         // Arrange
-        var uri1 = RedirectUri.Create("https://app.com/callback");
-        var uri2 = RedirectUri.Create("https://other.com/callback");
+        var uri1 = RedirectUri.Parse("https://app.com/callback");
+        var uri2 = RedirectUri.Parse("https://other.com/callback");
         
         // Assert
         Assert.NotEqual(uri1, uri2);

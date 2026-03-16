@@ -6,17 +6,17 @@ using OpenAuth.Domain.SigningKeys.Enums;
 using OpenAuth.Domain.SigningKeys.ValueObjects;
 using OpenAuth.Infrastructure.SigningKeys.KeyMaterials;
 using OpenAuth.Infrastructure.SigningKeys.Persistence;
-using OpenAuth.Test.Integration.Infrastructure.Fixtures;
+using OpenAuth.Test.Common.Infrastructure;
 
 namespace OpenAuth.Test.Integration.SigningKeys.Application;
 
 [Collection("sqlserver")]
 public class SigningKeyServiceTests : IAsyncLifetime
 {
-    private readonly SqlServerFixture _fx;
+    private readonly SqlServer _fx;
     private readonly FakeTimeProvider _time;
     
-    public SigningKeyServiceTests(SqlServerFixture fx)
+    public SigningKeyServiceTests(SqlServer fx)
     {
         _fx = fx;
         _time = new FakeTimeProvider();
@@ -39,7 +39,7 @@ public class SigningKeyServiceTests : IAsyncLifetime
 
     public class CreateAsync : SigningKeyServiceTests
     {
-        public CreateAsync(SqlServerFixture fx) : base(fx) { }
+        public CreateAsync(SqlServer fx) : base(fx) { }
 
         [Fact]
         public async Task CreatesAndPersistsKey()
@@ -136,7 +136,7 @@ public class SigningKeyServiceTests : IAsyncLifetime
 
     public class RevokeAsync : SigningKeyServiceTests
     {
-        public RevokeAsync(SqlServerFixture fx) : base(fx) { }
+        public RevokeAsync(SqlServer fx) : base(fx) { }
 
         [Fact]
         public async Task RevokesAndPersistsKey()

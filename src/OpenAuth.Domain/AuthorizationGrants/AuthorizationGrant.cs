@@ -1,3 +1,4 @@
+using OpenAuth.Domain.ApiResources.ValueObjects;
 using OpenAuth.Domain.AuthorizationGrants.ValueObjects;
 using OpenAuth.Domain.Clients.ValueObjects;
 
@@ -9,6 +10,8 @@ public class AuthorizationGrant
     public ClientId ClientId { get; }
     public string Subject { get; }
     public RedirectUri RedirectUri { get; }
+    
+    public AudienceIdentifier Audience { get; }
     public ScopeCollection GrantedScopes { get; }
     
     public string Code { get; }
@@ -27,6 +30,7 @@ public class AuthorizationGrant
         ClientId clientId,
         string subject,
         RedirectUri redirectUri,
+        AudienceIdentifier audience,
         ScopeCollection grantedScopes,
         Pkce? pkce,
         string? nonce,
@@ -37,6 +41,8 @@ public class AuthorizationGrant
         Subject = subject;
         
         RedirectUri = redirectUri;
+
+        Audience = audience;
         GrantedScopes = grantedScopes;
         
         Code = code;
@@ -53,6 +59,7 @@ public class AuthorizationGrant
         string subject,
         ClientId clientId,
         RedirectUri redirectUri,
+        AudienceIdentifier audience,
         ScopeCollection scopes,
         Pkce? pkce,
         string? nonce,
@@ -64,6 +71,7 @@ public class AuthorizationGrant
             clientId,
             subject,
             redirectUri,
+            audience,
             scopes,
             pkce,
             nonce,

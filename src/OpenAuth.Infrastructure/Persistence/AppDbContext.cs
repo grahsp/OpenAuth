@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using OpenAuth.Application.Abstractions;
+using OpenAuth.Domain.ApiResources;
 using OpenAuth.Domain.Clients;
 using OpenAuth.Domain.Clients.Secrets;
 using OpenAuth.Domain.SigningKeys;
@@ -8,11 +10,12 @@ using OpenAuth.Domain.Users;
 
 namespace OpenAuth.Infrastructure.Persistence;
 
-public class AppDbContext : IdentityDbContext<User, IdentityRole<Guid>, Guid>
+public class AppDbContext(DbContextOptions options)
+    : IdentityDbContext<User, IdentityRole<Guid>, Guid>(options), IUnitOfWork
 {
-    public AppDbContext(DbContextOptions options) : base(options) { }
-
     public DbSet<Client> Clients { get; set; }
+    public DbSet<ApiResource> ApiResources { get; set; }
+    public DbSet<ClientApiAccess> ClientApiAccesses { get; set; }
     public DbSet<Secret> ClientSecrets { get; set; }
     public DbSet<SigningKey> SigningKeys { get; set; }
 
@@ -22,7 +25,7 @@ public class AppDbContext : IdentityDbContext<User, IdentityRole<Guid>, Guid>
         builder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
     }
 
-    public override async Task<int> SaveChangesAsync(CancellationToken ct = default)
+    public async override Task<int> SaveChangesAsync(CancellationToken ct = default)
     {
         ValidateAggregates();
         return await base.SaveChangesAsync(ct);

@@ -4,10 +4,13 @@ using OpenAuth.Application.Oidc;
 using OpenAuth.Application.Tokens;
 using OpenAuth.Application.Tokens.Dtos;
 using OpenAuth.Application.Tokens.Flows;
+using OpenAuth.Domain.ApiResources.ValueObjects;
 using OpenAuth.Domain.AuthorizationGrants;
 using OpenAuth.Domain.AuthorizationGrants.ValueObjects;
+using OpenAuth.Domain.Clients.Secrets.ValueObjects;
 using OpenAuth.Domain.Clients.ValueObjects;
 using OpenAuth.Domain.OAuth;
+using OpenAuth.Domain.Services.Dtos;
 using OpenAuth.Domain.SigningKeys;
 using OpenAuth.Test.Common.Builders;
 
@@ -15,17 +18,11 @@ namespace OpenAuth.Test.Common.Helpers;
 
 public static class TestData
 {
-    public static Audience CreateValidAudience()
-        => new(AudienceName.Create(DefaultValues.Audience), ScopeCollection.Parse(DefaultValues.Scopes));
-
     public static Pkce CreateValidPkce(string? codeVerifier = null)
     {
         var verifier = codeVerifier ?? DefaultValues.CodeVerifier;
         return Pkce.FromVerifier(verifier, DefaultValues.CodeChallengeMethod);
     }
-
-    public static AuthorizationGrant CreateValidAuthorizationGrant()
-        => new AuthorizationGrantBuilder().Build();
 
     public static AuthorizeCommand CreateValidAuthorizationCommand()
         => new AuthorizeCommandBuilder()
@@ -36,9 +33,10 @@ public static class TestData
     public static AuthorizationValidationResult CreateValidAuthorizationValidationResult()
     {
         return new AuthorizationValidationResult(
-            ClientId.Create(DefaultValues.ClientId),
+            ClientId.Parse(DefaultValues.ClientId),
+            new AudienceIdentifier(DefaultValues.ApiAudience),
             ScopeCollection.Parse(DefaultValues.Scopes),
-            RedirectUri.Create(DefaultValues.RedirectUri),
+            RedirectUri.Parse(DefaultValues.RedirectUri),
             CreateValidPkce(),
             DefaultValues.Nonce
         );
@@ -47,10 +45,10 @@ public static class TestData
     public static ClientAuthorizationData CreateValidAuthorizationData()
     {
         return new ClientAuthorizationData(
-            ClientId.Create(DefaultValues.ClientId),
+            ClientId.Parse(DefaultValues.ClientId),
             true,
             [GrantType.AuthorizationCode],
-            [RedirectUri.Create(DefaultValues.RedirectUri)]
+            [RedirectUri.Parse(DefaultValues.RedirectUri)]
         );
     }
     
@@ -58,8 +56,8 @@ public static class TestData
     {
         return AuthorizationCodeTokenCommand.Create(
             DefaultValues.Code,
-            ClientId.Create(DefaultValues.ClientId),
-            RedirectUri.Create(DefaultValues.RedirectUri),
+            ClientId.Parse(DefaultValues.ClientId),
+            RedirectUri.Parse(DefaultValues.RedirectUri),
             ScopeCollection.Parse(DefaultValues.Scopes),
             DefaultValues.CodeVerifier,
             DefaultValues.ClientSecret
@@ -69,7 +67,6 @@ public static class TestData
     public static AuthorizationCodeValidationResult CreateValidAuthorizationCodeValidationResult()
     {
         return new AuthorizationCodeValidationResult(
-            AudienceName.Create(DefaultValues.Audience),
             ScopeCollection.Parse(DefaultValues.Scopes),
             ScopeCollection.Parse("")
         );
@@ -78,9 +75,8 @@ public static class TestData
     public static ClientTokenData CreateValidTokenData()
     {
         return new ClientTokenData(
-            ClientId.Create(DefaultValues.ClientId),
-            [CreateValidAudience()],
-            [GrantType.Create(DefaultValues.GrantType)],
+            ClientId.Parse(DefaultValues.ClientId),
+            [GrantType.Parse(DefaultValues.GrantType)],
             TimeSpan.FromMinutes(30)
         );
     }
@@ -90,7 +86,7 @@ public static class TestData
         return new TokenContext(
             ScopeCollection.Parse(DefaultValues.Scopes),
             DefaultValues.ClientId,
-            DefaultValues.Audience,
+            new AudienceIdentifier(DefaultValues.ApiAudience),
             DefaultValues.Subject,
             CreateValidOidcContext()
         );
@@ -100,7 +96,7 @@ public static class TestData
     {
         return new AccessTokenContext(
             DefaultValues.ClientId,
-            DefaultValues.Audience,
+            DefaultValues.ApiAudience,
             DefaultValues.Subject,
             3600,
             ScopeCollection.Parse(DefaultValues.Scopes)
@@ -140,7 +136,7 @@ public static class TestData
 
     public static JwtDescriptor CreateValidJwtDescriptor()
         => new JwtDescriptor(
-            DefaultValues.Audience,
+            DefaultValues.ApiAudience,
             DefaultValues.Subject,
             3600,
             new Dictionary<string, object> { { "scope", "openid" } });

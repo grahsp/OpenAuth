@@ -1,4 +1,5 @@
 using OpenAuth.Application.Tokens.Dtos;
+using OpenAuth.Domain.ApiResources.ValueObjects;
 using OpenAuth.Domain.Clients.ValueObjects;
 using OpenAuth.Test.Common.Helpers;
 
@@ -6,15 +7,15 @@ namespace OpenAuth.Test.Common.Builders;
 
 public class ClientCredentialsTokenCommandBuilder
 {
-    private string _clientId = DefaultValues.ClientId;
+    private ClientId _clientId = ClientId.Parse(DefaultValues.ClientId);
     private string _clientSecret = DefaultValues.ClientSecret;
-    private string _audience = DefaultValues.Audience;
+    private string _audience = DefaultValues.ApiAudience;
     private string _scopes = DefaultValues.Scopes;
 
     public ClientCredentialsTokenCommandBuilder()
     { }
 
-    public ClientCredentialsTokenCommandBuilder WithClientId(string clientId)
+    public ClientCredentialsTokenCommandBuilder WithClientId(ClientId clientId)
     {
         _clientId = clientId;
         return this;
@@ -40,12 +41,12 @@ public class ClientCredentialsTokenCommandBuilder
 
     public TokenCommand Build()
     {
-        var clientId = ClientId.Create(_clientId);
-        var audience = AudienceName.Create(_audience);
+        var audience = new AudienceIdentifier(_audience);
         var scopes = ScopeCollection.Parse(_scopes);
         
         return ClientCredentialsTokenCommand.Create(
-            clientId,
+            _clientId,
+            audience,
             scopes,
             _clientSecret
         );

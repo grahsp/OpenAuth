@@ -3,18 +3,18 @@ using OpenAuth.Domain.SigningKeys.Enums;
 using OpenAuth.Domain.SigningKeys.ValueObjects;
 using OpenAuth.Infrastructure.SigningKeys.Persistence;
 using OpenAuth.Test.Common.Builders;
-using OpenAuth.Test.Integration.Infrastructure.Fixtures;
+using OpenAuth.Test.Common.Infrastructure;
 
 namespace OpenAuth.Test.Integration.SigningKeys.Infrastructure;
 
 [Collection("sqlserver")]
 public class SigningKeyQueryServiceTests : IAsyncLifetime
 {
-    private SqlServerFixture _fx;
+    private SqlServer _fx;
     private FakeTimeProvider _time;
     private SigningKeyQueryService _sut;
 
-    public SigningKeyQueryServiceTests(SqlServerFixture fx)
+    public SigningKeyQueryServiceTests(SqlServer fx)
     {
         _fx = fx;
 
@@ -28,7 +28,7 @@ public class SigningKeyQueryServiceTests : IAsyncLifetime
     public Task DisposeAsync() => Task.CompletedTask;
 
     
-    public class GetCurrentAsync(SqlServerFixture fx) : SigningKeyQueryServiceTests(fx)
+    public class GetCurrentAsync(SqlServer fx) : SigningKeyQueryServiceTests(fx)
     {
         [Fact]
         public async Task ReturnsActiveKey_WhenExists()
@@ -137,7 +137,7 @@ public class SigningKeyQueryServiceTests : IAsyncLifetime
         }
     }
 
-    public class GetByIdAsync(SqlServerFixture fx) : SigningKeyQueryServiceTests(fx)
+    public class GetByIdAsync(SqlServer fx) : SigningKeyQueryServiceTests(fx)
     {
         [Fact]
         public async Task ReturnsKey_WhenExists()
@@ -211,7 +211,7 @@ public class SigningKeyQueryServiceTests : IAsyncLifetime
         }
     }
 
-    public class GetAllAsync(SqlServerFixture fx) : SigningKeyQueryServiceTests(fx)
+    public class GetAllAsync(SqlServer fx) : SigningKeyQueryServiceTests(fx)
     {
         [Fact]
         public async Task ReturnsAllKeys_OrderedByCreatedAtDescending()
@@ -301,7 +301,7 @@ public class SigningKeyQueryServiceTests : IAsyncLifetime
         }
     }
 
-    public class GetActiveAsync(SqlServerFixture fx) : SigningKeyQueryServiceTests(fx)
+    public class GetActiveAsync(SqlServer fx) : SigningKeyQueryServiceTests(fx)
     {
         [Fact]
         public async Task ReturnsOnlyActiveKeys()

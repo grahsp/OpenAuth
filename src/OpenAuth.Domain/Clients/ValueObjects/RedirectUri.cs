@@ -1,21 +1,18 @@
-using System.Diagnostics.CodeAnalysis;
-using OpenAuth.Domain.Shared.Interfaces;
-
 namespace OpenAuth.Domain.Clients.ValueObjects;
 
-public record RedirectUri(string Value) : ICreate<string, RedirectUri>
+public readonly record struct RedirectUri(string Value)
 {
-    public static RedirectUri Create(string uri)
+    public static RedirectUri Parse(string uri)
     {
-        if (!TryCreate(uri, out var redirectUri))
+        if (!TryParse(uri, out var redirectUri))
             throw new ArgumentException($"Invalid redirect URI: {uri}", nameof(uri));
 
         return redirectUri;
     }
 
-    public static bool TryCreate(string? uri, [NotNullWhen(true)] out RedirectUri? redirectUri)
+    public static bool TryParse(string? uri, out RedirectUri redirectUri)
     {
-        redirectUri = null;
+        redirectUri = default;
         
         if (string.IsNullOrWhiteSpace(uri))
             return false;
@@ -30,5 +27,6 @@ public record RedirectUri(string Value) : ICreate<string, RedirectUri>
         return true;
     }
     
+    public static implicit operator string(RedirectUri uri) => uri.Value;    
     public override string ToString() => Value;
 }

@@ -36,6 +36,7 @@ public class AuthorizationHandler : IAuthorizationHandler
             command.Subject,
             result.ClientId,
             result.RedirectUri,
+            result.Audience,
             result.Scopes,
             result.Pkce,
             result.Nonce,

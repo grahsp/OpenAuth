@@ -7,19 +7,19 @@ using OpenAuth.Domain.Services;
 using OpenAuth.Infrastructure.Clients.Secrets.Persistence;
 using OpenAuth.Infrastructure.Security.Hashing;
 using OpenAuth.Test.Common.Builders;
-using OpenAuth.Test.Integration.Infrastructure.Fixtures;
+using OpenAuth.Test.Common.Infrastructure;
 
 namespace OpenAuth.Test.Integration.Clients.Infrastructure;
 
 [Collection("sqlserver")]
 public class SecretQueryServiceTests : IAsyncLifetime
 {
-    private readonly SqlServerFixture _fx;
+    private readonly SqlServer _fx;
     private readonly FakeTimeProvider _time;
     private readonly IHasher _hasher;
     private readonly SecretQueryService _sut;
     
-    public SecretQueryServiceTests(SqlServerFixture fx)
+    public SecretQueryServiceTests(SqlServer fx)
     {
         _fx = fx;
         _time = new FakeTimeProvider();
@@ -31,7 +31,7 @@ public class SecretQueryServiceTests : IAsyncLifetime
     public Task DisposeAsync() => Task.CompletedTask;
 
 
-    public class ValidateSecretAsync(SqlServerFixture fx) : SecretQueryServiceTests(fx)
+    public class ValidateSecretAsync(SqlServer fx) : SecretQueryServiceTests(fx)
     {
         [Fact]
         public async Task ValidSecret_ReturnsTrue()
@@ -252,7 +252,7 @@ public class SecretQueryServiceTests : IAsyncLifetime
     }
 
 
-    public class GetActiveSecretsAsync(SqlServerFixture fx) : SecretQueryServiceTests(fx)
+    public class GetActiveSecretsAsync(SqlServer fx) : SecretQueryServiceTests(fx)
     {
         [Fact]
         public async Task ClientWithActiveSecrets_ReturnsAllActiveSecrets()

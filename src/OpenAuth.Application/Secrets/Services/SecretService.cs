@@ -25,12 +25,12 @@ public class SecretService : ISecretService
         var client = await _repository.GetByIdAsync(clientId, cancellationToken)
                      ?? throw new InvalidOperationException("Client not found.");
         
-        var result = _hashProvider.Create();
+        var crypto = _hashProvider.Create();
         
-        client.AddSecret(result.Hash, _time.GetUtcNow());
+        var secret = client.AddSecret(crypto.Hash, _time.GetUtcNow());
         await _repository.SaveChangesAsync(cancellationToken);
 
-        return result;
+        return new SecretCreationResult(secret.Id, crypto.PlainTextSecret, secret.CreatedAt, secret.ExpiresAt);
     }
 
     public async Task RevokeSecretAsync(ClientId clientId, SecretId secretId, CancellationToken cancellationToken = default)

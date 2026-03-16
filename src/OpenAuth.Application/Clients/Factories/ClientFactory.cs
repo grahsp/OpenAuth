@@ -31,7 +31,6 @@ public class ClientFactory : IClientFactory
         var client = Client.Create(
             request.Name,
             request.ApplicationType,
-            request.Permissions,
             request.ApplicationType.DefaultGrantTypes,
             request.RedirectUris,
             now);
@@ -39,7 +38,7 @@ public class ClientFactory : IClientFactory
         if (request.ApplicationType.AllowsClientSecrets)
         {
             var result = _hashProvider.Create();
-            plainSecret = result.PlainSecret;
+            plainSecret = result.PlainTextSecret;
             client.AddSecret(result.Hash, now);
         }
         

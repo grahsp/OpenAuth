@@ -1,13 +1,13 @@
-using System.Diagnostics.CodeAnalysis;
 using OpenAuth.Domain.OAuth;
-using OpenAuth.Domain.Shared.Interfaces;
 
 namespace OpenAuth.Domain.Clients.ValueObjects;
 
-public record GrantType : ICreate<string, GrantType>
+public readonly record struct GrantType
 {
-    public string Value { get; private init; }
-    public bool RequiresRedirectUri { get; private init; }
+    public string Value { get; }
+    public bool RequiresRedirectUri { get; }
+    
+    public bool IsValid => Value is not null;
 
     private GrantType(string value, bool requiresRedirectUri)
     {
@@ -19,24 +19,27 @@ public record GrantType : ICreate<string, GrantType>
     public static readonly GrantType ClientCredentials = new(GrantTypes.ClientCredentials, false);
     public static readonly GrantType RefreshToken = new(GrantTypes.RefreshToken, false);
     
-    public static GrantType Create(string value)
+    public static GrantType Parse(string value)
     {
-        if (!TryCreate(value, out var grantType))
+        if (!TryParse(value, out var grantType))
             throw new ArgumentException($"Invalid grant type: '{value}'");
         
         return grantType;
     }
 
-    public static bool TryCreate(string value, [NotNullWhen(true)] out GrantType? grantType)
+    public static bool TryParse(string value, out GrantType grantType)
     {
         grantType = value switch
         {
             GrantTypes.AuthorizationCode => AuthorizationCode,
             GrantTypes.ClientCredentials => ClientCredentials,
             GrantTypes.RefreshToken => RefreshToken,
-            _ => null
+            _ => default
         };
         
-        return grantType is not null;
+        return grantType.IsValid;
     }
+    
+    public static implicit operator string(GrantType grant) => grant.Value;    
+    public override string ToString() => Value;
 }

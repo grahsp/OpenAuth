@@ -31,9 +31,8 @@ public class ClientFactoryTests
     {
         var request = new CreateClientRequest(
             ClientApplicationTypes.Spa,
-            ClientName.Create("client"),
-            [],
-            [RedirectUri.Create("https://example.com/callback")]
+            new ClientName("client"),
+            [RedirectUri.Parse("https://example.com/callback")]
         );
 
         var client = _sut.Create(request, out var secret);
@@ -48,12 +47,11 @@ public class ClientFactoryTests
     {
         var request = new CreateClientRequest(
             ClientApplicationTypes.M2M,
-            ClientName.Create("client"),
-            [new Audience(AudienceName.Create("api"), ScopeCollection.Parse("read write"))],
+            new ClientName("client"),
             []
         );
 
-        var hashResult = new SecretCreationResult("plain-secret", SecretHash.FromHash("hashed-value"));
+        var hashResult = new SecretHashResult(SecretHash.FromHash("hashed-value"), "plain-secret");
         _hashProvider.Create().Returns(hashResult);
 
         var client = _sut.Create(request, out var plainSecret);
@@ -68,8 +66,7 @@ public class ClientFactoryTests
     {
         var invalidCmd = new CreateClientRequest(
             ClientApplicationTypes.Spa,
-            ClientName.Create("client"),
-            [],
+            new ClientName("client"),
             []
         );
 
@@ -85,12 +82,11 @@ public class ClientFactoryTests
 
         var cmd = new CreateClientRequest(
             ClientApplicationTypes.Spa,
-            ClientName.Create("client"),
-            [],
-            [RedirectUri.Create("https://example.com/callback")]
+            new ClientName("client"),
+            [RedirectUri.Parse("https://example.com/callback")]
         );
 
-        var hashResult = new SecretCreationResult("plain", SecretHash.FromHash("hash"));
+        var hashResult = new SecretHashResult(SecretHash.FromHash("hashed-value"), "plain-secret");
         _hashProvider.Create().Returns(hashResult);
 
         var client = _sut.Create(cmd, out _);
