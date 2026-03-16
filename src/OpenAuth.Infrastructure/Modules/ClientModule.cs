@@ -1,4 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
+using OpenAuth.Application.Abstractions;
+using OpenAuth.Application.Clients.Commands.GrantApiAccess;
 using OpenAuth.Application.Clients.Factories;
 using OpenAuth.Application.Clients.Interfaces;
 using OpenAuth.Application.Clients.Services;
@@ -19,6 +21,8 @@ public static class ClientModule
 	{
 		services.AddScoped<IClientService, ClientService>();
 		services.AddScoped<IClientFactory, ClientFactory>();
+		
+		services.AddScoped<ICommandHandler<GrantApiAccessCommand>, GrantApiAccessHandler>();
 
 		return services;
 	}
