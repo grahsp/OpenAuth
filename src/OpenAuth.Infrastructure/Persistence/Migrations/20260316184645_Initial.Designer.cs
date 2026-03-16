@@ -12,7 +12,7 @@ using OpenAuth.Infrastructure.Persistence;
 namespace OpenAuth.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260313104814_Initial")]
+    [Migration("20260316184645_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -166,7 +166,7 @@ namespace OpenAuth.Infrastructure.Persistence.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
-                    b.Property<string>("Name")
+                    b.Property<string>("ResourceName")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
