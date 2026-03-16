@@ -1,5 +1,6 @@
 using OpenAuth.Infrastructure.Modules;
 using OpenAuth.ManagementApi.Clients;
+using OpenAuth.ManagementApi.Secrets;
 using OpenAuth.ManagementApi.SigningKeys;
 
 namespace OpenAuth.ManagementApi;
@@ -47,6 +48,7 @@ public class Program
 
 		app.MapClientEndpoints();
 		app.MapSigningKeyEndpoints();
+		app.MapSecretEndpoints();
         
 		app.Run();
 	}
