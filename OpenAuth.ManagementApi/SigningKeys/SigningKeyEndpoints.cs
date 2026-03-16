@@ -20,21 +20,29 @@ public static class SigningKeyEndpoints
 		return app;
 	}
 
-	private static async Task<IResult> GetAll(ISigningKeyQueryService queryService)
+	private static async Task<IResult> GetAll(
+		ISigningKeyQueryService queryService,
+		CancellationToken ct)
 	{
-		var keys = await queryService.GetAllAsync();
+		var keys = await queryService.GetAllAsync(ct);
 		return Results.Ok(keys.Select(SigningKeyMapper.ToResponse));
 	}
 
-	private static async Task<IResult> Create(SigningKeyRequest request, ISigningKeyService commandService)
+	private static async Task<IResult> Create(
+		SigningKeyRequest request,
+		ISigningKeyService commandService,
+		CancellationToken ct)
 	{
-		var key = await commandService.CreateAsync(request.Algorithm, request.Lifetime);
+		var key = await commandService.CreateAsync(request.Algorithm, request.Lifetime, ct);
 		return Results.Created($"{BaseRoute}/{key.Id}", SigningKeyMapper.ToResponse(key));
 	}
 
-	private static async Task<IResult> Get(SigningKeyId signingKeyId, ISigningKeyQueryService queryService)
+	private static async Task<IResult> Get(
+		SigningKeyId signingKeyId,
+		ISigningKeyQueryService queryService,
+		CancellationToken ct)
 	{
-		var signingKey = await queryService.GetByIdAsync(signingKeyId);
+		var signingKey = await queryService.GetByIdAsync(signingKeyId, ct);
 
 		if (signingKey is null)
 			return Results.NotFound();
@@ -42,9 +50,12 @@ public static class SigningKeyEndpoints
 		return Results.Ok(SigningKeyMapper.ToResponse(signingKey));
 	}
 
-	private static async Task<IResult> Revoke(SigningKeyId signingKeyId, ISigningKeyService commandService)
+	private static async Task<IResult> Revoke(
+		SigningKeyId signingKeyId,
+		ISigningKeyService commandService,
+		CancellationToken ct)
 	{
-		await commandService.RevokeAsync(signingKeyId);
+		await commandService.RevokeAsync(signingKeyId, ct);
 		return Results.NoContent();
 	}
 }

@@ -20,21 +20,30 @@ public static class SecretEndpoints
 		return app;
 	}
 
-	private static async Task<IResult> GetSecrets(ClientId clientId, ISecretQueryService queryService)
+	private static async Task<IResult> GetSecrets(
+		ClientId clientId,
+		ISecretQueryService queryService,
+		CancellationToken ct)
 	{
-		var secrets = await queryService.GetActiveSecretsAsync(clientId);
+		var secrets = await queryService.GetActiveSecretsAsync(clientId, ct);
 		return Results.Ok(secrets.Select(SecretMapper.ToResponse));
 	}
 
-	private static async Task<IResult> AddSecret(ClientId clientId, ISecretService commandService)
+	private static async Task<IResult> AddSecret(
+		ClientId clientId,
+		ISecretService commandService,
+		CancellationToken ct)
 	{
-		var result = await commandService.AddSecretAsync(clientId);
+		var result = await commandService.AddSecretAsync(clientId, ct);
 		return Results.Ok(result.ToResponse());
 	}
 
-	private static async Task<IResult> RevokeSecret(ClientId clientId, SecretId secretId, ISecretService service)
+	private static async Task<IResult> RevokeSecret(
+		ClientId clientId,
+		SecretId secretId, ISecretService service,
+		CancellationToken ct)
 	{
-		await service.RevokeSecretAsync(clientId, secretId);
+		await service.RevokeSecretAsync(clientId, secretId, ct);
 		return Results.NoContent();
 	}
 }
