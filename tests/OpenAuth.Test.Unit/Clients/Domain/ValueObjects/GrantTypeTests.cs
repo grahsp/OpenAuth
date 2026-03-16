@@ -8,7 +8,7 @@ public class GrantTypeTests
     public void Create_WithAuthorizationCode_ReturnsCorrectValue()
     {
         // Act
-        var grantType = GrantType.Create("authorization_code");
+        var grantType = GrantType.Parse("authorization_code");
         
         // Assert
         Assert.Equal("authorization_code", grantType.Value);
@@ -20,7 +20,7 @@ public class GrantTypeTests
     public void Create_WithValidGrantType_Succeeds(string value)
     {
         // Act
-        var grantType = GrantType.Create(value);
+        var grantType = GrantType.Parse(value);
         
         // Assert
         Assert.Equal(value, grantType.Value);
@@ -33,7 +33,7 @@ public class GrantTypeTests
     public void Create_WithInvalidGrantType_ThrowsArgumentException(string? value)
     {
         // Act & Assert
-        var exception = Assert.Throws<ArgumentException>(() => GrantType.Create(value!));
+        var exception = Assert.Throws<ArgumentException>(() => GrantType.Parse(value!));
         Assert.Contains("invalid grant type", exception.Message, StringComparison.OrdinalIgnoreCase);
     }
     

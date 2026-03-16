@@ -56,7 +56,7 @@ public class ClientConfiguration : IEntityTypeConfiguration<Client>
                 value => string.IsNullOrWhiteSpace(value)
                     ? new HashSet<GrantType>()
                     : value.Split(' ', StringSplitOptions.RemoveEmptyEntries)
-                        .Select(GrantType.Create)
+                        .Select(GrantType.Parse)
                         .ToHashSet(),
                 new ValueComparer<HashSet<GrantType>>(
                     (c1, c2) => c1!.SequenceEqual(c2!),
@@ -74,7 +74,7 @@ public class ClientConfiguration : IEntityTypeConfiguration<Client>
                 value => string.IsNullOrWhiteSpace(value)
                     ? new HashSet<RedirectUri>()
                     : value.Split(' ', StringSplitOptions.RemoveEmptyEntries)
-                        .Select(RedirectUri.Create)
+                        .Select(RedirectUri.Parse)
                         .ToHashSet(),
                 new ValueComparer<HashSet<RedirectUri>>(
                     (c1, c2) => c1!.SequenceEqual(c2!),

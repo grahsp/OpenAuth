@@ -1,25 +1,30 @@
-using System.Diagnostics.CodeAnalysis;
-using OpenAuth.Domain.Shared.Interfaces;
-
 namespace OpenAuth.Domain.Clients.Secrets.ValueObjects;
 
-public record SecretId(Guid Value) : ICreate<string, SecretId>
+public readonly record struct SecretId(Guid Value)
 {
-    public static SecretId New() => new(Guid.NewGuid());
-    
-    public static SecretId Create(string value)
+    public static SecretId New() => new SecretId(Guid.NewGuid());
+
+    public static SecretId From(Guid value)
     {
-        if (!TryCreate(value, out var id))
+        if (value == Guid.Empty)
+            throw new ArgumentException("SecretId cannot be empty");
+        
+        return new SecretId(value);
+    }
+    
+    public static SecretId Parse(string value)
+    {
+        if (!TryParse(value, out var id))
             throw new ArgumentException($"Invalid client ID: {value}", nameof(value));
 
         return id;
     }
 
-    public static bool TryCreate(string? value, [NotNullWhen(true)] out SecretId? id)
+    public static bool TryParse(string? value,  out SecretId id)
     {
         if (!Guid.TryParse(value, out var guid) || guid == Guid.Empty)
         {
-            id = null;
+            id = default;
             return false;
         }
         
@@ -27,5 +32,6 @@ public record SecretId(Guid Value) : ICreate<string, SecretId>
         return true;
     }
     
+    public static implicit operator Guid(SecretId id) => id.Value;    
     public override string ToString() => Value.ToString();
 }

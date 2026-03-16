@@ -1,25 +1,30 @@
-using System.Diagnostics.CodeAnalysis;
-using OpenAuth.Domain.Shared.Interfaces;
-
 namespace OpenAuth.Domain.SigningKeys.ValueObjects;
 
-public record SigningKeyId(Guid Value) : ICreate<string, SigningKeyId>
+public readonly record struct SigningKeyId(Guid Value)
 {
-    public static SigningKeyId New() => new(Guid.NewGuid());
-    
-    public static SigningKeyId Create(string value)
+    public static SigningKeyId New() => new SigningKeyId(Guid.NewGuid());
+
+    public static SigningKeyId From(Guid value)
     {
-        if (!TryCreate(value, out var id))
+        if (value == Guid.Empty)
+            throw new ArgumentException("SigningKeyId cannot be empty");
+        
+        return new SigningKeyId(value);    
+    }
+    
+    public static SigningKeyId Parse(string value)
+    {
+        if (!TryParse(value, out var id))
             throw new ArgumentException($"Invalid client ID: {value}", nameof(value));
 
         return id;
     }
 
-    public static bool TryCreate(string value, [NotNullWhen(true)] out SigningKeyId? id)
+    public static bool TryParse(string value,  out SigningKeyId id)
     {
         if (!Guid.TryParse(value, out var guid) || guid == Guid.Empty)
         {
-            id = null;
+            id = default;
             return false;
         }
         
@@ -27,5 +32,6 @@ public record SigningKeyId(Guid Value) : ICreate<string, SigningKeyId>
         return true;
     }
     
+    public static implicit operator Guid(SigningKeyId id) => id.Value;    
     public override string ToString() => Value.ToString();
 }

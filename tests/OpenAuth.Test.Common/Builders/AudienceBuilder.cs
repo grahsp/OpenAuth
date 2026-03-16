@@ -9,7 +9,7 @@ public class AudienceBuilder
     
     public AudienceBuilder WithName(string name)
     {
-        _name = AudienceName.Create(name);
+        _name = AudienceName.From(name);
         return this;
     }
 
@@ -21,7 +21,7 @@ public class AudienceBuilder
 
     public Audience Build()
     {
-        var name = _name ?? AudienceName.Create("api");
+        var name = _name ?? AudienceName.From("api");
         var scopes = _scopes ?? ScopeCollection.Parse("read write");
         
         return new Audience(name, scopes);

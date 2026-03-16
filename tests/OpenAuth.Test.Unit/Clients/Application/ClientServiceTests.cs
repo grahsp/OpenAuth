@@ -64,15 +64,15 @@ public class ClientServiceTests
     private static CreateClientRequest CreateM2MRequest()
         => new(
             ClientApplicationTypes.M2M,
-            ClientName.Create("test client"),
+            new ClientName("test client"),
             []
         );
 
     private static CreateClientRequest CreateSpaRequest()
         => new(
             ClientApplicationTypes.Spa,
-            ClientName.Create("test client"),
-            [RedirectUri.Create("https://example.com/callback")]
+            new ClientName("test client"),
+            [RedirectUri.Parse("https://example.com/callback")]
         );
 
 
@@ -260,8 +260,8 @@ public class ClientServiceTests
     
     public class RedirectUriMethods : ClientServiceTests
     {
-        private static readonly RedirectUri UriA = RedirectUri.Create("https://a.com/callback");
-        private static readonly RedirectUri UriB = RedirectUri.Create("https://b.com/callback");
+        private static readonly RedirectUri UriA = RedirectUri.Parse("https://a.com/callback");
+        private static readonly RedirectUri UriB = RedirectUri.Parse("https://b.com/callback");
         
         
         [Fact]

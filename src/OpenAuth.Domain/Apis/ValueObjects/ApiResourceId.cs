@@ -1,24 +1,30 @@
-using System.Diagnostics.CodeAnalysis;
-
 namespace OpenAuth.Domain.Apis.ValueObjects;
 
-public sealed record ApiResourceId(Guid Value)
+public readonly record struct ApiResourceId(Guid Value)
 {
     public static ApiResourceId New() => new ApiResourceId(Guid.NewGuid());
-    
-    public static ApiResourceId Create(string value)
+
+    public static ApiResourceId From(Guid value)
     {
-        if (!TryCreate(value, out var id))
+        if (value == Guid.Empty)
+            throw new ArgumentException("ApiResourceId cannot be empty");
+        
+        return new ApiResourceId(value);
+    }
+    
+    public static ApiResourceId Parse(string value)
+    {
+        if (!TryParse(value, out var id))
             throw new ArgumentException($"Invalid client ID: {value}", nameof(value));
 
         return id;
     }
     
-    public static bool TryCreate(string? value, [NotNullWhen(true)] out ApiResourceId? id)
+    public static bool TryParse(string? value, out ApiResourceId id)
     {
         if (!Guid.TryParse(value, out var guid) || guid == Guid.Empty)
         {
-            id = null;
+            id = default;
             return false;
         }
         
@@ -26,5 +32,6 @@ public sealed record ApiResourceId(Guid Value)
         return true;
     }
     
+    public static implicit operator Guid(ApiResourceId id) => id.Value;    
     public override string ToString() => Value.ToString();
 }

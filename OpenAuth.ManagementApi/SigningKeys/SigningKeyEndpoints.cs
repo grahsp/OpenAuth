@@ -34,7 +34,7 @@ public static class SigningKeyEndpoints
 
 	private static async Task<IResult> Get(string signingKeyId, ISigningKeyQueryService queryService)
 	{
-		var signingKey = await queryService.GetByIdAsync(SigningKeyId.Create(signingKeyId));
+		var signingKey = await queryService.GetByIdAsync(SigningKeyId.Parse(signingKeyId));
 
 		if (signingKey is null)
 			return Results.NotFound();

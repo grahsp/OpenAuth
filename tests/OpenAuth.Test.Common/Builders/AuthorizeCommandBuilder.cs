@@ -9,7 +9,7 @@ namespace OpenAuth.Test.Common.Builders;
 public sealed class AuthorizeCommandBuilder
 {
 	private string _responseType = DefaultValues.ResponseType;
-	private ClientId _clientId = ClientId.Create(DefaultValues.ClientId);
+	private ClientId _clientId = ClientId.Parse(DefaultValues.ClientId);
 	private string _subject = DefaultValues.Subject;
 	private string _redirectUri = DefaultValues.RedirectUri;
 	private string _audience = DefaultValues.ApiAudience;
@@ -67,8 +67,8 @@ public sealed class AuthorizeCommandBuilder
 
 	public AuthorizeCommand Build()
 	{
-		var redirectUri = RedirectUri.Create(_redirectUri);
-		var audience = AudienceIdentifier.Create(_audience);
+		var redirectUri = RedirectUri.Parse(_redirectUri);
+		var audience = new AudienceIdentifier(_audience);
 		var scope = ScopeCollection.Parse(_scope);
 
 		return AuthorizeCommand.Create(

@@ -122,7 +122,7 @@ public class ClientTests
     
     public class SetRedirectUris : ClientTests
     {
-        private static readonly RedirectUri Uri = RedirectUri.Create("https://example.com/callback");
+        private static readonly RedirectUri Uri = RedirectUri.Parse("https://example.com/callback");
         
         
         [Fact]
@@ -134,7 +134,7 @@ public class ClientTests
             
             _time.Advance(TimeSpan.FromMinutes(5));
             
-            var expectedUris = new[] { RedirectUri.Create("https://invalid.com/")};
+            var expectedUris = new[] { RedirectUri.Parse("https://invalid.com/")};
             var expectedTime = _time.GetUtcNow();
             
             client.SetRedirectUris(expectedUris, expectedTime);

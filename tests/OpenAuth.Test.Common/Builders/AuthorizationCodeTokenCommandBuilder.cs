@@ -7,7 +7,7 @@ namespace OpenAuth.Test.Common.Builders;
 
 public class AuthorizationCodeTokenCommandBuilder
 {
-    private ClientId _clientId = ClientId.Create(DefaultValues.ClientId);
+    private ClientId _clientId = ClientId.Parse(DefaultValues.ClientId);
     private string _audience = DefaultValues.ApiAudience;
     private string? _scopes;
     private string _redirectUri = DefaultValues.RedirectUri;
@@ -70,7 +70,7 @@ public class AuthorizationCodeTokenCommandBuilder
     public AuthorizationCodeTokenCommand Build()
     {
         ScopeCollection.TryParse(_scopes, out var scopes);
-        var redirectUri = RedirectUri.Create(_redirectUri);
+        var redirectUri = RedirectUri.Parse(_redirectUri);
 
         var request = AuthorizationCodeTokenCommand.Create(
             _code,

@@ -40,17 +40,17 @@ public class ClientServiceTests(TestFixture fixture) : IAsyncLifetime
 	private static CreateClientRequest CreateM2MRequest()
 		=> new CreateClientRequest(
 			ClientApplicationTypes.M2M,
-			ClientName.Create("test client"),
-			[RedirectUri.Create("https://example.com/callback")]);
+			new ClientName("test client"),
+			[RedirectUri.Parse("https://example.com/callback")]);
 
 	private static CreateClientRequest CreateSpaRequest()
 		=> new CreateClientRequest(
 			ClientApplicationTypes.Spa,
-			ClientName.Create("test client"),
-			[RedirectUri.Create("https://example.com/callback")]);
+			new ClientName("test client"),
+			[RedirectUri.Parse("https://example.com/callback")]);
     
-	private static readonly RedirectUri UriA = RedirectUri.Create("https://a.com/callback");
-	private static readonly RedirectUri UriB = RedirectUri.Create("https://b.com/callback");
+	private static readonly RedirectUri UriA = RedirectUri.Parse("https://a.com/callback");
+	private static readonly RedirectUri UriB = RedirectUri.Parse("https://b.com/callback");
 
     
 	[Fact]

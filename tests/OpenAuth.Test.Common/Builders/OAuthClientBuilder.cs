@@ -43,7 +43,7 @@ public class OAuthClientBuilder
         var clientService = _services.GetRequiredService<IClientService>();
 
         var applicationType = ClientApplicationTypes.Parse(_applicationType);
-        var name = ClientName.Create(_name);
+        var name = new ClientName(_name);
         var redirectUris = _redirectUris.Select(x => new RedirectUri(x)).ToList();
 
         var request = new CreateClientRequest(applicationType, name, redirectUris);

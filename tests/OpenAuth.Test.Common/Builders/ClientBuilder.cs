@@ -71,7 +71,7 @@ public class ClientBuilder
 
     public Client Build()
     {
-        var name = ClientName.Create(_name);
+        var name = new ClientName(_name);
         var createdAt = _createdAt ?? DateTimeOffset.UtcNow;
         
         var applicationType = _applicationType ?? ClientApplicationTypes.Spa;
@@ -85,7 +85,7 @@ public class ClientBuilder
         if (applicationType.AllowsClientSecrets && _secrets.Count == 0)
             WithSecret();
         
-        var redirectUris = _redirectUris.Select(RedirectUri.Create).ToList();
+        var redirectUris = _redirectUris.Select(RedirectUri.Parse).ToList();
         
         var client = Client.Create(
             name,

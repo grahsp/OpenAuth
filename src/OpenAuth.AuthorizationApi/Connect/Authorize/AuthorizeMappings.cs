@@ -15,13 +15,13 @@ public static class AuthorizeMappings
 		ArgumentException.ThrowIfNullOrWhiteSpace(request.ResponseType, nameof(request.ResponseType));
 		ArgumentException.ThrowIfNullOrWhiteSpace(subject);
         
-		if (!ClientId.TryCreate(request.ClientId, out var id))
+		if (!ClientId.TryParse(request.ClientId, out var id))
 			throw new MalformedClientException("Invalid client_id parameter.");
         
-		if (!RedirectUri.TryCreate(request.RedirectUri, out var uri))
+		if (!RedirectUri.TryParse(request.RedirectUri, out var uri))
 			throw new MalformedRedirectUriException("Invalid redirect_uri parameter.");
         
-		if (!AudienceIdentifier.TryCreate(request.Audience, out var audienceIdentifier))
+		if (!AudienceIdentifier.TryParse(request.Audience, out var audience))
 			throw new InvalidAudienceException("Invalid audience parameter.");
 
 		if (!ScopeCollection.TryParse(request.Scopes, out var scope))
@@ -35,7 +35,7 @@ public static class AuthorizeMappings
 			id,
 			subject,
 			uri,
-			audienceIdentifier,
+			audience,
 			scope,
 			pkce,
 			request.Nonce

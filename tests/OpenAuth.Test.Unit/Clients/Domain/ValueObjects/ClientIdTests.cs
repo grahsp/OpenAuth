@@ -15,7 +15,7 @@ public class ClientIdTests
     public void TryCreate_WhenInputValid_ReturnsTrueAndClientId()
     {
         var expected = Guid.NewGuid().ToString();
-        var result = ClientId.TryCreate(expected, out var actual);
+        var result = ClientId.TryParse(expected, out var actual);
 
         Assert.True(result);
         Assert.NotNull(actual);
@@ -25,7 +25,7 @@ public class ClientIdTests
     [Fact]
     public void TryCreate_WhenInputEmptyGuid_ReturnsFalse()
     {
-        var result = ClientId.TryCreate(Guid.Empty.ToString(), out var actual);
+        var result = ClientId.TryParse(Guid.Empty.ToString(), out var actual);
 
         Assert.False(result);
         Assert.Null(actual);
@@ -38,7 +38,7 @@ public class ClientIdTests
     [InlineData("this-is-not-a-guid")]
     public void TryCreate_WhenInputInvalid_ReturnsFalse(string? input)
     {
-        var result = ClientId.TryCreate(input!, out var actual);
+        var result = ClientId.TryParse(input!, out var actual);
         
         Assert.False(result);
         Assert.Null(actual);

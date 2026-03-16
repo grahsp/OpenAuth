@@ -82,7 +82,7 @@ public class AuthorizationRequestValidatorTests
 		context.Command.WithRedirectUri(expected);
         
 		context.AuthorizationData = context.AuthorizationData with
-			{ RedirectUris = [RedirectUri.Create(expected), RedirectUri.Create("https://unexpected.com/")] };
+			{ RedirectUris = [RedirectUri.Parse(expected), RedirectUri.Parse("https://unexpected.com/")] };
         
 		var result = await context.ValidateAsync();
 		Assert.Equal(expected, result.RedirectUri.Value);       
@@ -97,8 +97,8 @@ public class AuthorizationRequestValidatorTests
 		context.AuthorizationData = context.AuthorizationData with
 		{
 			RedirectUris = [
-				RedirectUri.Create("https://example.com"),
-				RedirectUri.Create("https://example.org")]
+				RedirectUri.Parse("https://example.com"),
+				RedirectUri.Parse("https://example.org")]
 		};
         
 		await Assert.ThrowsAsync<InvalidRedirectUriException>(() => context.ValidateAsync());

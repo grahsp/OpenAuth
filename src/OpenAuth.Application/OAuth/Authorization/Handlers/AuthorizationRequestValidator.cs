@@ -52,9 +52,6 @@ public class AuthorizationRequestValidator : IAuthorizationRequestValidator
 
     private static RedirectUri ValidateRedirectUri(RedirectUri requested, ClientAuthorizationData authData)
     {
-        if (requested is null)
-            throw new InvalidRedirectUriException("Missing redirect uri.");
-        
         if (!authData.RedirectUris.Any(uri => Equals(requested, uri)))
             throw new InvalidRedirectUriException("Invalid redirect uri.");
 

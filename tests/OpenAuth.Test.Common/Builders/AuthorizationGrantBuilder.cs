@@ -9,7 +9,7 @@ namespace OpenAuth.Test.Common.Builders;
 public class AuthorizationGrantBuilder
 {
     private GrantType _grantType = GrantType.AuthorizationCode;
-    private ClientId _clientId = ClientId.Create(DefaultValues.ClientId);
+    private ClientId _clientId = ClientId.Parse(DefaultValues.ClientId);
     private string _subject = DefaultValues.Subject;
     private string _redirectUri = DefaultValues.RedirectUri;
     private string _audience = DefaultValues.ApiAudience;
@@ -83,8 +83,8 @@ public class AuthorizationGrantBuilder
 
     public AuthorizationGrant Build()
     {
-        var redirectUri = RedirectUri.Create(_redirectUri);
-        var audience = AudienceIdentifier.Create(_audience);
+        var redirectUri = RedirectUri.Parse(_redirectUri);
+        var audience = new AudienceIdentifier(_audience);
         var scopes = ScopeCollection.Parse(_scopes);
         
         return AuthorizationGrant.Create(

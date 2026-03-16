@@ -34,10 +34,10 @@ public static class TestData
     public static AuthorizationValidationResult CreateValidAuthorizationValidationResult()
     {
         return new AuthorizationValidationResult(
-            ClientId.Create(DefaultValues.ClientId),
-            AudienceIdentifier.Create(DefaultValues.ApiAudience),
+            ClientId.Parse(DefaultValues.ClientId),
+            new AudienceIdentifier(DefaultValues.ApiAudience),
             ScopeCollection.Parse(DefaultValues.Scopes),
-            RedirectUri.Create(DefaultValues.RedirectUri),
+            RedirectUri.Parse(DefaultValues.RedirectUri),
             CreateValidPkce(),
             DefaultValues.Nonce
         );
@@ -46,10 +46,10 @@ public static class TestData
     public static ClientAuthorizationData CreateValidAuthorizationData()
     {
         return new ClientAuthorizationData(
-            ClientId.Create(DefaultValues.ClientId),
+            ClientId.Parse(DefaultValues.ClientId),
             true,
             [GrantType.AuthorizationCode],
-            [RedirectUri.Create(DefaultValues.RedirectUri)]
+            [RedirectUri.Parse(DefaultValues.RedirectUri)]
         );
     }
     
@@ -57,8 +57,8 @@ public static class TestData
     {
         return AuthorizationCodeTokenCommand.Create(
             DefaultValues.Code,
-            ClientId.Create(DefaultValues.ClientId),
-            RedirectUri.Create(DefaultValues.RedirectUri),
+            ClientId.Parse(DefaultValues.ClientId),
+            RedirectUri.Parse(DefaultValues.RedirectUri),
             ScopeCollection.Parse(DefaultValues.Scopes),
             DefaultValues.CodeVerifier,
             DefaultValues.ClientSecret
@@ -76,8 +76,8 @@ public static class TestData
     public static ClientTokenData CreateValidTokenData()
     {
         return new ClientTokenData(
-            ClientId.Create(DefaultValues.ClientId),
-            [GrantType.Create(DefaultValues.GrantType)],
+            ClientId.Parse(DefaultValues.ClientId),
+            [GrantType.Parse(DefaultValues.GrantType)],
             TimeSpan.FromMinutes(30)
         );
     }
@@ -87,7 +87,7 @@ public static class TestData
         return new TokenContext(
             ScopeCollection.Parse(DefaultValues.Scopes),
             DefaultValues.ClientId,
-            AudienceIdentifier.Create(DefaultValues.ApiAudience),
+            new AudienceIdentifier(DefaultValues.ApiAudience),
             DefaultValues.Subject,
             CreateValidOidcContext()
         );

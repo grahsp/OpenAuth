@@ -29,10 +29,10 @@ public static class TokenRequestMappings
         if (string.IsNullOrWhiteSpace(dto.RedirectUri))
             throw new InvalidOperationException("redirect_uri is required.");
         
-        if (!ClientId.TryCreate(dto.ClientId, out var clientId))
+        if (!ClientId.TryParse(dto.ClientId, out var clientId))
             throw new InvalidOperationException("Invalid client_id parameter.");
         
-        if (!RedirectUri.TryCreate(dto.RedirectUri, out var redirectUri))
+        if (!RedirectUri.TryParse(dto.RedirectUri, out var redirectUri))
             throw new InvalidOperationException("Invalid redirect_uri parameter.");
 
         if (!ScopeCollection.TryParse(dto.Scope, out var scope) && dto.Scope is not null)
@@ -53,10 +53,10 @@ public static class TokenRequestMappings
         if (string.IsNullOrWhiteSpace(dto.ClientSecret))
             throw new InvalidOperationException("client_secret is required.");
         
-        if (!ClientId.TryCreate(dto.ClientId, out var clientId))
+        if (!ClientId.TryParse(dto.ClientId, out var clientId))
             throw new InvalidOperationException("Invalid client_id parameter.");
         
-        if (!AudienceIdentifier.TryCreate(dto.Audience, out var audienceIdentifier))
+        if (!AudienceIdentifier.TryParse(dto.Audience, out var audience))
             throw new InvalidAudienceException("Invalid audience parameter.");
         
         if (!ScopeCollection.TryParse(dto.Scope, out var scope))
@@ -64,7 +64,7 @@ public static class TokenRequestMappings
 
         return ClientCredentialsTokenCommand.Create(
             clientId,
-            audienceIdentifier,
+            audience,
             scope,
             dto.ClientSecret
         );

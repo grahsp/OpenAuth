@@ -6,7 +6,6 @@ using OpenAuth.Application.Secrets.Services;
 using OpenAuth.Domain.Clients.Secrets.ValueObjects;
 using OpenAuth.Domain.Clients.ValueObjects;
 using OpenAuth.Domain.Services;
-using OpenAuth.Domain.Shared.Interfaces;
 using OpenAuth.Infrastructure.Clients.Persistence;
 using OpenAuth.Infrastructure.Clients.Secrets;
 using OpenAuth.Infrastructure.Security.Hashing;

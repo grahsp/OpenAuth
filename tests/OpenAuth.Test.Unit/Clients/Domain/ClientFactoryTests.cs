@@ -31,8 +31,8 @@ public class ClientFactoryTests
     {
         var request = new CreateClientRequest(
             ClientApplicationTypes.Spa,
-            ClientName.Create("client"),
-            [RedirectUri.Create("https://example.com/callback")]
+            new ClientName("client"),
+            [RedirectUri.Parse("https://example.com/callback")]
         );
 
         var client = _sut.Create(request, out var secret);
@@ -47,7 +47,7 @@ public class ClientFactoryTests
     {
         var request = new CreateClientRequest(
             ClientApplicationTypes.M2M,
-            ClientName.Create("client"),
+            new ClientName("client"),
             []
         );
 
@@ -66,7 +66,7 @@ public class ClientFactoryTests
     {
         var invalidCmd = new CreateClientRequest(
             ClientApplicationTypes.Spa,
-            ClientName.Create("client"),
+            new ClientName("client"),
             []
         );
 
@@ -82,8 +82,8 @@ public class ClientFactoryTests
 
         var cmd = new CreateClientRequest(
             ClientApplicationTypes.Spa,
-            ClientName.Create("client"),
-            [RedirectUri.Create("https://example.com/callback")]
+            new ClientName("client"),
+            [RedirectUri.Parse("https://example.com/callback")]
         );
 
         var hashResult = new SecretCreationResult("plain", SecretHash.FromHash("hash"));
