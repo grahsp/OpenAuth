@@ -1,5 +1,6 @@
 using OpenAuth.Application.Abstractions;
 using OpenAuth.Application.ApiResources.Commands.CreateApiResource;
+using OpenAuth.Application.ApiResources.Commands.DeleteApiResource;
 using OpenAuth.Domain.Apis.ValueObjects;
 
 namespace OpenAuth.ManagementApi.ApiResources;
@@ -13,6 +14,7 @@ public static class ApiResourceEndpoints
 		var group = app.MapGroup(BaseRoute);
 		
 		group.MapPost("/", CreateApiResource);
+		group.MapPost("/{apiResourceId}", DeleteApiResource);
 
 		return app;
 	}
@@ -38,5 +40,14 @@ public static class ApiResourceEndpoints
 		
 		var result = await handler.HandleAsync(command, ct);
 		return Results.Ok(result.Id);
+	}
+
+	public static async Task<IResult> DeleteApiResource(
+		ApiResourceId apiResourceId,
+		ICommandHandler<DeleteApiResourceCommand> handler,
+		CancellationToken ct)
+	{
+		await handler.HandleAsync(new DeleteApiResourceCommand(apiResourceId), ct);
+		return Results.NoContent();
 	}
 }
