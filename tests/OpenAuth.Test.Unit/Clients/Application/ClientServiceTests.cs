@@ -340,67 +340,6 @@ public class ClientServiceTests
                 => _sut.RemoveRedirectUriAsync(ClientId.New(), UriA));
         }
     }
-
-    // TODO: move into separate test for future handler
-    // public class ApiMethods : ClientServiceTests
-    // {
-    //     [Fact]
-    //     public async Task RevokeApiAccessAsync_WhenClientHasAccess_RevokesIt()
-    //     {
-    //         var result = await RegisterSpaClientAsync();
-    //         var client = result.Client;
-    //         
-    //         var api = new ApiResourceBuilder()
-    //             .WithPermission("read", "read stuff")
-    //             .Build();
-    //         
-    //         _apiRepository.GetByIdAsync(Arg.Any<ApiResourceId>(), Arg.Any<CancellationToken>())
-    //             .Returns(api);
-    //         
-    //         var scope = ScopeCollection.Parse("read");
-    //         
-    //         await _sut.GrantApiAccessAsync(client.Id, api.Id, scope);
-    //         Assert.Single(client.Apis);
-    //         
-    //         await _sut.RevokeApiAccessAsync(client.Id, api.Id);
-    //         Assert.Empty(client.Apis);
-    //     }
-    //
-    //     [Fact]
-    //     public async Task RevokeApiAccessAsync_WhenClientHasNoAccess_DoesNothing()
-    //     {
-    //         var result = await RegisterSpaClientAsync();
-    //         var client = result.Client;
-    //         
-    //         var api = new ApiResourceBuilder()
-    //             .WithPermission("read", "read stuff")
-    //             .Build();
-    //         
-    //         _apiRepository.GetByIdAsync(Arg.Any<ApiResourceId>(), Arg.Any<CancellationToken>())
-    //             .Returns(api);
-    //         
-    //         var scope = ScopeCollection.Parse("read");
-    //         
-    //         await _sut.GrantApiAccessAsync(client.Id, api.Id, scope);
-    //         var initial = Assert.Single(client.Apis);
-    //         
-    //         await _sut.RevokeApiAccessAsync(client.Id, ApiResourceId.New());
-    //         var post = Assert.Single(client.Apis);
-    //         Assert.Equal(initial, post);
-    //     }
-    //
-    //     [Fact]
-    //     public async Task RevokeApiAccessAsync_WhenClientNotFound_Throws()
-    //     {
-    //         var api = new ApiResourceBuilder().Build();
-    //         
-    //         _apiRepository.GetByIdAsync(Arg.Any<ApiResourceId>(), Arg.Any<CancellationToken>())
-    //             .Returns(api);
-    //         
-    //         await Assert.ThrowsAsync<InvalidOperationException>(() =>
-    //             _sut.RevokeApiAccessAsync(ClientId.New(), api.Id));
-    //     }
-    // }
     
     public class EnableDisable : ClientServiceTests
     {

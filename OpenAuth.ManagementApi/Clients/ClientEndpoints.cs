@@ -1,5 +1,6 @@
 using OpenAuth.Application.Abstractions;
 using OpenAuth.Application.Clients.Commands.GrantApiAccess;
+using OpenAuth.Application.Clients.Commands.RevokeApiAccess;
 using OpenAuth.Application.Clients.Dtos;
 using OpenAuth.Application.Clients.Interfaces;
 using OpenAuth.Application.Clients.Services;
@@ -92,10 +93,12 @@ public static class ClientEndpoints
 	private static async Task<IResult> RevokeApiAccess(
 		ClientId clientId,
 		ApiResourceId apiResourceId,
-		IClientService service,
+		ICommandHandler<RevokeApiAccessCommand> handler,
 		CancellationToken ct)
 	{
-		var client = await service.RevokeApiAccessAsync(clientId, apiResourceId, ct);
-		return Results.Ok(client);      
+		var command = new RevokeApiAccessCommand(clientId, apiResourceId);
+		
+		await handler.HandleAsync(command, ct);
+		return Results.NotFound();      
 	}
 }

@@ -25,8 +25,8 @@ public class GrantApiAccessHandlerTests
 		
 		public GrantApiAccessHandler Sut { get; }
 
-		private ApiResourceBuilder _apiBuilder = new ApiResourceBuilder();
-		private ClientBuilder _clientBuilder = new ClientBuilder();
+		private readonly ApiResourceBuilder _apiBuilder = new ApiResourceBuilder();
+		private readonly ClientBuilder _clientBuilder = new ClientBuilder();
 
 		public ApiResource Api { get; private set; }
 		public Client Client { get; private set; }

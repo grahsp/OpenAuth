@@ -6,12 +6,12 @@ using OpenAuth.Application.Exceptions;
 
 namespace OpenAuth.Application.Clients.Commands.GrantApiAccess;
 
-public sealed class GrantApiAccessHandler(IApiResourceRepository apiRepository, IClientRepository repository,TimeProvider time)
+public sealed class GrantApiAccessHandler(IApiResourceRepository apiRepository, IClientRepository clientRepository,TimeProvider time)
 	: ICommandHandler<GrantApiAccessCommand>
 {
 	public async Task HandleAsync(GrantApiAccessCommand command, CancellationToken ct)
 	{
-        var client = await repository.GetByIdAsync(command.ClientId, ct)
+        var client = await clientRepository.GetByIdAsync(command.ClientId, ct)
             ?? throw new ClientNotFoundException(command.ClientId);
 
         var api = await apiRepository.GetByIdAsync(command.ApiResourceId, ct)
@@ -25,6 +25,6 @@ public sealed class GrantApiAccessHandler(IApiResourceRepository apiRepository, 
             throw new InvalidScopeException("One or more scopes requested are not allowed for the API.");
         
         client.GrantApiAccess(api.Id, command.Scopes, time.GetUtcNow());
-        await repository.SaveChangesAsync(ct);
+        await clientRepository.SaveChangesAsync(ct);
 	}
 }
