@@ -31,4 +31,18 @@ public class ApiResource
         
         return new ApiResource(resourceName, audience, permissionSet);
     }
+
+    public void AddPermission(Permission permission)
+    {
+        if (_permissions.Contains(permission))
+            throw new DuplicatePermissionException(permission);
+        
+        _permissions.Add(permission);
+    }
+
+    public void AddPermissions(IEnumerable<Permission> permissions)
+    {
+        foreach (var permission in permissions)
+            AddPermission(permission);
+    }
 }

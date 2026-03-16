@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using OpenAuth.Application.Abstractions;
+using OpenAuth.Application.ApiResources.Commands.AddApiResourcePermissions;
 using OpenAuth.Application.ApiResources.Commands.CreateApiResource;
 using OpenAuth.Application.ApiResources.Commands.DeleteApiResource;
 using OpenAuth.Application.Audiences.Interfaces;
@@ -20,6 +21,8 @@ public static class ApiResourceModule
 	{
 		services.AddScoped<ICommandHandler<CreateApiResourceCommand, CreateApiResourceResult>, CreateApiResourceHandler>();
 		services.AddScoped<ICommandHandler<DeleteApiResourceCommand>, DeleteApiResourceHandler>();
+		
+		services.AddScoped<ICommandHandler<AddApiResourcePermissionCommand>, AddApiResourcePermissionsHandler>();
 		
 		return services;
 	}
