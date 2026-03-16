@@ -9,6 +9,9 @@ using OpenAuth.Infrastructure.Persistence;
 
 namespace OpenAuth.Infrastructure.Clients.Persistence;
 
+// TODO: split this into:
+// - IClientStore (OAuth runtime lookups)
+// - IClientReadService (management API queries)
 public class ClientQueryService : IClientQueryService
 {
     private readonly AppDbContext _context;

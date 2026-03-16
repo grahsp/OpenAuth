@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using OpenAuth.Application.OAuth.Services;
-using OpenAuth.AuthorizationApi.Http;
+using OpenAuth.Application.Tokens.Interfaces;
 
 namespace OpenAuth.AuthorizationApi.Connect.UserInfo;
 
@@ -9,11 +9,10 @@ public static class UserInfoEndpoint
     public static IEndpointRouteBuilder MapUserInfoEndpoint(this IEndpointRouteBuilder app)
     {
         app.MapGet("/connect/userinfo", async (
-            HttpRequest request,
             [FromServices] IBearerTokenExtractor extractor,
             [FromServices] IUserInfoService service) =>
         {
-            var token = extractor.TryExtract(request);
+            var token = extractor.ExtractToken();
             if (string.IsNullOrWhiteSpace(token))
                 return Results.Unauthorized();
             
