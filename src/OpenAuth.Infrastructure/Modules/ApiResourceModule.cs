@@ -1,4 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
+using OpenAuth.Application.Abstractions;
+using OpenAuth.Application.ApiResources.Commands.CreateApiResource;
 using OpenAuth.Application.Audiences.Interfaces;
 using OpenAuth.Infrastructure.ApiResources;
 
@@ -15,6 +17,8 @@ public static class ApiResourceModule
 
 	public static IServiceCollection AddApiResourceApplication(this IServiceCollection services)
 	{
+		services.AddScoped<ICommandHandler<CreateApiResourceCommand, CreateApiResourceResult>, CreateApiResourceHandler>();
+		
 		return services;
 	}
 

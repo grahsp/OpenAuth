@@ -19,7 +19,4 @@ public class ApiResourceRepository(AppDbContext context) : IApiResourceRepositor
 
 	public void Remove(ApiResource apiResource) =>
 		context.ApiResources.Remove(apiResource);
-    
-	public async Task SaveChangesAsync(CancellationToken ct = default) =>
-		await context.SaveChangesAsync(ct);
 }

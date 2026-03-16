@@ -30,10 +30,10 @@ public class ApiResourceConfiguration : IEntityTypeConfiguration<ApiResource>
 			.HasMaxLength(200)
 			.IsRequired();
 
-		builder.Property(a => a.Name)
+		builder.Property(a => a.ResourceName)
 			.HasConversion(
 				n => n.Value,
-				v => new ApiName(v))
+				v => new ApiResourceName(v))
 			.HasMaxLength(100)
 			.IsRequired();
 

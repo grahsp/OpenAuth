@@ -49,7 +49,7 @@ public class ApiResourceBuilder
 
 	public ApiResource Build()
 	{
-		var name = new ApiName(_name);
+		var name = new ApiResourceName(_name);
 		var audience = new AudienceIdentifier(_audience);
 		
 		var permissions = _permissions.Values.ToList();
