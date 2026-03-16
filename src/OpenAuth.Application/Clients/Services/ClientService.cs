@@ -3,7 +3,7 @@ using OpenAuth.Application.Clients.Dtos;
 using OpenAuth.Application.Clients.Factories;
 using OpenAuth.Application.Clients.Interfaces;
 using OpenAuth.Application.Clients.Mappings;
-using OpenAuth.Domain.Apis.ValueObjects;
+using OpenAuth.Domain.ApiResources.ValueObjects;
 using OpenAuth.Domain.Clients;
 using OpenAuth.Domain.Clients.ValueObjects;
 

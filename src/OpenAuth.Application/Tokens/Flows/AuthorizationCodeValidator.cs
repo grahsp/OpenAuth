@@ -3,7 +3,7 @@ using OpenAuth.Application.Exceptions;
 using OpenAuth.Application.Extensions;
 using OpenAuth.Application.Secrets.Interfaces;
 using OpenAuth.Application.Tokens.Dtos;
-using OpenAuth.Domain.Apis;
+using OpenAuth.Domain.ApiResources;
 using OpenAuth.Domain.AuthorizationGrants;
 using OpenAuth.Domain.Clients.ValueObjects;
 

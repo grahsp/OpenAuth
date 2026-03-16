@@ -1,6 +1,6 @@
 using OpenAuth.Application.Exceptions;
 using OpenAuth.Application.Tokens.Dtos;
-using OpenAuth.Domain.Apis.ValueObjects;
+using OpenAuth.Domain.ApiResources.ValueObjects;
 using OpenAuth.Domain.Clients.ValueObjects;
 using OpenAuth.Domain.OAuth;
 

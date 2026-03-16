@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using OpenAuth.Application.Abstractions;
-using OpenAuth.Domain.Apis;
+using OpenAuth.Domain.ApiResources;
 using OpenAuth.Domain.Clients;
 using OpenAuth.Domain.Clients.Secrets;
 using OpenAuth.Domain.SigningKeys;

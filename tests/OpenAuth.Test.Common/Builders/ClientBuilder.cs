@@ -1,4 +1,4 @@
-using OpenAuth.Domain.Apis;
+using OpenAuth.Domain.ApiResources;
 using OpenAuth.Domain.Clients;
 using OpenAuth.Domain.Clients.ApplicationType;
 using OpenAuth.Domain.Clients.Secrets.ValueObjects;

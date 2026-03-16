@@ -1,7 +1,7 @@
 using OpenAuth.Application.Abstractions;
 using OpenAuth.Application.ApiResources.Commands.CreateApiResource;
 using OpenAuth.Application.ApiResources.Commands.DeleteApiResource;
-using OpenAuth.Domain.Apis.ValueObjects;
+using OpenAuth.Domain.ApiResources.ValueObjects;
 
 namespace OpenAuth.ManagementApi.ApiResources;
 

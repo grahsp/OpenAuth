@@ -1,4 +1,4 @@
-namespace OpenAuth.Domain.Apis.ValueObjects;
+namespace OpenAuth.Domain.ApiResources.ValueObjects;
 
 public readonly record struct ApiResourceId(Guid Value)
 {

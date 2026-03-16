@@ -1,6 +1,6 @@
 using OpenAuth.Application.Abstractions;
 using OpenAuth.Application.Audiences.Interfaces;
-using OpenAuth.Domain.Apis;
+using OpenAuth.Domain.ApiResources;
 
 namespace OpenAuth.Application.ApiResources.Commands.CreateApiResource;
 

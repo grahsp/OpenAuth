@@ -1,6 +1,6 @@
 using OpenAuth.Application.Clients.Dtos;
 using OpenAuth.Application.Tokens.Dtos;
-using OpenAuth.Domain.Apis;
+using OpenAuth.Domain.ApiResources;
 using OpenAuth.Domain.AuthorizationGrants;
 
 namespace OpenAuth.Application.Tokens.Flows;

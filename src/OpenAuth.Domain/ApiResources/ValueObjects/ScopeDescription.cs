@@ -1,3 +1,3 @@
-namespace OpenAuth.Domain.Apis.ValueObjects;
+namespace OpenAuth.Domain.ApiResources.ValueObjects;
 
 public sealed record ScopeDescription(string? Value);

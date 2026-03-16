@@ -1,6 +1,6 @@
 using OpenAuth.Domain.Clients.ValueObjects;
 
-namespace OpenAuth.Domain.Apis.ValueObjects;
+namespace OpenAuth.Domain.ApiResources.ValueObjects;
 
 public sealed record Permission(Scope Scope, ScopeDescription? Description)
 {

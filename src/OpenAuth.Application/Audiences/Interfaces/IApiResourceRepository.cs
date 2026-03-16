@@ -1,5 +1,5 @@
-using OpenAuth.Domain.Apis;
-using OpenAuth.Domain.Apis.ValueObjects;
+using OpenAuth.Domain.ApiResources;
+using OpenAuth.Domain.ApiResources.ValueObjects;
 
 namespace OpenAuth.Application.Audiences.Interfaces;
 
