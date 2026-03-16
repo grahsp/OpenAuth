@@ -6,16 +6,16 @@ namespace OpenAuth.ManagementApi.SigningKeys;
 
 public static class SigningKeyEndpoints
 {
-	const string BaseUrl = "/api/keys";
+	private const string BaseRoute = "/api/keys";
     
 	public static IEndpointRouteBuilder MapSigningKeyEndpoints(this IEndpointRouteBuilder app)
 	{
-		var group = app.MapGroup(BaseUrl);
+		var group = app.MapGroup(BaseRoute);
 
 		group.MapGet("/", GetAll);
 		group.MapPost("/", Create);
 		group.MapGet("/{signingKeyId}", Get);
-		group.MapDelete("/{keyId:guid}", Revoke);
+		group.MapDelete("/{signingKeyId}", Revoke);
 
 		return app;
 	}
@@ -29,12 +29,12 @@ public static class SigningKeyEndpoints
 	private static async Task<IResult> Create(SigningKeyRequest request, ISigningKeyService commandService)
 	{
 		var key = await commandService.CreateAsync(request.Algorithm, request.Lifetime);
-		return Results.Created($"{BaseUrl}/{key.Id}", SigningKeyMapper.ToResponse(key));
+		return Results.Created($"{BaseRoute}/{key.Id}", SigningKeyMapper.ToResponse(key));
 	}
 
-	private static async Task<IResult> Get(string signingKeyId, ISigningKeyQueryService queryService)
+	private static async Task<IResult> Get(SigningKeyId signingKeyId, ISigningKeyQueryService queryService)
 	{
-		var signingKey = await queryService.GetByIdAsync(SigningKeyId.Parse(signingKeyId));
+		var signingKey = await queryService.GetByIdAsync(signingKeyId);
 
 		if (signingKey is null)
 			return Results.NotFound();
@@ -42,9 +42,9 @@ public static class SigningKeyEndpoints
 		return Results.Ok(SigningKeyMapper.ToResponse(signingKey));
 	}
 
-	private static async Task<IResult> Revoke(Guid keyId, ISigningKeyService commandService)
+	private static async Task<IResult> Revoke(SigningKeyId signingKeyId, ISigningKeyService commandService)
 	{
-		await commandService.RevokeAsync(new SigningKeyId(keyId));
+		await commandService.RevokeAsync(signingKeyId);
 		return Results.NoContent();
 	}
 }
