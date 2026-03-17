@@ -4,6 +4,8 @@ using OpenAuth.Application.ApiResources.Commands.AddApiResourcePermissions;
 using OpenAuth.Application.ApiResources.Commands.CreateApiResource;
 using OpenAuth.Application.ApiResources.Commands.DeleteApiResource;
 using OpenAuth.Application.ApiResources.Commands.RemoveApiResourcePermissions;
+using OpenAuth.Application.ApiResources.Queries.GetApiResourceSummaryList;
+using OpenAuth.Application.Audiences.Interfaces;
 using OpenAuth.Domain.ApiResources.ValueObjects;
 using OpenAuth.Domain.Clients.ValueObjects;
 
@@ -17,6 +19,8 @@ public static class ApiResourceEndpoints
 	{
 		var group = app.MapGroup(BaseRoute);
 		
+		group.MapGet("/", GetApiResources);
+		
 		group.MapPost("/", CreateApiResource);
 		group.MapDelete("/{apiResourceId}", DeleteApiResource);
 		
@@ -24,6 +28,14 @@ public static class ApiResourceEndpoints
 		group.MapDelete("/{apiResourceId}/permissions", RemoveApiResourcePermissions);
 
 		return app;
+	}
+
+	public static async Task<IResult> GetApiResources(
+		IQueryHandler<ApiResourceSummaryList> handler,
+		CancellationToken ct)
+	{
+		var apiResources = await handler.HandleAsync(ct);
+		return Results.Ok(apiResources.ToResponse());
 	}
 
 	public static async Task<IResult> CreateApiResource(
