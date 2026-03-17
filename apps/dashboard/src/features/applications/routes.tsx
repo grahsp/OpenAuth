@@ -1,12 +1,12 @@
 import { type RouteObject } from "react-router-dom";
-import ApplicationsListPage from "./pages/ApplicationsListPage.tsx";
+import ApplicationListPage from "./pages/ApplicationListPage.tsx";
 import ApplicationDetailsPage from "./pages/ApplicationDetailsPage.tsx";
 
 export const routes: RouteObject[] = [
     {
         path: "applications",
         children: [
-            { index: true, element: <ApplicationsListPage /> },
+            { index: true, element: <ApplicationListPage /> },
             { path: ":id", element: <ApplicationDetailsPage />}
         ]
     }
