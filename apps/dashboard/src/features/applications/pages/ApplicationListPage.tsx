@@ -1,8 +1,8 @@
-import {Link} from "react-router-dom";
 import {useApplications} from "../hooks.tsx";
 import CreateApplicationForm from "../components/CreateApplicationForm.tsx";
+import {ApplicationListItem} from "../components/ApplicationListItem.tsx";
 
-export default function ApplicationsListPage() {
+export default function ApplicationListPage() {
     const { data, loading, error, reload } = useApplications();
 
     if (loading) return <p>Loading...</p>
@@ -15,13 +15,10 @@ export default function ApplicationsListPage() {
 
             <ul>
                 {data.map(app => (
-                    <li key={app.id}>
-                        <Link to={`/applications/${app.id}`}>
-                            {app.name}
-                        </Link>
-                    </li>
+                    <ApplicationListItem application={app} />
                 ))}
             </ul>
         </div>
     );
 }
+
