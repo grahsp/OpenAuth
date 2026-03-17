@@ -11,7 +11,6 @@ public class OAuthClientBuilder
 {
     private string _applicationType = DefaultValues.ApplicationType;
     private string _name = DefaultValues.ClientName;
-    private readonly List<string> _redirectUris = [DefaultValues.RedirectUri];
     
     private readonly IServiceProvider _services;
 
@@ -31,12 +30,6 @@ public class OAuthClientBuilder
         _name = name;
         return this;
     }
-    
-    public OAuthClientBuilder WithRedirectUri(string redirectUri)
-    {
-        _redirectUris.Add(redirectUri);
-        return this;
-    }
 
     public async Task<RegisteredClientResponse> CreateAsync()
     {
@@ -44,9 +37,8 @@ public class OAuthClientBuilder
 
         var applicationType = ClientApplicationTypes.Parse(_applicationType);
         var name = new ClientName(_name);
-        var redirectUris = _redirectUris.Select(x => new RedirectUri(x)).ToList();
 
-        var request = new CreateClientRequest(applicationType, name, redirectUris);
+        var request = new CreateClientRequest(applicationType, name);
         return await clientService.RegisterAsync(request);
     }
 }

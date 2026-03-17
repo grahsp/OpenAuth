@@ -31,8 +31,7 @@ public class ClientFactoryTests
     {
         var request = new CreateClientRequest(
             ClientApplicationTypes.Spa,
-            new ClientName("client"),
-            [RedirectUri.Parse("https://example.com/callback")]
+            new ClientName("client")
         );
 
         var client = _sut.Create(request, out var secret);
@@ -47,8 +46,7 @@ public class ClientFactoryTests
     {
         var request = new CreateClientRequest(
             ClientApplicationTypes.M2M,
-            new ClientName("client"),
-            []
+            new ClientName("client")
         );
 
         var hashResult = new SecretHashResult(SecretHash.FromHash("hashed-value"), "plain-secret");
@@ -62,28 +60,13 @@ public class ClientFactoryTests
     }
 
     [Fact]
-    public void Create_CallsValidateClient()
-    {
-        var invalidCmd = new CreateClientRequest(
-            ClientApplicationTypes.Spa,
-            new ClientName("client"),
-            []
-        );
-
-        // Throws due to missing redirect required by AuthorizationCode flow
-        Assert.Throws<InvalidOperationException>(() =>
-            _sut.Create(invalidCmd, out _));
-    }
-
-    [Fact]
     public void Create_UsesCurrentTime_FromTimeProvider()
     {
         var expected = _time.GetUtcNow();
 
         var cmd = new CreateClientRequest(
             ClientApplicationTypes.Spa,
-            new ClientName("client"),
-            [RedirectUri.Parse("https://example.com/callback")]
+            new ClientName("client")
         );
 
         var hashResult = new SecretHashResult(SecretHash.FromHash("hashed-value"), "plain-secret");

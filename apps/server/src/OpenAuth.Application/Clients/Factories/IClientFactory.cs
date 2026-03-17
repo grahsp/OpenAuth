@@ -6,6 +6,5 @@ namespace OpenAuth.Application.Clients.Factories;
 
 public interface IClientFactory
 {
-    Client Create(ClientName name);
     Client Create(CreateClientRequest request, out string? plainSecret);
 }

@@ -1,9 +1,11 @@
 using Microsoft.Extensions.DependencyInjection;
 using OpenAuth.Application.Abstractions;
 using OpenAuth.Application.Clients.Commands.GrantApiAccess;
+using OpenAuth.Application.Clients.Services;
 using OpenAuth.Domain.Clients.ValueObjects;
 using OpenAuth.Infrastructure.Persistence;
 using OpenAuth.Test.Common.Builders;
+using OpenAuth.Test.Common.Helpers;
 using OpenAuth.Test.Common.Hosting;
 using OpenAuth.Test.E2E.OAuth;
 
@@ -33,6 +35,10 @@ public static class TestHostExtensions
 			
 			var command = new GrantApiAccessCommand(registered.Client.Id, api.Id, scopes);
 			await handler.HandleAsync(command, CancellationToken.None);
+			
+			// TODO: hard coded redirect uri into all clients
+			var service = sp.GetRequiredService<IClientService>();
+			await service.SetRedirectUrisAsync(registered.Client.Id, [RedirectUri.Parse(DefaultValues.RedirectUri)]);
 
 			return new ExternalOAuthModule(host.CreateClient(), registered);
 		});
