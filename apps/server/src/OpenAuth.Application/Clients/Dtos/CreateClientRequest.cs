@@ -5,6 +5,5 @@ namespace OpenAuth.Application.Clients.Dtos;
 
 public sealed record CreateClientRequest(
     ClientApplicationType ApplicationType,
-    ClientName Name,
-    IEnumerable<RedirectUri> RedirectUris
+    ClientName Name
 );

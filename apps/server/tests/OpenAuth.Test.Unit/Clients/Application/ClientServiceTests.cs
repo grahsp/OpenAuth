@@ -50,9 +50,6 @@ public class ClientServiceTests
                 foreach (var grantType in config.ApplicationType.DefaultGrantTypes)
                     client.WithGrantType(grantType);
 
-                foreach (var redirectUri in config.RedirectUris)
-                    client.WithRedirectUri(redirectUri.Value);
-
                 return client.Build();
             });
         
@@ -61,18 +58,10 @@ public class ClientServiceTests
     }
 
     private static CreateClientRequest CreateM2MRequest()
-        => new(
-            ClientApplicationTypes.M2M,
-            new ClientName("test client"),
-            []
-        );
+        => new(ClientApplicationTypes.M2M, new ClientName("test client"));
 
     private static CreateClientRequest CreateSpaRequest()
-        => new(
-            ClientApplicationTypes.Spa,
-            new ClientName("test client"),
-            [RedirectUri.Parse("https://example.com/callback")]
-        );
+        => new(ClientApplicationTypes.Spa, new ClientName("test client"));
 
 
     private async Task<RegisteredClientResponse> RegisterClientAsync(CreateClientRequest request)

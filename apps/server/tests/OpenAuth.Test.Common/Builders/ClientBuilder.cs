@@ -9,97 +9,107 @@ namespace OpenAuth.Test.Common.Builders;
 
 public class ClientBuilder
 {
-    private string _name = DefaultValues.ClientName;
-    private ClientApplicationType? _applicationType;
-    private DateTimeOffset? _createdAt;
+	private string _name = DefaultValues.ClientName;
+	private ClientApplicationType? _applicationType;
+	private DateTimeOffset? _createdAt;
     
-    private List<string> _secrets = [];
-    private List<(ApiResource, ScopeCollection)> _apiAccess = [];
-    private List<string> _redirectUris = [];
-    private List<GrantType> _grantTypes = [];
+	private List<string> _secrets = [];
+	private List<(ApiResource, ScopeCollection)> _apiAccess = [];
+	private List<string> _redirectUris = [];
+	private List<GrantType> _grantTypes = [];
 
+	
+	public static ClientBuilder ForSpa() =>
+		new ClientBuilder()
+			.WithApplicationType(ClientApplicationTypes.Spa)
+			.WithRedirectUri(DefaultValues.RedirectUri);
+	
+	public static ClientBuilder ForM2M() =>
+		new ClientBuilder()
+			.WithApplicationType(ClientApplicationTypes.M2M)
+			.WithSecret();
 
-    public ClientBuilder WithApplicationType(ClientApplicationType applicationType)
-    {
-        _applicationType = applicationType;
-        return this;
-    }
+	public ClientBuilder WithApplicationType(ClientApplicationType applicationType)
+	{
+		_applicationType = applicationType;
+		return this;
+	}
     
-    public ClientBuilder WithName(string name)
-    {
-        _name = name;
-        return this;
-    }
+	public ClientBuilder WithName(string name)
+	{
+		_name = name;
+		return this;
+	}
     
-    public ClientBuilder WithName(ClientName name)
-    {
-        _name = name.Value;
-        return this;
-    }
+	public ClientBuilder WithName(ClientName name)
+	{
+		_name = name.Value;
+		return this;
+	}
     
-    public ClientBuilder WithSecret(string secret = "$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy")
-    {
-        _secrets.Add(secret);
-        return this;
-    }
+	public ClientBuilder WithSecret(string secret = "$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy")
+	{
+		_secrets.Add(secret);
+		return this;
+	}
 
-    public ClientBuilder WithRedirectUri(string uri)
-    {
-        _redirectUris.Add(uri);
-        return this;
-    }
+	public ClientBuilder WithRedirectUri(string uri)
+	{
+		_redirectUris.Add(uri);
+		return this;
+	}
     
-    public ClientBuilder WithGrantType(GrantType grantType)
-    {
-        _grantTypes.Add(grantType);
-        return this;
-    }
+	public ClientBuilder WithGrantType(GrantType grantType)
+	{
+		_grantTypes.Add(grantType);
+		return this;
+	}
     
-    public ClientBuilder WithApi(ApiResource api, string? scopes = null)
-    {
-        var collection = ScopeCollection.Parse(scopes ?? "read write");
+	public ClientBuilder WithApi(ApiResource api, string? scopes = null)
+	{
+		var collection = ScopeCollection.Parse(scopes ?? "read write");
         
-        _apiAccess.Add((api, collection));
-        return this;
-    }
+		_apiAccess.Add((api, collection));
+		return this;
+	}
 
-    public ClientBuilder CreatedAt(DateTimeOffset createdAt)
-    {
-        _createdAt = createdAt;
-        return this;
-    }
+	public ClientBuilder CreatedAt(DateTimeOffset createdAt)
+	{
+		_createdAt = createdAt;
+		return this;
+	}
 
-    public Client Build()
-    {
-        var name = new ClientName(_name);
-        var createdAt = _createdAt ?? DateTimeOffset.UtcNow;
+	public Client Build()
+	{
+		var name = new ClientName(_name);
+		var createdAt = _createdAt ?? DateTimeOffset.UtcNow;
         
-        var applicationType = _applicationType ?? ClientApplicationTypes.Spa;
+		var applicationType = _applicationType ?? ClientApplicationTypes.Spa;
 
-        if (_grantTypes.Count == 0)
-            _grantTypes = applicationType.DefaultGrantTypes.ToList();
+		if (_grantTypes.Count == 0)
+			_grantTypes = applicationType.DefaultGrantTypes.ToList();
 
-        if (_grantTypes.Any(g => g.RequiresRedirectUri) && _redirectUris.Count == 0)
-            WithRedirectUri(DefaultValues.RedirectUri);
+		if (_grantTypes.Any(g => g.RequiresRedirectUri) && _redirectUris.Count == 0)
+			WithRedirectUri(DefaultValues.RedirectUri);
 
-        if (applicationType.AllowsClientSecrets && _secrets.Count == 0)
-            WithSecret();
+		if (applicationType.AllowsClientSecrets && _secrets.Count == 0)
+			WithSecret();
         
-        var redirectUris = _redirectUris.Select(RedirectUri.Parse).ToList();
+		var client = Client.Create(
+			name,
+			applicationType,
+			applicationType.DefaultGrantTypes,
+			createdAt);
         
-        var client = Client.Create(
-            name,
-            applicationType,
-            applicationType.DefaultGrantTypes,
-            redirectUris,
-            createdAt);
+		var redirectUris = _redirectUris.Select(RedirectUri.Parse).ToList();
+		client.SetRedirectUris(redirectUris, createdAt);
         
-        foreach (var secret in _secrets)
-            client.AddSecret(SecretHash.FromHash(secret), createdAt);
+		foreach (var secret in _secrets)
+			client.AddSecret(SecretHash.FromHash(secret), createdAt);
         
-        foreach (var (api, scopes) in _apiAccess)
-            client.GrantApiAccess(api.Id, scopes, createdAt);
+		foreach (var (api, scopes) in _apiAccess)
+			client.GrantApiAccess(api.Id, scopes, createdAt);
 
-        return client;
-    }
+		return client;
+	}
 }

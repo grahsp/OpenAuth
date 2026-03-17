@@ -16,11 +16,6 @@ public class ClientFactory : IClientFactory
         _time = time;
     }
     
-    
-    [Obsolete]
-    public Client Create(ClientName name)
-        => Client.Create(name, _time.GetUtcNow());
-    
     public Client Create(CreateClientRequest request, out string? plainSecret)
     {
         ArgumentNullException.ThrowIfNull(request);
@@ -32,7 +27,6 @@ public class ClientFactory : IClientFactory
             request.Name,
             request.ApplicationType,
             request.ApplicationType.DefaultGrantTypes,
-            request.RedirectUris,
             now);
         
         if (request.ApplicationType.AllowsClientSecrets)

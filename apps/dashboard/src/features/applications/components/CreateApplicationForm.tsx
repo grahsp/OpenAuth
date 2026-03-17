@@ -23,22 +23,14 @@ export function CreateApplicationForm(
     const [nameBlurred, setNameBlurred] = useState<boolean>(false);
     const isNameValid = name.trim().length > 0;
 
-    // TODO: application should not require redirect uris on creation.
-    const redirectUris = "https://google.com/";
-
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
 
         if (!isNameValid)
             return;
 
-        const uris = redirectUris
-            .split(',')
-            .map(uri => uri.trim())
-            .filter(uri => uri.length > 0);
-
         try {
-            await create({name, type, redirectUris: uris});
+            await create({name, type});
             onSuccess();
         } catch {
             // already handled in hook

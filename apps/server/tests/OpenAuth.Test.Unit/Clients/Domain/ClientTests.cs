@@ -172,20 +172,6 @@ public class ClientTests
             
             Assert.Empty(client.RedirectUris);
         }
-
-        [Fact]
-        public void WhenEmptyCollectionAndIsRequired_ThrowsException()
-        {
-            
-            var client = new ClientBuilder()
-                .WithApplicationType(ClientApplicationTypes.Spa)
-                .Build();
-            
-            client.SetRedirectUris([], _time.GetUtcNow());
-
-            Assert.Throws<InvalidOperationException>(()
-                => client.ValidateClient());
-        }
         
         [Fact]
         public void WhenDuplicateUris_ThrowsException()

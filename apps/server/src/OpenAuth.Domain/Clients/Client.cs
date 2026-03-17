@@ -46,55 +46,28 @@ public sealed class Client
     
     private Client() { }
 
-    [Obsolete]
-    private Client(ClientName name, DateTimeOffset utcNow)
-    {
-        Name = name;
-        CreatedAt = UpdatedAt = utcNow;
-        
-        // Temporary
-        ApplicationType = new SinglePageClientApplicationType();
-    }
-
-    [Obsolete]
-    internal static Client Create(ClientName name, DateTimeOffset utcNow)
-        => new(name, utcNow);
-
     private Client(
         ClientName name,
         ClientApplicationType applicationType,
         IEnumerable<GrantType> allowedGrantTypes,
-        IEnumerable<RedirectUri> redirectUris,
         DateTimeOffset utcNow)
     {
         Name = name;
         ApplicationType = applicationType;
-        
         _allowedGrantTypes = allowedGrantTypes.ToHashSet();
-        _redirectUris = redirectUris.ToHashSet();
-        
         CreatedAt = UpdatedAt = utcNow;
-        
-        ValidateInitialClient();
     }
 
     internal static Client Create(
         ClientName name,
         ClientApplicationType applicationType,
         IEnumerable<GrantType> allowedGrantTypes,
-        IEnumerable<RedirectUri> redirectUris,
         DateTimeOffset utcNow) =>
-        new Client(name, applicationType, allowedGrantTypes, redirectUris, utcNow);
-
-    private void ValidateInitialClient()
-    {
-        ValidateRedirectUris();
-        ValidateGrantTypes();
-    }
+        new Client(name, applicationType, allowedGrantTypes, utcNow);
 
     public void ValidateClient()
     {
-        ValidateInitialClient();
+        ValidateGrantTypes();
         ValidateSecrets();
     }
 
@@ -106,12 +79,6 @@ public sealed class Client
         
         var invalidNames = string.Join(", ", invalid.Select(g => g.Value));
         throw new InvalidOperationException($"Grant type(s) {invalidNames} are not allowed for this client type.");
-    }
-
-    private void ValidateRedirectUris()
-    {
-        if (RequiresRedirectUri && RedirectUris.Count == 0)
-            throw new InvalidOperationException("Client must have at least one redirect URI.");
     }
     
     private void ValidateSecrets()

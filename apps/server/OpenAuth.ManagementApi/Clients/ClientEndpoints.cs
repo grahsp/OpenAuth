@@ -44,8 +44,7 @@ public static class ClientEndpoints
 	{
 		var request = new CreateClientRequest(
 			ClientApplicationTypes.Parse(dto.Type),
-			new ClientName(dto.Name),
-			dto.RedirectUris.Select(RedirectUri.Parse)
+			new ClientName(dto.Name)
 		);
             
 		var result = await service.RegisterAsync(request, ct);

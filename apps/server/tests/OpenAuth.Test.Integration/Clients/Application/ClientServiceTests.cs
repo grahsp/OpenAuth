@@ -36,18 +36,12 @@ public class ClientServiceTests(TestFixture fixture) : IAsyncLifetime
 			.Where(s => s.ClientId == id)
 			.ToListAsync();
 	}
-    
+
 	private static CreateClientRequest CreateM2MRequest()
-		=> new CreateClientRequest(
-			ClientApplicationTypes.M2M,
-			new ClientName("test client"),
-			[RedirectUri.Parse("https://example.com/callback")]);
+		=> new CreateClientRequest(ClientApplicationTypes.M2M, new ClientName("test client"));
 
 	private static CreateClientRequest CreateSpaRequest()
-		=> new CreateClientRequest(
-			ClientApplicationTypes.Spa,
-			new ClientName("test client"),
-			[RedirectUri.Parse("https://example.com/callback")]);
+		=> new CreateClientRequest(ClientApplicationTypes.Spa, new ClientName("test client"));
     
 	private static readonly RedirectUri UriA = RedirectUri.Parse("https://a.com/callback");
 	private static readonly RedirectUri UriB = RedirectUri.Parse("https://b.com/callback");
