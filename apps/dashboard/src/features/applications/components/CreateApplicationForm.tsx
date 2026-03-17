@@ -1,51 +1,109 @@
 import {useState} from "react";
-import * as React from "react";
+import type {FormEvent} from "react";
 import {useCreateApplication} from "../hooks.tsx";
+import ApplicationTypeCard from "./ApplicationTypeCard.tsx";
+import "./CreateApplicationForm.css"
+import type {ApplicationType} from "../types.ts";
 
-export default function CreateApplicationForm({ onCreated }: { onCreated: () => void }) {
-    const { create, loading, error } = useCreateApplication();
+export function CreateApplicationForm(
+    {
+        onSuccess,
+        onCancel
+    }: {
+        onSuccess: () => void;
+        onCancel: () => void;
+    }) {
+    const {create, loading, error} = useCreateApplication();
 
-    const [type, setType] = useState<"spa" | "m2m">("spa");
-    const [name, setName] = useState("");
-    const [redirectUris, setRedirectUris] = useState("");
+    // Type
+    const [type, setType] = useState<ApplicationType>("spa");
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    // Name
+    const [name, setName] = useState<string>("My App");
+    const [nameBlurred, setNameBlurred] = useState<boolean>(false);
+    const isNameValid = name.trim().length > 0;
+
+    // TODO: application should not require redirect uris on creation.
+    const redirectUris = "https://google.com/";
+
+    const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
+
+        if (!isNameValid)
+            return;
 
         const uris = redirectUris
             .split(',')
             .map(uri => uri.trim())
             .filter(uri => uri.length > 0);
 
-        await create({ name, type, redirectUris: uris });
-
-        onCreated();
+        try {
+            await create({name, type, redirectUris: uris});
+            onSuccess();
+        } catch {
+            // already handled in hook
+        }
     };
 
     return (
-        <form onSubmit={handleSubmit}>
-            <h2>Create Application</h2>
+        <form className="form" onSubmit={handleSubmit}>
+            <h2 className="form-title">Create application</h2>
 
-            <input
-                placeholder="Name"
-                value={name}
-                onChange={e => setName(e.target.value)}
-            />
+            {/* NAME */}
+            <div className="form-field">
+                <label className="label">
+                    Name <span className="label__required">*</span>
+                </label>
 
-            <select value={type} onChange={e => setType(e.target.value as "spa" | "m2m")}>
-                <option value="spa">SPA</option>
-                <option value="m2m">M2M</option>
-            </select>
+                <input
+                    className={`input ${!isNameValid ? "input--error" : ""}`}
+                    value={name}
+                    onBlur={() => setNameBlurred(true)}
+                    onChange={(e) => {
+                        setName(e.target.value);
+                        if (nameBlurred) setNameBlurred(false);
+                    }}
+                />
 
-            <textarea
-                placeholder="Redirect URIs (separated by commas)"
-                value={redirectUris}
-                onChange={e => setRedirectUris(e.target.value)}
-            />
+                {nameBlurred && !isNameValid &&<p className="error">"Name" is not allowed to be empty</p>}
+            </div>
 
-            <button disabled={loading} type="submit">
-                {loading ? "Creating.." : "Create"}
-            </button>
+            {/* TYPE */}
+            <div className="type-selector">
+                <ApplicationTypeCard
+                    selected={type === "spa"}
+                    title="Single Page Application"
+                    description="A JavaScript front-end app"
+                    onClick={() => setType("spa")}
+                />
+
+                <ApplicationTypeCard
+                    selected={type === "m2m"}
+                    title="Machine to Machine"
+                    description="Backend communication"
+                    onClick={() => setType("m2m")}
+                />
+            </div>
+
+            {error && <p className="error">{error}</p>}
+
+            {/* FOOTER */}
+            <div className="form-footer">
+                <button
+                    type="button"
+                    className="btn secondary"
+                    onClick={onCancel}
+                >
+                    Cancel
+                </button>
+
+                <button
+                    type="submit"
+                    className="btn primary"
+                >
+                    {loading ? "Creating..." : "Create"}
+                </button>
+            </div>
         </form>
     );
 }

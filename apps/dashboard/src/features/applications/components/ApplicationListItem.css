@@ -48,11 +48,11 @@ a {
 }
 
 .client-id {
-    background: #ddd;
+    background: #d3d2d2;
     padding: .25rem .5rem;
     border-radius: .25rem;
 
     font-family: monospace;
     font-size: 14px;
-    color: rgba(96, 96, 96, 0.75);
+    color: rgba(57, 56, 56, 0.75);
 }
