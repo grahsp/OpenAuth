@@ -20,14 +20,14 @@ public sealed class CreateM2MClientCommandHandler(
 	{
 		var now = time.GetUtcNow();
 		
-		var api = await apiResourceRepository.GetByIdAsync(command.ApiResourceId, ct)
-		          ?? throw new ApiResourceNotFoundException(command.ApiResourceId);
+		var api = await apiResourceRepository.GetByIdAsync(command.ApiId, ct)
+		          ?? throw new ApiResourceNotFoundException(command.ApiId);
 		
 		var allowedScopes = api.GetScopes();
 		if (!command.Scopes.IsSubsetOf(allowedScopes))
 			throw new InvalidScopeException("One or more scopes requested are not allowed for the requested API.");
 		
-		var client = Client.CreateM2M(command.Name, command.ApiResourceId, command.Scopes, now);
+		var client = Client.CreateM2M(command.Name, command.ApiId, command.Scopes, now);
 		
 		var secret = hasher.Create();
 		client.AddSecret(secret.Hash, now);

@@ -20,6 +20,24 @@ public sealed record ScopeCollection : IReadOnlyCollection<Scope>
 			.Select(x => new Scope(x))
 			.ToHashSet());
 	}
+	
+	public static bool TryParse(IEnumerable<string>? rawScopes, [NotNullWhen(true)] out ScopeCollection? scopes)
+	{
+		scopes = null;
+		
+		if (rawScopes is null)
+			return false;
+
+		try
+		{
+			scopes = Parse(rawScopes);
+			return true;
+		}
+		catch (Exception)
+		{
+			return false;
+		}
+	}
 
 	public static ScopeCollection Parse(string spaceSeparatedScopes)
 	{

@@ -24,6 +24,7 @@ public static class ClientModule
 		services.AddScoped<IClientService, ClientService>();
 		services.AddScoped<IClientFactory, ClientFactory>();
 
+		services.AddScoped<ICommandHandler<CreateClientCommand, CreateClientResult>, CreateClientCommandHandler>();
 		services.AddScoped<ICommandHandler<CreateM2MClientCommand, CreateClientResult>, CreateM2MClientCommandHandler>();
 		services.AddScoped<ICommandHandler<CreateSpaClientCommand, CreateClientResult>, CreateSpaClientCommandHandler>();
 		services.AddScoped<ICommandHandler<CreateWebClientCommand, CreateClientResult>, CreateWebClientCommandHandler>();

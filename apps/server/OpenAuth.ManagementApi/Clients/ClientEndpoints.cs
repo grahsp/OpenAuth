@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Mvc;
 using OpenAuth.Application.Abstractions;
 using OpenAuth.Application.Clients.Commands.CreateClient;
 using OpenAuth.Application.Clients.Commands.GrantApiAccess;
@@ -5,6 +6,7 @@ using OpenAuth.Application.Clients.Commands.RevokeApiAccess;
 using OpenAuth.Application.Clients.Interfaces;
 using OpenAuth.Application.Clients.Services;
 using OpenAuth.Domain.ApiResources.ValueObjects;
+using OpenAuth.Domain.Clients.ApplicationType;
 using OpenAuth.Domain.Clients.ValueObjects;
 
 namespace OpenAuth.ManagementApi.Clients;
@@ -19,10 +21,8 @@ public static class ClientEndpoints
 
 		group.MapGet("/", GetClients);
 		group.MapGet("/{clientId}", GetClient);
-		
-		group.MapPost("/m2m", CreateM2MClient);
-		group.MapPost("/spa", CreateSpaClient);
-		group.MapPost("/web", CreateWebClient);
+
+		group.MapPost("/", CreateClient);
 		group.MapDelete("/{clientId}", DeleteClient);
 
 		group.MapPost("/{clientId}/apis/{apiResourceId}", GrantApiAccess);
@@ -38,48 +38,43 @@ public static class ClientEndpoints
 		var clients = await service.GetPagedAsync(1, 20, ct);
 		return Results.Ok(clients.Items);
 	}
+
+	private static async Task<IResult> CreateClient(
+		[FromBody] CreateClientRequest request,
+		[FromServices] ICommandHandler<CreateClientCommand, CreateClientResult> handler,
+		CancellationToken ct)
+	{
+		var type = ClientApplicationTypes.Parse(request.Type);
+
+		ApiResourceId? apiId = null;
+		if (request.ApiId is not null)
+		{
+			if (!ApiResourceId.TryParse(request.ApiId, out var parsed))
+				throw new BadHttpRequestException("Invalid apiId");
+
+			apiId = parsed;
+		}
+
+		ScopeCollection? scopes = null;
+		if (request.Scopes is not null)
+		{
+			if (!ScopeCollection.TryParse(request.Scopes, out var parsed))
+				throw new BadHttpRequestException("Invalid scopes");
+
+			scopes = parsed;
+		}		
+		
+		var command = new CreateClientCommand(
+			type,
+			new ClientName(request.Name),
+			apiId,
+			scopes
+		);
+		
+		var result = await handler.HandleAsync(command, ct);
+		return Results.Ok(result.ToResponse());
+	}
 	
-	private static async Task<IResult> CreateM2MClient(
-		CreateM2MClientRequest dto,
-		ICommandHandler<CreateM2MClientCommand, CreateClientResult> handler,
-		CancellationToken ct)
-	{
-		var command = new CreateM2MClientCommand(
-			new ClientName(dto.Name),
-			ApiResourceId.Parse(dto.ApiId),
-			ScopeCollection.Parse(dto.Scopes)
-		);
-            
-		var result = await handler.HandleAsync(command, ct);
-		return Results.Ok(result.ToResponse());
-	}
-    
-	private static async Task<IResult> CreateSpaClient(
-		CreateSpaClientRequest dto,
-		ICommandHandler<CreateSpaClientCommand, CreateClientResult> handler,
-		CancellationToken ct)
-	{
-		var command = new CreateSpaClientCommand(
-			new ClientName(dto.Name)
-		);
-            
-		var result = await handler.HandleAsync(command, ct);
-		return Results.Ok(result.ToResponse());
-	}
-	
-	private static async Task<IResult> CreateWebClient(
-		CreateSpaClientRequest dto,
-		ICommandHandler<CreateWebClientCommand, CreateClientResult> handler,
-		CancellationToken ct)
-	{
-		var command = new CreateWebClientCommand(
-			new ClientName(dto.Name)
-		);
-            
-		var result = await handler.HandleAsync(command, ct);
-		return Results.Ok(result.ToResponse());
-	}
-    
 	private static async Task<IResult> GetClient(
 		ClientId clientId,
 		IClientQueryService service,
