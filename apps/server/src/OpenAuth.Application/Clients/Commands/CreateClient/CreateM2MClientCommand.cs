@@ -4,4 +4,4 @@ using OpenAuth.Domain.Clients.ValueObjects;
 
 namespace OpenAuth.Application.Clients.Commands.CreateClient;
 
-public sealed record CreateM2MClientCommand(ClientName Name, ApiResourceId ApiResourceId, ScopeCollection Scopes) : ICommand<CreateClientResult>;
+public sealed record CreateM2MClientCommand(ClientName Name, ApiResourceId ApiId, ScopeCollection Scopes) : ICommand<CreateClientResult>;
