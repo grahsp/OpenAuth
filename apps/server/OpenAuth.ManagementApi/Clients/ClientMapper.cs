@@ -1,11 +1,11 @@
-using OpenAuth.Application.Clients.Services;
+using OpenAuth.Application.Clients.Commands.CreateClient;
 
 namespace OpenAuth.ManagementApi.Clients;
 
 public static class ClientMapper
 {
-	public static ClientCreationResponse ToResponse(this RegisteredClientResponse result)
+	public static CreateClientResponse ToResponse(this CreateClientResult result)
 	{
-		return new ClientCreationResponse(result.Client.Id.ToString(), result.ClientSecret);
+		return new CreateClientResponse(result.Client.Id.ToString(), result.PlainTextSecret);
 	}
 }

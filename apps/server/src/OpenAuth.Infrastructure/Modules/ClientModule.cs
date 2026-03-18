@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using OpenAuth.Application.Abstractions;
+using OpenAuth.Application.Clients.Commands.CreateClient;
 using OpenAuth.Application.Clients.Commands.GrantApiAccess;
 using OpenAuth.Application.Clients.Commands.RevokeApiAccess;
 using OpenAuth.Application.Clients.Factories;
@@ -22,6 +23,10 @@ public static class ClientModule
 	{
 		services.AddScoped<IClientService, ClientService>();
 		services.AddScoped<IClientFactory, ClientFactory>();
+
+		services.AddScoped<ICommandHandler<CreateM2MClientCommand, CreateClientResult>, CreateM2MClientCommandHandler>();
+		services.AddScoped<ICommandHandler<CreateSpaClientCommand, CreateClientResult>, CreateSpaClientCommandHandler>();
+		services.AddScoped<ICommandHandler<CreateWebClientCommand, CreateClientResult>, CreateWebClientCommandHandler>();
 		
 		services.AddScoped<ICommandHandler<GrantApiAccessCommand>, GrantApiAccessHandler>();
 		services.AddScoped<ICommandHandler<RevokeApiAccessCommand>, RevokeApiAccessHandler>();

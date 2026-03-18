@@ -33,6 +33,19 @@ public class ApiResource
 		return new ApiResource(resourceName, audience, permissionSet);
 	}
 
+	public ScopeCollection GetScopes()
+	{
+		var scopes = Permissions.Select(p => p.Scope);
+		return new ScopeCollection(scopes);
+	}
+
+	public void ValidateScopes(ScopeCollection scopes)
+	{
+		var allowedScopes = Permissions.Select(p => p.Scope);
+		if (!scopes.IsSubsetOf(allowedScopes))
+			throw new InvalidOperationException("One or more scopes requested are not allowed for this API.");
+	}
+
 	public void AddPermission(Permission permission)
 	{
 		if (_permissions.Contains(permission))
