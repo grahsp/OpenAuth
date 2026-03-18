@@ -4,10 +4,12 @@ using OpenAuth.Application.ApiResources.Commands.AddApiResourcePermissions;
 using OpenAuth.Application.ApiResources.Commands.CreateApiResource;
 using OpenAuth.Application.ApiResources.Commands.DeleteApiResource;
 using OpenAuth.Application.ApiResources.Commands.RemoveApiResourcePermissions;
-using OpenAuth.Application.ApiResources.Queries.GetApiResourceSummaryList;
+using OpenAuth.Application.ApiResources.Queries.GetApiDetails;
+using OpenAuth.Application.ApiResources.Queries.GetApiSummaryList;
 using OpenAuth.Application.Audiences.Interfaces;
 using OpenAuth.Infrastructure.ApiResources;
-using OpenAuth.Infrastructure.ApiResources.Queries.GetApiResourceSummaryList;
+using OpenAuth.Infrastructure.ApiResources.Queries.GetApiDetails;
+using OpenAuth.Infrastructure.ApiResources.Queries.GetApiSummaryList;
 
 namespace OpenAuth.Infrastructure.Modules;
 
@@ -22,7 +24,8 @@ public static class ApiResourceModule
 
 	public static IServiceCollection AddApiResourceApplication(this IServiceCollection services)
 	{
-		services.AddScoped<IQueryHandler<ApiResourceSummaryList>, ApiResourceSummaryListQueryHandler>();
+		services.AddScoped<IQueryHandler<GetApiSummaryListQuery, IReadOnlyList<ApiSummaryView>>, GetApiSummaryListQueryHandler>();
+		services.AddScoped<IQueryHandler<GetApiDetailsQuery, ApiDetailsView>, GetApiDetailsQueryHandler>();
 		
 		services.AddScoped<ICommandHandler<CreateApiResourceCommand, CreateApiResourceResult>, CreateApiResourceHandler>();
 		services.AddScoped<ICommandHandler<DeleteApiResourceCommand>, DeleteApiResourceHandler>();
