@@ -1,4 +1,4 @@
-import type {Application, CreateApplicationRequest} from "./types.ts";
+import type {ApiDetails, ApiSummary, Application, CreateApplicationRequest} from "./types.ts";
 import {http} from "../../http.ts";
 
 export async function getApplications(): Promise<Application[]> {
@@ -14,4 +14,12 @@ export async function createApplication(dto: CreateApplicationRequest): Promise<
         method: "POST",
         body: JSON.stringify(dto)
     });
+}
+
+export async function getApiSummaries(): Promise<ApiSummary[]> {
+    return await http<ApiSummary[]>("/api/apis");
+}
+
+export async function getApiDetails(id: string): Promise<ApiDetails> {
+    return await http<ApiDetails>(`/api/apis/${id}`);
 }

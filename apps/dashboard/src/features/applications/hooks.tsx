@@ -1,6 +1,6 @@
 import {useEffect, useState} from "react";
-import {createApplication, getApplication, getApplications} from "./api.ts";
-import type {Application, CreateApplicationRequest} from "./types.ts";
+import {createApplication, getApiDetails, getApiSummaries, getApplication, getApplications} from "./api.ts";
+import type {ApiDetails, ApiSummary, Application, CreateApplicationRequest} from "./types.ts";
 import {ApiError} from "../../http.ts";
 
 export function useApplications() {
@@ -91,5 +91,71 @@ export function useCreateApplication() {
         }
     };
 
-    return { create, loading, error };
+    return { create: create, loading, error };
+}
+
+export function useApiSummaries() {
+    const [data, setData] = useState<ApiSummary[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    const fetchApis = async () => {
+        setLoading(true);
+        setError(null);
+
+        try {
+            const result = await getApiSummaries();
+            setData(result);
+        } catch (err) {
+            if (err instanceof ApiError) {
+                setError(err.message);
+            } else {
+                setError("Failed to fetch APIs.")
+            }
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    useEffect(() => {
+        fetchApis();
+    }, []);
+
+    return { data, loading, error, reload: fetchApis };
+}
+
+export function useApiDetails(id: string | null) {
+    const [data, setData] = useState<ApiDetails>();
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    const fetchApi = async (id: string) => {
+        setLoading(true);
+        setError(null);
+
+        try {
+            const result = await getApiDetails(id);
+            setData(result);
+        } catch (err) {
+            if (err instanceof ApiError) {
+                setError(err.message);
+            } else {
+                setError("Failed to fetch API.");
+            }
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    useEffect(() => {
+        console.log("id", id)
+        if (!id) {
+            setLoading(false);
+            return;
+        }
+
+        fetchApi(id);
+    }, [id]);
+
+    return { data, loading, error, reload: fetchApi };
 }
