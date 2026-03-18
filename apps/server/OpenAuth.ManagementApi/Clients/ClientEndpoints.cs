@@ -1,11 +1,10 @@
 using OpenAuth.Application.Abstractions;
+using OpenAuth.Application.Clients.Commands.CreateClient;
 using OpenAuth.Application.Clients.Commands.GrantApiAccess;
 using OpenAuth.Application.Clients.Commands.RevokeApiAccess;
-using OpenAuth.Application.Clients.Dtos;
 using OpenAuth.Application.Clients.Interfaces;
 using OpenAuth.Application.Clients.Services;
 using OpenAuth.Domain.ApiResources.ValueObjects;
-using OpenAuth.Domain.Clients.ApplicationType;
 using OpenAuth.Domain.Clients.ValueObjects;
 
 namespace OpenAuth.ManagementApi.Clients;
@@ -19,8 +18,11 @@ public static class ClientEndpoints
 		var group = app.MapGroup(BaseRoute);
 
 		group.MapGet("/", GetClients);
-		group.MapPost("/", CreateClient);
 		group.MapGet("/{clientId}", GetClient);
+		
+		group.MapPost("/m2m", CreateM2MClient);
+		group.MapPost("/spa", CreateSpaClient);
+		group.MapPost("/web", CreateWebClient);
 		group.MapDelete("/{clientId}", DeleteClient);
 
 		group.MapPost("/{clientId}/apis/{apiResourceId}", GrantApiAccess);
@@ -36,18 +38,45 @@ public static class ClientEndpoints
 		var clients = await service.GetPagedAsync(1, 20, ct);
 		return Results.Ok(clients.Items);
 	}
-    
-	private static async Task<IResult> CreateClient(
-		ClientCreationRequest dto,
-		IClientService service,
+	
+	private static async Task<IResult> CreateM2MClient(
+		CreateM2MClientRequest dto,
+		ICommandHandler<CreateM2MClientCommand, CreateClientResult> handler,
 		CancellationToken ct)
 	{
-		var request = new CreateClientRequest(
-			ClientApplicationTypes.Parse(dto.Type),
+		var command = new CreateM2MClientCommand(
+			new ClientName(dto.Name),
+			ApiResourceId.Parse(dto.ApiId),
+			ScopeCollection.Parse(dto.Scopes)
+		);
+            
+		var result = await handler.HandleAsync(command, ct);
+		return Results.Ok(result.ToResponse());
+	}
+    
+	private static async Task<IResult> CreateSpaClient(
+		CreateSpaClientRequest dto,
+		ICommandHandler<CreateSpaClientCommand, CreateClientResult> handler,
+		CancellationToken ct)
+	{
+		var command = new CreateSpaClientCommand(
 			new ClientName(dto.Name)
 		);
             
-		var result = await service.RegisterAsync(request, ct);
+		var result = await handler.HandleAsync(command, ct);
+		return Results.Ok(result.ToResponse());
+	}
+	
+	private static async Task<IResult> CreateWebClient(
+		CreateSpaClientRequest dto,
+		ICommandHandler<CreateWebClientCommand, CreateClientResult> handler,
+		CancellationToken ct)
+	{
+		var command = new CreateWebClientCommand(
+			new ClientName(dto.Name)
+		);
+            
+		var result = await handler.HandleAsync(command, ct);
 		return Results.Ok(result.ToResponse());
 	}
     
