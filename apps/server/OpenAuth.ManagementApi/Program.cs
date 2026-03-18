@@ -50,7 +50,7 @@ public class Program
 		app.MapClientEndpoints();
 		app.MapSigningKeyEndpoints();
 		app.MapSecretEndpoints();
-		app.MapApiResourceEndpoints();
+		app.MapApiEndpoints();
         
 		app.Run();
 	}

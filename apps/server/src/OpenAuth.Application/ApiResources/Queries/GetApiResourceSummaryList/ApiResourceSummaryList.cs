@@ -1,3 +1,0 @@
-namespace OpenAuth.Application.ApiResources.Queries.GetApiResourceSummaryList;
-
-public sealed record ApiResourceSummaryList(IReadOnlyCollection<ApiResourceSummary> Items);
