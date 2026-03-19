@@ -21,7 +21,7 @@ export async function http<T>(path: string, options?: RequestInit): Promise<T> {
         const errorBody = body as { message?: string, code?: string };
 
         const code: string | undefined = errorBody?.code;
-        const message = errorBody?.message ?? "Something went wrong";
+        const message = errorBody?.message ?? "Something went wrong. Try again later.";
 
         throw new ApiError(message, code);
     }

@@ -124,7 +124,7 @@ export function useApiSummaries() {
     return { data, loading, error, reload: fetchApis };
 }
 
-export function useApiDetails(id: string | null) {
+export function useApiDetails(id?: string) {
     const [data, setData] = useState<ApiDetails>();
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -148,7 +148,6 @@ export function useApiDetails(id: string | null) {
     }
 
     useEffect(() => {
-        console.log("id", id)
         if (!id) {
             setLoading(false);
             return;
