@@ -1,9 +1,9 @@
-import {useApplications} from "../hooks.tsx";
 import {ApplicationListItem} from "../components/ApplicationListItem.tsx";
 import {useState} from "react";
 import CreateApplicationModal from "../create/CreateApplicationModal.tsx";
 import {useNavigate} from "react-router-dom";
 import Modal from "../components/Modal.tsx";
+import {useApplications} from "../hooks/useApplications.tsx";
 
 export default function ApplicationListPage() {
     const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -33,7 +33,7 @@ export default function ApplicationListPage() {
             <h1>Applications</h1>
 
             <ul>
-                {data.map(app => (
+                {data?.map(app => (
                     <ApplicationListItem key={app.id} application={app} />
                 ))}
             </ul>

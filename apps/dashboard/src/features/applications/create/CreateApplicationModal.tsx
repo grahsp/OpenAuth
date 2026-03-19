@@ -1,11 +1,11 @@
 import type {ApplicationType, CreateApplicationResponse} from "../types.ts";
-import {useCreateApplication} from "../hooks.tsx";
 import {useEffect, useState} from "react";
 import {SecretReveal} from "./components/SecretReveal.tsx";
 import {PermissionsStep} from "./steps/PermissionsStep.tsx";
 import {BasicInfoStep} from "./steps/BasicInfoStep.tsx";
 
 import "./CreateApplicationModal.css"
+import {useCreateApplication} from "./hooks/useCreateApplication.tsx";
 
 type Step = "basic" | "permissions" | "success";
 
