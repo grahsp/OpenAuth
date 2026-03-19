@@ -1,0 +1,35 @@
+.type-card {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+
+    padding: 18px;
+
+    background: #0f0f0f;
+    border: 1px solid #2a2a2a;
+    border-radius: 12px;
+
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.type-card:hover {
+    border-color: #3a3a3a;
+}
+
+.type-card--selected {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25);
+}
+
+.type-card-title {
+    font-size: 15px;
+    font-weight: 500;
+    color: #f5f5f5;
+}
+
+.type-card-description {
+    font-size: 13px;
+    color: #9ca3af;
+    line-height: 1.4;
+}

@@ -8,8 +8,13 @@ export type Application = {
 export type CreateApplicationRequest = {
     type: ApplicationType;
     name: string;
-    apiId: string | null;
+    apiId?: string;
     scopes: string[] | null;
+}
+
+export type CreateApplicationResponse = {
+    id: string;
+    secret?: string;
 }
 
 export type ApiSummary = {
