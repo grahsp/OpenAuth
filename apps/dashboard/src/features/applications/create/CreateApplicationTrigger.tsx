@@ -1,6 +1,6 @@
 import {useState} from "react";
 import { useNavigate } from "react-router-dom";
-import Modal from "../components/Modal.tsx";
+import Modal from "../../../shared/components/Modal.tsx";
 import CreateApplicationModal from "./CreateApplicationModal.tsx";
 import "./CreateApplicationTrigger.css"
 
