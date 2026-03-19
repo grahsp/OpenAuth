@@ -6,7 +6,7 @@ type ApiSelectorProps = {
     onChange: (apiId?: string) => void;
 };
 
-export default function ApiSelector({ value, onChange }: ApiSelectorProps) {
+export function ApiSelector({ value, onChange }: ApiSelectorProps) {
     const { data, loading, error } = useApiSummaries();
 
     return (

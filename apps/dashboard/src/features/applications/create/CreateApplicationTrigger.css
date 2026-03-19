@@ -1,0 +1,44 @@
+.create-app-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+
+    padding: .6rem .8rem;
+
+    font-size: 16px;
+    font-weight: 500;
+    color: #e6ebff;
+
+    background: linear-gradient(180deg, #4c6ef5 0%, #3b5bdb 100%);
+    border: 2px solid #2f49c8;
+    border-radius: .5rem;
+
+    cursor: pointer;
+
+    box-shadow:
+            0 0 0 2px rgba(76, 110, 245, 0.25),
+            0 6px 18px rgba(0, 0, 0, 0.35);
+
+    transition: all 0.15s ease;
+}
+
+/* Hover */
+.create-app-trigger:hover {
+    background: linear-gradient(180deg, #5c7cfa 0%, #4263eb 100%);
+    transform: translateY(-1px);
+}
+
+/* Active */
+.create-app-trigger:active {
+    transform: translateY(0);
+    box-shadow:
+            0 0 0 2px rgba(76, 110, 245, 0.25),
+            0 3px 10px rgba(0, 0, 0, 0.25);
+}
+
+/* Icon */
+.create-app-trigger__icon {
+    font-size: 18px;
+    font-weight: 500;
+    line-height: 1;
+}
