@@ -1,7 +1,7 @@
 import { useParams } from "react-router-dom";
 import {useApplication} from "../hooks/useApplication.tsx";
 
-export default function ApplicationDetailsPage() {
+export default function ApplicationPage() {
     const { id } = useParams();
     const { data, loading, error } = useApplication(id);
 
