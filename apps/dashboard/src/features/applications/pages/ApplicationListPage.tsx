@@ -1,14 +1,8 @@
 import {ApplicationListItem} from "../components/ApplicationListItem.tsx";
-import {useState} from "react";
-import CreateApplicationModal from "../create/CreateApplicationModal.tsx";
-import {useNavigate} from "react-router-dom";
-import Modal from "../components/Modal.tsx";
 import {useApplications} from "../hooks/useApplications.tsx";
+import {CreateApplicationTrigger} from "../create";
 
 export default function ApplicationListPage() {
-    const [isCreateOpen, setIsCreateOpen] = useState(false);
-    const navigate = useNavigate();
-
     const { data, loading, error } = useApplications();
 
     if (loading) return <p>Loading...</p>
@@ -16,21 +10,9 @@ export default function ApplicationListPage() {
 
     return (
         <div>
-            <button onClick={() => setIsCreateOpen(true)}>
-                Create Application
-            </button>
-
-                <Modal open={isCreateOpen} onClose={() => setIsCreateOpen(false)}>
-                    <CreateApplicationModal
-                        onCancel={() => setIsCreateOpen(false)}
-                        onSuccess={(id) => {
-                            setIsCreateOpen(false);
-                            navigate(`/applications/${id}`)
-                        }}
-                    />
-                </Modal>
-
             <h1>Applications</h1>
+
+            <CreateApplicationTrigger />
 
             <ul>
                 {data?.map(app => (

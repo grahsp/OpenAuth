@@ -1,6 +1,6 @@
 import type {Dispatch, SetStateAction} from "react";
-import ApiSelector from "../components/ApiSelector.tsx";
-import PermissionSelector from "../components/PermissionSelector.tsx";
+import {ApiSelector} from "../components/ApiSelector.tsx";
+import {PermissionSelector} from "../components/PermissionSelector.tsx";
 import type {Draft} from "../CreateApplicationModal.tsx";
 
 export function PermissionsStep(

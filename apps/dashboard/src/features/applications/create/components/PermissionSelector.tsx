@@ -8,7 +8,7 @@ type Props = {
     onChange: (scopes: string[]) => void;
 };
 
-export default function PermissionSelector({apiId, value, onChange}: Props) {
+export function PermissionSelector({apiId, value, onChange}: Props) {
     const { data, loading, error } = useApiDetails(apiId);
 
     const [filter, setFilter] = useState("");
