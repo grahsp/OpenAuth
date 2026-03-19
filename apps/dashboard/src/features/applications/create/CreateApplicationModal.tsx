@@ -1,13 +1,18 @@
-import type {ApplicationType, CreateApplicationResponse} from "../types.ts";
-import {useEffect, useState} from "react";
+import {useState} from "react";
 import {SecretReveal} from "./components/SecretReveal.tsx";
 import {PermissionsStep} from "./steps/PermissionsStep.tsx";
 import {BasicInfoStep} from "./steps/BasicInfoStep.tsx";
-
-import "./CreateApplicationModal.css"
 import {useCreateApplication} from "./hooks/useCreateApplication.tsx";
+import type {ApplicationType, CreateApplicationResponse} from "../types.ts";
+import "./CreateApplicationModal.css"
 
-type Step = "basic" | "permissions" | "success";
+const Steps = {
+    Define: "define",
+    Authorize: "authorize",
+    Complete: "complete"
+} as const;
+
+type Step = typeof Steps[keyof typeof Steps]
 
 export type Draft = {
     name: string;
@@ -16,18 +21,16 @@ export type Draft = {
     scopes: string[];
 };
 
-export default function CreateApplicationModal(
-    {
-        onSuccess,
-        onCancel
-    }: {
-        onSuccess: (id: string) => void;
-        onCancel: () => void;
-    }) {
-    const { create, error } = useCreateApplication();
-    const [result, setResult] = useState<CreateApplicationResponse>();
+type Props = {
+    onSuccess: (id: string) => void;
+    onCancel: () => void;
+}
 
-    const [step, setStep] = useState<Step>("basic");
+export default function CreateApplicationModal({onSuccess, onCancel}: Props) {
+    const { create, error } = useCreateApplication();
+
+    const [step, setStep] = useState<Step>(Steps.Define);
+    const [result, setResult] = useState<CreateApplicationResponse>();
 
     const [draft, setDraft] = useState<Draft>({
         name: "My App",
@@ -38,7 +41,7 @@ export default function CreateApplicationModal(
 
 
     // --- SUBMIT ---
-    const handleCreate = async () => {
+    const submit = async () => {
         const result = await create({
             name: draft.name,
             type: draft.type,
@@ -49,69 +52,74 @@ export default function CreateApplicationModal(
         if (!result)
             return;
 
+        if (!result.secret) {
+            onSuccess(result.id);
+            return;
+        }
+
         setResult(result);
-        setStep("success");
+        setStep(Steps.Complete);
     };
 
     // --- STEP TRANSITIONS ---
-    useEffect(() => {
-        if (step === "success" && result && !result.secret) {
-            onSuccess(result.id);
-        }
-    }, [step, result, onSuccess]);
+    const next = async () => {
+        if (step === Steps.Define) {
+            if (draft.type === "m2m") {
+                setStep(Steps.Authorize);
+                return;
+            }
 
-    const nextFromBasic = () => {
-        if (draft.type === "m2m") {
-            setStep("permissions");
-        } else {
-            handleCreate();
+            await submit();
+            return;
+        }
+
+        if (step === Steps.Authorize) {
+            await submit();
         }
     };
 
-    const backToBasic = () => {
+    const back = () => {
         setDraft(draft => ({ ...draft, apiId: undefined, scopes: [] }));
-        setStep("basic");
+        setStep(Steps.Define);
     };
 
     // --- RENDER ---
     return (
         <div className="form">
-            {step === "basic" && (
+            {step === Steps.Define && (
                 <>
                     <h2 className="form__title">Create application</h2>
 
                     <BasicInfoStep
                         draft={draft}
                         setDraft={setDraft}
-                        onNext={nextFromBasic}
+                        onNext={next}
                         onCancel={onCancel}
                         error={error}
                     />
                 </>
             )}
 
-            {step === "permissions" && (
+            {step === Steps.Authorize && (
                 <>
                     <h2 className="form__title">Authorize Machine to Machine Application</h2>
 
                     <PermissionsStep
                         draft={draft}
                         setDraft={setDraft}
-                        onBack={backToBasic}
-                        onSubmit={handleCreate}
+                        onBack={back}
+                        onSubmit={submit}
                         error={error}
                     />
                 </>
             )}
 
-            {step === "success" && result && (
+            {step === Steps.Complete && result && (
                 <>
                     <h2 className="form__title">Success!</h2>
                     <SecretReveal
                         secret={result.secret}
-                        onContinue={() => {
-                            onSuccess(result.id);
-                        }}
+                        onContinue={() => onSuccess(result.id)}
                     />
                 </>
             )}
