@@ -9,7 +9,7 @@ namespace OpenAuth.Infrastructure.ApiResources;
 public class ApiResourceRepository(AppDbContext context) : IApiResourceRepository
 {
 	public Task<ApiResource?> GetByIdAsync(ApiResourceId id, CancellationToken ct = default) =>
-		context.ApiResources.SingleOrDefaultAsync(ct);
+		context.ApiResources.SingleOrDefaultAsync(x => x.Id == id, ct);
 	
 	public Task<ApiResource?> GetByAudienceAsync(AudienceIdentifier audience, CancellationToken ct = default) =>
 		context.ApiResources.SingleOrDefaultAsync(x => x.Audience == audience, ct);
