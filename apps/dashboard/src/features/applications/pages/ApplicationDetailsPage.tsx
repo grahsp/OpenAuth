@@ -1,5 +1,5 @@
 import { useParams } from "react-router-dom";
-import {useApplication} from "../hooks.tsx";
+import {useApplication} from "../hooks/useApplication.tsx";
 
 export default function ApplicationDetailsPage() {
     const { id } = useParams();
@@ -11,8 +11,8 @@ export default function ApplicationDetailsPage() {
     return (
         <div>
             <h1>Application Details</h1>
-            <h1>{data.name}</h1>
-            <p>ID: {data.id}</p>
+            <h1>{data?.name}</h1>
+            <p>ID: {data?.id}</p>
         </div>
     );
 }
