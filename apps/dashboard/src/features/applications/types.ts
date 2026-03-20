@@ -45,5 +45,5 @@ export type ApiDetails = {
 
 export type ApiPermission = {
     scope: string;
-    description: string | null;
+    description?: string;
 }
