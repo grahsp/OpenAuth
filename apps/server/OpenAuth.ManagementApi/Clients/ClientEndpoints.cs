@@ -4,6 +4,7 @@ using OpenAuth.Application.Clients.Commands.CreateClient;
 using OpenAuth.Application.Clients.Commands.GrantApiAccess;
 using OpenAuth.Application.Clients.Commands.RevokeApiAccess;
 using OpenAuth.Application.Clients.Interfaces;
+using OpenAuth.Application.Clients.Queries.GetClientDetails;
 using OpenAuth.Application.Clients.Services;
 using OpenAuth.Domain.ApiResources.ValueObjects;
 using OpenAuth.Domain.Clients.ApplicationType;
@@ -20,10 +21,10 @@ public static class ClientEndpoints
 		var group = app.MapGroup(BaseRoute);
 
 		group.MapGet("/", GetClients);
-		group.MapGet("/{clientId}", GetClient);
+		group.MapGet("/{id}", GetClient);
 
 		group.MapPost("/", CreateClient);
-		group.MapDelete("/{clientId}", DeleteClient);
+		group.MapDelete("/{id}", DeleteClient);
 
 		group.MapPost("/{clientId}/apis/{apiResourceId}", GrantApiAccess);
 		group.MapDelete("/{clientId}/apis/{apiResourceId}", RevokeApiAccess);
@@ -37,6 +38,19 @@ public static class ClientEndpoints
 	{
 		var clients = await service.GetPagedAsync(1, 20, ct);
 		return Results.Ok(clients.Items);
+	}
+	
+	private static async Task<IResult> GetClient(
+		ClientId id,
+		[FromServices] IQueryHandler<GetClientDetailsQuery, ClientDetails?> handler,
+		CancellationToken ct)
+	{
+		var query = new GetClientDetailsQuery(id);
+		var client = await handler.HandleAsync(query, ct);
+
+		return client is null
+			? Results.NotFound()
+			: Results.Ok(client);
 	}
 
 	private static async Task<IResult> CreateClient(
@@ -74,22 +88,14 @@ public static class ClientEndpoints
 		var result = await handler.HandleAsync(command, ct);
 		return Results.Ok(result.ToResponse());
 	}
-	
-	private static async Task<IResult> GetClient(
-		ClientId clientId,
-		IClientQueryService service,
-		CancellationToken ct)
-	{
-		var client = await service.GetByIdAsync(clientId, ct);
-		return Results.Ok(client);
-	}
+
 
 	private static async Task<IResult> DeleteClient(
-		ClientId clientId,
+		ClientId id,
 		IClientService service,
 		CancellationToken ct)
 	{
-		await service.DeleteAsync(clientId, ct);
+		await service.DeleteAsync(id, ct);
 		return Results.NotFound();
 	}
 
