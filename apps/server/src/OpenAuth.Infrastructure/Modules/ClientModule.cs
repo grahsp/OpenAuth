@@ -5,7 +5,9 @@ using OpenAuth.Application.Clients.Commands.GrantApiAccess;
 using OpenAuth.Application.Clients.Commands.RevokeApiAccess;
 using OpenAuth.Application.Clients.Factories;
 using OpenAuth.Application.Clients.Interfaces;
+using OpenAuth.Application.Clients.Queries.GetClientDetails;
 using OpenAuth.Application.Clients.Services;
+using OpenAuth.Infrastructure.Clients;
 using OpenAuth.Infrastructure.Clients.Persistence;
 
 namespace OpenAuth.Infrastructure.Modules;
@@ -40,6 +42,8 @@ public static class ClientModule
 	{
 		services.AddScoped<IClientRepository, ClientRepository>();
 		services.AddScoped<IClientQueryService, ClientQueryService>();
+
+		services.AddScoped<IQueryHandler<GetClientDetailsQuery, ClientDetails?>, GetClientDetailsQueryHandler>();
 
 		return services;
 	}
