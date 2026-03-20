@@ -1,42 +1,44 @@
-import { useMemo, useState } from "react";
-import {useApiDetails} from "../../hooks.tsx";
+import {useCallback, useMemo, useState} from "react";
 import "./PermissionSelector.css"
 
+export type PermissionOption = {
+    label: string;
+    value: string;
+    description?: string;
+}
+
 type Props = {
-    apiId: string;
+    options: PermissionOption[];
     value: string[];
-    onChange: (scopes: string[]) => void;
+    onChange: (value: string[]) => void;
 };
 
-export function PermissionSelector({apiId, value, onChange}: Props) {
-    const { data, loading, error } = useApiDetails(apiId);
-
-    const [filter, setFilter] = useState("");
-
+export function PermissionSelector({ options, value, onChange }: Props) {
     // --- FILTER ---
+    const [filter, setFilter] = useState("");
     const filtered = useMemo(() => {
-        const permissions = data?.permissions ?? [];
-
-        if (!filter)
-            return permissions;
+        if (!filter) return options;
 
         const f = filter.toLowerCase();
-        return permissions.filter(p =>
-            p.scope.toLowerCase().includes(f)
+
+        return options.filter(o =>
+            o.value.toLowerCase().includes(f) ||
+            o.label.toLowerCase().includes(f) ||
+            o.description?.toLowerCase().includes(f)
         );
-    }, [data?.permissions, filter]);
+    }, [options, filter]);
 
     // --- SELECTION ---
-    const toggle = (scope: string) => {
+    const toggle = useCallback((scope: string) => {
         if (value.includes(scope)) {
             onChange(value.filter(s => s !== scope));
         } else {
-            onChange([...value, scope]);
+            onChange([...new Set([...value, scope])]);
         }
-    };
+    }, [value, onChange]);
 
     const selectAll = () => {
-        onChange(data?.permissions.map(p => p.scope) ?? []);
+        onChange(filtered.map(o => o.value));
     };
 
     const clearAll = () => {
@@ -78,16 +80,16 @@ export function PermissionSelector({apiId, value, onChange}: Props) {
             </div>
 
             {/* STATES */}
-            {loading && (
-                <p className="permission-selector__status">
-                    Loading permissions...
-                </p>
-            )}
+            {/*{loading && (*/}
+            {/*    <p className="permission-selector__status">*/}
+            {/*        Loading permissions...*/}
+            {/*    </p>*/}
+            {/*)}*/}
 
-            {error && <p className="error">{error}</p>}
+            {/*{error && <p className="error">{error}</p>}*/}
 
             {/* LIST */}
-            {!loading && !error && (
+            {(
                 <div className="permission-selector__list">
                     {filtered.length === 0 && (
                         <p className="permission-selector__empty">
@@ -95,12 +97,12 @@ export function PermissionSelector({apiId, value, onChange}: Props) {
                         </p>
                     )}
 
-                    {filtered.map(permission => {
-                        const checked = value.includes(permission.scope);
+                    {filtered.map(o => {
+                        const checked = value.includes(o.value);
 
                         return (
                             <label
-                                key={permission.scope}
+                                key={o.value}
                                 className={`permission-item ${
                                     checked ? "permission-item--selected" : ""
                                 }`}
@@ -108,10 +110,15 @@ export function PermissionSelector({apiId, value, onChange}: Props) {
                                 <input
                                     type="checkbox"
                                     checked={checked}
-                                    onChange={() => toggle(permission.scope)}
+                                    onChange={() => toggle(o.value)}
                                 />
 
-                                <span>{permission.scope}</span>
+                                <div>
+                                    <span>{o.label}</span>
+                                    {o.description && (
+                                        <small>{o.description}</small>
+                                    )}
+                                </div>
                             </label>
                         );
                     })}
