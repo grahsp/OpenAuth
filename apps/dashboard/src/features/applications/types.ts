@@ -3,6 +3,11 @@ export type ApplicationType = "m2m" | "spa" | "web";
 export type Application = {
     id: string;
     name: string;
+    applicationType: string;
+    redirectUris: string[];
+    tokenLifetimeInSeconds: number;
+    allowedGrantTypes: string[];
+    availableGrantTypes: string[];
 }
 
 export type CreateApplicationRequest = {

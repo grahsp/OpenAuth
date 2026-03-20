@@ -1,0 +1,186 @@
+/* ===== PAGE LAYOUT ===== */
+
+.application-page {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 32px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+}
+
+/* ===== SECTIONS ===== */
+
+.section {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.section__title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #ffffff;
+}
+
+/* Divider between major groups */
+.section-divider {
+    height: 1px;
+    background: #2a2a2a;
+    margin: 4px 0;
+}
+
+/* ===== FORM STRUCTURE ===== */
+
+.form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+/* Label */
+.form-field label {
+    font-size: 13px;
+    color: #b3b3b3;
+}
+
+/* Helper text */
+.form-field small {
+    font-size: 12px;
+    color: #7a7a7a;
+}
+
+/* ===== INPUTS ===== */
+
+input,
+textarea {
+    width: 100%;
+    background: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 6px;
+    padding: 10px 12px;
+    color: #ffffff;
+    font-size: 14px;
+    transition: border 0.15s ease, box-shadow 0.15s ease;
+}
+
+/* Focus state */
+input:focus,
+textarea:focus {
+    outline: none;
+    border-color: #4f6ef7;
+    box-shadow: 0 0 0 1px #4f6ef7;
+}
+
+/* Disabled */
+input:disabled {
+    background: #151515;
+    color: #777;
+    cursor: not-allowed;
+}
+
+/* Textarea specifics */
+textarea {
+    min-height: 110px;
+    resize: vertical;
+}
+
+/* ===== INPUT WITH ACTION (copy button etc.) ===== */
+
+.input-with-action {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.input-with-action input {
+    flex: 1;
+}
+
+/* Small action button */
+.input-action {
+    height: 36px;
+    padding: 0 12px;
+    border-radius: 6px;
+    border: 1px solid #333;
+    background: #2a2a2a;
+    color: #ffffff;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.input-action:hover {
+    background: #3a3a3a;
+}
+
+/* ===== CHECKBOX GROUP ===== */
+
+.checkbox-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.checkbox {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    color: #ddd;
+}
+
+/* Optional: nicer checkbox */
+.checkbox input {
+    accent-color: #4f6ef7;
+}
+
+/* ===== FOOTER ===== */
+
+.form-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 12px;
+}
+
+/* ===== BUTTONS ===== */
+
+.btn {
+    padding: 10px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.15s ease, border 0.15s ease;
+}
+
+/* Primary */
+.btn--primary {
+    background: #4f6ef7;
+    color: white;
+    border: none;
+}
+
+.btn--primary:hover {
+    background: #3f5ce0;
+}
+
+/* Secondary */
+.btn--secondary {
+    background: transparent;
+    border: 1px solid #444;
+    color: #ccc;
+}
+
+.btn--secondary:hover {
+    background: #2a2a2a;
+}
+
+/* ===== SUBTLE CARD FEEL (optional enhancement) ===== */
+
+.section {
+    padding: 20px;
+    border: 1px solid #2a2a2a;
+    border-radius: 10px;
+    background: #121212;
+}
