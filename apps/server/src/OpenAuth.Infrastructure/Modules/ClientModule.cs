@@ -3,6 +3,7 @@ using OpenAuth.Application.Abstractions;
 using OpenAuth.Application.Clients.Commands.CreateClient;
 using OpenAuth.Application.Clients.Commands.GrantApiAccess;
 using OpenAuth.Application.Clients.Commands.RevokeApiAccess;
+using OpenAuth.Application.Clients.Commands.UpdateClient;
 using OpenAuth.Application.Clients.Factories;
 using OpenAuth.Application.Clients.Interfaces;
 using OpenAuth.Application.Clients.Queries.GetClientDetails;
@@ -30,6 +31,8 @@ public static class ClientModule
 		services.AddScoped<ICommandHandler<CreateM2MClientCommand, CreateClientResult>, CreateM2MClientCommandHandler>();
 		services.AddScoped<ICommandHandler<CreateSpaClientCommand, CreateClientResult>, CreateSpaClientCommandHandler>();
 		services.AddScoped<ICommandHandler<CreateWebClientCommand, CreateClientResult>, CreateWebClientCommandHandler>();
+
+		services.AddScoped<ICommandHandler<UpdateClientConfigurationCommand>, UpdateClientConfigurationCommandHandler>();
 		
 		services.AddScoped<ICommandHandler<GrantApiAccessCommand>, GrantApiAccessHandler>();
 		services.AddScoped<ICommandHandler<RevokeApiAccessCommand>, RevokeApiAccessHandler>();

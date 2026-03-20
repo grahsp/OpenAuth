@@ -3,6 +3,7 @@ using OpenAuth.Application.Abstractions;
 using OpenAuth.Application.Clients.Commands.CreateClient;
 using OpenAuth.Application.Clients.Commands.GrantApiAccess;
 using OpenAuth.Application.Clients.Commands.RevokeApiAccess;
+using OpenAuth.Application.Clients.Commands.UpdateClient;
 using OpenAuth.Application.Clients.Interfaces;
 using OpenAuth.Application.Clients.Queries.GetClientDetails;
 using OpenAuth.Application.Clients.Services;
@@ -24,6 +25,7 @@ public static class ClientEndpoints
 		group.MapGet("/{id}", GetClient);
 
 		group.MapPost("/", CreateClient);
+		group.MapPut("/{id}/configuration", UpdateClientConfiguration);
 		group.MapDelete("/{id}", DeleteClient);
 
 		group.MapPost("/{clientId}/apis/{apiResourceId}", GrantApiAccess);
@@ -89,7 +91,6 @@ public static class ClientEndpoints
 		return Results.Ok(result.ToResponse());
 	}
 
-
 	private static async Task<IResult> DeleteClient(
 		ClientId id,
 		IClientService service,
@@ -97,6 +98,44 @@ public static class ClientEndpoints
 	{
 		await service.DeleteAsync(id, ct);
 		return Results.NotFound();
+	}
+
+	private static async Task<IResult> UpdateClientConfiguration(
+		ClientId id,
+		[FromBody] UpdateClientConfigurationRequest request,
+		[FromServices] ICommandHandler<UpdateClientConfigurationCommand> handler,
+		CancellationToken ct)
+	{
+		var applicationType = ClientApplicationTypes.Parse(request.ApplicationType);
+		var tokenLifetime = TimeSpan.FromSeconds(request.TokenLifetimeInSeconds);
+
+		var redirectUris = request.RedirectUris.Select(x =>
+		{
+			if (!RedirectUri.TryParse(x, out var uri))
+				throw new ValidationException($"Invalid redirect URI: '{x}'");
+
+			return uri;
+		}).ToList();
+
+		var allowedGrantTypes = request.AllowedGrantTypes.Select(x =>
+		{
+			if (!GrantType.TryParse(x, out var grant))
+				throw new ValidationException($"Invalid grant type: '{x}'");
+
+			return grant;
+		});
+
+		var command = new UpdateClientConfigurationCommand(
+			id,
+			new ClientName(request.Name),
+			applicationType,
+			redirectUris,
+			tokenLifetime,
+			allowedGrantTypes
+		);
+
+		await handler.HandleAsync(command, ct);
+		return Results.NoContent();
 	}
 
 	private static async Task<IResult> GrantApiAccess(
