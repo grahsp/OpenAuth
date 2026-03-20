@@ -27,13 +27,18 @@ public class GetClientDetailsQueryHandler(AppDbContext context)
 		if (data is null)
 			return null;
 
+		var availableGrantTypes = data.ApplicationType.AllowedGrants
+			.Select(g => g.Value)
+			.ToList();
+
 		return new ClientDetails(
 			data.Id.Value,
 			data.Name.Value,
 			data.ApplicationType.Name,
 			data.RedirectUris.Select(r => r.Value).ToList(),
-			data.TokenLifetime,
-			data.AllowedGrantTypes.Select(g => g.Value).ToList()
+			data.TokenLifetime.TotalSeconds,
+			data.AllowedGrantTypes.Select(g => g.Value).ToList(),
+			availableGrantTypes
 		);
 	}
 }
