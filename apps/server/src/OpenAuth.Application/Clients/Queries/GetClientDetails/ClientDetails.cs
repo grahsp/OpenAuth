@@ -5,6 +5,7 @@ public sealed record ClientDetails(
 	string Name,
 	string ApplicationType,
 	IReadOnlyList<string> RedirectUris,
-	TimeSpan TokenLifetime,
-	IReadOnlyList<string> AllowedGrantTypes
+	double TokenLifetimeInSeconds,
+	IReadOnlyList<string> AllowedGrantTypes,
+	IReadOnlyList<string> AvailableGrantTypes
 );
