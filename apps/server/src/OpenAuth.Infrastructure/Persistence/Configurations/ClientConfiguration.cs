@@ -59,15 +59,16 @@ public class ClientConfiguration : IEntityTypeConfiguration<Client>
                         .Select(GrantType.Parse)
                         .ToHashSet(),
                 new ValueComparer<HashSet<GrantType>>(
-                    (c1, c2) => c1!.SequenceEqual(c2!),
-                    c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
+                    (c1, c2) => c1!.SetEquals(c2!),
+                    c => c.OrderBy(x => x.Value)
+                        .Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
                     c => c.ToHashSet()
                 )
             )
             .HasColumnName("AllowedGrantTypes")
             .HasMaxLength(2000);
 
-        builder.Ignore(c => c.RedirectUris);;
+        builder.Ignore(c => c.RedirectUris);
         builder.Property<HashSet<RedirectUri>>("_redirectUris")
             .HasConversion(
                 uris => string.Join(' ', uris.Select(u => u.Value)),
@@ -77,8 +78,9 @@ public class ClientConfiguration : IEntityTypeConfiguration<Client>
                         .Select(RedirectUri.Parse)
                         .ToHashSet(),
                 new ValueComparer<HashSet<RedirectUri>>(
-                    (c1, c2) => c1!.SequenceEqual(c2!),
-                    c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
+                    (c1, c2) => c1!.SetEquals(c2!),
+                    c => c.OrderBy(x => x.Value)
+                        .Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
                     c => c.ToHashSet()
                 )
             )
