@@ -1,7 +1,7 @@
 import {useState} from "react";
 import {useParams} from "react-router-dom";
 import {useApplication} from "../hooks/useApplication.tsx";
-import type {Application, UpdateApplicationConfigurationRequest} from "../types.ts";
+import type {Application, ApplicationType, UpdateApplicationConfigurationRequest} from "../types.ts";
 import "./ApplicationPage.css"
 import {useUpdateApplicationConfiguration} from "./hooks/useUpdateApplicationConfiguration.ts";
 
@@ -12,42 +12,61 @@ export default function ApplicationPage() {
     if (loading) return <p>Loading...</p>
     if (error || !data) return <p>Error loading application</p>;
 
-    return <ApplicationView application={data} />
+    return <ApplicationView key={data.id} application={data} />
 }
+
+type Draft = {
+    name: string;
+    applicationType: ApplicationType,
+    redirectUris: string;
+    allowedGrantTypes: string[];
+    tokenLifetimeInSeconds: number;
+};
 
 export function ApplicationView({ application }: { application: Application }) {
     const { update, error } = useUpdateApplicationConfiguration();
 
-    const [name, setName] = useState(application.name);
-    const [redirectUris, setRedirectUris] = useState(application.redirectUris.join(", "));
-    const [allowedGrants, setAllowedGrants] = useState<string[]>(application.allowedGrantTypes);
-    const [tokenLifetime, setTokenLifetime] = useState(application.tokenLifetimeInSeconds);
+    const createDraft = (application: Application): Draft => ({
+        name: application.name,
+        applicationType: application.applicationType,
+        redirectUris: application.redirectUris.join(", "),
+        allowedGrantTypes: application.allowedGrantTypes,
+        tokenLifetimeInSeconds: application.tokenLifetimeInSeconds
+    });
+
+    const [initialDraft] = useState<Draft>(() => createDraft(application));
+    const [draft, setDraft] = useState<Draft>(initialDraft);
+
+    const updateDraft = <K extends keyof Draft>(key: K, value: Draft[K]) => {
+        setDraft(prev => ({ ...prev, [key]: value }));
+    };
 
     const handleSave = async () => {
         const request: UpdateApplicationConfigurationRequest = {
-            name: name,
-            applicationType: application.applicationType,
-            redirectUris: redirectUris.split(',').map(x => x.trim()).filter(x => x !== ""),
-            tokenLifetimeInSeconds: tokenLifetime,
-            allowedGrantTypes: allowedGrants
+            name: draft.name,
+            applicationType: draft.applicationType,
+            redirectUris: draft.redirectUris.split(',').map(x => x.trim()).filter(x => x !== ""),
+            tokenLifetimeInSeconds: draft.tokenLifetimeInSeconds,
+            allowedGrantTypes: draft.allowedGrantTypes
         };
 
         await update(application.id, request);
     };
 
     const toggleGrant = (grant: string) => {
-        setAllowedGrants(prev => {
-            if (prev.includes(grant))
-                return prev.filter(g => g !== grant);
+        setDraft(prev => {
+            const exists = prev.allowedGrantTypes.includes(grant);
 
-            return [...prev, grant].sort();
+            const allowedGrantTypes = exists
+                ? prev.allowedGrantTypes.filter(g => g !== grant)
+                : [...prev.allowedGrantTypes, grant].sort();
+
+            return { ...prev, allowedGrantTypes };
         });
     };
 
-    const handleDiscard = () => {
-        setName(application.name);
-        setRedirectUris(application.redirectUris.join("\n"));
-        setTokenLifetime(Number(application.tokenLifetimeInSeconds));
+    const resetDraft = () => {
+        setDraft(initialDraft);
     };
 
     return (
@@ -61,8 +80,9 @@ export function ApplicationView({ application }: { application: Application }) {
                 <div className="form-field">
                     <label>Name</label>
                     <input
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
+                        value={draft.name}
+                        onChange={(e) =>
+                            updateDraft("name", e.target.value)}
                     />
                 </div>
 
@@ -93,8 +113,9 @@ export function ApplicationView({ application }: { application: Application }) {
                 <div className="form-field">
                     <label>Redirect URIs</label>
                     <textarea
-                        value={redirectUris}
-                        onChange={(e) => setRedirectUris(e.target.value)}
+                        value={draft.redirectUris}
+                        onChange={(e) =>
+                            updateDraft("redirectUris", e.target.value)}
                         placeholder="https://example.com/callback"
                     />
                     <small>One URI per line</small>
@@ -107,7 +128,7 @@ export function ApplicationView({ application }: { application: Application }) {
                             <label key={grant} className="checkbox">
                                 <input
                                     type="checkbox"
-                                    checked={allowedGrants.includes(grant)}
+                                    checked={draft.allowedGrantTypes.includes(grant)}
                                     onChange={() => toggleGrant(grant)}
                                 />
                                 {grant}
@@ -120,15 +141,16 @@ export function ApplicationView({ application }: { application: Application }) {
                     <label>Token Lifetime (seconds)</label>
                     <input
                         type="number"
-                        value={tokenLifetime}
-                        onChange={(e) => setTokenLifetime(Number(e.target.value))}
+                        value={draft.tokenLifetimeInSeconds}
+                        onChange={(e) =>
+                            updateDraft("tokenLifetimeInSeconds", Number(e.target.value))}
                     />
                 </div>
             </section>
 
             {/* ===== FOOTER ===== */}
             <div className="form-footer">
-                <button className="btn btn--secondary" onClick={handleDiscard}>
+                <button className="btn btn--secondary" onClick={resetDraft}>
                     Discard
                 </button>
                 <button className="btn btn--primary" onClick={handleSave}>
