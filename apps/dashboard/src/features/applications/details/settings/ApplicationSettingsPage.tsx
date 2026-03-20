@@ -1,19 +1,7 @@
+import {useOutletContext} from "react-router-dom";
+import type {Application, ApplicationType, UpdateApplicationConfigurationRequest} from "../../types.ts";
+import {useUpdateApplicationConfiguration} from "../hooks/useUpdateApplicationConfiguration.ts";
 import {useState} from "react";
-import {useParams} from "react-router-dom";
-import {useApplication} from "../hooks/useApplication.tsx";
-import type {Application, ApplicationType, UpdateApplicationConfigurationRequest} from "../types.ts";
-import "./ApplicationPage.css"
-import {useUpdateApplicationConfiguration} from "./hooks/useUpdateApplicationConfiguration.ts";
-
-export default function ApplicationPage() {
-    const path = useParams<{ id: string }>();
-    const { data, loading, error } = useApplication(path.id);
-
-    if (loading) return <p>Loading...</p>
-    if (error || !data) return <p>Error loading application</p>;
-
-    return <ApplicationView key={data.id} application={data} />
-}
 
 type Draft = {
     name: string;
@@ -23,8 +11,9 @@ type Draft = {
     tokenLifetimeInSeconds: number;
 };
 
-export function ApplicationView({ application }: { application: Application }) {
-    const { update, error } = useUpdateApplicationConfiguration();
+export function ApplicationSettingsPage() {
+    const {application} = useOutletContext<{ application: Application }>();
+    const {update, error} = useUpdateApplicationConfiguration();
 
     const createDraft = (application: Application): Draft => ({
         name: application.name,
@@ -38,7 +27,7 @@ export function ApplicationView({ application }: { application: Application }) {
     const [draft, setDraft] = useState<Draft>(initialDraft);
 
     const updateDraft = <K extends keyof Draft>(key: K, value: Draft[K]) => {
-        setDraft(prev => ({ ...prev, [key]: value }));
+        setDraft(prev => ({...prev, [key]: value}));
     };
 
     const handleSave = async () => {
@@ -61,7 +50,7 @@ export function ApplicationView({ application }: { application: Application }) {
                 ? prev.allowedGrantTypes.filter(g => g !== grant)
                 : [...prev.allowedGrantTypes, grant].sort();
 
-            return { ...prev, allowedGrantTypes };
+            return {...prev, allowedGrantTypes};
         });
     };
 
@@ -88,13 +77,13 @@ export function ApplicationView({ application }: { application: Application }) {
 
                 <div className="form-field">
                     <label>Application Type</label>
-                    <input value={application.applicationType} disabled />
+                    <input value={application.applicationType} disabled/>
                 </div>
 
                 <div className="form-field">
                     <label>Client ID</label>
                     <div className="input-with-action">
-                        <input value={application.id} disabled />
+                        <input value={application.id} disabled/>
                         <button
                             onClick={() => navigator.clipboard.writeText(application.id)}
                         >
@@ -104,7 +93,7 @@ export function ApplicationView({ application }: { application: Application }) {
                 </div>
             </section>
 
-            <div className="section-divider" />
+            <div className="section-divider"/>
 
             {/* ===== CONFIGURATION ===== */}
             <section className="section">
