@@ -3,7 +3,7 @@ import type {
     ApiSummary,
     Application,
     CreateApplicationRequest,
-    CreateApplicationResponse
+    CreateApplicationResponse, UpdateApplicationConfigurationRequest
 } from "./types.ts";
 import {http} from "../../http.ts";
 
@@ -15,11 +15,18 @@ export async function getApplication(id: string): Promise<Application> {
     return await http<Application>(`/api/clients/${id}`);
 }
 
-export async function createApplication(dto: CreateApplicationRequest): Promise<CreateApplicationResponse> {
+export async function createApplication(request: CreateApplicationRequest): Promise<CreateApplicationResponse> {
     return await http<CreateApplicationResponse>("/api/clients", {
         method: "POST",
-        body: JSON.stringify(dto)
+        body: JSON.stringify(request)
     });
+}
+
+export async function updateApplicationConfiguration(id: string, request: UpdateApplicationConfigurationRequest): Promise<void> {
+    await http<void>(`/api/clients/${id}/configuration`, {
+        method: "PUT",
+        body: JSON.stringify(request)
+    })
 }
 
 export async function getApiSummaries(): Promise<ApiSummary[]> {

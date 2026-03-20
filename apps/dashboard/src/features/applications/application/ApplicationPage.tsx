@@ -1,8 +1,9 @@
 import {useState} from "react";
 import {useParams} from "react-router-dom";
 import {useApplication} from "../hooks/useApplication.tsx";
-import type {Application} from "../types.ts";
+import type {Application, UpdateApplicationConfigurationRequest} from "../types.ts";
 import "./ApplicationPage.css"
+import {useUpdateApplicationConfiguration} from "./hooks/useUpdateApplicationConfiguration.ts";
 
 export default function ApplicationPage() {
     const path = useParams<{ id: string }>();
@@ -15,19 +16,23 @@ export default function ApplicationPage() {
 }
 
 export function ApplicationView({ application }: { application: Application }) {
+    const { update, error } = useUpdateApplicationConfiguration();
+
     const [name, setName] = useState(application.name);
     const [redirectUris, setRedirectUris] = useState(application.redirectUris.join(", "));
     const [allowedGrants, setAllowedGrants] = useState<string[]>(application.allowedGrantTypes);
     const [tokenLifetime, setTokenLifetime] = useState(application.tokenLifetimeInSeconds);
 
-    const handleSave = () => {
-        // TODO: call API
-        console.log({
-            name,
-            redirectUris: redirectUris.split(",").map(x => x.trim()).filter(x => x !== ""),
-            tokenLifetime,
-            allowedGrants
-        });
+    const handleSave = async () => {
+        const request: UpdateApplicationConfigurationRequest = {
+            name: name,
+            applicationType: application.applicationType,
+            redirectUris: redirectUris.split(',').map(x => x.trim()).filter(x => x !== ""),
+            tokenLifetimeInSeconds: tokenLifetime,
+            allowedGrantTypes: allowedGrants
+        };
+
+        await update(application.id, request);
     };
 
     const toggleGrant = (grant: string) => {
@@ -47,6 +52,8 @@ export function ApplicationView({ application }: { application: Application }) {
 
     return (
         <div className="application-page">
+            {error && <p>{error}</p>}
+
             {/* ===== BASIC INFORMATION ===== */}
             <section className="section">
                 <h2 className="section__title">Basic Information</h2>

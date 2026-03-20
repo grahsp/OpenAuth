@@ -17,6 +17,14 @@ export type CreateApplicationRequest = {
     scopes: string[] | null;
 }
 
+export type UpdateApplicationConfigurationRequest = {
+    name: string;
+    applicationType: string;
+    redirectUris: string[];
+    tokenLifetimeInSeconds: number;
+    allowedGrantTypes: string[];
+}
+
 export type CreateApplicationResponse = {
     id: string;
     secret?: string;
