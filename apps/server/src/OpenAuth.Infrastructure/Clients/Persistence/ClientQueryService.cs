@@ -41,18 +41,6 @@ public class ClientQueryService : IClientQueryService
         return client?.ToClientInfo() ?? null;
     }
 
-    public async Task<ClientDetails?> GetDetailsAsync(ClientId id, CancellationToken ct = default)
-    {
-        var client = await _context.Clients
-            .AsNoTracking()
-            .Where(x => x.Id == id)
-            .Include(c => c.Apis)
-            .Include(c => c.Secrets)
-            .SingleOrDefaultAsync(ct);
-        
-        return client?.ToClientDetails() ?? null;
-    }
-
     public async Task<ClientTokenData?> GetTokenDataAsync(ClientId id, CancellationToken ct = default)
     {
         var client = await _context.Clients
