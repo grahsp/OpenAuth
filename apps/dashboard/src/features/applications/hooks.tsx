@@ -1,23 +1,25 @@
 import {useCallback, useMemo} from "react";
-import {getApiDetails, getApiSummaries} from "./api.ts";
-import type {ApiDetails, ApiSummary} from "./types.ts";
+import {getApi, getApis} from "./api.ts";
+import type {Api} from "./types.ts";
 import {type QueryResult, useQuery} from "../../shared/hooks/useQuery.tsx";
 
-export function useApiSummaries(): QueryResult<ApiSummary[]> {
-    return useQuery({ queryFn: getApiSummaries });
+export function useApis(): QueryResult<Api[]> {
+    return useQuery({ queryFn: getApis });
 }
 
-export function useApiDetails(id?: string): QueryResult<ApiDetails | null> {
+export function useApi(id?: string): QueryResult<Api | null> {
     const query = useCallback(() => {
-        if (!id) throw new Error("id is required");
-        return getApiDetails(id!)
+        if (!id)
+            throw new Error("id is required");
+
+        return getApi(id!)
     }, [id])
 
     return useQuery({ queryFn: query, options: { enabled: !!id } });
 }
 
 export function useApiPermissionOptions(apiId?: string) {
-    const { data, loading, error } = useApiDetails(apiId);
+    const { data, loading, error } = useApi(apiId);
 
     const options = useMemo(() => {
         if (!data) return [];

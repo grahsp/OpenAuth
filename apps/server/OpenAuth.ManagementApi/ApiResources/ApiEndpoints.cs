@@ -4,11 +4,9 @@ using OpenAuth.Application.ApiResources.Commands.AddApiResourcePermissions;
 using OpenAuth.Application.ApiResources.Commands.CreateApiResource;
 using OpenAuth.Application.ApiResources.Commands.DeleteApiResource;
 using OpenAuth.Application.ApiResources.Commands.RemoveApiResourcePermissions;
-using OpenAuth.Application.ApiResources.Queries.GetApiDetails;
-using OpenAuth.Application.ApiResources.Queries.GetApiSummaryList;
+using OpenAuth.Application.ApiResources.Queries;
 using OpenAuth.Domain.ApiResources.ValueObjects;
 using OpenAuth.Domain.Clients.ValueObjects;
-using OpenAuth.Infrastructure.ApiResources.Queries.GetApiSummaryList;
 
 namespace OpenAuth.ManagementApi.ApiResources;
 
@@ -33,22 +31,27 @@ public static class ApiEndpoints
 	}
 
 	public static async Task<IResult> GetApis(
-		[FromServices] IQueryHandler<GetApiSummaryListQuery, IReadOnlyList<ApiSummaryView>> handler,
+		[FromServices] IQueryHandler<GetApiListQuery, IReadOnlyList<ApiView>> handler,
 		CancellationToken ct)
 	{
-		var views = await handler.HandleAsync(new GetApiSummaryListQuery(), ct);
-		return Results.Ok(views);
+		var query = new GetApiListQuery();
+		var apis = await handler.HandleAsync(query, ct);
+		
+		return Results.Ok(apis);
 	}
 	
 	public static async Task<IResult> GetApi(
-		[FromRoute] ApiResourceId id,
-		[FromServices] IQueryHandler<GetApiDetailsQuery, ApiDetailsView> handler,
+		ApiResourceId id,
+		[FromServices] IQueryHandler<GetApiQuery, ApiView?> handler,
 		CancellationToken ct)
 	{
-		var query = new GetApiDetailsQuery(id);
+		var query = new GetApiQuery(id);
+		var api = await handler.HandleAsync(query, ct);
 		
-		var details = await handler.HandleAsync(query, ct);
-		return Results.Ok(details);
+		if (api is null)
+			return Results.NotFound();
+		
+		return Results.Ok(api);
 	}
 
 	public static async Task<IResult> CreateApi(

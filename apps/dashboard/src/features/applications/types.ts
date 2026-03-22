@@ -25,25 +25,14 @@ export type UpdateApplicationConfigurationRequest = {
     allowedGrantTypes: string[];
 }
 
-export type CreateApplicationResponse = {
-    id: string;
-    secret?: string;
-}
-
-export type ApiSummary = {
+export type Api = {
     id: string;
     name: string;
     audience: string;
+    permissions: Permission[];
 }
 
-export type ApiDetails = {
-    id: string;
-    name: string;
-    audience: string;
-    permissions: ApiPermission[];
-}
-
-export type ApiPermission = {
+export type Permission = {
     scope: string;
     description?: string;
 }

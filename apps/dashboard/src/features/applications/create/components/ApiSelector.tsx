@@ -1,4 +1,4 @@
-import {useApiSummaries} from "../../hooks.tsx";
+import {useApis} from "../../hooks.tsx";
 import "./ApiSelector.css";
 
 type ApiSelectorProps = {
@@ -7,7 +7,7 @@ type ApiSelectorProps = {
 };
 
 export function ApiSelector({ value, onChange }: ApiSelectorProps) {
-    const { data, loading, error } = useApiSummaries();
+    const { data, loading, error } = useApis();
 
     return (
         <div className="api-selector">

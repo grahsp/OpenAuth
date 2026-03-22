@@ -1,9 +1,9 @@
 import type {
-    ApiDetails,
-    ApiSummary,
+    Api,
     Application,
     CreateApplicationRequest,
-    CreateApplicationResponse, UpdateApplicationConfigurationRequest
+    CreateApplicationResponse,
+    UpdateApplicationConfigurationRequest
 } from "./types.ts";
 import {http} from "../../http.ts";
 
@@ -29,10 +29,10 @@ export async function updateApplicationConfiguration(id: string, request: Update
     })
 }
 
-export async function getApiSummaries(): Promise<ApiSummary[]> {
-    return await http<ApiSummary[]>("/api/apis");
+export async function getApis(): Promise<Api[]> {
+    return await http<Api[]>("/api/apis");
 }
 
-export async function getApiDetails(id: string): Promise<ApiDetails> {
-    return await http<ApiDetails>(`/api/apis/${id}`);
+export async function getApi(id: string): Promise<Api> {
+    return await http<Api>(`/api/apis/${id}`);
 }
