@@ -6,10 +6,12 @@ using OpenAuth.Application.Clients.Commands.RevokeApiAccess;
 using OpenAuth.Application.Clients.Commands.UpdateClient;
 using OpenAuth.Application.Clients.Factories;
 using OpenAuth.Application.Clients.Interfaces;
+using OpenAuth.Application.Clients.Queries.GetClientApiAccess;
 using OpenAuth.Application.Clients.Queries.GetClientDetails;
 using OpenAuth.Application.Clients.Services;
 using OpenAuth.Infrastructure.Clients;
 using OpenAuth.Infrastructure.Clients.Persistence;
+using OpenAuth.Infrastructure.Clients.Queries;
 
 namespace OpenAuth.Infrastructure.Modules;
 
@@ -47,6 +49,7 @@ public static class ClientModule
 		services.AddScoped<IClientQueryService, ClientQueryService>();
 
 		services.AddScoped<IQueryHandler<GetClientDetailsQuery, ClientDetails?>, GetClientDetailsQueryHandler>();
+		services.AddScoped<IQueryHandler<GetClientPermissionsQuery, IReadOnlyList<ClientPermissions>>, GetClientPermissionsQueryHandler>();
 
 		return services;
 	}

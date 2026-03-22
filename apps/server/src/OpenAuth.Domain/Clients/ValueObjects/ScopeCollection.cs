@@ -74,6 +74,7 @@ public sealed record ScopeCollection : IReadOnlyCollection<Scope>
 	public IEnumerable<Scope> Except(IEnumerable<Scope> other) => _items.Except(other);
     
 	public override string ToString() => string.Join(' ', _items);
+	public List<string> ToList() => _items.Select(x => x.Value).ToList();
 
 	public bool Equals(ScopeCollection? other)
 		=> other is not null && _items.SetEquals(other._items);
