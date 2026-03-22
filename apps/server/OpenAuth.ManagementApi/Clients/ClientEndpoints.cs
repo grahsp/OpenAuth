@@ -5,6 +5,7 @@ using OpenAuth.Application.Clients.Commands.GrantApiAccess;
 using OpenAuth.Application.Clients.Commands.RevokeApiAccess;
 using OpenAuth.Application.Clients.Commands.UpdateClient;
 using OpenAuth.Application.Clients.Interfaces;
+using OpenAuth.Application.Clients.Queries.GetClientApiAccess;
 using OpenAuth.Application.Clients.Queries.GetClientDetails;
 using OpenAuth.Application.Clients.Services;
 using OpenAuth.Domain.ApiResources.ValueObjects;
@@ -30,6 +31,8 @@ public static class ClientEndpoints
 
 		group.MapPost("/{clientId}/apis/{apiResourceId}", GrantApiAccess);
 		group.MapDelete("/{clientId}/apis/{apiResourceId}", RevokeApiAccess);
+		
+		group.MapGet("/{clientId}/apis/access", GetClientApiAccess);
         
 		return app;
 	}
@@ -53,6 +56,17 @@ public static class ClientEndpoints
 		return client is null
 			? Results.NotFound()
 			: Results.Ok(client);
+	}
+	
+	private static async Task<IResult> GetClientApiAccess(
+		ClientId clientId,
+		[FromServices] IQueryHandler<GetClientPermissionsQuery, IReadOnlyList<ClientPermissions>> handler,
+		CancellationToken ct)
+	{
+		var command = new GetClientPermissionsQuery(clientId);
+		var permissions = await handler.HandleAsync(command, ct);
+		
+		return Results.Ok(permissions);
 	}
 
 	private static async Task<IResult> CreateClient(

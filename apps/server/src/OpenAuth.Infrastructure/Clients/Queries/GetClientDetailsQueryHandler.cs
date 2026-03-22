@@ -3,7 +3,7 @@ using OpenAuth.Application.Abstractions;
 using OpenAuth.Application.Clients.Queries.GetClientDetails;
 using OpenAuth.Infrastructure.Persistence;
 
-namespace OpenAuth.Infrastructure.Clients;
+namespace OpenAuth.Infrastructure.Clients.Queries;
 
 public class GetClientDetailsQueryHandler(AppDbContext context)
 	: IQueryHandler<GetClientDetailsQuery, ClientDetails?>
