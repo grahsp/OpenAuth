@@ -1,6 +1,6 @@
 import type {
     Api,
-    Application,
+    Application, ClientApiAccess,
     CreateApplicationRequest,
     CreateApplicationResponse,
     UpdateApplicationConfigurationRequest
@@ -13,6 +13,10 @@ export async function getApplications(): Promise<Application[]> {
 
 export async function getApplication(id: string): Promise<Application> {
     return await http<Application>(`/api/clients/${id}`);
+}
+
+export async function getClientApiAccess(id: string): Promise<ClientApiAccess[]> {
+    return await http<ClientApiAccess[]>(`/api/clients/${id}/apis/access`);
 }
 
 export async function createApplication(request: CreateApplicationRequest): Promise<CreateApplicationResponse> {

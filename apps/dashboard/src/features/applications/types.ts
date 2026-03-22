@@ -22,6 +22,11 @@ export type CreateApplicationResponse = {
     secret?: string;
 }
 
+export type ClientApiAccess = {
+    id: string;
+    scopes: string[];
+}
+
 export type UpdateApplicationConfigurationRequest = {
     name: string;
     applicationType: string;

@@ -1,7 +1,7 @@
 import {useOutletContext} from "react-router-dom";
 import type {Application, ApplicationType, UpdateApplicationConfigurationRequest} from "../../types.ts";
 import {useState} from "react";
-import {useUpdateApplicationConfiguration} from "../../application/hooks/useUpdateApplicationConfiguration.ts";
+import {useUpdateApplicationConfiguration} from "../hooks/useUpdateApplicationConfiguration.ts";
 
 type Draft = {
     name: string;
