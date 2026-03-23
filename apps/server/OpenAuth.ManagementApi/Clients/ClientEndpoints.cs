@@ -29,7 +29,7 @@ public static class ClientEndpoints
 		group.MapDelete("/{id}", DeleteClient);
 
 		group.MapGet("/{clientId}/apis/access", GetClientApiAccess);
-		group.MapPost("/{clientId}/apis/{apiResourceId}", GrantApiAccess);
+		group.MapPut("/{clientId}/apis/{apiResourceId}", GrantApiAccess);
         
 		return app;
 	}

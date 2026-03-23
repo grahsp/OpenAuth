@@ -3,7 +3,7 @@ import type {
     Application, ClientApiAccess,
     CreateApplicationRequest,
     CreateApplicationResponse,
-    UpdateApplicationConfigurationRequest
+    UpdateApplicationConfigurationRequest, UpdateClientApiAccessRequest
 } from "./types.ts";
 import {http} from "../../http.ts";
 
@@ -17,6 +17,15 @@ export async function getApplication(id: string): Promise<Application> {
 
 export async function getClientApiAccess(id: string): Promise<ClientApiAccess[]> {
     return await http<ClientApiAccess[]>(`/api/clients/${id}/apis/access`);
+}
+
+export async function setClientApiAccess(request: UpdateClientApiAccessRequest): Promise<void> {
+    const { clientId, apiId, scopes } = request;
+
+    return await http<void>(`/api/clients/${clientId}/apis/${apiId}`, {
+        method: "PUT",
+        body: JSON.stringify({ scopes } )
+    })
 }
 
 export async function createApplication(request: CreateApplicationRequest): Promise<CreateApplicationResponse> {

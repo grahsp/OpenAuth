@@ -1,15 +1,22 @@
+.api-access-page {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 2rem;
+}
+
 .api-access {
     display: flex;
+    gap: 2rem;
     height: 100%;
     color: #e2e8f0;
 }
 
 /* --- SIDEBAR --- */
 .api-access__sidebar {
-    width: 260px;
-    padding: 16px;
     display: flex;
     flex-direction: column;
+    width: 260px;
 }
 
 .api-access__title {
@@ -78,7 +85,6 @@
 /* --- CONTENT --- */
 .api-access__content {
     flex: 1;
-    padding: 24px;
     overflow-y: auto;
 }
 
