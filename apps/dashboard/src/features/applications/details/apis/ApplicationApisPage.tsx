@@ -4,7 +4,6 @@ import type {Application} from "../../types.ts";
 import "./ApplicationApisPage.css"
 import {PermissionSelector} from "../../create/components/PermissionSelector.tsx";
 import {useClientPermissions} from "../hooks/useClientPermissions.tsx";
-
 import {useSetClientApiAccess} from "../hooks/useSetClientApiAccess.tsx";
 
 export function ApplicationApisPage() {
@@ -27,18 +26,51 @@ export function ApplicationApisPage() {
     const [draft, setDraft] = useState<Record<string, string[]> | null>(null);
     const effectiveScopes = draft ?? serverState;
 
+    const sortedApis = useMemo(() => {
+        if (!data) return [];
+
+        return [...data].sort((a, b) => {
+            const aScopes = serverState[a.apiId] ?? [];
+            const bScopes = serverState[b.apiId] ?? [];
+
+            console.log(aScopes, bScopes);
+
+            const aAuth = aScopes.length > 0;
+            const bAuth = bScopes.length > 0;
+
+            // Authorized first
+            if (aAuth !== bAuth)
+                return aAuth ? -1 : 1;
+
+            // Then alphabetical
+            return a.name.localeCompare(b.name);
+        });
+    }, [data, serverState]);
+
+    const resolvedSelectedApiId = useMemo(() => {
+        if (sortedApis.length === 0)
+            return null;
+
+        if (!selectedApiId)
+            return sortedApis[0].apiId;
+
+        const exists = sortedApis.some(a => a.apiId === selectedApiId);
+
+        return exists ? selectedApiId : sortedApis[0].apiId;
+    }, [sortedApis, selectedApiId]);
+
     // --- SELECTED API ---
     const selectedClientApi = useMemo(() => {
-        if (!data || !selectedApiId) return null;
+        if (!data || !resolvedSelectedApiId) return null;
 
-        const api = data.find(x => x.apiId === selectedApiId);
+        const api = data.find(x => x.apiId === resolvedSelectedApiId);
         if (!api) return null;
 
         return {
             ...api,
             selectedScopes: effectiveScopes[api.apiId] ?? []
         };
-    }, [data, selectedApiId, effectiveScopes]);
+    }, [data, resolvedSelectedApiId, effectiveScopes]);
 
     // --- UPDATE ---
     const updateScopes = (apiId: string, scopes: string[]) => {
@@ -57,18 +89,18 @@ export function ApplicationApisPage() {
     };
 
     const handleSave = async () => {
-        if (!selectedApiId || !draft)
+        if (!resolvedSelectedApiId || !draft)
             return;
 
-        const current = effectiveScopes[selectedApiId] ?? [];
-        const original = serverState[selectedApiId] ?? [];
+        const current = effectiveScopes[resolvedSelectedApiId] ?? [];
+        const original = serverState[resolvedSelectedApiId] ?? [];
 
         if (equalScopes(current, original))
             return;
 
         await update({
             clientId: application.id,
-            apiId: selectedApiId,
+            apiId: resolvedSelectedApiId,
             scopes: current
         });
 
@@ -94,9 +126,9 @@ export function ApplicationApisPage() {
                     <h3 className="api-access__title">APIs</h3>
 
                     <div className="api-access__list">
-                        {data.map(api => {
+                        {sortedApis.map(api => {
                             const scopes = effectiveScopes[api.apiId] ?? [];
-                            const isSelected = selectedApiId === api.apiId;
+                            const isSelected = resolvedSelectedApiId === api.apiId;
                             const isAuthorized = scopes.length > 0;
 
                             return (
@@ -122,12 +154,6 @@ export function ApplicationApisPage() {
 
                 {/* CONTENT */}
                 <section className="api-access__content">
-                    {!selectedClientApi && (
-                        <div className="api-access__placeholder">
-                            Select an API to manage permissions
-                        </div>
-                    )}
-
                     {selectedClientApi && (
                         <>
                             <div className="api-access__header">
@@ -164,7 +190,7 @@ export function ApplicationApisPage() {
                 <button
                     className="btn btn--primary"
                     onClick={handleSave}
-                    disabled={!selectedApiId || saving}
+                    disabled={saving}
                 >
                     Save
                 </button>
