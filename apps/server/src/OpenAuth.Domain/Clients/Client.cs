@@ -105,7 +105,7 @@ public sealed class Client
 			utcNow
 		);
 		
-		client.GrantApiAccess(apiResourceId, scopes, utcNow);
+		client.SetApiAccess(apiResourceId, scopes, utcNow);
 		return client;
 	}
 
@@ -203,18 +203,6 @@ public sealed class Client
 	}
 
     
-	[Obsolete("Use SetApiAccess instead.")]
-	public void GrantApiAccess(ApiResourceId apiResourceId, ScopeCollection scopes, DateTimeOffset utcNow)
-	{
-		if (_apis.Any(a => a.ApiResourceId == apiResourceId))
-			throw new InvalidOperationException("Client already has access to this API.");
-        
-		var access = ClientApiAccess.Create(apiResourceId, scopes);
-		_apis.Add(access);
-        
-		Touch(utcNow);
-	}
-
 	[Obsolete("Use SetApiAccess instead.")]
 	public void RevokeApiAccess(ApiResourceId apiResourceId, DateTimeOffset utcNow)
 	{

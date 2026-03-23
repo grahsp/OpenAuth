@@ -152,7 +152,7 @@ public static class ClientEndpoints
 	private static async Task<IResult> GrantApiAccess(
 		ClientId clientId,
 		ApiResourceId apiResourceId,
-		GrantApiAccessRequest request,
+		SetClientApiAccessRequest request,
 		ICommandHandler<SetClientApiAccessCommand> handler,
 		CancellationToken ct)
 	{

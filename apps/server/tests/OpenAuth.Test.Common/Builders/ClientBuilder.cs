@@ -108,7 +108,7 @@ public class ClientBuilder
 			client.AddSecret(SecretHash.FromHash(secret), createdAt);
         
 		foreach (var (api, scopes) in _apiAccess)
-			client.GrantApiAccess(api.Id, scopes, createdAt);
+			client.SetApiAccess(api.Id, scopes, createdAt);
 
 		return client;
 	}

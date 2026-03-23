@@ -10,556 +10,539 @@ namespace OpenAuth.Test.Unit.Clients.Domain;
 
 public class ClientTests
 {
-    private readonly FakeTimeProvider _time = new();
+	private readonly FakeTimeProvider _time = new();
     
     
-    [Fact]
-    public void Constructor_SetsDefaults()
-    {
-        var clientName = new ClientName("Client");
-        var now = _time.GetUtcNow();
-        var client = new ClientBuilder()
-            .WithName(clientName)
-            .CreatedAt(now)
-            .Build();
+	[Fact]
+	public void Constructor_SetsDefaults()
+	{
+		var clientName = new ClientName("Client");
+		var now = _time.GetUtcNow();
+		var client = new ClientBuilder()
+			.WithName(clientName)
+			.CreatedAt(now)
+			.Build();
 
-        Assert.Equal(clientName, client.Name);
-        Assert.True(client.Enabled);
-        Assert.NotEqual(TimeSpan.Zero, client.TokenLifetime);
+		Assert.Equal(clientName, client.Name);
+		Assert.True(client.Enabled);
+		Assert.NotEqual(TimeSpan.Zero, client.TokenLifetime);
 
-        Assert.NotEqual(Guid.Empty, client.Id.Value);
+		Assert.NotEqual(Guid.Empty, client.Id.Value);
 
-        Assert.Equal(now, client.CreatedAt);
-        Assert.Equal(now, client.UpdatedAt);
-    }
+		Assert.Equal(now, client.CreatedAt);
+		Assert.Equal(now, client.UpdatedAt);
+	}
     
-    public class SetGrantTypes : ClientTests
-    {
-        private static readonly GrantType AuthorizationCode = GrantType.AuthorizationCode;
-        private static readonly GrantType ClientCredentials = GrantType.ClientCredentials;
+	public class SetGrantTypes : ClientTests
+	{
+		private static readonly GrantType AuthorizationCode = GrantType.AuthorizationCode;
+		private static readonly GrantType ClientCredentials = GrantType.ClientCredentials;
         
         
-        [Fact]
-        public void WhenValid_ReplaceExistingAndUpdateTimestamp()
-        {
-            var client = new ClientBuilder()
-                .CreatedAt(_time.GetUtcNow())
-                .Build();
+		[Fact]
+		public void WhenValid_ReplaceExistingAndUpdateTimestamp()
+		{
+			var client = new ClientBuilder()
+				.CreatedAt(_time.GetUtcNow())
+				.Build();
             
-            _time.Advance(TimeSpan.FromMinutes(5));
+			_time.Advance(TimeSpan.FromMinutes(5));
             
-            var expectedGrantTypes = new[] { AuthorizationCode, ClientCredentials };
-            var expectedTime = _time.GetUtcNow();
+			var expectedGrantTypes = new[] { AuthorizationCode, ClientCredentials };
+			var expectedTime = _time.GetUtcNow();
             
-            client.SetGrantTypes(expectedGrantTypes, expectedTime);
+			client.SetGrantTypes(expectedGrantTypes, expectedTime);
             
-            Assert.Equal(expectedGrantTypes, client.AllowedGrantTypes);
-            Assert.Equal(expectedTime, client.UpdatedAt);
-        }
+			Assert.Equal(expectedGrantTypes, client.AllowedGrantTypes);
+			Assert.Equal(expectedTime, client.UpdatedAt);
+		}
 
-        [Fact]
-        public void WhenSameGrantTypes_DoesNotUpdate()
-        {
-            var expectedTime = _time.GetUtcNow();
-            var expectedGrantTypes = new[] { AuthorizationCode };
+		[Fact]
+		public void WhenSameGrantTypes_DoesNotUpdate()
+		{
+			var expectedTime = _time.GetUtcNow();
+			var expectedGrantTypes = new[] { AuthorizationCode };
             
-            var client = new ClientBuilder()
-                .CreatedAt(expectedTime)
-                .WithGrantType(AuthorizationCode)
-                .Build();
+			var client = new ClientBuilder()
+				.CreatedAt(expectedTime)
+				.WithGrantType(AuthorizationCode)
+				.Build();
             
-            _time.Advance(TimeSpan.FromMinutes(5));
-            client.SetGrantTypes(expectedGrantTypes, expectedTime);
+			_time.Advance(TimeSpan.FromMinutes(5));
+			client.SetGrantTypes(expectedGrantTypes, expectedTime);
             
-            Assert.Equal(expectedGrantTypes, client.AllowedGrantTypes);
-            Assert.Equal(expectedTime, client.UpdatedAt);
-        }
+			Assert.Equal(expectedGrantTypes, client.AllowedGrantTypes);
+			Assert.Equal(expectedTime, client.UpdatedAt);
+		}
         
-        [Fact]
-        public void WhenDuplicateGrantTypes_ThrowsException()
-        {
-            var client = new ClientBuilder().Build();
+		[Fact]
+		public void WhenDuplicateGrantTypes_ThrowsException()
+		{
+			var client = new ClientBuilder().Build();
             
-            var grantTypes = new[] { AuthorizationCode, AuthorizationCode };
+			var grantTypes = new[] { AuthorizationCode, AuthorizationCode };
 
-            Assert.Throws<InvalidOperationException>(()
-                => client.SetGrantTypes(grantTypes, _time.GetUtcNow()));
-        }
+			Assert.Throws<InvalidOperationException>(()
+				=> client.SetGrantTypes(grantTypes, _time.GetUtcNow()));
+		}
 
-        [Fact]
-        public void WhenGrantTypeIsNotSupportedByApplicationType_ThrowsException()
-        {
-            var client = new ClientBuilder()
-                .WithApplicationType(ClientApplicationTypes.Spa)
-                .Build();
+		[Fact]
+		public void WhenGrantTypeIsNotSupportedByApplicationType_ThrowsException()
+		{
+			var client = new ClientBuilder()
+				.WithApplicationType(ClientApplicationTypes.Spa)
+				.Build();
             
-            client.SetGrantTypes([ClientCredentials], _time.GetUtcNow());
+			client.SetGrantTypes([ClientCredentials], _time.GetUtcNow());
             
-            Assert.Throws<InvalidOperationException>(()
-                => client.ValidateClient());
-        }
+			Assert.Throws<InvalidOperationException>(()
+				=> client.ValidateClient());
+		}
 
-        [Fact]
-        public void WhenEmpty_ThrowsException()
-        {
-            var client = new ClientBuilder()
-                .Build();
+		[Fact]
+		public void WhenEmpty_ThrowsException()
+		{
+			var client = new ClientBuilder()
+				.Build();
 
-            Assert.Throws<InvalidOperationException>(()
-                => client.SetGrantTypes([], _time.GetUtcNow()));
-        }
+			Assert.Throws<InvalidOperationException>(()
+				=> client.SetGrantTypes([], _time.GetUtcNow()));
+		}
         
-        [Fact]
-        public void WhenGrantTypesIsNull_ThrowsException()
-        {
-            var client = new ClientBuilder()
-                .Build();
+		[Fact]
+		public void WhenGrantTypesIsNull_ThrowsException()
+		{
+			var client = new ClientBuilder()
+				.Build();
 
-            Assert.Throws<ArgumentNullException>(()
-                => client.SetGrantTypes(null!, _time.GetUtcNow()));
-        }
-    }
+			Assert.Throws<ArgumentNullException>(()
+				=> client.SetGrantTypes(null!, _time.GetUtcNow()));
+		}
+	}
     
-    public class SetRedirectUris : ClientTests
-    {
-        private static readonly RedirectUri Uri = RedirectUri.Parse("https://example.com/callback");
+	public class SetRedirectUris : ClientTests
+	{
+		private static readonly RedirectUri Uri = RedirectUri.Parse("https://example.com/callback");
         
         
-        [Fact]
-        public void WhenValid_ReplaceExistingAndUpdateTimestamp()
-        {
-            var client = new ClientBuilder()
-                .CreatedAt(_time.GetUtcNow())
-                .Build();
+		[Fact]
+		public void WhenValid_ReplaceExistingAndUpdateTimestamp()
+		{
+			var client = new ClientBuilder()
+				.CreatedAt(_time.GetUtcNow())
+				.Build();
             
-            _time.Advance(TimeSpan.FromMinutes(5));
+			_time.Advance(TimeSpan.FromMinutes(5));
             
-            var expectedUris = new[] { RedirectUri.Parse("https://invalid.com/")};
-            var expectedTime = _time.GetUtcNow();
+			var expectedUris = new[] { RedirectUri.Parse("https://invalid.com/")};
+			var expectedTime = _time.GetUtcNow();
             
-            client.SetRedirectUris(expectedUris, expectedTime);
+			client.SetRedirectUris(expectedUris, expectedTime);
             
-            Assert.Equal(expectedUris, client.RedirectUris);
-            Assert.Equal(expectedTime, client.UpdatedAt);
-        }
+			Assert.Equal(expectedUris, client.RedirectUris);
+			Assert.Equal(expectedTime, client.UpdatedAt);
+		}
 
-        [Fact]
-        public void WhenSameUris_DoesNotUpdate()
-        {
-            var expectedTime = _time.GetUtcNow();
-            var expectedUris = new[] { Uri };
+		[Fact]
+		public void WhenSameUris_DoesNotUpdate()
+		{
+			var expectedTime = _time.GetUtcNow();
+			var expectedUris = new[] { Uri };
             
-            var client = new ClientBuilder()
-                .CreatedAt(expectedTime)
-                .Build();
+			var client = new ClientBuilder()
+				.CreatedAt(expectedTime)
+				.Build();
             
-            _time.Advance(TimeSpan.FromMinutes(5));
-            client.SetRedirectUris(expectedUris, expectedTime);
+			_time.Advance(TimeSpan.FromMinutes(5));
+			client.SetRedirectUris(expectedUris, expectedTime);
             
-            Assert.Equal(expectedUris, client.RedirectUris);
-            Assert.Equal(expectedTime, client.UpdatedAt);
-        }
+			Assert.Equal(expectedUris, client.RedirectUris);
+			Assert.Equal(expectedTime, client.UpdatedAt);
+		}
 
-        [Fact]
-        public void WhenEmptyCollectionAndIsNotRequired_UpdateCollection()
-        {
-            var client = new ClientBuilder()
-                .WithApplicationType(ClientApplicationTypes.M2M)
-                .Build();
+		[Fact]
+		public void WhenEmptyCollectionAndIsNotRequired_UpdateCollection()
+		{
+			var client = new ClientBuilder()
+				.WithApplicationType(ClientApplicationTypes.M2M)
+				.Build();
             
-            client.SetRedirectUris([], _time.GetUtcNow());
-            client.ValidateClient();
+			client.SetRedirectUris([], _time.GetUtcNow());
+			client.ValidateClient();
             
-            Assert.Empty(client.RedirectUris);
-        }
+			Assert.Empty(client.RedirectUris);
+		}
         
-        [Fact]
-        public void WhenDuplicateUris_ThrowsException()
-        {
-            var client = new ClientBuilder().Build();
+		[Fact]
+		public void WhenDuplicateUris_ThrowsException()
+		{
+			var client = new ClientBuilder().Build();
             
-            var redirectUris = new[] { Uri, Uri };
+			var redirectUris = new[] { Uri, Uri };
 
-            Assert.Throws<InvalidOperationException>(()
-                => client.SetRedirectUris(redirectUris, _time.GetUtcNow()));
-        }
+			Assert.Throws<InvalidOperationException>(()
+				=> client.SetRedirectUris(redirectUris, _time.GetUtcNow()));
+		}
         
-        [Fact]
-        public void WhenRedirectUrisNull_ThrowsException()
-        {
-            var client = new ClientBuilder()
-                .Build();
+		[Fact]
+		public void WhenRedirectUrisNull_ThrowsException()
+		{
+			var client = new ClientBuilder()
+				.Build();
 
-            Assert.Throws<ArgumentNullException>(()
-                => client.SetRedirectUris(null!, _time.GetUtcNow()));
-        }
-    }
+			Assert.Throws<ArgumentNullException>(()
+				=> client.SetRedirectUris(null!, _time.GetUtcNow()));
+		}
+	}
  
-    public sealed class AuthorizeApiTests : ClientTests
-    {
-        private static readonly ApiResource OrdersApiResource =
-            new ApiResourceBuilder()
-                .WithName("Orders")
-                .WithPermission("read", "access to view data.")
-                .WithPermission("write", "access to modify data.")
-                .Build();
+	public sealed class AuthorizeApiTests : ClientTests
+	{
+		private static readonly ApiResource OrdersApiResource =
+			new ApiResourceBuilder()
+				.WithName("Orders")
+				.WithPermission("read", "access to view data.")
+				.WithPermission("write", "access to modify data.")
+				.Build();
 
-        private static readonly ApiResource UsersApiResource =
-            new ApiResourceBuilder()
-                .WithName("Users")
-                .WithPermission("read", "access to view data.")
-                .Build();
+		private static readonly ApiResource UsersApiResource =
+			new ApiResourceBuilder()
+				.WithName("Users")
+				.WithPermission("read", "access to view data.")
+				.Build();
 
-        [Fact]
-        public void WhenValid_AddsApiAccessAndUpdatesTimestamp()
-        {
-            var createdAt = _time.GetUtcNow();
-            var client = new ClientBuilder()
-                .CreatedAt(createdAt)
-                .Build();
+		[Fact]
+		public void WhenValid_AddsApiAccessAndUpdatesTimestamp()
+		{
+			var createdAt = _time.GetUtcNow();
+			var client = new ClientBuilder()
+				.CreatedAt(createdAt)
+				.Build();
 
-            _time.Advance(TimeSpan.FromMinutes(5));
-            var updatedAt = _time.GetUtcNow();
+			_time.Advance(TimeSpan.FromMinutes(5));
+			var updatedAt = _time.GetUtcNow();
 
-            client.GrantApiAccess(
-                OrdersApiResource.Id,
-                ScopeCollection.Parse("read write"),
-                updatedAt);
+			client.SetApiAccess(
+				OrdersApiResource.Id,
+				ScopeCollection.Parse("read write"),
+				updatedAt);
 
-            Assert.Single(client.Apis);
-            Assert.Equal(updatedAt, client.UpdatedAt);
-        }
+			Assert.Single(client.Apis);
+			Assert.Equal(updatedAt, client.UpdatedAt);
+		}
 
-        [Fact]
-        public void WhenAuthorizingSecondApi_AddsBoth()
-        {
-            var client = new ClientBuilder().Build();
+		[Fact]
+		public void WhenAuthorizingSecondApi_AddsBoth()
+		{
+			var client = new ClientBuilder().Build();
 
-            client.GrantApiAccess(
-                OrdersApiResource.Id,
-                ScopeCollection.Parse("read"),
-                _time.GetUtcNow());
+			client.SetApiAccess(
+				OrdersApiResource.Id,
+				ScopeCollection.Parse("read"),
+				_time.GetUtcNow());
 
-            client.GrantApiAccess(
-                UsersApiResource.Id,
-                ScopeCollection.Parse("read"),
-                _time.GetUtcNow());
+			client.SetApiAccess(
+				UsersApiResource.Id,
+				ScopeCollection.Parse("read"),
+				_time.GetUtcNow());
 
-            Assert.Equal(2, client.Apis.Count);
-        }
+			Assert.Equal(2, client.Apis.Count);
+		}
 
-        [Fact]
-        public void WhenSameApiAuthorizedTwice_ThrowsException()
-        {
-            var client = new ClientBuilder().Build();
+		[Fact]
+		public void WhenClientHasNoApis_ClientIsStillValid()
+		{
+			var client = new ClientBuilder().Build();
 
-            client.GrantApiAccess(
-                OrdersApiResource.Id,
-                ScopeCollection.Parse("read"),
-                _time.GetUtcNow());
-
-            Assert.Throws<InvalidOperationException>(() =>
-                client.GrantApiAccess(
-                    OrdersApiResource.Id,
-                    ScopeCollection.Parse("read"),
-                    _time.GetUtcNow()));
-        }
-
-    [Fact]
-    public void WhenClientHasNoApis_ClientIsStillValid()
-    {
-        var client = new ClientBuilder().Build();
-
-        Assert.Empty(client.Apis);
-    }
-}
+			Assert.Empty(client.Apis);
+		}
+	}
 
 
-    public class Rename : ClientTests
-    {
-        [Fact]
-        public void Rename_UpdateName_WhenValid()
-        {
-            var client = new ClientBuilder().Build();
-            var newClientName = new ClientName("New App");
+	public class Rename : ClientTests
+	{
+		[Fact]
+		public void Rename_UpdateName_WhenValid()
+		{
+			var client = new ClientBuilder().Build();
+			var newClientName = new ClientName("New App");
             
-            client.Rename(newClientName, _time.GetUtcNow());
-            Assert.Equal(newClientName, client.Name);
-        }
+			client.Rename(newClientName, _time.GetUtcNow());
+			Assert.Equal(newClientName, client.Name);
+		}
         
-        [Fact]
-        public void Rename_ThrowsWhen_Null()
-        {
-            var client = new ClientBuilder().Build();
+		[Fact]
+		public void Rename_ThrowsWhen_Null()
+		{
+			var client = new ClientBuilder().Build();
             
-            Assert.Throws<ArgumentNullException>(() =>
-                client.Rename(null!, _time.GetUtcNow()));
-        }
+			Assert.Throws<ArgumentNullException>(() =>
+				client.Rename(null!, _time.GetUtcNow()));
+		}
 
-        [Fact]
-        public void Rename_TouchUpdatedAt()
-        {
-            var client = new ClientBuilder().Build();
+		[Fact]
+		public void Rename_TouchUpdatedAt()
+		{
+			var client = new ClientBuilder().Build();
             
-            _time.Advance(TimeSpan.FromSeconds(1));
-            var expected = _time.GetUtcNow();
-            client.Rename(new ClientName("new-client"), expected);
+			_time.Advance(TimeSpan.FromSeconds(1));
+			var expected = _time.GetUtcNow();
+			client.Rename(new ClientName("new-client"), expected);
             
-            Assert.Equal(expected, client.UpdatedAt);
-        }
+			Assert.Equal(expected, client.UpdatedAt);
+		}
 
-        [Fact]
-        public void Rename_NoOp_DoesNotTouchUpdatedAt()
-        {
-            var now = _time.GetUtcNow();
-            var client = new ClientBuilder()
-                .CreatedAt(now)
-                .Build();
+		[Fact]
+		public void Rename_NoOp_DoesNotTouchUpdatedAt()
+		{
+			var now = _time.GetUtcNow();
+			var client = new ClientBuilder()
+				.CreatedAt(now)
+				.Build();
             
-            _time.Advance(TimeSpan.FromSeconds(1));
-            var updatedTime = _time.GetUtcNow();
-            client.Rename(client.Name, updatedTime);
+			_time.Advance(TimeSpan.FromSeconds(1));
+			var updatedTime = _time.GetUtcNow();
+			client.Rename(client.Name, updatedTime);
             
-            Assert.NotEqual(updatedTime, client.UpdatedAt);
-            Assert.Equal(now, client.UpdatedAt);
-        }
-    }
+			Assert.NotEqual(updatedTime, client.UpdatedAt);
+			Assert.Equal(now, client.UpdatedAt);
+		}
+	}
 
-    public class SetTokenLifetime : ClientTests
-    {
-        [Fact]
-        public void SetTokenLifetime_SetTokenLifetime_WhenValid()
-        {
-            var client = new ClientBuilder().Build();
-            var newLifetime = TimeSpan.FromSeconds(1);
+	public class SetTokenLifetime : ClientTests
+	{
+		[Fact]
+		public void SetTokenLifetime_SetTokenLifetime_WhenValid()
+		{
+			var client = new ClientBuilder().Build();
+			var newLifetime = TimeSpan.FromSeconds(1);
             
-            client.SetTokenLifetime(newLifetime, _time.GetUtcNow());
+			client.SetTokenLifetime(newLifetime, _time.GetUtcNow());
             
-            Assert.Equal(newLifetime, client.TokenLifetime);
-        }
+			Assert.Equal(newLifetime, client.TokenLifetime);
+		}
 
-        [Fact]
-        public void SetTokenLifetime_ThrowsOn_ZeroValue()
-        {
-            var client = new ClientBuilder().Build();
-            Assert.Throws<ArgumentOutOfRangeException>(()
-                => client.SetTokenLifetime(TimeSpan.Zero, _time.GetUtcNow()));
-        }
+		[Fact]
+		public void SetTokenLifetime_ThrowsOn_ZeroValue()
+		{
+			var client = new ClientBuilder().Build();
+			Assert.Throws<ArgumentOutOfRangeException>(()
+				=> client.SetTokenLifetime(TimeSpan.Zero, _time.GetUtcNow()));
+		}
 
-        [Fact]
-        public void SetTokenLifetime_TouchUpdatedAt()
-        {
-            var client = new ClientBuilder().Build();
+		[Fact]
+		public void SetTokenLifetime_TouchUpdatedAt()
+		{
+			var client = new ClientBuilder().Build();
             
-            _time.Advance(TimeSpan.FromSeconds(1));
-            var expected = _time.GetUtcNow();
-            client.SetTokenLifetime(TimeSpan.FromSeconds(1), expected);
+			_time.Advance(TimeSpan.FromSeconds(1));
+			var expected = _time.GetUtcNow();
+			client.SetTokenLifetime(TimeSpan.FromSeconds(1), expected);
             
-            Assert.Equal(expected, client.UpdatedAt);
-        }
+			Assert.Equal(expected, client.UpdatedAt);
+		}
 
-        [Fact]
-        public void SetTokenLifetime_NoOp_DoesNotTouchUpdatedAt()
-        {
-            var client = new ClientBuilder().Build();
+		[Fact]
+		public void SetTokenLifetime_NoOp_DoesNotTouchUpdatedAt()
+		{
+			var client = new ClientBuilder().Build();
             
-            var before = client.UpdatedAt;
-            client.SetTokenLifetime(client.TokenLifetime, _time.GetUtcNow());
+			var before = client.UpdatedAt;
+			client.SetTokenLifetime(client.TokenLifetime, _time.GetUtcNow());
             
-            Assert.Equal(before, client.UpdatedAt);
-        }
-    }
+			Assert.Equal(before, client.UpdatedAt);
+		}
+	}
 
-    public class AddSecret : ClientTests
-    {
-        [Fact]
-        public void AddsSecret_WhenValid()
-        {
-            var client = new ClientBuilder().Build();
-            var hash = new SecretHash("hash");
+	public class AddSecret : ClientTests
+	{
+		[Fact]
+		public void AddsSecret_WhenValid()
+		{
+			var client = new ClientBuilder().Build();
+			var hash = new SecretHash("hash");
             
-            var utcNow = _time.GetUtcNow();
-            var secret = client.AddSecret(hash, utcNow);
+			var utcNow = _time.GetUtcNow();
+			var secret = client.AddSecret(hash, utcNow);
 
-            Assert.Contains(client.Secrets, s => s.Id == secret.Id && s.IsActive(utcNow));
-        }
+			Assert.Contains(client.Secrets, s => s.Id == secret.Id && s.IsActive(utcNow));
+		}
         
-        [Fact]
-        public void UpdateTimestamp_WhenSuccess()
-        {
-            var client = new ClientBuilder().Build();
-            var hash = new SecretHash("hash");
+		[Fact]
+		public void UpdateTimestamp_WhenSuccess()
+		{
+			var client = new ClientBuilder().Build();
+			var hash = new SecretHash("hash");
             
-            _time.Advance(TimeSpan.FromHours(1));
-            var expected = _time.GetUtcNow();
+			_time.Advance(TimeSpan.FromHours(1));
+			var expected = _time.GetUtcNow();
             
-            client.AddSecret(hash, expected);
-            Assert.Equal(expected, client.UpdatedAt);
-        }
+			client.AddSecret(hash, expected);
+			Assert.Equal(expected, client.UpdatedAt);
+		}
 
-        [Fact]
-        public void Throws_WhenExceedsMaxSecrets()
-        {
-            var client = new ClientBuilder().Build();
-            var hash = new SecretHash("hash");
+		[Fact]
+		public void Throws_WhenExceedsMaxSecrets()
+		{
+			var client = new ClientBuilder().Build();
+			var hash = new SecretHash("hash");
             
-            var utcNow = _time.GetUtcNow();
+			var utcNow = _time.GetUtcNow();
 
-            for (var i = 0; i < Client.MaxSecrets; i++)
-                client.AddSecret(hash, utcNow);
+			for (var i = 0; i < Client.MaxSecrets; i++)
+				client.AddSecret(hash, utcNow);
             
-            Assert.Throws<InvalidOperationException>(()
-                => client.AddSecret(hash, utcNow));
-        }
-    }
+			Assert.Throws<InvalidOperationException>(()
+				=> client.AddSecret(hash, utcNow));
+		}
+	}
 
-    public class RevokeSecret : ClientTests
-    {
-        [Fact]
-        public void Throws_WhenSecretNotFound()
-        {
-            var client = new ClientBuilder().Build();
+	public class RevokeSecret : ClientTests
+	{
+		[Fact]
+		public void Throws_WhenSecretNotFound()
+		{
+			var client = new ClientBuilder().Build();
 
-            Assert.Throws<InvalidOperationException>(()
-                => client.RevokeSecret(SecretId.New(), _time.GetUtcNow()));
-        }
+			Assert.Throws<InvalidOperationException>(()
+				=> client.RevokeSecret(SecretId.New(), _time.GetUtcNow()));
+		}
 
-        [Fact]
-        public void DoesNothing_WhenSecretIsInactive()
-        {
-            var client = new ClientBuilder()
-                .WithSecret("hash")
-                .WithSecret("hash")
-                .Build();
+		[Fact]
+		public void DoesNothing_WhenSecretIsInactive()
+		{
+			var client = new ClientBuilder()
+				.WithSecret("hash")
+				.WithSecret("hash")
+				.Build();
 
-            _time.Advance(TimeSpan.FromMinutes(30));
-            var expected = _time.GetUtcNow();
+			_time.Advance(TimeSpan.FromMinutes(30));
+			var expected = _time.GetUtcNow();
             
-            var secret = client.Secrets.First();
-            client.RevokeSecret(secret.Id, expected);
+			var secret = client.Secrets.First();
+			client.RevokeSecret(secret.Id, expected);
 
-            Assert.Equal(expected, client.UpdatedAt);
-        }
+			Assert.Equal(expected, client.UpdatedAt);
+		}
 
-        [Fact]
-        public void Throws_WhenRevokingLastSecret()
-        {
-            var client = new ClientBuilder()
-                .WithSecret("hash")
-                .Build();
+		[Fact]
+		public void Throws_WhenRevokingLastSecret()
+		{
+			var client = new ClientBuilder()
+				.WithSecret("hash")
+				.Build();
 
-            var secret = client.Secrets.First();
-            Assert.Throws<InvalidOperationException>(()
-                => client.RevokeSecret(secret.Id, _time.GetUtcNow()));           
-        }
+			var secret = client.Secrets.First();
+			Assert.Throws<InvalidOperationException>(()
+				=> client.RevokeSecret(secret.Id, _time.GetUtcNow()));           
+		}
 
-        [Fact]
-        public void MarksSecretAsInactive_WhenValid()
-        {
-            var client = new ClientBuilder()
-                .WithSecret("hash")
-                .WithSecret("hash")
-                .Build();
+		[Fact]
+		public void MarksSecretAsInactive_WhenValid()
+		{
+			var client = new ClientBuilder()
+				.WithSecret("hash")
+				.WithSecret("hash")
+				.Build();
             
-            var secret = client.Secrets.First();
-            client.RevokeSecret(secret.Id, _time.GetUtcNow());
+			var secret = client.Secrets.First();
+			client.RevokeSecret(secret.Id, _time.GetUtcNow());
             
-            Assert.False(secret.IsActive(_time.GetUtcNow()));
-        }
+			Assert.False(secret.IsActive(_time.GetUtcNow()));
+		}
         
-        [Fact]
-        public void UpdateTimestamp_WhenSuccessful()
-        {
-            var client = new ClientBuilder()
-                .WithSecret("hash")
-                .WithSecret("hash")
-                .Build();
+		[Fact]
+		public void UpdateTimestamp_WhenSuccessful()
+		{
+			var client = new ClientBuilder()
+				.WithSecret("hash")
+				.WithSecret("hash")
+				.Build();
             
-            _time.Advance(TimeSpan.FromHours(1));
-            var expected = _time.GetUtcNow();
+			_time.Advance(TimeSpan.FromHours(1));
+			var expected = _time.GetUtcNow();
             
-            var secret = client.Secrets.First();
-            client.RevokeSecret(secret.Id, expected);
+			var secret = client.Secrets.First();
+			client.RevokeSecret(secret.Id, expected);
 
-            Assert.Equal(expected, client.UpdatedAt);
-        }
-    }
+			Assert.Equal(expected, client.UpdatedAt);
+		}
+	}
 
-    public class GetActiveSecrets : ClientTests
-    {
-        [Fact]
-        public void ReturnOnlyActiveSecrets()
-        {
-            var client = new ClientBuilder().Build();
-            var expired = new SecretHash("expired");
-            var revoked = new SecretHash("revoked");
-            var active = new SecretHash("active");
+	public class GetActiveSecrets : ClientTests
+	{
+		[Fact]
+		public void ReturnOnlyActiveSecrets()
+		{
+			var client = new ClientBuilder().Build();
+			var expired = new SecretHash("expired");
+			var revoked = new SecretHash("revoked");
+			var active = new SecretHash("active");
             
-            // Advance time to expire token immediately.
-            client.AddSecret(expired, _time.GetUtcNow());
-            _time.Advance(TimeSpan.FromDays(365));
+			// Advance time to expire token immediately.
+			client.AddSecret(expired, _time.GetUtcNow());
+			_time.Advance(TimeSpan.FromDays(365));
             
-            // Revoke secret immediately.
-            client.AddSecret(revoked, _time.GetUtcNow());
-            client.Secrets.First(s => s.Hash == revoked)
-                .Revoke(_time.GetUtcNow());
+			// Revoke secret immediately.
+			client.AddSecret(revoked, _time.GetUtcNow());
+			client.Secrets.First(s => s.Hash == revoked)
+				.Revoke(_time.GetUtcNow());
             
-            // Add active secret.
-            client.AddSecret(active, _time.GetUtcNow());
+			// Add active secret.
+			client.AddSecret(active, _time.GetUtcNow());
         
-            var result = client
-                .ActiveSecrets(_time.GetUtcNow())
-                .ToArray();
+			var result = client
+				.ActiveSecrets(_time.GetUtcNow())
+				.ToArray();
         
-            Assert.Contains(result, r => r.Hash == active);
-            Assert.DoesNotContain(result, r => r.Hash == expired);
-            Assert.DoesNotContain(result, r => r.Hash == revoked);
-        }
-    }
+			Assert.Contains(result, r => r.Hash == active);
+			Assert.DoesNotContain(result, r => r.Hash == expired);
+			Assert.DoesNotContain(result, r => r.Hash == revoked);
+		}
+	}
 
-    public class Enabled : ClientTests
-    {
-        [Fact]
-        public void EnableAndDisable_TogglesEnable_And_TouchUpdatedAt()
-        {
-            var client = new ClientBuilder().Build();
+	public class Enabled : ClientTests
+	{
+		[Fact]
+		public void EnableAndDisable_TogglesEnable_And_TouchUpdatedAt()
+		{
+			var client = new ClientBuilder().Build();
             
-            // Act - Disable
-            _time.Advance(TimeSpan.FromSeconds(1));
-            var expectedAfterDisable = _time.GetUtcNow();
-            client.Disable(_time.GetUtcNow());
+			// Act - Disable
+			_time.Advance(TimeSpan.FromSeconds(1));
+			var expectedAfterDisable = _time.GetUtcNow();
+			client.Disable(_time.GetUtcNow());
             
-            Assert.False(client.Enabled);
-            Assert.Equal(expectedAfterDisable, client.UpdatedAt);
+			Assert.False(client.Enabled);
+			Assert.Equal(expectedAfterDisable, client.UpdatedAt);
 
-            // Act - Enable
-            _time.Advance(TimeSpan.FromSeconds(1));
-            var expectedAfterEnable = _time.GetUtcNow();
-            client.Enable(_time.GetUtcNow());
+			// Act - Enable
+			_time.Advance(TimeSpan.FromSeconds(1));
+			var expectedAfterEnable = _time.GetUtcNow();
+			client.Enable(_time.GetUtcNow());
             
-            Assert.True(client.Enabled);
-            Assert.Equal(expectedAfterEnable, client.UpdatedAt);
-        }
+			Assert.True(client.Enabled);
+			Assert.Equal(expectedAfterEnable, client.UpdatedAt);
+		}
 
-        [Fact]
-        public void Enable_NoOp_DoesNotTouchUpdatedAt()
-        {
-            var client = new ClientBuilder().Build();
-            var before = client.UpdatedAt;
+		[Fact]
+		public void Enable_NoOp_DoesNotTouchUpdatedAt()
+		{
+			var client = new ClientBuilder().Build();
+			var before = client.UpdatedAt;
 
-            client.Enable(_time.GetUtcNow());
-            Assert.Equal(before, client.UpdatedAt);           
-        }
+			client.Enable(_time.GetUtcNow());
+			Assert.Equal(before, client.UpdatedAt);           
+		}
 
-        [Fact]
-        public void Disable_NoOup_DoesNotTouchUpdatedAt()
-        {
-            var client = new ClientBuilder().Build();
-            client.Disable(_time.GetUtcNow());
+		[Fact]
+		public void Disable_NoOup_DoesNotTouchUpdatedAt()
+		{
+			var client = new ClientBuilder().Build();
+			client.Disable(_time.GetUtcNow());
             
-            var before = client.UpdatedAt;
-            client.Disable(_time.GetUtcNow());
-            Assert.Equal(before, client.UpdatedAt);
-        }
-    }
+			var before = client.UpdatedAt;
+			client.Disable(_time.GetUtcNow());
+			Assert.Equal(before, client.UpdatedAt);
+		}
+	}
 }

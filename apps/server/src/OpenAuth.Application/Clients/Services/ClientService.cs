@@ -141,18 +141,6 @@ public class ClientService : IClientService
         
 		return client.ToClientDetails();
 	}
-
-    
-	public async Task<ClientDetails> RevokeApiAccessAsync(ClientId id, ApiResourceId apiResourceId, CancellationToken ct = default)
-	{
-		var client = await _repository.GetByIdAsync(id, ct)
-		             ?? throw new InvalidOperationException("Client not found.");
-        
-		client.RevokeApiAccess(apiResourceId, _time.GetUtcNow());
-		await _repository.SaveChangesAsync(ct);
-        
-		return client.ToClientDetails();
-	}
     
 	public async Task DeleteAsync(ClientId id, CancellationToken ct = default)
 	{
