@@ -4,16 +4,17 @@ using OpenAuth.Application.Audiences.Interfaces;
 using OpenAuth.Application.Clients.Interfaces;
 using OpenAuth.Application.Exceptions;
 
-namespace OpenAuth.Application.Clients.Commands.GrantApiAccess;
+namespace OpenAuth.Application.Clients.Commands.SetClientApiAccess;
 
-public sealed class GrantApiAccessHandler(IApiResourceRepository apiRepository, IClientRepository clientRepository,TimeProvider time)
-	: ICommandHandler<GrantApiAccessCommand>
+public sealed class SetClientApiAccessCommandHandler(IApiResourceRepository apiRepository, IClientRepository clientRepository,TimeProvider time)
+	: ICommandHandler<SetClientApiAccessCommand>
 {
-	public async Task HandleAsync(GrantApiAccessCommand command, CancellationToken ct)
+	public async Task HandleAsync(SetClientApiAccessCommand command, CancellationToken ct)
 	{
         var client = await clientRepository.GetByIdAsync(command.ClientId, ct)
             ?? throw new ClientNotFoundException(command.ClientId);
 
+        // TODO: should be a readonly query of allowed scopes instead.
         var api = await apiRepository.GetByIdAsync(command.ApiResourceId, ct)
             ?? throw new ApiResourceNotFoundException(command.ApiResourceId);
 
@@ -24,7 +25,7 @@ public sealed class GrantApiAccessHandler(IApiResourceRepository apiRepository, 
         if (!command.Scopes.IsSubsetOf(allowedScopes))
             throw new InvalidScopeException("One or more scopes requested are not allowed for the API.");
         
-        client.GrantApiAccess(api.Id, command.Scopes, time.GetUtcNow());
+        client.SetApiAccess(api.Id, command.Scopes, time.GetUtcNow());
         await clientRepository.SaveChangesAsync(ct);
 	}
 }

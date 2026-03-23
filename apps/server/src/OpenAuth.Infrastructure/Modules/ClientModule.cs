@@ -1,15 +1,13 @@
 using Microsoft.Extensions.DependencyInjection;
 using OpenAuth.Application.Abstractions;
 using OpenAuth.Application.Clients.Commands.CreateClient;
-using OpenAuth.Application.Clients.Commands.GrantApiAccess;
-using OpenAuth.Application.Clients.Commands.RevokeApiAccess;
+using OpenAuth.Application.Clients.Commands.SetClientApiAccess;
 using OpenAuth.Application.Clients.Commands.UpdateClient;
 using OpenAuth.Application.Clients.Factories;
 using OpenAuth.Application.Clients.Interfaces;
 using OpenAuth.Application.Clients.Queries.GetClientApiAccess;
 using OpenAuth.Application.Clients.Queries.GetClientDetails;
 using OpenAuth.Application.Clients.Services;
-using OpenAuth.Infrastructure.Clients;
 using OpenAuth.Infrastructure.Clients.Persistence;
 using OpenAuth.Infrastructure.Clients.Queries;
 
@@ -36,8 +34,7 @@ public static class ClientModule
 
 		services.AddScoped<ICommandHandler<UpdateClientConfigurationCommand>, UpdateClientConfigurationCommandHandler>();
 		
-		services.AddScoped<ICommandHandler<GrantApiAccessCommand>, GrantApiAccessHandler>();
-		services.AddScoped<ICommandHandler<RevokeApiAccessCommand>, RevokeApiAccessHandler>();
+		services.AddScoped<ICommandHandler<SetClientApiAccessCommand>, SetClientApiAccessCommandHandler>();
 
 		return services;
 	}

@@ -6,7 +6,7 @@ namespace OpenAuth.Domain.Clients;
 public sealed class ClientApiAccess
 {
     public ApiResourceId ApiResourceId { get; private init; }
-    public ScopeCollection AllowedScopes { get; private init; }
+    public ScopeCollection AllowedScopes { get; private set; }
     
     private ClientApiAccess() { }
 
@@ -18,4 +18,12 @@ public sealed class ClientApiAccess
 
     internal static ClientApiAccess Create(ApiResourceId apiResourceId, ScopeCollection allowedScope) =>
         new ClientApiAccess(apiResourceId, allowedScope);
+
+    public void SetScopes(ScopeCollection scopes)
+    {
+        if (scopes.IsEmpty)
+            throw new InvalidOperationException("Scopes cannot be empty");
+        
+        AllowedScopes = scopes;
+    }
 }
