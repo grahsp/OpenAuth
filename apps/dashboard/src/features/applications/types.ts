@@ -27,6 +27,12 @@ export type ClientApiAccess = {
     scopes: string[];
 }
 
+export type UpdateClientApiAccessRequest = {
+    clientId: string;
+    apiId: string;
+    scopes: string[];
+}
+
 export type UpdateApplicationConfigurationRequest = {
     name: string;
     applicationType: string;

@@ -30,5 +30,10 @@ export function useClientPermissions(clientId?: string) {
         })
     }, [apis.data, access.data]);
 
-    return {data, loading: apis.loading || access.loading, error: apis.error || access.error};
+    return {
+        data,
+        loading: apis.loading || access.loading,
+        error: apis.error || access.error,
+        refresh: access.refresh
+    };
 }
