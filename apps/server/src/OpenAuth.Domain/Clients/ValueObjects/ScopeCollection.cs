@@ -6,6 +6,7 @@ namespace OpenAuth.Domain.Clients.ValueObjects;
 public sealed record ScopeCollection : IReadOnlyCollection<Scope>
 {
 	private readonly HashSet<Scope> _items;
+	public bool IsEmpty => _items.Count == 0;
     
 	public ScopeCollection(IEnumerable<Scope> scopes)
 	{

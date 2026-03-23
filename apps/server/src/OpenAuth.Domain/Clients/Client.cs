@@ -203,6 +203,7 @@ public sealed class Client
 	}
 
     
+	[Obsolete("Use SetApiAccess instead.")]
 	public void GrantApiAccess(ApiResourceId apiResourceId, ScopeCollection scopes, DateTimeOffset utcNow)
 	{
 		if (_apis.Any(a => a.ApiResourceId == apiResourceId))
@@ -214,6 +215,7 @@ public sealed class Client
 		Touch(utcNow);
 	}
 
+	[Obsolete("Use SetApiAccess instead.")]
 	public void RevokeApiAccess(ApiResourceId apiResourceId, DateTimeOffset utcNow)
 	{
 		var access = _apis.FirstOrDefault(a => a.ApiResourceId == apiResourceId);
@@ -224,6 +226,39 @@ public sealed class Client
 		Touch(utcNow);       
 	}
 
+	public void SetApiAccess(ApiResourceId apiResourceId, ScopeCollection scopes, DateTimeOffset utcNow)
+	{
+		var existing = _apis.FirstOrDefault(api => api.ApiResourceId == apiResourceId);
+
+		// --- REVOKE ---
+		if (scopes.IsEmpty)
+		{
+			if (existing is null)
+				return;
+
+			_apis.Remove(existing);
+			
+			Touch(utcNow);
+			return;
+		}
+
+		// --- GRANT ---
+		if (existing is null)
+		{
+			var access = ClientApiAccess.Create(apiResourceId, scopes);
+			_apis.Add(access);
+		
+			Touch(utcNow);
+			return;
+		}
+
+		// --- UPDATE ---
+		if (!existing.AllowedScopes.Equals(scopes))
+		{
+			existing.SetScopes(scopes);
+			Touch(utcNow);
+		}
+	}
 
 	// Token
 	public void SetTokenLifetime(TimeSpan value, DateTimeOffset utcNow)

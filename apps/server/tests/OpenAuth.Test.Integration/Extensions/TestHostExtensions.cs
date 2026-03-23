@@ -1,6 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using OpenAuth.Application.Abstractions;
-using OpenAuth.Application.Clients.Commands.GrantApiAccess;
+using OpenAuth.Application.Clients.Commands.SetClientApiAccess;
 using OpenAuth.Application.Clients.Services;
 using OpenAuth.Domain.Clients.ValueObjects;
 using OpenAuth.Infrastructure.Persistence;
@@ -30,10 +30,10 @@ public static class TestHostExtensions
 			context.ApiResources.Add(api);
 			await context.SaveChangesAsync();
 			
-			var handler = sp.GetRequiredService<ICommandHandler<GrantApiAccessCommand>>();
+			var handler = sp.GetRequiredService<ICommandHandler<SetClientApiAccessCommand>>();
 			var scopes = new ScopeCollection(api.Permissions.Select(p => p.Scope));
 			
-			var command = new GrantApiAccessCommand(registered.Client.Id, api.Id, scopes);
+			var command = new SetClientApiAccessCommand(registered.Client.Id, api.Id, scopes);
 			await handler.HandleAsync(command, CancellationToken.None);
 			
 			// TODO: hard coded redirect uri into all clients

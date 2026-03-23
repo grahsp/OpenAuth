@@ -1,8 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using OpenAuth.Application.Abstractions;
 using OpenAuth.Application.Clients.Commands.CreateClient;
-using OpenAuth.Application.Clients.Commands.GrantApiAccess;
-using OpenAuth.Application.Clients.Commands.RevokeApiAccess;
+using OpenAuth.Application.Clients.Commands.SetClientApiAccess;
 using OpenAuth.Application.Clients.Commands.UpdateClient;
 using OpenAuth.Application.Clients.Interfaces;
 using OpenAuth.Application.Clients.Queries.GetClientApiAccess;
@@ -29,10 +28,8 @@ public static class ClientEndpoints
 		group.MapPut("/{id}/configuration", UpdateClientConfiguration);
 		group.MapDelete("/{id}", DeleteClient);
 
-		group.MapPost("/{clientId}/apis/{apiResourceId}", GrantApiAccess);
-		group.MapDelete("/{clientId}/apis/{apiResourceId}", RevokeApiAccess);
-		
 		group.MapGet("/{clientId}/apis/access", GetClientApiAccess);
+		group.MapPost("/{clientId}/apis/{apiResourceId}", GrantApiAccess);
         
 		return app;
 	}
@@ -156,31 +153,19 @@ public static class ClientEndpoints
 		ClientId clientId,
 		ApiResourceId apiResourceId,
 		GrantApiAccessRequest request,
-		ICommandHandler<GrantApiAccessCommand> handler,
+		ICommandHandler<SetClientApiAccessCommand> handler,
 		CancellationToken ct)
 	{
-		if (!ScopeCollection.TryParse(request.Scope, out var scopes))
+		if (!ScopeCollection.TryParse(request.Scopes, out var scopes))
 			return Results.BadRequest(new
 			{
 				error = "invalid_scope",
-				message = "The provided scope string is invalid."
+				message = "The provided scopes are invalid."
 			});
         
-		var command = new GrantApiAccessCommand(clientId, apiResourceId, scopes);
+		var command = new SetClientApiAccessCommand(clientId, apiResourceId, scopes);
 		await handler.HandleAsync(command, ct);
         
 		return Results.NoContent();
-	}
-
-	private static async Task<IResult> RevokeApiAccess(
-		ClientId clientId,
-		ApiResourceId apiResourceId,
-		ICommandHandler<RevokeApiAccessCommand> handler,
-		CancellationToken ct)
-	{
-		var command = new RevokeApiAccessCommand(clientId, apiResourceId);
-		
-		await handler.HandleAsync(command, ct);
-		return Results.NotFound();      
 	}
 }
