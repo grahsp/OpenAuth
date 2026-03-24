@@ -14,7 +14,8 @@ jobs:
     runs-on: ubuntu-latest
 
     defaults:
-      working-directory: app/server/
+      run:
+        working-directory: apps/server/
 
     steps:
     - name: checkout
