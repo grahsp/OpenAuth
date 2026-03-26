@@ -47,6 +47,10 @@ OpenAuth is composed of several key components that work together to handle auth
   - Issues JWT access tokens
   - Exposes endpoints such as `/connect/authorize`, `/connect/token`, and `/jwks`
 
+<p align="center">  
+	<img src="./docs/runtime-architecture.png" width="700" />  
+</p>
+
 - Management Component  
 	- Handles configuration of clients, API resources, and scopes  
 	- Defines what access is allowed during authorization and token issuance
@@ -55,6 +59,10 @@ OpenAuth is composed of several key components that work together to handle auth
   - UI for managing applications and API access
   - Interacts with management endpoints
 
+<p align="center">  
+	<img src="./docs/management-architecture.png" width="700" />  
+</p>
+
 - Clients (Applications)
   - External applications requesting tokens
 
@@ -62,14 +70,6 @@ OpenAuth is composed of several key components that work together to handle auth
   - Protected APIs that validate access tokens and enforce scopes
 
 The system models authorization explicitly through relationships between clients, API resources, and scopes, allowing fine-grained control over which applications can access which APIs and with what permissions.
-
-<p align="center">  
-	<img src="./docs/runtime-architecture.png" width="700" />  
-</p>
-
-<p align="center">  
-	<img src="./docs/management-architecture.png" width="700" />  
-</p>
 
 ### Interaction Overview
 
