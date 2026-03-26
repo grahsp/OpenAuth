@@ -87,21 +87,17 @@ The following describes how a client obtains an access token using the Authoriza
 	<img src="./docs/authorization-code-pkce-sequence.png" width="700" />  
 </p>
 
-1. The client application redirects the user to the authorization endpoint (`/connect/authorize`) with the requested scopes and a PKCE code challenge.
-
-2. The user authenticates with the authorization server.  
+1. The user initiates login from the client application.
+2. The client application redirects the user to the authorization endpoint (`/connect/authorize`) with the requested scopes and a PKCE code challenge.
+3. The authorization server redirects the user to the login page.
+4. The user authenticates with the authorization server.  
    (A consent step for approving requested scopes is not currently implemented.)
-
-3. Upon successful authentication, the authorization server issues an authorization code and redirects the user back to the client with the requested scopes applied.
-
-5. The client exchanges the authorization code at the token endpoint (`/connect/token`) by providing the PKCE code verifier.
-
-6. The authorization server validates the request and issues a signed JWT access token containing the approved scopes and audience.  
-If the `openid` scope is included, an ID token is also issued, providing identity information about the authenticated user.
-
-7. The client uses the access token to call protected APIs.
-
-8. The API validates the token using the JWKS endpoint and enforces access based on scopes.
+5. Upon successful authentication, the authorization server redirects the user back to the client with an authorization code.
+6. The client exchanges the authorization code at the token endpoint (`/connect/token`) by providing the PKCE code verifier.
+7. The authorization server validates the request and issues a signed JWT access token containing the approved scopes and audience.  
+   If the `openid` scope is included, an ID token is also issued, providing identity information about the authenticated user.
+8. The client uses the access token to call protected APIs.
+9. The API validates the token using the JWKS endpoint and enforces access based on scopes.
 
 The issued token reflects the configured relationship between the client, the target API resource, and the allowed scopes.
 
