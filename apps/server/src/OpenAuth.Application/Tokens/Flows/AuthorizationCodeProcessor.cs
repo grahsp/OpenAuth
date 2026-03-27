@@ -41,7 +41,7 @@ public class AuthorizationCodeProcessor : TokenRequestProcessor<AuthorizationCod
         var oidcContext = CreateOidcContext(authorizationGrant);
         
         return new TokenContext(
-            authorizationGrant.GrantedScopes.GetApiScopes(),
+            authorizationGrant.GrantedScopes,
             authorizationGrant.ClientId.ToString(),
             authorizationGrant.Audience,
             authorizationGrant.Subject,
