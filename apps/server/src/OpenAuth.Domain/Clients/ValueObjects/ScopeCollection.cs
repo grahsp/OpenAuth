@@ -65,6 +65,8 @@ public sealed record ScopeCollection : IReadOnlyCollection<Scope>
 			return false;
 		}
 	}
+	
+	public static ScopeCollection Empty => new ScopeCollection([]);
 
 	public int Count => _items.Count;
 	public IEnumerator<Scope> GetEnumerator() => _items.GetEnumerator();
