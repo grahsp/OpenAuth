@@ -45,7 +45,7 @@ public static class AuthorizeEndpoint
 			}
 			catch (OAuthProtocolException ex)
 			{
-				return ErrorRedirect(dto.RedirectUri, ex.Error, ex.Description, dto.State);
+				return Results.BadRequest(new { error = ex.Error, error_description = ex.Description });
 			}
 			catch (OAuthAuthorizationException ex)
 			{
