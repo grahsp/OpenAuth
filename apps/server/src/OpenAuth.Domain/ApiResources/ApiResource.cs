@@ -23,7 +23,7 @@ public class ApiResource
 		_permissions = permissions.ToHashSet();
 	}
 
-	internal static ApiResource Create(ApiResourceName resourceName, AudienceIdentifier audience, IEnumerable<Permission> permissions)
+	public static ApiResource Create(ApiResourceName resourceName, AudienceIdentifier audience, IEnumerable<Permission> permissions)
 	{
 		var permissionSet = permissions.ToHashSet();
         
