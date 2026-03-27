@@ -30,8 +30,9 @@ public class AuthorizationRequestValidator : IAuthorizationRequestValidator
 
         var allowedScopes = await ValidateAudienceAsync(command.Audience);
         ValidateScope(command.Scopes, allowedScopes);
-        ValidateOidc(command.Scopes, command.Nonce);
+        ValidateOidc(command.Scopes);
         
+        ValidateNonce(command.Scopes, command.Nonce, command.ResponseType);
         ValidatePkce(command.Pkce, authData);
 
         return new AuthorizationValidationResult(
@@ -86,12 +87,18 @@ public class AuthorizationRequestValidator : IAuthorizationRequestValidator
             throw new InvalidRequestException("PKCE is required for public client.");
     }
 
-    private static void ValidateOidc(ScopeCollection scopes, string? nonce)
+    private static void ValidateOidc(ScopeCollection scopes)
     {
         if (scopes.ContainsOidcScopes() && !scopes.ContainsOpenIdScope())
             throw new InvalidRequestException("'openid' scope must be included for OIDC scopes.");
+    }
+
+    private static void ValidateNonce(ScopeCollection scopes, string? nonce, string responseType)
+    {
+        if (!scopes.ContainsOidcScopes())
+            return;
         
-        if (scopes.ContainsOpenIdScope() && string.IsNullOrWhiteSpace(nonce))
+        if (responseType != "code" && string.IsNullOrWhiteSpace(nonce))
             throw new InvalidRequestException("Nonce is required for OIDC scopes.");
     }
 }
