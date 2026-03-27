@@ -6,8 +6,10 @@ using OpenAuth.Application.Clients.Commands.UpdateClient;
 using OpenAuth.Application.Clients.Factories;
 using OpenAuth.Application.Clients.Interfaces;
 using OpenAuth.Application.Clients.Queries.GetClientApiAccess;
+using OpenAuth.Application.Clients.Queries.GetClientApiScopes;
 using OpenAuth.Application.Clients.Queries.GetClientDetails;
 using OpenAuth.Application.Clients.Services;
+using OpenAuth.Domain.Clients.ValueObjects;
 using OpenAuth.Infrastructure.Clients.Persistence;
 using OpenAuth.Infrastructure.Clients.Queries;
 
@@ -47,6 +49,8 @@ public static class ClientModule
 
 		services.AddScoped<IQueryHandler<GetClientDetailsQuery, ClientDetails?>, GetClientDetailsQueryHandler>();
 		services.AddScoped<IQueryHandler<GetClientPermissionsQuery, IReadOnlyList<ClientPermissions>>, GetClientPermissionsQueryHandler>();
+		
+		services.AddScoped<IQueryHandler<GetClientApiScopesQuery, ScopeCollection>, GetClientApiScopesQueryHandler>();
 
 		return services;
 	}
