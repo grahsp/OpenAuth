@@ -17,11 +17,16 @@ public static class IdentityModule
 
 	public static IServiceCollection AddIdentityApplication(this IServiceCollection services)
 	{
+		services.AddScoped<SignInManager<User>>();
+		
 		return services;
 	}
 
 	public static IServiceCollection AddIdentityInfrastructure(this IServiceCollection services)
 	{
+		services.AddAuthentication(IdentityConstants.ApplicationScheme)
+			.AddCookie(IdentityConstants.ApplicationScheme);
+		
 		services.AddIdentityCore<User>(options =>
 			{
 				// Password settings
