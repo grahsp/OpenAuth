@@ -8,7 +8,7 @@ namespace OpenAuth.Domain.Clients;
 
 public sealed class Client
 {
-	public ClientId Id { get; init; } = ClientId.New();
+	public ClientId Id { get; init; }
 	public ClientName Name { get; private set; } = null!;
     
 	public ClientApplicationType ApplicationType { get; init; }
@@ -47,11 +47,13 @@ public sealed class Client
 	private Client() { }
 
 	private Client(
+		ClientId id,
 		ClientName name,
 		ClientApplicationType applicationType,
 		IEnumerable<GrantType> allowedGrantTypes,
 		DateTimeOffset utcNow)
 	{
+		Id = id;
 		Name = name;
 		ApplicationType = applicationType;
 		_allowedGrantTypes = allowedGrantTypes.ToHashSet();
@@ -64,14 +66,31 @@ public sealed class Client
 		ClientApplicationType applicationType,
 		IEnumerable<GrantType> allowedGrantTypes,
 		DateTimeOffset utcNow) =>
-		new Client(name, applicationType, allowedGrantTypes, utcNow);
+		new Client(ClientId.New(), name, applicationType, allowedGrantTypes, utcNow);
 
 	public static Client CreateSpa(
 		ClientName name,
 		DateTimeOffset utcNow)
 	{
 		var type = ClientApplicationTypes.Spa;
-		return new Client(name,
+		return new Client(
+			ClientId.New(),
+			name,
+			type,
+			type.DefaultGrantTypes,
+			utcNow
+		);
+	}
+	
+	public static Client CreateSpa(
+		ClientId id,
+		ClientName name,
+		DateTimeOffset utcNow)
+	{
+		var type = ClientApplicationTypes.Spa;
+		return new Client(
+			id,
+			name,
 			type,
 			type.DefaultGrantTypes,
 			utcNow
@@ -84,7 +103,9 @@ public sealed class Client
 		DateTimeOffset utcNow)
 	{
 		var type = ClientApplicationTypes.Web;
-		return new Client(name,
+		return new Client(
+			ClientId.New(),
+			name,
 			type,
 			type.DefaultGrantTypes,
 			utcNow
@@ -99,7 +120,9 @@ public sealed class Client
 		DateTimeOffset utcNow)
 	{
 		var type = ClientApplicationTypes.M2M;
-		var client = new Client(name,
+		var client = new Client(
+			ClientId.New(),
+			name,
 			type,
 			type.DefaultGrantTypes,
 			utcNow
