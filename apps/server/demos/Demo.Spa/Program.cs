@@ -36,8 +36,7 @@ public class Program
             options.ProviderOptions.RedirectUri = "authentication/login-callback";
             options.ProviderOptions.MetadataUrl = "http://localhost:5067/.well-known/openid-configuration";
 
-            options.ProviderOptions.DefaultScopes.Add("email");
-            options.ProviderOptions.DefaultScopes.Add("weather:read");
+            options.ProviderOptions.AdditionalProviderParameters.Add("audience", "http://weather-demo.com");
         });
 
         await builder.Build().RunAsync();

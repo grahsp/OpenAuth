@@ -28,13 +28,13 @@ public class Program
 
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
-                    ValidateIssuer = false,
+                    ValidateIssuer = true,
                     ValidIssuer = "http://localhost:5067",
 
-                    ValidateAudience = false,
-                    ValidAudience = "weather-api",
+                    ValidateAudience = true,
+                    ValidAudience = "http://weather-demo.com",
 
-                    ValidateLifetime = false,
+                    ValidateLifetime = true,
                     ClockSkew = TimeSpan.Zero
                 };
             });
