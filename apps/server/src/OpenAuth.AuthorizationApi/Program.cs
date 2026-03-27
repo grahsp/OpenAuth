@@ -4,8 +4,8 @@ using OpenAuth.AuthorizationApi.Connect.Jwks;
 using OpenAuth.AuthorizationApi.Connect.Logout;
 using OpenAuth.AuthorizationApi.Connect.Token;
 using OpenAuth.AuthorizationApi.Connect.UserInfo;
-using OpenAuth.Infrastructure;
 using OpenAuth.Infrastructure.Modules;
+using OpenAuth.Infrastructure.Persistence;
 
 namespace OpenAuth.AuthorizationApi;
 

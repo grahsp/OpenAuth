@@ -5,9 +5,8 @@ using OpenAuth.Domain.ApiResources.ValueObjects;
 using OpenAuth.Domain.Clients;
 using OpenAuth.Domain.Clients.ValueObjects;
 using OpenAuth.Domain.SigningKeys.Enums;
-using OpenAuth.Infrastructure.Persistence;
 
-namespace OpenAuth.Infrastructure;
+namespace OpenAuth.Infrastructure.Persistence;
 
 public class DataSeeder(AppDbContext context, ISigningKeyFactory keys, TimeProvider time)
 {
