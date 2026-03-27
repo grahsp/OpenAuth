@@ -1,10 +1,10 @@
 using NSubstitute;
-using OpenAuth.Application.Audiences.Interfaces;
+using OpenAuth.Application.Abstractions;
 using OpenAuth.Application.Clients.Dtos;
 using OpenAuth.Application.Clients.Interfaces;
+using OpenAuth.Application.Clients.Queries.GetClientApiScopes;
 using OpenAuth.Application.Exceptions;
 using OpenAuth.Application.OAuth.Authorization.Handlers;
-using OpenAuth.Domain.ApiResources.ValueObjects;
 using OpenAuth.Domain.Clients.ValueObjects;
 using OpenAuth.Test.Common.Builders;
 using OpenAuth.Test.Common.Helpers;
@@ -20,13 +20,13 @@ public class AuthorizationRequestValidatorTests
 		
 		public ClientAuthorizationData AuthorizationData { get; set; } = TestData.CreateValidAuthorizationData();
 	
-		public IApiResourceRepository ApiResourceRepository { get; }
+		public IQueryHandler<GetClientApiScopesQuery, ScopeCollection> ScopeHandler { get; }
 		public IClientQueryService ClientQueryService { get; }
 		public AuthorizationRequestValidator Sut { get; }
 
 		public TestContext()
 		{
-			ApiResourceRepository = Substitute.For<IApiResourceRepository>();
+			ScopeHandler = Substitute.For<IQueryHandler<GetClientApiScopesQuery, ScopeCollection>>();
 			ClientQueryService = Substitute.For<IClientQueryService>();
 
 			WithClient();
@@ -34,7 +34,7 @@ public class AuthorizationRequestValidatorTests
 			
 			Command.WithPkce(TestData.CreateValidPkce());
         
-			Sut = new AuthorizationRequestValidator(ApiResourceRepository, ClientQueryService);       
+			Sut = new AuthorizationRequestValidator(ScopeHandler, ClientQueryService);
 		}
 
 		public Task<AuthorizationValidationResult> ValidateAsync() =>
@@ -49,9 +49,15 @@ public class AuthorizationRequestValidatorTests
 
 		public void WithApiResource()
 		{
-			ApiResourceRepository
-				.GetByAudienceAsync(Arg.Any<AudienceIdentifier>(), Arg.Any<CancellationToken>())
-				.Returns(_ => Api.Build());
+			ScopeHandler
+				.HandleAsync(Arg.Any<GetClientApiScopesQuery>(), Arg.Any<CancellationToken>())
+				.Returns<Task<ScopeCollection>>(_ =>
+				{
+					var api = Api.Build();
+					var scopes = new ScopeCollection(api.Permissions.Select(x => x.Scope));
+					
+					return Task.FromResult(scopes);
+				});
 		}
 	}
 
