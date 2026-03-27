@@ -39,7 +39,11 @@ public class Program
                 };
             });
 
-        builder.Services.AddAuthorization();
+        builder.Services.AddAuthorization(options =>
+        {
+            options.AddPolicy("ReadWeather", policy =>
+                policy.RequireClaim("scope", "weather:read"));
+        });
 
         // Configure the HTTP request pipeline.
         var app = builder.Build();
@@ -54,7 +58,7 @@ public class Program
             "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
         };
 
-        app.MapGet("/weatherforecast", (HttpContext httpContext) =>
+        app.MapGet("/weatherforecast", () =>
             {
                 var forecast = Enumerable.Range(1, 5).Select(index =>
                         new WeatherForecast
@@ -66,7 +70,7 @@ public class Program
                     .ToArray();
                 return forecast;
             })
-            .RequireAuthorization();
+            .RequireAuthorization("ReadWeather");
 
         app.Run();
     }
