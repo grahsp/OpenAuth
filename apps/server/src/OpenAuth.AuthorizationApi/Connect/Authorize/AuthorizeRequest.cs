@@ -30,4 +30,7 @@ public record AuthorizeRequest
     
     [FromQuery(Name = "nonce")]
     public string? Nonce { get; init; }
+    
+    [FromQuery(Name = "prompt")]
+    public string? Prompt { get; init; }
 }

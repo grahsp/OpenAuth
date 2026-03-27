@@ -8,63 +8,71 @@ namespace OpenAuth.AuthorizationApi.Connect.Authorize;
 
 public static class AuthorizeEndpoint
 {
-    public static IEndpointRouteBuilder MapAuthorizeEndpoint(this IEndpointRouteBuilder app)
-    {
-        app.MapGet("/connect/authorize", async (
-            IAuthorizationHandler handler,
-            HttpContext http,
-            HttpRequest request,
-            [AsParameters] AuthorizeRequest dto) =>
-        {
-            if (!dto.Validate(out var error, out var description))
-                return Results.BadRequest(new { error = error, error_description = description });
+	public static IEndpointRouteBuilder MapAuthorizeEndpoint(this IEndpointRouteBuilder app)
+	{
+		app.MapGet("/connect/authorize", async (
+			IAuthorizationHandler handler,
+			HttpContext http,
+			HttpRequest request,
+			[AsParameters] AuthorizeRequest dto) =>
+		{
+			if (!dto.Validate(out var error, out var description))
+				return Results.BadRequest(new { error = error, error_description = description });
             
-            var user = http.User;
-            if (user.Identity?.IsAuthenticated != true)
-            {
-                var redirectUri = request.Path + request.QueryString;
-                return Results.Challenge(new AuthenticationProperties { RedirectUri = redirectUri });
-            }
+			var user = http.User;
+			var isAuthenticated = user.Identity?.IsAuthenticated == true;
 
-            var subject = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrWhiteSpace(subject))
-                return Results.BadRequest("Subject is missing.");
+			if (!isAuthenticated)
+			{
+				if (IsSilent(dto))
+					return ErrorRedirect(dto.RedirectUri, "login_required", "User not authenticated", dto.State);
+				
+				var redirectUri = request.Path + request.QueryString;
+				return Results.Challenge(new AuthenticationProperties { RedirectUri = redirectUri });
+			}
 
-            try
-            {
-                var command = dto.ToCommand(subject);
-                
-                var grant = await handler.HandleAsync(command);
-                var redirectUri = grant.ToRedirectUri(dto.State);
+			var subject = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+			if (string.IsNullOrWhiteSpace(subject))
+				return Results.BadRequest("Subject is missing.");
 
-                return Results.Redirect(redirectUri);
-            }
-            catch (OAuthProtocolException ex)
-            {
-                return Results.BadRequest(new { error = ex.Error, description = ex.Description });
-            }
-            catch (OAuthAuthorizationException ex)
-            {
-                var parameters = new Dictionary<string, string?>
-                {
-                    ["error"] = ex.Error,
-                    ["error_description"] = ex.Description,
-                    ["state"] = dto.State
-                };
+			try
+			{
+				var command = dto.ToCommand(subject);
+				var grant = await handler.HandleAsync(command);
 
-                var redirectUri = QueryHelpers.AddQueryString(
-                    dto.RedirectUri,
-                    parameters
-                );
-                
-                return Results.Redirect(redirectUri);
-            }
-            catch (Exception)
-            {
-                return Results.InternalServerError("An unexpected error occurred.");
-            }    
-        });
+				var redirectUri = grant.ToRedirectUri(dto.State);
+				return Results.Redirect(redirectUri);
+			}
+			catch (OAuthProtocolException ex)
+			{
+				return ErrorRedirect(dto.RedirectUri, ex.Error, ex.Description, dto.State);
+			}
+			catch (OAuthAuthorizationException ex)
+			{
+				return ErrorRedirect(dto.RedirectUri, ex.Error, ex.Description, dto.State);
+			}
+			catch (Exception)
+			{
+				return Results.InternalServerError("An unexpected error occurred.");
+			}    
+		});
 
-        return app;
-    }
+		return app;
+	}
+    
+	private static bool IsSilent(AuthorizeRequest dto)
+		=> dto.Prompt == "none";
+
+	private static IResult ErrorRedirect(string redirectUri, string error, string? description, string? state)
+	{
+		var parameters = new Dictionary<string, string?>
+		{
+			["error"] = error,
+			["error_description"] = description,
+			["state"] = state
+		};
+
+		var uri = QueryHelpers.AddQueryString(redirectUri, parameters);
+		return Results.Redirect(uri);
+	}
 }
