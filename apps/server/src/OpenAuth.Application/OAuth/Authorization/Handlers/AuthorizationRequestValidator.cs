@@ -1,6 +1,7 @@
-using OpenAuth.Application.Audiences.Interfaces;
+using OpenAuth.Application.Abstractions;
 using OpenAuth.Application.Clients.Dtos;
 using OpenAuth.Application.Clients.Interfaces;
+using OpenAuth.Application.Clients.Queries.GetClientApiScopes;
 using OpenAuth.Application.Exceptions;
 using OpenAuth.Application.Extensions;
 using OpenAuth.Domain.ApiResources.ValueObjects;
@@ -11,12 +12,12 @@ namespace OpenAuth.Application.OAuth.Authorization.Handlers;
 
 public class AuthorizationRequestValidator : IAuthorizationRequestValidator
 {
-    private readonly IApiResourceRepository _apiResourceRepository;
+    private readonly IQueryHandler<GetClientApiScopesQuery, ScopeCollection> _scopesHandler;
     private readonly IClientQueryService _clientQueryService;
     
-    public AuthorizationRequestValidator(IApiResourceRepository apiResourceRepository, IClientQueryService clientQueryService)
+    public AuthorizationRequestValidator(IQueryHandler<GetClientApiScopesQuery, ScopeCollection> scopesHandler, IClientQueryService clientQueryService)
     {
-        _apiResourceRepository = apiResourceRepository;
+        _scopesHandler = scopesHandler;
         _clientQueryService = clientQueryService;
     }
     
@@ -28,8 +29,7 @@ public class AuthorizationRequestValidator : IAuthorizationRequestValidator
         ValidateResponseType(command.ResponseType);
         var redirectUri = ValidateRedirectUri(command.RedirectUri, authData);
 
-        var allowedScopes = await ValidateAudienceAsync(command.Audience);
-        ValidateScope(command.Scopes, allowedScopes);
+        await ValidateScopes(command.ClientId, command.Audience, command.Scopes, ct);
         ValidateOidc(command.Scopes);
         
         ValidateNonce(command.Scopes, command.Nonce, command.ResponseType);
@@ -59,25 +59,20 @@ public class AuthorizationRequestValidator : IAuthorizationRequestValidator
         return requested;
     }
 
-    private async Task<ScopeCollection> ValidateAudienceAsync(AudienceIdentifier audience)
-    {
-        var api = await _apiResourceRepository.GetByAudienceAsync(audience)
-            ?? throw new InvalidOperationException("API not found.");
-
-        var scopes = api.Permissions
-            .Select(p => p.Scope)
-            .ToArray();
-        
-        return new ScopeCollection(scopes);
-    }
-
-    private static void ValidateScope(ScopeCollection requested, ScopeCollection allowed)
+    private async Task ValidateScopes(ClientId clientId, AudienceIdentifier audience, ScopeCollection requested, CancellationToken ct)
     {
         if (requested.Count == 0)
             throw new InvalidScopeException("At least one scope is required.");
+
+        var apiScopes = requested.GetApiScopes();
+
+        if (apiScopes.IsEmpty)
+            return;
         
-        var scope = requested.GetApiScopes();
-        if (!scope.IsSubsetOf(allowed))
+        var query = new GetClientApiScopesQuery(clientId, audience);
+        var allowedScopes = await _scopesHandler.HandleAsync(query, ct);
+        
+        if (!apiScopes.IsSubsetOf(allowedScopes))
             throw new InvalidScopeException("Request contained an invalid scope.");
     }
 
