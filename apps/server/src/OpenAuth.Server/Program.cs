@@ -1,3 +1,4 @@
+using OpenAuth.AuthorizationApi.ApiResources;
 using OpenAuth.AuthorizationApi.Connect.Authorize;
 using OpenAuth.AuthorizationApi.Connect.Discovery;
 using OpenAuth.AuthorizationApi.Connect.Jwks;
@@ -85,6 +86,8 @@ public class Program
 		app.MapUserInfoEndpoint();
 		app.MapDiscoveryEndpoint();
 		app.MapJwksEndpoint();
+		
+		app.MapApiEndpoints();
         
 		app.Run();
 	}
