@@ -1,12 +1,12 @@
 using OpenAuth.Application.Jwks.Services;
 
-namespace OpenAuth.Server.Connect.Jwks;
+namespace OpenAuth.Server.Discovery.Jwks;
 
 public static class JwksEndpoint
 {
     public static IEndpointRouteBuilder MapJwksEndpoint(this IEndpointRouteBuilder app)
     {
-        app.MapGet("/.well-known/jwks.json", async (IJwksService service) =>
+        app.MapGet("/jwks.json", async (IJwksService service) =>
         {
             var publicKeyInfo = await service.GetJwksAsync();
             var response = publicKeyInfo.ToJwkSet();

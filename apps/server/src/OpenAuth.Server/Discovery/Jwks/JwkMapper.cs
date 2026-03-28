@@ -1,4 +1,4 @@
-namespace OpenAuth.Server.Connect.Jwks;
+namespace OpenAuth.Server.Discovery.Jwks;
 
 public static class JwkMapper
 {
