@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using OpenAuth.Domain.Users;
 using OpenAuth.Infrastructure.Persistence;
+using OpenAuth.Infrastructure.Persistence.Seeders;
 
 namespace OpenAuth.Infrastructure.Modules;
 
@@ -42,9 +43,6 @@ public static class IdentityModule
 				options.Lockout.MaxFailedAccessAttempts = 5;
 				options.Lockout.AllowedForNewUsers = true;
             
-				// User settings
-				options.User.RequireUniqueEmail = true;
-
 				// Sign in settings
 				options.SignIn.RequireConfirmedEmail = false;
 			})
@@ -74,6 +72,8 @@ public static class IdentityModule
 			options.ExpireTimeSpan = TimeSpan.FromHours(1);
 			options.SlidingExpiration = true;
 		});
+
+		services.AddScoped<ISeeder, IdentitySeeder>();
 
 		return services;
 	}
