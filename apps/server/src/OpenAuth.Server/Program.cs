@@ -16,7 +16,7 @@ public class Program
 		if (builder.Environment.IsDevelopment())
 		{
 			builder.Services.AddSwaggerGen();
-			builder.Services.AddScoped<ISeeder, DataSeeder>();
+			builder.Services.AddScoped<ISeeder, DemoSeeder>();
 		}
 
 		builder.Services.AddRazorPages();
