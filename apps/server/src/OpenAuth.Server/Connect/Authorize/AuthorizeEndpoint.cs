@@ -8,9 +8,9 @@ namespace OpenAuth.Server.Connect.Authorize;
 
 public static class AuthorizeEndpoint
 {
-	public static IEndpointRouteBuilder MapAuthorizeEndpoint(this IEndpointRouteBuilder app)
+	public static RouteHandlerBuilder MapAuthorizeEndpoint(this IEndpointRouteBuilder app)
 	{
-		app.MapGet("/authorize", async (
+		return app.MapGet("/authorize", async (
 			IAuthorizationHandler handler,
 			HttpContext http,
 			HttpRequest request,
@@ -56,8 +56,6 @@ public static class AuthorizeEndpoint
 				return Results.InternalServerError("An unexpected error occurred.");
 			}    
 		});
-
-		return app;
 	}
     
 	private static bool IsSilent(AuthorizeRequest dto)

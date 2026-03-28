@@ -26,10 +26,17 @@ public class Program
 
 		builder.Services.AddCors(opts =>
 		{
-			opts.AddDefaultPolicy(policy =>
-				policy.AllowAnyHeader()
+			opts.AddPolicy("Public", policy =>
+				policy.AllowAnyOrigin()
+					.AllowAnyHeader()
 					.AllowAnyMethod()
-					.AllowAnyOrigin()
+			);
+			
+			opts.AddPolicy("Dashboard", policy =>
+				policy.WithOrigins("http://localhost:5173")
+					.AllowAnyHeader()
+					.AllowAnyMethod()
+					.AllowCredentials()
 			);
 		});
         
@@ -57,7 +64,8 @@ public class Program
 		// Configure the HTTP request pipeline.
 		var app = builder.Build();
 
-		app.UseCors();
+		app.UseCors("Public");
+		app.UseCors("Dashboard");
 
 		app.UseAuthentication();
 		app.UseAuthorization();

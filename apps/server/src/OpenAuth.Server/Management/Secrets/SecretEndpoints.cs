@@ -7,7 +7,7 @@ namespace OpenAuth.Server.Management.Secrets;
 
 public static class SecretEndpoints
 {
-	public static IEndpointRouteBuilder MapSecretEndpoints(this IEndpointRouteBuilder app)
+	public static RouteGroupBuilder MapSecretEndpoints(this IEndpointRouteBuilder app)
 	{
 		var group = app.MapGroup("/clients/{clientId}/secrets");
 
@@ -15,7 +15,7 @@ public static class SecretEndpoints
 		group.MapPost("/", AddSecret);
 		group.MapDelete("/{secretId}", RevokeSecret);
 
-		return app;
+		return group;
 	}
 
 	private static async Task<IResult> GetSecrets(

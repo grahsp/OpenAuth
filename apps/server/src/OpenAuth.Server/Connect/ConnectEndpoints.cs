@@ -12,9 +12,14 @@ public static class ConnectEndpoints
 		var root = app.MapGroup("/connect");
 		
 		root.MapAuthorizeEndpoint();
-		root.MapTokenEndpoint();
+		
 		root.MapLogoutEndpoint();
-		root.MapUserInfoEndpoint();
+		
+		root.MapTokenEndpoint()
+			.RequireCors("Public");
+		
+		root.MapUserInfoEndpoint()
+			.RequireCors("Public");
 		
 		return app;
 	}

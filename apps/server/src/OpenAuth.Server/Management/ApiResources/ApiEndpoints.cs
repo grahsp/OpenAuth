@@ -12,7 +12,7 @@ namespace OpenAuth.Server.Management.ApiResources;
 
 public static class ApiEndpoints
 {
-	public static IEndpointRouteBuilder MapApiEndpoints(this IEndpointRouteBuilder app)
+	public static RouteGroupBuilder MapApiEndpoints(this IEndpointRouteBuilder app)
 	{
 		var group = app.MapGroup("/apis");
 		
@@ -25,7 +25,7 @@ public static class ApiEndpoints
 		group.MapPost("/{id}/permissions", AddApiPermissions);
 		group.MapDelete("/{id}/permissions", RemoveApiPermissions);
 
-		return app;
+		return group;
 	}
 
 	public static async Task<IResult> GetApis(

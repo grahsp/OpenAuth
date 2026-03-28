@@ -7,9 +7,9 @@ namespace OpenAuth.Server.Connect.Logout;
 
 public static class LogoutEndpoint
 {
-    public static IEndpointRouteBuilder MapLogoutEndpoint(this IEndpointRouteBuilder app)
+    public static RouteHandlerBuilder MapLogoutEndpoint(this IEndpointRouteBuilder app)
     {
-        app.MapGet("/logout", async (
+        return app.MapGet("/logout", async (
             [FromServices] SignInManager<User> signinManager,
             [AsParameters] LogoutRequest query) =>
         {
@@ -27,7 +27,5 @@ public static class LogoutEndpoint
                     
             return Results.Redirect(redirectUri);
         });
-        
-        return app;
     }
 }

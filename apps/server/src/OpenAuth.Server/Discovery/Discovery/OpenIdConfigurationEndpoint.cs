@@ -5,9 +5,9 @@ namespace OpenAuth.Server.Discovery.Discovery;
 
 public static class OpenIdConfigurationEndpoint
 {
-    public static IEndpointRouteBuilder MapOpenIdConfigurationEndpoint(this IEndpointRouteBuilder app)
+    public static RouteHandlerBuilder MapOpenIdConfigurationEndpoint(this IEndpointRouteBuilder app)
     {
-        app.MapGet("/openid-configuration", (IOptions<JwtOptions> config) =>
+        return app.MapGet("/openid-configuration", (IOptions<JwtOptions> config) =>
         {
             var cfg = config.Value;
 
@@ -25,7 +25,5 @@ public static class OpenIdConfigurationEndpoint
                 ["sub", "email", "phone"]
             );
         });
-        
-        return app;
     }
 }
