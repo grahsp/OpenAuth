@@ -2,7 +2,7 @@ using OpenAuth.Application.SigningKeys.Interfaces;
 using OpenAuth.Application.SigningKeys.Services;
 using OpenAuth.Domain.SigningKeys.ValueObjects;
 
-namespace OpenAuth.ManagementApi.SigningKeys;
+namespace OpenAuth.AuthorizationApi.SigningKeys;
 
 public static class SigningKeyEndpoints
 {

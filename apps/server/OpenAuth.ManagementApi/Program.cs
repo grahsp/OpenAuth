@@ -1,5 +1,4 @@
 using OpenAuth.Infrastructure.Modules;
-using OpenAuth.ManagementApi.SigningKeys;
 
 namespace OpenAuth.ManagementApi;
 
@@ -44,7 +43,6 @@ public class Program
 			app.UseSwaggerUI();
 		}
 
-		app.MapSigningKeyEndpoints();
         
 		app.Run();
 	}

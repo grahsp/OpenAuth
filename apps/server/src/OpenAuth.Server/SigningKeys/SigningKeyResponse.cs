@@ -1,4 +1,4 @@
-namespace OpenAuth.ManagementApi.SigningKeys;
+namespace OpenAuth.AuthorizationApi.SigningKeys;
 
 public record SigningKeyResponse(
     Guid KeyId,

@@ -7,6 +7,7 @@ using OpenAuth.AuthorizationApi.Connect.Logout;
 using OpenAuth.AuthorizationApi.Connect.Token;
 using OpenAuth.AuthorizationApi.Connect.UserInfo;
 using OpenAuth.AuthorizationApi.Secrets;
+using OpenAuth.AuthorizationApi.SigningKeys;
 using OpenAuth.Infrastructure.Modules;
 using OpenAuth.Infrastructure.Persistence;
 
@@ -91,6 +92,7 @@ public class Program
 		
 		app.MapClientEndpoints();
 		app.MapApiEndpoints();
+		app.MapSigningKeyEndpoints();
 		app.MapSecretEndpoints();
         
 		app.Run();
