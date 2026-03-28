@@ -1,4 +1,4 @@
-namespace OpenAuth.AuthorizationApi.Dtos;
+namespace OpenAuth.AuthorizationApi.Connect.Jwks;
 
 public static class JwkKty
 {
