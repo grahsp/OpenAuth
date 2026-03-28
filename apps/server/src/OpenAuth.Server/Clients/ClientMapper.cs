@@ -1,6 +1,6 @@
 using OpenAuth.Application.Clients.Commands.CreateClient;
 
-namespace OpenAuth.ManagementApi.Clients;
+namespace OpenAuth.AuthorizationApi.Clients;
 
 public static class ClientMapper
 {
