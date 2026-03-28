@@ -1,4 +1,4 @@
-namespace OpenAuth.Server.Secrets;
+namespace OpenAuth.Server.Management.Secrets;
 
 public sealed record SecretResponse(
 	string Id,

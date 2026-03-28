@@ -1,6 +1,6 @@
 using OpenAuth.Application.SigningKeys.Dtos;
 
-namespace OpenAuth.Server.SigningKeys;
+namespace OpenAuth.Server.Management.SigningKeys;
 
 public static class SigningKeyMapper
 {

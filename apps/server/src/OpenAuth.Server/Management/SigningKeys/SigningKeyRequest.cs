@@ -1,5 +1,5 @@
 using OpenAuth.Domain.SigningKeys.Enums;
 
-namespace OpenAuth.Server.SigningKeys;
+namespace OpenAuth.Server.Management.SigningKeys;
 
 public record SigningKeyRequest(SigningAlgorithm Algorithm, TimeSpan? Lifetime);

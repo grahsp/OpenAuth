@@ -8,15 +8,13 @@ using OpenAuth.Application.ApiResources.Queries;
 using OpenAuth.Domain.ApiResources.ValueObjects;
 using OpenAuth.Domain.Clients.ValueObjects;
 
-namespace OpenAuth.Server.ApiResources;
+namespace OpenAuth.Server.Management.ApiResources;
 
 public static class ApiEndpoints
 {
-	private const string BaseRoute = "/api/apis";
-	
 	public static IEndpointRouteBuilder MapApiEndpoints(this IEndpointRouteBuilder app)
 	{
-		var group = app.MapGroup(BaseRoute);
+		var group = app.MapGroup("/apis");
 		
 		group.MapGet("/", GetApis);
 		group.MapGet("/{id}", GetApi);
