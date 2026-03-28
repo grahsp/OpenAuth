@@ -14,10 +14,7 @@ public class Program
 		var builder = WebApplication.CreateBuilder(args);
 		
 		if (builder.Environment.IsDevelopment())
-		{
 			builder.Services.AddSwaggerGen();
-			builder.Services.AddScoped<ISeeder, DemoSeeder>();
-		}
 
 		builder.Services.AddRazorPages();
 		builder.Services.AddEndpointsApiExplorer();
@@ -60,6 +57,10 @@ public class Program
 			.AddApiResourceModule()
 			.AddSecretModule()
 			.AddSigningKeyModule();
+		
+		if (builder.Configuration.GetValue<bool>("Seed:Demo"))
+			builder.Services.AddScoped<ISeeder, DemoSeeder>();
+		
 
 		// Configure the HTTP request pipeline.
 		var app = builder.Build();
