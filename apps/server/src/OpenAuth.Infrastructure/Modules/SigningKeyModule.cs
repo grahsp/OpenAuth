@@ -6,6 +6,7 @@ using OpenAuth.Application.SigningKeys.Factories;
 using OpenAuth.Application.SigningKeys.Interfaces;
 using OpenAuth.Application.SigningKeys.Services;
 using OpenAuth.Application.Tokens.Services;
+using OpenAuth.Infrastructure.Persistence.Seeders;
 using OpenAuth.Infrastructure.SigningKeys.Handlers;
 using OpenAuth.Infrastructure.SigningKeys.Jwks;
 using OpenAuth.Infrastructure.SigningKeys.KeyMaterials;
@@ -47,6 +48,8 @@ public static class SigningKeyModule
 		services.AddScoped<ISigningKeyHandler, RsaSigningKeyHandler>();
 		
 		services.AddScoped<IJwkFactory, JwkFactory>();
+		
+		services.AddScoped<ISeeder, SigningKeySeeder>();
 
 		return services;
 	}
