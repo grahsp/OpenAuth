@@ -1,5 +1,4 @@
 using System.Text.Json.Serialization;
-using OpenAuth.AuthorizationApi.Dtos;
 
 namespace OpenAuth.AuthorizationApi.Connect.Jwks;
 

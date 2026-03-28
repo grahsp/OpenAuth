@@ -21,8 +21,4 @@
       <ProjectReference Include="..\OpenAuth.Infrastructure\OpenAuth.Infrastructure.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Http\" />
-    </ItemGroup>
-
 </Project>
