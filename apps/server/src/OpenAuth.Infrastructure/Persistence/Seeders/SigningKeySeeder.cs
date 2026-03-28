@@ -17,7 +17,5 @@ public class SigningKeySeeder(AppDbContext context, ISigningKeyFactory factory, 
 		
 		var key = factory.Create(SigningAlgorithm.RS256, now, TimeSpan.FromDays(LifetimeInDays));
 		context.SigningKeys.Add(key);
-		
-		await context.SaveChangesAsync(ct);
 	}
 }
