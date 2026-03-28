@@ -10,7 +10,7 @@ public static class ManagementEndpoints
 	public static IEndpointRouteBuilder MapManagementEndpoints(this IEndpointRouteBuilder app)
 	{
 		var root = app.MapGroup("/api")
-			.RequireAuthorization()
+			.RequireAuthorization(policy => policy.RequireRole("admin"))
 			.RequireCors("Dashboard");
 		
 		root.MapClientEndpoints();

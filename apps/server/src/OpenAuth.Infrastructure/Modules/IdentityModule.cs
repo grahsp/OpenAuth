@@ -48,6 +48,7 @@ public static class IdentityModule
 				// Sign in settings
 				options.SignIn.RequireConfirmedEmail = false;
 			})
+			.AddRoles<IdentityRole<Guid>>()
 			.AddEntityFrameworkStores<AppDbContext>()
 			.AddDefaultTokenProviders();
 
