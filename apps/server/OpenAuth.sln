@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenAuth.AuthorizationApi", "src\OpenAuth.AuthorizationApi\OpenAuth.AuthorizationApi.csproj", "{9FEEAE9C-2013-40E4-A807-2C53B4C0D45B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenAuth.Server", "src\OpenAuth.Server\OpenAuth.Server.csproj", "{9FEEAE9C-2013-40E4-A807-2C53B4C0D45B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenAuth.Domain", "src\OpenAuth.Domain\OpenAuth.Domain.csproj", "{4E9227EE-E8CC-42CC-B801-58627CB4BD31}"
 EndProject
