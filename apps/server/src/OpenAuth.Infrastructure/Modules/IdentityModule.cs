@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using OpenAuth.Domain.Users;
+using OpenAuth.Infrastructure.Identity;
 using OpenAuth.Infrastructure.Persistence;
 using OpenAuth.Infrastructure.Persistence.Seeders;
 
@@ -9,16 +11,17 @@ namespace OpenAuth.Infrastructure.Modules;
 
 public static class IdentityModule
 {
-	public static IServiceCollection AddIdentityModule(this IServiceCollection services)
+	public static IServiceCollection AddIdentityModule(this IServiceCollection services, IConfiguration configuration)
 	{
 		return services
-			.AddIdentityApplication()
+			.AddIdentityApplication(configuration)
 			.AddIdentityInfrastructure();
 	}
 
-	public static IServiceCollection AddIdentityApplication(this IServiceCollection services)
+	public static IServiceCollection AddIdentityApplication(this IServiceCollection services, IConfiguration configuration)
 	{
 		services.AddScoped<SignInManager<User>>();
+		services.Configure<AdminOptions>(configuration.GetSection(AdminOptions.SectionName));
 		
 		return services;
 	}
