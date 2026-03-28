@@ -6,9 +6,9 @@ using OpenAuth.Domain.Clients;
 using OpenAuth.Domain.Clients.ValueObjects;
 using OpenAuth.Domain.SigningKeys.Enums;
 
-namespace OpenAuth.Infrastructure.Persistence;
+namespace OpenAuth.Infrastructure.Persistence.Seeders;
 
-public class DataSeeder(AppDbContext context, ISigningKeyFactory keys, TimeProvider time)
+public class DataSeeder(AppDbContext context, ISigningKeyFactory keys, TimeProvider time) : ISeeder
 {
 	private static readonly ClientId SpaClientId =
 		ClientId.Parse("7b3f1d57-2068-4b9c-b86a-ac6d99838677");
