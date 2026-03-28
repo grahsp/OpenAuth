@@ -15,7 +15,7 @@ namespace OpenAuth.Server.Management.Clients;
 
 public static class ClientEndpoints
 {
-	public static IEndpointRouteBuilder MapClientEndpoints(this IEndpointRouteBuilder app)
+	public static RouteGroupBuilder MapClientEndpoints(this IEndpointRouteBuilder app)
 	{
 		var group = app.MapGroup("/clients");
 
@@ -29,7 +29,7 @@ public static class ClientEndpoints
 		group.MapGet("/{clientId}/apis/access", GetClientApiAccess);
 		group.MapPut("/{clientId}/apis/{apiResourceId}", GrantApiAccess);
         
-		return app;
+		return group;
 	}
     
 	private static async Task<IResult> GetClients(

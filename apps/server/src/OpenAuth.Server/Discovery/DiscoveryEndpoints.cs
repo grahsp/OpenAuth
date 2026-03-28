@@ -7,7 +7,8 @@ public static class DiscoveryEndpoints
 {
 	public static IEndpointRouteBuilder MapDiscoveryEndpoints(this IEndpointRouteBuilder app)
 	{
-		var root = app.MapGroup("/.well-known");
+		var root = app.MapGroup("/.well-known")
+			.RequireCors("Public");
 
 		root.MapOpenIdConfigurationEndpoint();
 		root.MapJwksEndpoint();

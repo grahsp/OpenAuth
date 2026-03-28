@@ -6,7 +6,7 @@ namespace OpenAuth.Server.Management.SigningKeys;
 
 public static class SigningKeyEndpoints
 {
-	public static IEndpointRouteBuilder MapSigningKeyEndpoints(this IEndpointRouteBuilder app)
+	public static RouteGroupBuilder MapSigningKeyEndpoints(this IEndpointRouteBuilder app)
 	{
 		var group = app.MapGroup("/keys");
 
@@ -15,7 +15,7 @@ public static class SigningKeyEndpoints
 		group.MapGet("/{signingKeyId}", Get);
 		group.MapDelete("/{signingKeyId}", Revoke);
 
-		return app;
+		return group;
 	}
 
 	private static async Task<IResult> GetAll(

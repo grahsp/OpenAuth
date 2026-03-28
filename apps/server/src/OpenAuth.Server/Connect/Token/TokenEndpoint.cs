@@ -5,35 +5,33 @@ namespace OpenAuth.Server.Connect.Token;
 
 public static class TokenEndpoint
 {
-    public static IEndpointRouteBuilder MapTokenEndpoint(this IEndpointRouteBuilder app)
-    {
-        app.MapPost("/token", async (
-                ITokenRequestHandler requestHandler,
-                [AsParameters] TokenRequest dto) =>
-            {
-                try
-                {
-                    var command = dto.ToCommand();
-                    var result = await requestHandler.HandleAsync(command);
+	public static RouteHandlerBuilder MapTokenEndpoint(this IEndpointRouteBuilder app)
+	{
+		return app.MapPost("/token", async (
+				ITokenRequestHandler requestHandler,
+				[AsParameters] TokenRequest dto) =>
+			{
+				try
+				{
+					var command = dto.ToCommand();
+					var result = await requestHandler.HandleAsync(command);
 
-                    var response = TokenResponse.Success(result.AccessToken, result.TokenType, result.ExpiresIn, result.IdToken);
-                    return Results.Ok(response);
-                }
-                catch (OAuthException ex)
-                {
-                    return Results.BadRequest(TokenResponse.Fail(ex.Error, ex.Description));
-                }
-                catch (ServerErrorException ex)
-                {
-                    return Results.InternalServerError(TokenResponse.Fail(ex.Message));
-                }
-                catch (Exception)
-                {
-                    return Results.InternalServerError(TokenResponse.Fail("An unexpected error occurred."));
-                }
-            })
-            .DisableAntiforgery();
-        
-        return app;
-    }
+					var response = TokenResponse.Success(result.AccessToken, result.TokenType, result.ExpiresIn, result.IdToken);
+					return Results.Ok(response);
+				}
+				catch (OAuthException ex)
+				{
+					return Results.BadRequest(TokenResponse.Fail(ex.Error, ex.Description));
+				}
+				catch (ServerErrorException ex)
+				{
+					return Results.InternalServerError(TokenResponse.Fail(ex.Message));
+				}
+				catch (Exception)
+				{
+					return Results.InternalServerError(TokenResponse.Fail("An unexpected error occurred."));
+				}
+			})
+			.DisableAntiforgery();
+	}
 }

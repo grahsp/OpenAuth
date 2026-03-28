@@ -6,9 +6,9 @@ namespace OpenAuth.Server.Connect.UserInfo;
 
 public static class UserInfoEndpoint
 {
-    public static IEndpointRouteBuilder MapUserInfoEndpoint(this IEndpointRouteBuilder app)
+    public static RouteHandlerBuilder MapUserInfoEndpoint(this IEndpointRouteBuilder app)
     {
-        app.MapGet("/userinfo", async (
+        return app.MapGet("/userinfo", async (
             [FromServices] IBearerTokenExtractor extractor,
             [FromServices] IUserInfoService service) =>
         {
@@ -24,7 +24,5 @@ public static class UserInfoEndpoint
             
             return Results.Ok(response);
         });
-        
-        return app;
     }
 }
