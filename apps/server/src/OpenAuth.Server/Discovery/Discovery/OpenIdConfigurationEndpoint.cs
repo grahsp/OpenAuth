@@ -1,17 +1,17 @@
 using Microsoft.Extensions.Options;
 using OpenAuth.Application.Tokens.Configurations;
 
-namespace OpenAuth.Server.Connect.Discovery;
+namespace OpenAuth.Server.Discovery.Discovery;
 
-public static class DiscoveryEndpoint
+public static class OpenIdConfigurationEndpoint
 {
-    public static IEndpointRouteBuilder MapDiscoveryEndpoint(this IEndpointRouteBuilder app)
+    public static IEndpointRouteBuilder MapOpenIdConfigurationEndpoint(this IEndpointRouteBuilder app)
     {
-        app.MapGet("/.well-known/openid-configuration", (IOptions<JwtOptions> config) =>
+        app.MapGet("/openid-configuration", (IOptions<JwtOptions> config) =>
         {
             var cfg = config.Value;
 
-            return new DiscoveryDocument(
+            return new OpenIdConfiguration(
                 cfg.Issuer,
                 $"{cfg.Issuer}/connect/authorize",
                 $"{cfg.Issuer}/connect/token",

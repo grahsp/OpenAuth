@@ -1,8 +1,7 @@
-using OpenAuth.Server.Connect.Discovery;
-using OpenAuth.Server.Connect.Jwks;
 using OpenAuth.Infrastructure.Modules;
 using OpenAuth.Infrastructure.Persistence;
 using OpenAuth.Server.Connect;
+using OpenAuth.Server.Discovery;
 using OpenAuth.Server.Management;
 
 namespace OpenAuth.Server;
@@ -76,10 +75,8 @@ public class Program
 			await seeder.SeedAsync(CancellationToken.None);
 		}
 
-		app.MapDiscoveryEndpoint();
-		app.MapJwksEndpoint();
-
 		app.MapConnectEndpoints();
+		app.MapDiscoveryEndpoints();
 		app.MapManagementEndpoints();
         
 		app.Run();

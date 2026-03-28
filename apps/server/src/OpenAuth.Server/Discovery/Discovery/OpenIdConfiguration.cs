@@ -1,8 +1,8 @@
 using System.Text.Json.Serialization;
 
-namespace OpenAuth.Server.Connect.Discovery;
+namespace OpenAuth.Server.Discovery.Discovery;
 
-public record DiscoveryDocument
+public record OpenIdConfiguration
 {
     [JsonPropertyName("issuer")]
     public string Issuer { get; init; }
@@ -37,7 +37,7 @@ public record DiscoveryDocument
     [JsonPropertyName("claims_supported")]
     public IEnumerable<string> ClaimsSupported { get; init; }
 
-    public DiscoveryDocument(
+    public OpenIdConfiguration(
         string issuer,
         string authorization,
         string token,
