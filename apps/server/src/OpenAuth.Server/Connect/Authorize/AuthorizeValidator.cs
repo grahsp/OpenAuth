@@ -1,4 +1,4 @@
-namespace OpenAuth.AuthorizationApi.Connect.Authorize;
+namespace OpenAuth.Server.Connect.Authorize;
 
 public static class AuthorizeValidator
 {

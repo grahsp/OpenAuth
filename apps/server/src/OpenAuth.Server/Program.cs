@@ -1,17 +1,17 @@
-using OpenAuth.AuthorizationApi.ApiResources;
-using OpenAuth.AuthorizationApi.Clients;
-using OpenAuth.AuthorizationApi.Connect.Authorize;
-using OpenAuth.AuthorizationApi.Connect.Discovery;
-using OpenAuth.AuthorizationApi.Connect.Jwks;
-using OpenAuth.AuthorizationApi.Connect.Logout;
-using OpenAuth.AuthorizationApi.Connect.Token;
-using OpenAuth.AuthorizationApi.Connect.UserInfo;
-using OpenAuth.AuthorizationApi.Secrets;
-using OpenAuth.AuthorizationApi.SigningKeys;
+using OpenAuth.Server.ApiResources;
+using OpenAuth.Server.Clients;
+using OpenAuth.Server.Connect.Authorize;
+using OpenAuth.Server.Connect.Discovery;
+using OpenAuth.Server.Connect.Jwks;
+using OpenAuth.Server.Connect.Logout;
+using OpenAuth.Server.Connect.Token;
+using OpenAuth.Server.Connect.UserInfo;
+using OpenAuth.Server.Secrets;
+using OpenAuth.Server.SigningKeys;
 using OpenAuth.Infrastructure.Modules;
 using OpenAuth.Infrastructure.Persistence;
 
-namespace OpenAuth.AuthorizationApi;
+namespace OpenAuth.Server;
 
 public class Program
 {

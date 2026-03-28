@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace OpenAuth.AuthorizationApi.Connect.Discovery;
+namespace OpenAuth.Server.Connect.Discovery;
 
 public record DiscoveryDocument
 {

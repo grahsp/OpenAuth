@@ -1,4 +1,4 @@
-namespace OpenAuth.AuthorizationApi.Secrets;
+namespace OpenAuth.Server.Secrets;
 
 public sealed record SecretResponse(
 	string Id,

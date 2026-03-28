@@ -1,7 +1,7 @@
 using OpenAuth.Application.Exceptions;
 using OpenAuth.Application.Tokens.Services;
 
-namespace OpenAuth.AuthorizationApi.Connect.Token;
+namespace OpenAuth.Server.Connect.Token;
 
 public static class TokenEndpoint
 {

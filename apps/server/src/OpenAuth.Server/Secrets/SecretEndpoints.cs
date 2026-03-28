@@ -3,7 +3,7 @@ using OpenAuth.Application.Secrets.Services;
 using OpenAuth.Domain.Clients.Secrets.ValueObjects;
 using OpenAuth.Domain.Clients.ValueObjects;
 
-namespace OpenAuth.AuthorizationApi.Secrets;
+namespace OpenAuth.Server.Secrets;
 
 public static class SecretEndpoints
 {

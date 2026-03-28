@@ -2,7 +2,7 @@ using OpenAuth.Application.SigningKeys.Interfaces;
 using OpenAuth.Application.SigningKeys.Services;
 using OpenAuth.Domain.SigningKeys.ValueObjects;
 
-namespace OpenAuth.AuthorizationApi.SigningKeys;
+namespace OpenAuth.Server.SigningKeys;
 
 public static class SigningKeyEndpoints
 {
@@ -34,7 +34,7 @@ public static class SigningKeyEndpoints
 		CancellationToken ct)
 	{
 		var key = await commandService.CreateAsync(request.Algorithm, request.Lifetime, ct);
-		return Results.Created($"{BaseRoute}/{key.Id}", SigningKeyMapper.ToResponse(key));
+		return Results.Created($"{BaseRoute}/{key.Id}", (object?)SigningKeyMapper.ToResponse(key));
 	}
 
 	private static async Task<IResult> Get(
@@ -47,7 +47,7 @@ public static class SigningKeyEndpoints
 		if (signingKey is null)
 			return Results.NotFound();
 
-		return Results.Ok(SigningKeyMapper.ToResponse(signingKey));
+		return Results.Ok((object?)SigningKeyMapper.ToResponse(signingKey));
 	}
 
 	private static async Task<IResult> Revoke(

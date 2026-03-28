@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace OpenAuth.AuthorizationApi.Connect.Jwks;
+namespace OpenAuth.Server.Connect.Jwks;
 
 [JsonDerivedType(typeof(RsaJwkResponse))]
 public record BaseJwkResponse(
