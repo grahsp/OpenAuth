@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using OpenAuth.Application.OAuth.Services;
 using OpenAuth.Application.Tokens.Interfaces;
 
-namespace OpenAuth.AuthorizationApi.Connect.UserInfo;
+namespace OpenAuth.Server.Connect.UserInfo;
 
 public static class UserInfoEndpoint
 {

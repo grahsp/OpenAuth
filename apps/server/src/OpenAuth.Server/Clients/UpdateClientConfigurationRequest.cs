@@ -1,4 +1,4 @@
-namespace OpenAuth.AuthorizationApi.Clients;
+namespace OpenAuth.Server.Clients;
 
 public sealed record UpdateClientConfigurationRequest(
 	string Name,

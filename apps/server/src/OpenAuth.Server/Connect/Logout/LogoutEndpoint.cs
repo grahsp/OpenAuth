@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
 using OpenAuth.Domain.Users;
 
-namespace OpenAuth.AuthorizationApi.Connect.Logout;
+namespace OpenAuth.Server.Connect.Logout;
 
 public static class LogoutEndpoint
 {

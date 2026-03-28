@@ -4,7 +4,7 @@ using OpenAuth.Domain.ApiResources.ValueObjects;
 using OpenAuth.Domain.Clients.ValueObjects;
 using OpenAuth.Domain.OAuth;
 
-namespace OpenAuth.AuthorizationApi.Connect.Token;
+namespace OpenAuth.Server.Connect.Token;
 
 public static class TokenRequestMappings
 {

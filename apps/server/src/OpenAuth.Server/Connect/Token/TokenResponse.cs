@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace OpenAuth.AuthorizationApi.Connect.Token;
+namespace OpenAuth.Server.Connect.Token;
 
 public sealed record TokenResponse
 {

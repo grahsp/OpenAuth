@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace OpenAuth.AuthorizationApi.Connect.Jwks;
+namespace OpenAuth.Server.Connect.Jwks;
 
 public sealed record RsaJwkResponse(
      string Kid,

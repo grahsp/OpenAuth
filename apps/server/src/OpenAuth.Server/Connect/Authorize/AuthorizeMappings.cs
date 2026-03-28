@@ -6,7 +6,7 @@ using OpenAuth.Domain.AuthorizationGrants;
 using OpenAuth.Domain.AuthorizationGrants.ValueObjects;
 using OpenAuth.Domain.Clients.ValueObjects;
 
-namespace OpenAuth.AuthorizationApi.Connect.Authorize;
+namespace OpenAuth.Server.Connect.Authorize;
 
 public static class AuthorizeMappings
 {

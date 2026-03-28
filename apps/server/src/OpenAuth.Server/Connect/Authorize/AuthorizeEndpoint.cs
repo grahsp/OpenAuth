@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.WebUtilities;
 using OpenAuth.Application.Exceptions;
 using OpenAuth.Application.OAuth.Authorization.Handlers;
 
-namespace OpenAuth.AuthorizationApi.Connect.Authorize;
+namespace OpenAuth.Server.Connect.Authorize;
 
 public static class AuthorizeEndpoint
 {

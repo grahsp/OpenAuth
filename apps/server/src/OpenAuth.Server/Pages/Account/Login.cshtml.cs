@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using OpenAuth.Domain.Users;
 
-namespace OpenAuth.AuthorizationApi.Pages.Account;
+namespace OpenAuth.Server.Pages.Account;
 
 public class Login : PageModel
 {

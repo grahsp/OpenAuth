@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Options;
 using OpenAuth.Application.Tokens.Configurations;
 
-namespace OpenAuth.AuthorizationApi.Connect.Discovery;
+namespace OpenAuth.Server.Connect.Discovery;
 
 public static class DiscoveryEndpoint
 {

@@ -1,6 +1,6 @@
 using OpenAuth.Application.Jwks.Services;
 
-namespace OpenAuth.AuthorizationApi.Connect.Jwks;
+namespace OpenAuth.Server.Connect.Jwks;
 
 public static class JwksEndpoint
 {

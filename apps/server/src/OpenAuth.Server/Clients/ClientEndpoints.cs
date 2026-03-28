@@ -11,7 +11,7 @@ using OpenAuth.Domain.ApiResources.ValueObjects;
 using OpenAuth.Domain.Clients.ApplicationType;
 using OpenAuth.Domain.Clients.ValueObjects;
 
-namespace OpenAuth.AuthorizationApi.Clients;
+namespace OpenAuth.Server.Clients;
 
 public static class ClientEndpoints
 {
