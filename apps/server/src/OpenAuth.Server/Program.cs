@@ -78,15 +78,13 @@ public class Program
 			app.UseSwagger();
 			app.UseSwaggerUI();
 
-			using var scope = app.Services.CreateScope();
-			var seeder = scope.ServiceProvider.GetRequiredService<DataSeeder>();
-			await seeder.SeedAsync(CancellationToken.None);
+			await app.SeedAsync();
 		}
 
 		app.MapConnectEndpoints();
 		app.MapDiscoveryEndpoints();
 		app.MapManagementEndpoints();
         
-		app.Run();
+		await app.RunAsync();
 	}
 }
