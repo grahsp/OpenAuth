@@ -1,5 +1,5 @@
 using OpenAuth.Infrastructure.Modules;
-using OpenAuth.Infrastructure.Persistence;
+using OpenAuth.Infrastructure.Persistence.Seeders;
 using OpenAuth.Server.Connect;
 using OpenAuth.Server.Discovery;
 using OpenAuth.Server.Management;
@@ -16,7 +16,7 @@ public class Program
 		if (builder.Environment.IsDevelopment())
 		{
 			builder.Services.AddSwaggerGen();
-			builder.Services.AddScoped<DataSeeder>();
+			builder.Services.AddScoped<ISeeder, DataSeeder>();
 		}
 
 		builder.Services.AddRazorPages();
