@@ -8,7 +8,7 @@ public static class UserInfoEndpoint
 {
     public static IEndpointRouteBuilder MapUserInfoEndpoint(this IEndpointRouteBuilder app)
     {
-        app.MapGet("/connect/userinfo", async (
+        app.MapGet("/userinfo", async (
             [FromServices] IBearerTokenExtractor extractor,
             [FromServices] IUserInfoService service) =>
         {

@@ -9,7 +9,7 @@ public static class LogoutEndpoint
 {
     public static IEndpointRouteBuilder MapLogoutEndpoint(this IEndpointRouteBuilder app)
     {
-        app.MapGet("/connect/logout", async (
+        app.MapGet("/logout", async (
             [FromServices] SignInManager<User> signinManager,
             [AsParameters] LogoutRequest query) =>
         {
