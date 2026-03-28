@@ -10,7 +10,7 @@ public static class AuthorizeEndpoint
 {
 	public static IEndpointRouteBuilder MapAuthorizeEndpoint(this IEndpointRouteBuilder app)
 	{
-		app.MapGet("/connect/authorize", async (
+		app.MapGet("/authorize", async (
 			IAuthorizationHandler handler,
 			HttpContext http,
 			HttpRequest request,

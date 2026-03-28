@@ -1,13 +1,8 @@
-using OpenAuth.Server.ApiResources;
-using OpenAuth.Server.Clients;
-using OpenAuth.Server.Connect.Authorize;
 using OpenAuth.Server.Connect.Discovery;
 using OpenAuth.Server.Connect.Jwks;
-using OpenAuth.Server.Connect.Logout;
-using OpenAuth.Server.Connect.Token;
-using OpenAuth.Server.Connect.UserInfo;
 using OpenAuth.Infrastructure.Modules;
 using OpenAuth.Infrastructure.Persistence;
+using OpenAuth.Server.Connect;
 using OpenAuth.Server.Management;
 
 namespace OpenAuth.Server;
@@ -81,14 +76,10 @@ public class Program
 			await seeder.SeedAsync(CancellationToken.None);
 		}
 
-		app.MapAuthorizeEndpoint();
-		app.MapTokenEndpoint();
-		app.MapLogoutEndpoint();
-
-		app.MapUserInfoEndpoint();
 		app.MapDiscoveryEndpoint();
 		app.MapJwksEndpoint();
 
+		app.MapConnectEndpoints();
 		app.MapManagementEndpoints();
         
 		app.Run();

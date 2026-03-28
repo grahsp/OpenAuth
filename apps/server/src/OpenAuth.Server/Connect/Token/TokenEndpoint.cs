@@ -7,7 +7,7 @@ public static class TokenEndpoint
 {
     public static IEndpointRouteBuilder MapTokenEndpoint(this IEndpointRouteBuilder app)
     {
-        app.MapPost("/connect/token", async (
+        app.MapPost("/token", async (
                 ITokenRequestHandler requestHandler,
                 [AsParameters] TokenRequest dto) =>
             {
