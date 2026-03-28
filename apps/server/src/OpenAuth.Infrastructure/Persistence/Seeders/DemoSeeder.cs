@@ -23,8 +23,6 @@ public class DemoSeeder(AppDbContext context, TimeProvider time) : ISeeder
 		var spa = await EnsureSpaClientAsync(ct);
 		
 		EnsureClientApiAccess(spa, api);
-		
-		await context.SaveChangesAsync(ct);
 	}
 
 	private async Task<Client> EnsureSpaClientAsync(CancellationToken ct)
