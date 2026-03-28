@@ -47,7 +47,7 @@ public class Program
 
 		builder.Services
 			.AddPersistenceModule(builder.Configuration)
-			.AddIdentityModule();
+			.AddIdentityModule(builder.Configuration);
 		
 		// OAuth / OIDC runtime
 		builder.Services
