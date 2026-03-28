@@ -1,4 +1,4 @@
-namespace OpenAuth.Server.Clients;
+namespace OpenAuth.Server.Management.Clients;
 
 public sealed record CreateWebClientRequest(
 	string Name

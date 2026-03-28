@@ -2,15 +2,13 @@ using OpenAuth.Application.SigningKeys.Interfaces;
 using OpenAuth.Application.SigningKeys.Services;
 using OpenAuth.Domain.SigningKeys.ValueObjects;
 
-namespace OpenAuth.Server.SigningKeys;
+namespace OpenAuth.Server.Management.SigningKeys;
 
 public static class SigningKeyEndpoints
 {
-	private const string BaseRoute = "/api/keys";
-    
 	public static IEndpointRouteBuilder MapSigningKeyEndpoints(this IEndpointRouteBuilder app)
 	{
-		var group = app.MapGroup(BaseRoute);
+		var group = app.MapGroup("/keys");
 
 		group.MapGet("/", GetAll);
 		group.MapPost("/", Create);
@@ -34,7 +32,7 @@ public static class SigningKeyEndpoints
 		CancellationToken ct)
 	{
 		var key = await commandService.CreateAsync(request.Algorithm, request.Lifetime, ct);
-		return Results.Created($"{BaseRoute}/{key.Id}", (object?)SigningKeyMapper.ToResponse(key));
+		return Results.Created($"keys/{key.Id}", (object?)SigningKeyMapper.ToResponse(key));
 	}
 
 	private static async Task<IResult> Get(

@@ -6,10 +6,9 @@ using OpenAuth.Server.Connect.Jwks;
 using OpenAuth.Server.Connect.Logout;
 using OpenAuth.Server.Connect.Token;
 using OpenAuth.Server.Connect.UserInfo;
-using OpenAuth.Server.Secrets;
-using OpenAuth.Server.SigningKeys;
 using OpenAuth.Infrastructure.Modules;
 using OpenAuth.Infrastructure.Persistence;
+using OpenAuth.Server.Management;
 
 namespace OpenAuth.Server;
 
@@ -89,11 +88,8 @@ public class Program
 		app.MapUserInfoEndpoint();
 		app.MapDiscoveryEndpoint();
 		app.MapJwksEndpoint();
-		
-		app.MapClientEndpoints();
-		app.MapApiEndpoints();
-		app.MapSigningKeyEndpoints();
-		app.MapSecretEndpoints();
+
+		app.MapManagementEndpoints();
         
 		app.Run();
 	}

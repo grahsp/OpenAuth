@@ -3,15 +3,13 @@ using OpenAuth.Application.Secrets.Services;
 using OpenAuth.Domain.Clients.Secrets.ValueObjects;
 using OpenAuth.Domain.Clients.ValueObjects;
 
-namespace OpenAuth.Server.Secrets;
+namespace OpenAuth.Server.Management.Secrets;
 
 public static class SecretEndpoints
 {
-	private const string BaseRoute = "api/clients/{clientId}/secrets";
-	
 	public static IEndpointRouteBuilder MapSecretEndpoints(this IEndpointRouteBuilder app)
 	{
-		var group = app.MapGroup(BaseRoute);
+		var group = app.MapGroup("/clients/{clientId}/secrets");
 
 		group.MapGet("/", GetSecrets);
 		group.MapPost("/", AddSecret);

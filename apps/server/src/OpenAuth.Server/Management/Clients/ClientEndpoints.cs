@@ -11,15 +11,13 @@ using OpenAuth.Domain.ApiResources.ValueObjects;
 using OpenAuth.Domain.Clients.ApplicationType;
 using OpenAuth.Domain.Clients.ValueObjects;
 
-namespace OpenAuth.Server.Clients;
+namespace OpenAuth.Server.Management.Clients;
 
 public static class ClientEndpoints
 {
-	private const string BaseRoute = "api/clients";
-    
 	public static IEndpointRouteBuilder MapClientEndpoints(this IEndpointRouteBuilder app)
 	{
-		var group = app.MapGroup(BaseRoute);
+		var group = app.MapGroup("/clients");
 
 		group.MapGet("/", GetClients);
 		group.MapGet("/{id}", GetClient);
