@@ -1,7 +1,7 @@
 using OpenAuth.Application.Secrets.Dtos;
 using OpenAuth.Domain.Services.Dtos;
 
-namespace OpenAuth.ManagementApi.Secrets;
+namespace OpenAuth.AuthorizationApi.Secrets;
 
 public static class SecretMapper
 {
