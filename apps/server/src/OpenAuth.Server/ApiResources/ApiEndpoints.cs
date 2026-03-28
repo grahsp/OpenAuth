@@ -8,7 +8,7 @@ using OpenAuth.Application.ApiResources.Queries;
 using OpenAuth.Domain.ApiResources.ValueObjects;
 using OpenAuth.Domain.Clients.ValueObjects;
 
-namespace OpenAuth.ManagementApi.ApiResources;
+namespace OpenAuth.AuthorizationApi.ApiResources;
 
 public static class ApiEndpoints
 {
