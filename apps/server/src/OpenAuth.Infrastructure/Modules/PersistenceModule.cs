@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using OpenAuth.Application.Abstractions;
 using OpenAuth.Infrastructure.Persistence;
+using OpenAuth.Infrastructure.Persistence.Seeders;
 
 namespace OpenAuth.Infrastructure.Modules;
 
@@ -17,6 +18,8 @@ public static class PersistenceModule
 
 		services.AddScoped<IUnitOfWork, AppDbContext>(sp =>
 			sp.GetRequiredService<AppDbContext>());
+
+		services.AddScoped<ISeederRunner, SeederRunner>();
 
 		return services;
 	}
