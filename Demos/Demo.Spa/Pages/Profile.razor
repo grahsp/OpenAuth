@@ -1,0 +1,78 @@
+@page "/Profile"
+@attribute [Authorize]
+
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+
+<PageTitle>Profile</PageTitle>
+
+<h3>Profile</h3>
+
+<p class="text-muted">
+    This page displays user information provided by the identity provider.
+</p>
+
+@if (user is null)
+{
+    <p>Loading profile…</p>
+}
+else
+{
+    <div class="profile-section">
+        <h5>Basic Information</h5>
+
+        <table class="table table-sm">
+            <tbody>
+            <tr>
+                <th scope="row">Subject</th>
+                <td>@GetClaimValue("sub")</td>
+            </tr>
+            <tr>
+                <th scope="row">Name</th>
+                <td>@GetClaimValue("nickname")</td>
+            </tr>
+            <tr>
+                <th scope="row">Email</th>
+                <td>@GetClaimValue("email")</td>
+            </tr>
+            </tbody>
+        </table>
+
+        <h5 class="mt-4">All Claims</h5>
+
+        <table class="table table-sm table-bordered">
+            <thead>
+            <tr>
+                <th>Type</th>
+                <th>Value</th>
+            </tr>
+            </thead>
+            <tbody>
+            @foreach (var claim in user.Claims.OrderBy(c => c.Type))
+            {
+                <tr>
+                    <td><code>@claim.Type</code></td>
+                    <td>@claim.Value</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+}
+
+@code {
+    [CascadingParameter]
+    private Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
+
+    private ClaimsPrincipal? user;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateTask;
+        user = authState.User;
+    }
+
+    private string GetClaimValue(string claimType)
+        => user?.FindFirst(claimType)?.Value ?? "—";
+}

@@ -1,0 +1,103 @@
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+
+<div class="dropdown" style="position: relative;" @onclick:stopPropagation="true">
+    <AuthorizeView>
+        <Authorized>
+            <a class="nav-link dropdown-toggle"
+               @onclick="ToggleDropdown">
+                @UserDisplayName
+            </a>
+
+            @if (_isOpen)
+            {
+                <div class="dropdown-menu show dropdown-menu-end"
+                     style="right: 0; left: auto;">
+                    <button class="dropdown-item"
+                            @onclick="OnProfileClicked">
+                        Profile
+                    </button>
+
+                    <div class="dropdown-divider"></div>
+
+                    <button class="dropdown-item text-danger"
+                            @onclick="OnLogoutClicked">
+                        Logout
+                    </button>
+                </div>
+            }
+        </Authorized>
+
+        <NotAuthorized>
+            <button class="btn btn-link" @onclick="OnLoginClicked">
+                Login
+            </button>
+        </NotAuthorized>
+    </AuthorizeView>
+</div>
+
+@code {
+    [Inject] NavigationManager Nav { get; set; } = null!;
+    [Inject] AuthenticationStateProvider AuthStateProvider { get; set; } = null!;
+    
+    [CascadingParameter]
+    public Task<AuthenticationState> AuthState { get; set; } = default!;
+
+    private string UserDisplayName { get; set; } = "User";
+    private bool _isOpen;
+
+    protected override async Task OnInitializedAsync()
+    {
+        AuthStateProvider.AuthenticationStateChanged += OnAuthStateChanged;
+        await UpdateUserNameAsync(); 
+    }
+    
+    private async void OnAuthStateChanged(Task<AuthenticationState> task)
+    {
+        await UpdateUserNameAsync();
+        StateHasChanged();
+    }
+
+    private async Task UpdateUserNameAsync()
+    {
+        var auth = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = auth.User;
+
+        UserDisplayName =
+            user.Claims.FirstOrDefault(c => c.Type == "nickname")?.Value ??
+            user.Identity?.Name ??
+            "User";
+    }
+
+    private void ToggleDropdown()
+    {
+        _isOpen = !_isOpen;
+    }
+
+    public void ClickAway()
+    {
+        if (_isOpen)
+        {
+            _isOpen = false;
+            StateHasChanged();
+        }
+    }
+
+    private void OnProfileClicked()
+    {
+        _isOpen = false;
+        Nav.NavigateTo("/profile");
+    }
+
+    private void OnLoginClicked()
+    {
+        _isOpen = false;
+        Nav.NavigateToLogin("authentication/login");
+    }
+
+    private void OnLogoutClicked()
+    {
+        _isOpen = false;
+        Nav.NavigateToLogout("authentication/logout");
+    }
+}

@@ -1,0 +1,25 @@
+﻿@using Demo.Spa.Shared
+
+@inherits LayoutComponentBase
+<div class="page" @onclick="HandleBackgroundClick">
+    <div class="sidebar">
+        <NavMenu />
+    </div>
+
+    <main>
+        <div class="top-row px-4 d-flex align-items-center justify-content-end">
+            <UserMenu @ref="_userMenuRef" />
+        </div>
+
+        <article class="content px-4">
+            @Body
+        </article>
+    </main>
+</div>
+
+@code {
+    private UserMenu _userMenuRef = null!;
+
+    private void HandleBackgroundClick()
+        => _userMenuRef.ClickAway();
+}
