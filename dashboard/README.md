@@ -1,73 +1,52 @@
-# React + TypeScript + Vite
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+# OpenAuth Dashboard
 
-Currently, two official plugins are available:
+The OpenAuth Dashboard is a React application used to manage the configuration of the OpenAuth authorization server.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+It provides a user interface for creating and managing applications (clients), API resources, and permissions.
 
-## React Compiler
+The dashboard communicates with the authorization server's management APIs to configure how tokens are issued and what access clients are allowed.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+# Responsibilities
 
-## Expanding the ESLint configuration
+The dashboard provides functionality for managing authorization configuration, including:
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- Creating and managing applications (OAuth clients)
+- Registering API resources
+- Defining permissions (scopes)
+- Configuring which clients can access which APIs
+- Assigning allowed scopes per client
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+The dashboard interacts with the authorization server through its management endpoints.
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+# Running the Dashboard Locally
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Requirements
+
+- Node.js 18+
+- npm
+
+The dashboard expects the OpenAuth authorization server to be running.
+
+## 1. Install dependencies
+
+```bash
+cd ./dashboard
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## 2. Configure environment variables
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+The application uses a Vite development proxy.  
+The host and port of the authorization server must be configured through environment variables.
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+- `VITE_SERVER_HOST` — Host of the OpenAuth authorization server  
+- `VITE_SERVER_PORT` — Port of the OpenAuth authorization server
+
+## 3. Run the dashboard
+
+```bash
+npm run dev
 ```
+
+The dashboard will start on: `http://localhost:5173`
