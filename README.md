@@ -131,38 +131,57 @@ This reflects how real-world identity systems operate, where configuration defin
 
 ## Getting Started
 
-### Running locally
+### Quick Start (Docker)
+
+The easiest way to run the full system is with Docker. This starts the authorization server, dashboard, SQL Server database, and nginx reverse proxy.
 
 ```bash
-# Backend
-cd apps/server
-dotnet run
-
-# Dashboard
-cd apps/dashboard
-npm install
-npm run dev
+docker compose up --build
 ```
 
-> Note: The project currently requires manual setup. Docker support and pre-seeded demo data are planned to streamline onboarding.
+Once started, the services will be available at:
 
-### Planned Improvements
-- Docker support for simplified setup  
-- Seed data for demo clients, APIs, and scopes  
-- One-command startup for full system
+Dashboard: `http://localhost`
+Authorization Server API: `http://localhost/api`
 
+During startup the database schema is migrated automatically and demo data can be seeded if enabled.
+
+To stop the system:
+```bash
+docker compose down
+```
+
+To reset the database completely:
+```bash
+docker compose down -v
+```
+
+### Environment Variables
+
+Copy `.env.example` and update the values if necessary.
+
+```bash
+cp .env.example .env
+```
+
+## Development
+
+Refer to the documentation for each component for setup and configuration instructions:
+
+- [Authorization Server](server/README.md)
+- [Dashboard](dashboard/README.md)
 
 ## Project Structure  
   
-- `apps/server/`  
+- `server/`  
 OAuth2 / OpenID Connect authorization server  
 Handles authorization flows, token issuance, and validation  
   
-- `apps/dashboard/`  
+- `dashboard/`  
 React-based management UI  
 Used to configure clients, API resources, and permissions  
   
-- `docs/` (optional)  
+- `docs/`
 Additional documentation such as architecture and flows
 
 The project is organized around two main concerns: runtime authorization and management of configuration.
@@ -170,15 +189,8 @@ The project is organized around two main concerns: runtime authorization and man
 
 ## Future Improvements
 
-### Developer Experience
-  
-- Docker-based setup for one-command startup
-- Seeded demo data for clients, API resources, and scopes
-- Improved demo applications to better showcase supported flows
-  
 ### Security & OAuth Features
 
-- Authentication and access control for the management dashboard
 - Refresh token support for long-lived sessions
 - User consent screen for approving requested scopes during authorization
 - Signing key rotation with multiple active keys in JWKS
