@@ -62,8 +62,8 @@ public class Program
 		
 		// OAuth / OIDC runtime
 		builder.Services
-			.AddTokenModule(builder.Configuration)
-			.AddOAuthModule();
+			.AddTokenModule()
+			.AddOAuthModule(builder.Configuration);
             
 		// Authorization server configuration
 		builder.Services
