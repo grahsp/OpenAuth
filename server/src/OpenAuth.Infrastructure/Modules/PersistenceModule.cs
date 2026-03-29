@@ -13,7 +13,8 @@ public static class PersistenceModule
 	{
 		services.AddDbContext<AppDbContext>(opts =>
 		{
-			opts.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
+			opts.UseSqlServer(configuration.GetConnectionString("DefaultConnection"),
+				sql => sql.EnableRetryOnFailure());
 		});
 
 		services.AddScoped<IUnitOfWork, AppDbContext>(sp =>

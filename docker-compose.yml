@@ -1,0 +1,28 @@
+services:
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: openauth-db
+    environment:
+      ACCEPT_EULA: Y
+      SA_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - 1433:1433
+    volumes:
+      - sql_data:/var/opt/mssql
+
+  server:
+    build: server/
+    image: openauth-server
+    container_name: openauth-server
+    depends_on:
+      - db
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__DefaultConnection: Server=db;Database=OpenAuth;User Id=sa;Password=${DB_PASSWORD};TrustServerCertificate=True
+      Admin__Password: admin
+      Seed__Demo: true
+    ports:
+      - 8080:8080
+        
+volumes:
+  sql_data:
