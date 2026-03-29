@@ -1,4 +1,6 @@
+using Microsoft.EntityFrameworkCore;
 using OpenAuth.Infrastructure.Modules;
+using OpenAuth.Infrastructure.Persistence;
 using OpenAuth.Infrastructure.Persistence.Seeders;
 using OpenAuth.Server.Connect;
 using OpenAuth.Server.Discovery;
@@ -78,9 +80,13 @@ public class Program
 		{
 			app.UseSwagger();
 			app.UseSwaggerUI();
-
-			await app.SeedAsync();
 		}
+		
+		using var scope = app.Services.CreateScope();
+		var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+		await db.Database.MigrateAsync();
+
+		await app.SeedAsync();
 
 		app.MapConnectEndpoints();
 		app.MapDiscoveryEndpoints();
