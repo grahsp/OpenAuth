@@ -5,8 +5,6 @@ services:
     environment:
       ACCEPT_EULA: Y
       SA_PASSWORD: ${DB_PASSWORD}
-    ports:
-      - 1433:1433
     volumes:
       - sql_data:/var/opt/mssql
 
@@ -21,8 +19,24 @@ services:
       ConnectionStrings__DefaultConnection: Server=db;Database=OpenAuth;User Id=sa;Password=${DB_PASSWORD};TrustServerCertificate=True
       Admin__Password: admin
       Seed__Demo: true
+
+  dashboard:
+    build: dashboard/
+    image: openauth-dashboard
+    container_name: openauth-dashboard
+    depends_on:
+      - server
+
+  proxy:
+    image: nginx:latest
+    container_name: openauth-proxy
     ports:
-      - 8080:8080
-        
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - dashboard
+      - server
+
 volumes:
   sql_data:

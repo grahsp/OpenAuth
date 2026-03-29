@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using OpenAuth.Infrastructure.Modules;
 using OpenAuth.Infrastructure.Persistence;
@@ -14,6 +15,18 @@ public class Program
 	{
 		// Add services to the container.
 		var builder = WebApplication.CreateBuilder(args);
+		
+		builder.Services.Configure<ForwardedHeadersOptions>(options =>
+		{
+			options.ForwardedHeaders =
+				ForwardedHeaders.XForwardedFor |
+				ForwardedHeaders.XForwardedProto |
+				ForwardedHeaders.XForwardedHost;
+
+			// allow docker/nginx
+			options.KnownNetworks.Clear();
+			options.KnownProxies.Clear();
+		});
 		
 		if (builder.Environment.IsDevelopment())
 			builder.Services.AddSwaggerGen();
@@ -66,6 +79,8 @@ public class Program
 
 		// Configure the HTTP request pipeline.
 		var app = builder.Build();
+
+		app.UseForwardedHeaders();
 
 		app.UseCors("Public");
 		app.UseCors("Dashboard");

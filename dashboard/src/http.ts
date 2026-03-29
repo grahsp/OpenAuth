@@ -1,7 +1,5 @@
-import {config} from "./lib/config.ts";
-
 export async function http<T>(path: string, options?: RequestInit): Promise<T> {
-    const res = await fetch(`${config.apiBaseUrl}${path}`, {
+    const res = await fetch(`${path}`, {
         credentials: "include",
         headers: {
             "Content-Type": "application/json",
