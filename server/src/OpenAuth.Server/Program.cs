@@ -1,10 +1,9 @@
 using Microsoft.AspNetCore.HttpOverrides;
-using Microsoft.EntityFrameworkCore;
 using OpenAuth.Infrastructure.Modules;
-using OpenAuth.Infrastructure.Persistence;
 using OpenAuth.Infrastructure.Persistence.Seeders;
 using OpenAuth.Server.Connect;
 using OpenAuth.Server.Discovery;
+using OpenAuth.Server.Extensions;
 using OpenAuth.Server.Management;
 
 namespace OpenAuth.Server;
@@ -96,12 +95,11 @@ public class Program
 			app.UseSwagger();
 			app.UseSwaggerUI();
 		}
-		
-		using var scope = app.Services.CreateScope();
-		var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-		await db.Database.MigrateAsync();
 
-		await app.SeedAsync();
+		var ct = app.Lifetime.ApplicationStopping;
+		
+		await app.InitializeDatabaseAsync(ct);
+		await app.SeedAsync(ct);
 
 		app.MapConnectEndpoints();
 		app.MapDiscoveryEndpoints();
