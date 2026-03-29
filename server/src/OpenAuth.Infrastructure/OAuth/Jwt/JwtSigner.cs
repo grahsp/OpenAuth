@@ -15,7 +15,7 @@ public class JwtSigner : IJwtSigner
     private readonly ISigningCredentialsFactory _credentialsFactory;
     private readonly TimeProvider _time;
     
-    public JwtSigner(IOptions<JwtOptions> options, ISigningKeyQueryService keyService, ISigningCredentialsFactory credentialsFactory, TimeProvider time)
+    public JwtSigner(IOptions<OAuthOptions> options, ISigningKeyQueryService keyService, ISigningCredentialsFactory credentialsFactory, TimeProvider time)
     {
         _issuer = options.Value.Issuer;
         _keyService = keyService;

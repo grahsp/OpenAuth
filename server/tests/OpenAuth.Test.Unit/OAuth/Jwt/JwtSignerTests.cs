@@ -38,7 +38,7 @@ public class JwtSignerTests
 
         _time = new FakeTimeProvider(DateTimeOffset.UtcNow);
 
-        var opts = Options.Create(new JwtOptions { Issuer = "test-issuer" });
+        var opts = Options.Create(new OAuthOptions { Issuer = "test-issuer" });
         _sut = new JwtSigner(opts, _keyService, _credentialsFactory, _time);
     }
 

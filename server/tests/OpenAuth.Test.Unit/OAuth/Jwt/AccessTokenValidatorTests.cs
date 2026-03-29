@@ -21,7 +21,7 @@ public class AccessTokenValidatorTests
 {
     private readonly SigningKey _signingKey;
     
-    private readonly IOptions<JwtOptions> _options;
+    private readonly IOptions<OAuthOptions> _options;
     private readonly ISigningKeyQueryService _keyProvider;
     private readonly IValidationKeyFactory _validationKeyFactory;
     
@@ -34,7 +34,7 @@ public class AccessTokenValidatorTests
         _signingKey = CreateSigningKey();
         var validationKey = CreateValidationKey(_signingKey);
 
-        _options = Options.Create(new JwtOptions { Issuer = "test-issuer" });
+        _options = Options.Create(new OAuthOptions { Issuer = "test-issuer" });
         
         _keyProvider = Substitute.For<ISigningKeyQueryService>();
         _keyProvider.GetActiveKeyDataAsync(Arg.Any<CancellationToken>())

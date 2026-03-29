@@ -15,7 +15,7 @@ public class AccessTokenValidator : IAccessTokenValidator
 
     private readonly string _issuer;
 
-    public AccessTokenValidator(IOptions<JwtOptions> options, IValidationKeyFactory validationKeyFactory, ISigningKeyQueryService keyProvider)
+    public AccessTokenValidator(IOptions<OAuthOptions> options, IValidationKeyFactory validationKeyFactory, ISigningKeyQueryService keyProvider)
     {
         _validationKeyFactory = validationKeyFactory;
         _keyProvider = keyProvider;

@@ -7,7 +7,7 @@ public static class OpenIdConfigurationEndpoint
 {
     public static RouteHandlerBuilder MapOpenIdConfigurationEndpoint(this IEndpointRouteBuilder app)
     {
-        return app.MapGet("/openid-configuration", (IOptions<JwtOptions> config) =>
+        return app.MapGet("/openid-configuration", (IOptions<OAuthOptions> config) =>
         {
             var cfg = config.Value;
 

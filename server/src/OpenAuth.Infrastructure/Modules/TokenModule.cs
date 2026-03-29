@@ -17,17 +17,15 @@ namespace OpenAuth.Infrastructure.Modules;
 
 public static class TokenModule
 {
-	public static IServiceCollection AddTokenModule(this IServiceCollection services, IConfiguration configuration)
+	public static IServiceCollection AddTokenModule(this IServiceCollection services)
 	{
 		return services
-			.AddTokenApplication(configuration)
+			.AddTokenApplication()
 			.AddTokenInfrastructure();
 	}
     
-	public static IServiceCollection AddTokenApplication(this IServiceCollection services, IConfiguration configuration)
+	public static IServiceCollection AddTokenApplication(this IServiceCollection services)
 	{
-		services.Configure<JwtOptions>(configuration.GetSection("Auth"));
-
 		services.AddScoped<IAccessTokenValidator, AccessTokenValidator>();
         
 		services.AddScoped<ITokenHandler<AccessTokenContext>, AccessTokenHandler>();
