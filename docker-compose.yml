@@ -18,6 +18,7 @@ services:
       Admin__Password: ${ADMIN_PASSWORD}
       Seed__Demo: ${SEED_DEMO}
       Database__Initialize: true
+      OAuth__Issuer: http://localhost
 
   dashboard:
     build: ./dashboard
