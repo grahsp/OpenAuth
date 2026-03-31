@@ -1,0 +1,164 @@
+@import "../../../applications/details/settings/ApplicationSettingsPage.css";
+
+.api-permissions-page {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 40px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+}
+
+.api-permissions-section {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.api-permissions-section__title {
+    margin: 0;
+    color: #f8fafc;
+    font-size: 1.05rem;
+    font-weight: 700;
+    text-align: left;
+}
+
+.api-permissions-section__description {
+    color: #cbd5e1;
+    text-align: left;
+}
+
+.api-permissions-form {
+    display: flex;
+    align-items: flex-end;
+    gap: 12px;
+}
+
+.api-permissions-form__field {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.api-permissions-form__field label {
+    color: #f8fafc;
+    font-size: 0.95rem;
+    font-weight: 600;
+    text-align: left;
+}
+
+.api-permissions-form__field input {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.api-permissions-form__action {
+    height: 42px;
+    padding: 0 18px;
+    border: 1px solid #3f3f46;
+    border-radius: 8px;
+    background: transparent;
+    color: #f8fafc;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.api-permissions-form__action:hover {
+    background: #18181b;
+    border-color: #6366f1;
+}
+
+.api-permissions-table {
+    display: flex;
+    flex-direction: column;
+    border-top: 1px solid #2a2a2a;
+}
+
+.api-permissions-table__header,
+.api-permissions-table__row {
+    display: grid;
+    grid-template-columns: minmax(240px, 0.9fr) minmax(320px, 1fr) 48px;
+    gap: 24px;
+    align-items: center;
+    padding: 18px 20px;
+    text-align: left;
+}
+
+.api-permissions-table__header {
+    color: #f8fafc;
+    font-size: 0.95rem;
+    font-weight: 700;
+}
+
+.api-permissions-table__row {
+    border-top: 1px solid #2a2a2a;
+}
+
+.api-permissions-table__scope {
+    width: fit-content;
+    padding: 0.3rem 0.65rem;
+    border-radius: 0.5rem;
+    background: #27272a;
+    color: #e5e7eb;
+    font-family: var(--mono);
+    font-size: 0.88rem;
+}
+
+.api-permissions-table__description-cell {
+    color: #e2e8f0;
+}
+
+.api-permissions-table__actions {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.api-permissions-table__delete {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+    border: none;
+    border-radius: 0.5rem;
+    background: transparent;
+    color: #e2e8f0;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.api-permissions-table__delete:hover {
+    background: #18181b;
+    color: #f87171;
+}
+
+.api-permissions-table__delete svg {
+    width: 1rem;
+    height: 1rem;
+}
+
+.api-permissions-empty {
+    color: #94a3b8;
+    text-align: left;
+}
+
+@media (max-width: 900px) {
+    .api-permissions-form {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .api-permissions-form__action {
+        align-self: flex-start;
+    }
+
+    .api-permissions-table__header,
+    .api-permissions-table__row {
+        grid-template-columns: 1fr;
+        gap: 10px;
+        padding: 16px 0;
+    }
+}

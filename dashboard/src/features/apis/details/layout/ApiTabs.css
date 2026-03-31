@@ -1,0 +1,36 @@
+.tabs {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    border-bottom: 1px solid #2a2a2a;
+    padding: 0 8px;
+}
+
+.tab {
+    position: relative;
+    padding: 12px 4px;
+    color: #9ca3af;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: color 0.2s ease;
+}
+
+.tab:hover {
+    color: #e5e7eb;
+}
+
+.tab--active {
+    color: #a5b4fc;
+}
+
+.tab--active::after {
+    content: "";
+    position: absolute;
+    left: -6px;
+    right: -6px;
+    bottom: -1px;
+    height: 2px;
+    background-color: #6366f1;
+    border-radius: 2px;
+}
