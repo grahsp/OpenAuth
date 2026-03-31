@@ -9,3 +9,8 @@ export type Permission = {
     scope: string;
     description?: string;
 }
+
+export type RemoveApiPermissionsRequest = {
+    apiId: string;
+    scopes: string[];
+}
