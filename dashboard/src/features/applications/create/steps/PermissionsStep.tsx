@@ -2,7 +2,7 @@ import {type Dispatch, type SetStateAction} from "react";
 import {ApiSelector} from "../components/ApiSelector.tsx";
 import {PermissionSelector} from "../components/PermissionSelector.tsx";
 import type {Draft} from "../CreateApplicationModal.tsx";
-import {useApiPermissionOptions} from "../../hooks.tsx";
+import {useApiPermissionOptions} from "../hooks/useApiPermissionOptions.tsx";
 
 type Props = {
     draft: Draft;

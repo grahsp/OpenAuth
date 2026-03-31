@@ -1,6 +1,6 @@
 import {useClientApiAccess} from "./useClientApiAccess.tsx";
 import {useMemo} from "react";
-import {useApis} from "../../hooks.tsx";
+import {useApis} from "../../../apis/hooks/useApis.tsx";
 
 export function useClientPermissions(clientId?: string) {
     const apis = useApis();

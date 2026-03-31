@@ -1,6 +1,6 @@
-import type {Api} from "../../apis/types.ts";
 import {Link} from "react-router-dom";
-import {ResourceCopyField} from "./ResourceCopyField.tsx";
+import type {Api} from "../types.ts";
+import {ResourceCopyField} from "../../../shared/components/ResourceCopyField.tsx";
 import "./ApiListItem.css";
 
 export function ApiListItem({ api }: { api: Api }) {

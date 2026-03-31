@@ -33,8 +33,6 @@ export function ApplicationApisPage() {
             const aScopes = serverState[a.apiId] ?? [];
             const bScopes = serverState[b.apiId] ?? [];
 
-            console.log(aScopes, bScopes);
-
             const aAuth = aScopes.length > 0;
             const bAuth = bScopes.length > 0;
 
