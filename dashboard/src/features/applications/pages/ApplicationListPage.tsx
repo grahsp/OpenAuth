@@ -9,10 +9,12 @@ export default function ApplicationListPage() {
     return (
         <ListPage
             title={"Applications"}
+            description={"Configure clients, credentials, and downstream API access from one place."}
             items={data}
             loading={loading}
             error={error}
-            create={<CreateApplicationTrigger />}
+            action={<CreateApplicationTrigger />}
+            emptyState={"No applications have been created yet."}
             renderItem={(item) =>
                 <ApplicationListItem key={item.id} application={item} />
             }
