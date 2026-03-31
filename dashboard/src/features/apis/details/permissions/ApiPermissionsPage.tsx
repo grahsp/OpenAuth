@@ -71,7 +71,7 @@ export function ApiPermissionsPage() {
                     </div>
 
                     <div className="api-permissions-form__field">
-                        <label htmlFor="permission-description">Description *</label>
+                        <label htmlFor="permission-description">Description</label>
                         <input
                             id="permission-description"
                             value={description}

@@ -54,9 +54,8 @@ public class ApiResourceConfiguration : IEntityTypeConfiguration<ApiResource>
 
 			perm.Property(p => p.Description)
 				.HasConversion(
-					desc => desc.Value,
-					value => new ScopeDescription(value))
-				.IsRequired();
+					desc => desc != null ? desc.Value : "",
+					value => new ScopeDescription(value));
 		});
 	}
 }
