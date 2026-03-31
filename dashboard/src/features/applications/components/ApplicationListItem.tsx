@@ -13,7 +13,9 @@ export function ApplicationListItem({application}: { application: Application })
                         <p className="resource-card__meta">{getApplicationTypeLabel(application.applicationType)}</p>
                     </div>
                 </Link>
-                <ResourceCopyField label="Client ID" value={application.id} />
+                <div className="resource-card__copy">
+                    <ResourceCopyField label="Client ID" value={application.id} />
+                </div>
             </div>
         </li>
     );

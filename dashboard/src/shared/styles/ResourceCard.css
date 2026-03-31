@@ -32,6 +32,12 @@
     min-width: 0;
 }
 
+.resource-card__copy {
+    flex: 0 1 28rem;
+    min-width: 16rem;
+    max-width: 28rem;
+}
+
 .resource-card__title {
     color: var(--text-h);
     font-size: 1.05rem;
@@ -55,6 +61,12 @@
 
     .resource-card__primary {
         width: 100%;
+    }
+
+    .resource-card__copy {
+        width: 100%;
+        min-width: 0;
+        max-width: none;
     }
 }
 

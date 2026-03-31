@@ -1,1 +1,46 @@
 @import "../../../../shared/styles/DetailPage.css";
+@import "../../../../shared/components/ResourceCopyField.css";
+
+.application-page > .section {
+    display: grid;
+    grid-template-columns: minmax(180px, 1fr) minmax(0, 1.35fr);
+    column-gap: 48px;
+    align-items: start;
+}
+
+.application-page > .section > .section__title {
+    grid-column: 1;
+    margin: 0;
+    text-align: left;
+}
+
+.application-page > .section > .form-field,
+.application-page > .section > .checkbox-group {
+    grid-column: 2;
+    width: 100%;
+    max-width: 720px;
+    justify-self: start;
+}
+
+.application-page > .section > .form-field {
+    align-items: stretch;
+}
+
+.application-page > .section > .form-field label,
+.application-page > .section > .form-field small {
+    text-align: left;
+}
+
+@media (max-width: 900px) {
+    .application-page > .section {
+        grid-template-columns: 1fr;
+        row-gap: 20px;
+    }
+
+    .application-page > .section > .section__title,
+    .application-page > .section > .form-field,
+    .application-page > .section > .checkbox-group {
+        grid-column: 1;
+        max-width: none;
+    }
+}

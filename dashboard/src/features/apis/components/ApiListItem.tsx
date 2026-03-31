@@ -13,7 +13,9 @@ export function ApiListItem({ api }: { api: Api }) {
                         <p className="resource-card__meta">{api.permissions.length} permissions</p>
                     </div>
                 </Link>
-                <ResourceCopyField label="Audience" value={api.audience} />
+                <div className="resource-card__copy">
+                    <ResourceCopyField label="Audience" value={api.audience} />
+                </div>
             </div>
         </li>
     );
