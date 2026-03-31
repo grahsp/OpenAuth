@@ -3,11 +3,11 @@ import {useCallback} from "react";
 import {getApplication} from "../api.ts";
 import {type QueryResult, useQuery} from "../../../shared/hooks/useQuery.tsx";
 
-export function useApplication(id?: string): QueryResult<Application | null> {
+export function useApplication(id?: string): QueryResult<Application> {
     const query = useCallback(() => {
         if (!id) throw new Error("id is required");
-        return getApplication(id!)
+        return getApplication(id)
     }, [id]);
 
-    return useQuery<Application | null>({queryFn: query, options: { enabled: !!id } });
+    return useQuery<Application>({queryFn: query, options: { enabled: !!id } });
 }
