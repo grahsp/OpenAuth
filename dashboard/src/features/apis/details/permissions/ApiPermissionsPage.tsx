@@ -1,12 +1,29 @@
 import {useOutletContext} from "react-router-dom";
 import type {Api} from "../../types.ts";
 import {useState} from "react";
+import {useRemoveApiPermissions} from "../../hooks/useRemoveApiPermissions.tsx";
+import {useApi} from "../../hooks/useApi.tsx";
 import "./ApiPermissionsPage.css";
 
 export function ApiPermissionsPage() {
     const { api } = useOutletContext<{ api: Api }>();
     const [scope, setScope] = useState("");
     const [description, setDescription] = useState("");
+    const { data, loading: apiLoading, error: apiError, refresh } = useApi(api.id);
+    const { remove, loading: removing, error: removeError } = useRemoveApiPermissions();
+
+    const permissions = data?.permissions ?? api.permissions;
+
+    const handleDelete = async (scope: string) => {
+        const success = await remove({
+            apiId: api.id,
+            scopes: [scope]
+        });
+
+        if (success) {
+            await refresh();
+        }
+    };
 
     return (
         <div className="api-permissions-page">
@@ -52,7 +69,12 @@ export function ApiPermissionsPage() {
                     These are all the permissions that this API uses.
                 </p>
 
-                {api.permissions.length > 0 ? (
+                {apiError && <p className="api-permissions-empty">{apiError}</p>}
+                {removeError && <p className="api-permissions-empty">{removeError}</p>}
+
+                {apiLoading ? (
+                    <p className="api-permissions-empty">Loading permissions...</p>
+                ) : permissions.length > 0 ? (
                     <div className="api-permissions-table">
                         <div className="api-permissions-table__header">
                             <div>Permission</div>
@@ -61,7 +83,7 @@ export function ApiPermissionsPage() {
                         </div>
 
                         <div className="api-permissions-table__body">
-                            {api.permissions.map((permission) => (
+                            {permissions.map((permission) => (
                                 <div key={permission.scope} className="api-permissions-table__row">
                                     <div className="api-permissions-table__scope">
                                         {permission.scope}
@@ -74,6 +96,8 @@ export function ApiPermissionsPage() {
                                             type="button"
                                             className="api-permissions-table__delete"
                                             aria-label={`Delete permission ${permission.scope}`}
+                                            onClick={() => void handleDelete(permission.scope)}
+                                            disabled={removing}
                                         >
                                             <svg viewBox="0 0 16 16" aria-hidden="true">
                                                 <path
