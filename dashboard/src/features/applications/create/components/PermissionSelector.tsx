@@ -79,16 +79,6 @@ export function PermissionSelector({ options, value, onChange }: Props) {
                 </div>
             </div>
 
-            {/* STATES */}
-            {/*{loading && (*/}
-            {/*    <p className="permission-selector__status">*/}
-            {/*        Loading permissions...*/}
-            {/*    </p>*/}
-            {/*)}*/}
-
-            {/*{error && <p className="error">{error}</p>}*/}
-
-            {/* LIST */}
             {(
                 <div className="permission-selector__list">
                     {filtered.length === 0 && (
@@ -113,12 +103,7 @@ export function PermissionSelector({ options, value, onChange }: Props) {
                                     onChange={() => toggle(o.value)}
                                 />
 
-                                <div>
-                                    <span>{o.label}</span>
-                                    {o.description && (
-                                        <small>{o.description}</small>
-                                    )}
-                                </div>
+                                <span>{o.label}</span>
                             </label>
                         );
                     })}
