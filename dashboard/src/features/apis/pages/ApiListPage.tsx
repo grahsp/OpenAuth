@@ -1,5 +1,5 @@
-import {useApis} from "../hooks.tsx";
-import {ApiListItem} from "../components/ApiListItem.tsx";
+import {useApis} from "../../applications/hooks.tsx";
+import {ApiListItem} from "../../applications/components/ApiListItem.tsx";
 import {ListPage} from "../../../shared/pages/ListPage.tsx";
 
 export default function ApiListPage() {

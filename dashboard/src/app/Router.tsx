@@ -1,5 +1,6 @@
 import { Navigate, createBrowserRouter} from "react-router-dom";
 import {routes as applicationRoutes} from "../features/applications/routes.tsx";
+import {routes as apiRoutes} from "../features/apis/routes.tsx";
 import DashboardLayout from "./DashboardLayout.tsx";
 
 export const router = createBrowserRouter([
@@ -10,7 +11,8 @@ export const router = createBrowserRouter([
                 index: true,
                 element: <Navigate to="/applications" replace />
             },
-            ...applicationRoutes
+            ...applicationRoutes,
+            ...apiRoutes
         ]
     }
 ])

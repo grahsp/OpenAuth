@@ -43,16 +43,8 @@
     font-size: 0.9rem;
 }
 
-.resource-card--static {
-    cursor: default;
-}
-
 .resource-card--interactive {
     cursor: pointer;
-}
-
-.resource-card--static:hover {
-    transform: none;
 }
 
 @media (max-width: 768px) {
