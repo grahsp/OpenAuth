@@ -68,10 +68,10 @@
 
 @media (max-width: 768px) {
     .resource-copy-field {
-        flex-wrap: wrap;
+        gap: 0.4rem;
     }
 
     .resource-copy-field__value {
-        width: 100%;
+        min-width: 0;
     }
 }

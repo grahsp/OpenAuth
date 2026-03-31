@@ -155,10 +155,15 @@
         align-self: flex-start;
     }
 
+    .api-permissions-table {
+        overflow-x: auto;
+    }
+
     .api-permissions-table__header,
     .api-permissions-table__row {
-        grid-template-columns: 1fr;
-        gap: 10px;
-        padding: 16px 0;
+        grid-template-columns: minmax(180px, 0.9fr) minmax(220px, 1fr) 48px;
+        gap: 16px;
+        min-width: 520px;
+        padding: 16px 12px;
     }
 }
