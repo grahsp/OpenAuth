@@ -1,7 +1,7 @@
 import {Outlet, useParams} from "react-router-dom";
 import {useApi} from "../../../applications/hooks.tsx";
-import "../settings/ApiSettingsPage.css";
-import {ApiTabs} from "./ApiTabs.tsx";
+import {DetailTabs} from "../../../../shared/components/DetailTabs.tsx";
+import {apiTabs} from "../../routes.tsx";
 
 export default function ApiLayout() {
     const path = useParams<{ id: string }>();
@@ -12,7 +12,7 @@ export default function ApiLayout() {
 
     return (
         <div>
-            <ApiTabs basePath={`/apis/${path.id}`} />
+            <DetailTabs basePath={`/apis/${path.id}`} tabs={apiTabs} />
             <Outlet context={{ api: data }} />
         </div>
     );

@@ -1,7 +1,7 @@
 import {Outlet, useParams} from "react-router-dom";
 import {useApplication} from "../../hooks/useApplication.tsx";
-import "../settings/ApplicationSettingsPage.css"
-import {ApplicationTabs} from "./ApplicationTabs.tsx";
+import {DetailTabs} from "../../../../shared/components/DetailTabs.tsx";
+import {applicationTabs} from "../../routes.tsx";
 
 export default function ApplicationLayout() {
     const path = useParams<{ id: string }>();
@@ -12,9 +12,8 @@ export default function ApplicationLayout() {
 
     return (
         <div>
-            <ApplicationTabs basePath={`/applications/${path.id}`} />
+            <DetailTabs basePath={`/applications/${path.id}`} tabs={applicationTabs} />
             <Outlet context={{ application: data }}/>
         </div>
     );
 }
-
