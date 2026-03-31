@@ -1,10 +1,9 @@
 import type {Application} from "../types.ts";
 import {Link} from "react-router-dom";
-import {ResourceCopyField} from "./ResourceCopyField.tsx";
+import {ResourceCopyField} from "../../../shared/components/ResourceCopyField.tsx";
 import "./ApplicationListItem.css"
 
 export function ApplicationListItem({application}: { application: Application }) {
-    console.log(application);
     return (
         <li>
             <div className="resource-card resource-card--interactive">

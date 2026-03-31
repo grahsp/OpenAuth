@@ -4,7 +4,6 @@ import type {
     CreateApplicationResponse,
     UpdateApplicationConfigurationRequest, UpdateClientApiAccessRequest
 } from "./types.ts";
-import type {Api} from "../apis/types.ts";
 import {http} from "../../http.ts";
 
 export async function getApplications(): Promise<Application[]> {
@@ -40,12 +39,4 @@ export async function updateApplicationConfiguration(id: string, request: Update
         method: "PUT",
         body: JSON.stringify(request)
     })
-}
-
-export async function getApis(): Promise<Api[]> {
-    return await http<Api[]>("/api/apis");
-}
-
-export async function getApi(id: string): Promise<Api> {
-    return await http<Api>(`/api/apis/${id}`);
 }

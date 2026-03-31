@@ -1,4 +1,4 @@
-import {useApis} from "../../hooks.tsx";
+import {useApis} from "../../../apis/hooks/useApis.tsx";
 import "./ApiSelector.css";
 
 type ApiSelectorProps = {

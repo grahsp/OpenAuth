@@ -1,5 +1,5 @@
 import {Outlet, useParams} from "react-router-dom";
-import {useApi} from "../../../applications/hooks.tsx";
+import {useApi} from "../../hooks/useApi.tsx";
 import {DetailTabs} from "../../../../shared/components/DetailTabs.tsx";
 import {apiTabs} from "../../routes.tsx";
 
