@@ -9,7 +9,7 @@ export function ApiSettingsPage() {
     return (
         <div className="application-page">
             <section className="section">
-                <h2 className="section__title">Basic Information</h2>
+                <h2 className="section__title">General Settings</h2>
 
                 <div className="form-field">
                     <label>Name</label>
@@ -17,12 +17,8 @@ export function ApiSettingsPage() {
                 </div>
 
                 <div className="form-field">
-                    <ResourceCopyField label="Audience" value={api.audience} />
-                </div>
-
-                <div className="form-field">
-                    <label>Permissions</label>
-                    <input value={`${api.permissions.length}`} disabled />
+                    <label>Audience</label>
+                    <ResourceCopyField value={api.audience} />
                 </div>
             </section>
         </div>

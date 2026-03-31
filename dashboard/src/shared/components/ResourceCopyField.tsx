@@ -6,7 +6,7 @@ export function ResourceCopyField(
         label,
         value
     }: {
-        label: string;
+        label?: string;
         value: string;
     }) {
     const [copied, setCopied] = useState(false);
@@ -24,7 +24,7 @@ export function ResourceCopyField(
             onMouseDown={(event) => event.stopPropagation()}
             onPointerDown={(event) => event.stopPropagation()}
         >
-            <span className="resource-copy-field__label">{label}:</span>
+            { label && <span className="resource-copy-field__label">{label}:</span> }
             <div className="resource-copy-field__value">
                 <span className="resource-copy-field__text">{value}</span>
             </div>
@@ -44,14 +44,14 @@ function CopyButton(
         onClick
     }: {
         copied: boolean;
-        label: string;
+        label?: string;
         onClick: () => Promise<void>;
     }) {
     return (
         <button
             type="button"
             className="resource-copy-field__copy"
-            aria-label={`Copy ${label}`}
+            aria-label={`Copy ${label ?? "value"}`}
             onClick={() => {
                 void onClick();
             }}
