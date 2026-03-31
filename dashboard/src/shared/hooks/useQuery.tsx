@@ -11,20 +11,19 @@ export type QueryOptions = {
 }
 
 export type QueryResult<T> = {
-    data: T | null,
+    data?: T,
     loading: boolean,
-    error: string | null,
+    error?: string,
     refresh: () => Promise<void>
 };
 
 export function useQuery<T>({queryFn, options: {enabled = true} = {}}: Query<T>): QueryResult<T> {
-    const [data, setData] = useState<T | null>(null);
+    const [data, setData] = useState<T>();
     const [loading, setLoading] = useState<boolean>(false);
-    const [error, setError] = useState<string | null>(null);
+    const [error, setError] = useState<string>();
 
     const query = useCallback(async () => {
         setLoading(true);
-        setError(null);
 
         try {
             setData(await queryFn());

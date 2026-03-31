@@ -7,11 +7,9 @@ export function useApis(): QueryResult<Api[]> {
     return useQuery({ queryFn: getApis });
 }
 
-export function useApi(id?: string): QueryResult<Api | null> {
+export function useApi(id?: string): QueryResult<Api> {
     const query = useCallback(() => {
-        if (!id)
-            throw new Error("id is required");
-
+        if (!id) throw new Error("id is required");
         return getApi(id!)
     }, [id])
 
