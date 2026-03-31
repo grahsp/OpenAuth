@@ -14,3 +14,8 @@ export type RemoveApiPermissionsRequest = {
     apiId: string;
     scopes: string[];
 }
+
+export type AddApiPermissionsRequest = {
+    apiId: string;
+    permissions: Record<string, string | null>;
+}

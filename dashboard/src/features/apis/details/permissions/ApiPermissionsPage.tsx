@@ -1,6 +1,7 @@
 import {useOutletContext} from "react-router-dom";
 import type {Api} from "../../types.ts";
 import {useState} from "react";
+import {useAddApiPermissions} from "../../hooks/useAddApiPermissions.tsx";
 import {useRemoveApiPermissions} from "../../hooks/useRemoveApiPermissions.tsx";
 import {useApi} from "../../hooks/useApi.tsx";
 import "./ApiPermissionsPage.css";
@@ -10,6 +11,7 @@ export function ApiPermissionsPage() {
     const [scope, setScope] = useState("");
     const [description, setDescription] = useState("");
     const { data, loading: apiLoading, error: apiError, refresh } = useApi(api.id);
+    const { add, loading: adding, error: addError } = useAddApiPermissions();
     const { remove, loading: removing, error: removeError } = useRemoveApiPermissions();
 
     const permissions = data?.permissions ?? api.permissions;
@@ -25,6 +27,28 @@ export function ApiPermissionsPage() {
         }
     };
 
+    const handleAdd = async () => {
+        const trimmedScope = scope.trim();
+        const trimmedDescription = description.trim();
+
+        if (!trimmedScope) {
+            return;
+        }
+
+        const success = await add({
+            apiId: api.id,
+            permissions: {
+                [trimmedScope]: trimmedDescription || null
+            }
+        });
+
+        if (success) {
+            setScope("");
+            setDescription("");
+            await refresh();
+        }
+    };
+
     return (
         <div className="api-permissions-page">
             <section className="api-permissions-section">
@@ -32,6 +56,8 @@ export function ApiPermissionsPage() {
                 <p className="api-permissions-section__description">
                     Define the permissions (scopes) that this API uses.
                 </p>
+
+                {addError && <p className="api-permissions-empty">{addError}</p>}
 
                 <div className="api-permissions-form">
                     <div className="api-permissions-form__field">
@@ -57,6 +83,8 @@ export function ApiPermissionsPage() {
                     <button
                         type="button"
                         className="api-permissions-form__action"
+                        onClick={() => void handleAdd()}
+                        disabled={adding}
                     >
                         Add
                     </button>
