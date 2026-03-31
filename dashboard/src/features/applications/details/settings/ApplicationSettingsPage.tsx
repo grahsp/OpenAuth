@@ -2,6 +2,7 @@ import {useOutletContext} from "react-router-dom";
 import type {Application, ApplicationType, UpdateApplicationConfigurationRequest} from "../../types.ts";
 import {useState} from "react";
 import {useUpdateApplicationConfiguration} from "../hooks/useUpdateApplicationConfiguration.ts";
+import {ResourceCopyField} from "../../../../shared/components/ResourceCopyField.tsx";
 import "./ApplicationSettingsPage.css";
 
 type Draft = {
@@ -82,21 +83,12 @@ export function ApplicationSettingsPage() {
                 </div>
 
                 <div className="form-field">
-                    <label>Client ID</label>
-                    <div className="input-with-action">
-                        <input value={application.id} disabled/>
-                        <button
-                            onClick={() => navigator.clipboard.writeText(application.id)}
-                        >
-                            Copy
-                        </button>
-                    </div>
+                    <ResourceCopyField label="Client ID" value={application.id} />
                 </div>
             </section>
 
             <div className="section-divider"/>
 
-            {/* ===== CONFIGURATION ===== */}
             <section className="section">
                 <h2 className="section__title">Configuration</h2>
 

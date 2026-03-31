@@ -1,5 +1,6 @@
 import {useOutletContext} from "react-router-dom";
 import type {Api} from "../../types.ts";
+import {ResourceCopyField} from "../../../../shared/components/ResourceCopyField.tsx";
 import "./ApiSettingsPage.css";
 
 export function ApiSettingsPage() {
@@ -16,16 +17,7 @@ export function ApiSettingsPage() {
                 </div>
 
                 <div className="form-field">
-                    <label>Audience</label>
-                    <div className="input-with-action">
-                        <input value={api.audience} disabled />
-                        <button
-                            className="input-action"
-                            onClick={() => navigator.clipboard.writeText(api.audience)}
-                        >
-                            Copy
-                        </button>
-                    </div>
+                    <ResourceCopyField label="Audience" value={api.audience} />
                 </div>
 
                 <div className="form-field">
