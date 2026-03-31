@@ -1,15 +1,20 @@
 import {NavLink} from "react-router-dom";
-import "./ApplicationTabs.css"
-import {applicationTabs} from "../../routes.tsx";
+import "./DetailTabs.css";
+
+export type DetailTab = {
+    label: string;
+    path: string;
+};
 
 type Props = {
     basePath: string;
+    tabs: DetailTab[];
 };
 
-export function ApplicationTabs({ basePath }: Props) {
+export function DetailTabs({ basePath, tabs }: Props) {
     return (
         <nav className="tabs">
-            {applicationTabs.map(tab => {
+            {tabs.map((tab) => {
                 const to = tab.path ? `${basePath}/${tab.path}` : basePath;
 
                 return (

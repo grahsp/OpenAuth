@@ -1,6 +1,6 @@
 import {useCallback, useMemo} from "react";
 import {getApi, getApis} from "./api.ts";
-import type {Api} from "./types.ts";
+import type {Api} from "../apis/types.ts";
 import {type QueryResult, useQuery} from "../../shared/hooks/useQuery.tsx";
 
 export function useApis(): QueryResult<Api[]> {

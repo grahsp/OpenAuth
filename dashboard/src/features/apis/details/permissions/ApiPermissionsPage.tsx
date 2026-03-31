@@ -1,5 +1,5 @@
 import {useOutletContext} from "react-router-dom";
-import type {Api} from "../../../applications/types.ts";
+import type {Api} from "../../types.ts";
 import {useState} from "react";
 import "./ApiPermissionsPage.css";
 

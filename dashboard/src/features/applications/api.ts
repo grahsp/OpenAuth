@@ -1,10 +1,10 @@
 import type {
-    Api,
     Application, ClientApiAccess,
     CreateApplicationRequest,
     CreateApplicationResponse,
     UpdateApplicationConfigurationRequest, UpdateClientApiAccessRequest
 } from "./types.ts";
+import type {Api} from "../apis/types.ts";
 import {http} from "../../http.ts";
 
 export async function getApplications(): Promise<Application[]> {
