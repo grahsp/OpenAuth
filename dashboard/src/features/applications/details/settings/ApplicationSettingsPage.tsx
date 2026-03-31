@@ -66,7 +66,7 @@ export function ApplicationSettingsPage() {
 
             {/* ===== BASIC INFORMATION ===== */}
             <section className="section">
-                <h2 className="section__title">Basic Information</h2>
+                <h2 className="section__title">General Settings</h2>
 
                 <div className="form-field">
                     <label>Name</label>
@@ -83,7 +83,8 @@ export function ApplicationSettingsPage() {
                 </div>
 
                 <div className="form-field">
-                    <ResourceCopyField label="Client ID" value={application.id} />
+                    <label>Client ID</label>
+                    <ResourceCopyField value={application.id} />
                 </div>
             </section>
 
