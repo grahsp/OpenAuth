@@ -17,9 +17,12 @@ public static class TestSigningKey
             createdAt,
             expiresAt
         );
-    
+
     public static SigningKey CreateRsaSigningKey(TimeProvider timeProvider, Key? key = null, SigningAlgorithm algorithm = SigningAlgorithm.RS256)
-        => CreateRsaSigningKey(timeProvider.GetUtcNow().DateTime, timeProvider.GetUtcNow().DateTime.AddDays(30), key, algorithm);
+    {
+        var now = timeProvider.GetUtcNow();
+        return CreateRsaSigningKey(now, now.AddDays(30), key, algorithm);
+    }
     
     
     public static SigningKey CreateHmacSigningKey(DateTimeOffset createdAt, DateTimeOffset expiresAt, Key? key = null, SigningAlgorithm algorithm = SigningAlgorithm.HS256)

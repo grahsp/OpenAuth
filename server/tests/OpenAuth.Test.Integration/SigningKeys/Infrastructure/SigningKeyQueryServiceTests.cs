@@ -7,14 +7,14 @@ using OpenAuth.Test.Common.Infrastructure;
 
 namespace OpenAuth.Test.Integration.SigningKeys.Infrastructure;
 
-[Collection("sqlserver")]
+[Collection("postgres")]
 public class SigningKeyQueryServiceTests : IAsyncLifetime
 {
-    private SqlServer _fx;
+    private PostgresServer _fx;
     private FakeTimeProvider _time;
     private SigningKeyQueryService _sut;
 
-    public SigningKeyQueryServiceTests(SqlServer fx)
+    public SigningKeyQueryServiceTests(PostgresServer fx)
     {
         _fx = fx;
 
@@ -28,7 +28,7 @@ public class SigningKeyQueryServiceTests : IAsyncLifetime
     public Task DisposeAsync() => Task.CompletedTask;
 
     
-    public class GetCurrentAsync(SqlServer fx) : SigningKeyQueryServiceTests(fx)
+    public class GetCurrentAsync(PostgresServer fx) : SigningKeyQueryServiceTests(fx)
     {
         [Fact]
         public async Task ReturnsActiveKey_WhenExists()
@@ -137,7 +137,7 @@ public class SigningKeyQueryServiceTests : IAsyncLifetime
         }
     }
 
-    public class GetByIdAsync(SqlServer fx) : SigningKeyQueryServiceTests(fx)
+    public class GetByIdAsync(PostgresServer fx) : SigningKeyQueryServiceTests(fx)
     {
         [Fact]
         public async Task ReturnsKey_WhenExists()
@@ -211,7 +211,7 @@ public class SigningKeyQueryServiceTests : IAsyncLifetime
         }
     }
 
-    public class GetAllAsync(SqlServer fx) : SigningKeyQueryServiceTests(fx)
+    public class GetAllAsync(PostgresServer fx) : SigningKeyQueryServiceTests(fx)
     {
         [Fact]
         public async Task ReturnsAllKeys_OrderedByCreatedAtDescending()
@@ -301,7 +301,7 @@ public class SigningKeyQueryServiceTests : IAsyncLifetime
         }
     }
 
-    public class GetActiveAsync(SqlServer fx) : SigningKeyQueryServiceTests(fx)
+    public class GetActiveAsync(PostgresServer fx) : SigningKeyQueryServiceTests(fx)
     {
         [Fact]
         public async Task ReturnsOnlyActiveKeys()

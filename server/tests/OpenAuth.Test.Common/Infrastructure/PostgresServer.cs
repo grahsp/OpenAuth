@@ -1,45 +1,46 @@
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Containers;
-using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 using OpenAuth.Infrastructure.Persistence;
 using Respawn;
 using Xunit;
 
 namespace OpenAuth.Test.Common.Infrastructure;
 
-public class SqlServer : IAsyncLifetime
+public class PostgresServer : IAsyncLifetime
 {
     private IContainer _container = null!;
     private int _port;
     private Respawner _respawner = null!;
 
     public string ConnectionString =>
-        $"Server=127.0.0.1,{_port};Database=IntegrationTests;User Id=sa;Password=Passw0rd!123;TrustServerCertificate=True;Encrypt=False;";
+        $"Host=127.0.0.1;Port={_port};Database=IntegrationTests;Username=postgres;Password=postgres";
 
     public async Task InitializeAsync()
     {
         _container = new ContainerBuilder()
-            .WithImage("mcr.microsoft.com/mssql/server:2022-latest")
-            .WithEnvironment("ACCEPT_EULA", "Y")
-            .WithEnvironment("MSSQL_SA_PASSWORD", "Passw0rd!123")
-            .WithPortBinding(1433, true)
-            .WithWaitStrategy(Wait.ForUnixContainer().UntilInternalTcpPortIsAvailable(1433))
+            .WithImage("postgres:16-alpine")
+            .WithEnvironment("POSTGRES_DB", "IntegrationTests")
+            .WithEnvironment("POSTGRES_USER", "postgres")
+            .WithEnvironment("POSTGRES_PASSWORD", "postgres")
+            .WithPortBinding(5432, true)
+            .WithWaitStrategy(Wait.ForUnixContainer().UntilInternalTcpPortIsAvailable(5432))
             .Build();
 
         await _container.StartAsync();
-        _port = _container.GetMappedPublicPort(1433);
+
+        _port = _container.GetMappedPublicPort(5432);
 
         await using var ctx = CreateContext();
         await ctx.Database.MigrateAsync();
 
-        await using var connection = new SqlConnection(ConnectionString);
+        await using var connection = new NpgsqlConnection(ConnectionString);
         await connection.OpenAsync();
-        
+
         _respawner = await Respawner.CreateAsync(connection, new RespawnerOptions
         {
-            DbAdapter = DbAdapter.SqlServer,
-            SchemasToInclude = ["dbo"]
+            DbAdapter = DbAdapter.Postgres
         });
     }
     
@@ -49,7 +50,7 @@ public class SqlServer : IAsyncLifetime
     private DbContextOptions<AppDbContext> CreateOptions()
     {
         var builder = new DbContextOptionsBuilder<AppDbContext>()
-            .UseSqlServer(ConnectionString, sql =>
+            .UseNpgsql(ConnectionString, sql =>
             {
                 sql.EnableRetryOnFailure();
                 sql.CommandTimeout(60);
@@ -66,7 +67,7 @@ public class SqlServer : IAsyncLifetime
 
     public async Task ResetAsync()
     {
-        await using var connection = new SqlConnection(ConnectionString);
+        await using var connection = new NpgsqlConnection(ConnectionString);
         await connection.OpenAsync();
         await _respawner.ResetAsync(connection);
     }
