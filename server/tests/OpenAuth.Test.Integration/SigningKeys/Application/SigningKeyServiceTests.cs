@@ -10,13 +10,13 @@ using OpenAuth.Test.Common.Infrastructure;
 
 namespace OpenAuth.Test.Integration.SigningKeys.Application;
 
-[Collection("sqlserver")]
+[Collection("postgres")]
 public class SigningKeyServiceTests : IAsyncLifetime
 {
-    private readonly SqlServer _fx;
+    private readonly PostgresServer _fx;
     private readonly FakeTimeProvider _time;
     
-    public SigningKeyServiceTests(SqlServer fx)
+    public SigningKeyServiceTests(PostgresServer fx)
     {
         _fx = fx;
         _time = new FakeTimeProvider();
@@ -39,7 +39,7 @@ public class SigningKeyServiceTests : IAsyncLifetime
 
     public class CreateAsync : SigningKeyServiceTests
     {
-        public CreateAsync(SqlServer fx) : base(fx) { }
+        public CreateAsync(PostgresServer fx) : base(fx) { }
 
         [Fact]
         public async Task CreatesAndPersistsKey()
@@ -136,7 +136,7 @@ public class SigningKeyServiceTests : IAsyncLifetime
 
     public class RevokeAsync : SigningKeyServiceTests
     {
-        public RevokeAsync(SqlServer fx) : base(fx) { }
+        public RevokeAsync(PostgresServer fx) : base(fx) { }
 
         [Fact]
         public async Task RevokesAndPersistsKey()

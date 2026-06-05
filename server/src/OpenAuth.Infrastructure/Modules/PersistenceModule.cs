@@ -14,7 +14,7 @@ public static class PersistenceModule
 	{
 		services.AddDbContext<AppDbContext>(opts =>
 		{
-			opts.UseSqlServer(configuration.GetConnectionString("DefaultConnection"),
+			opts.UseNpgsql(configuration.GetConnectionString("DefaultConnection"),
 				sql => sql.EnableRetryOnFailure());
 		});
 

@@ -7,13 +7,13 @@ using OpenAuth.Test.Common.Infrastructure;
 
 namespace OpenAuth.Test.Integration.Clients.Persistence;
 
-[Collection("sqlserver")]
+[Collection("postgres")]
 public class SecretMappingTests : IAsyncLifetime
 {
-    private readonly SqlServer _fx;
+    private readonly PostgresServer _fx;
     private readonly TimeProvider _time = new FakeTimeProvider();
     
-    public SecretMappingTests(SqlServer fx) => _fx = fx;
+    public SecretMappingTests(PostgresServer fx) => _fx = fx;
 
     public Task InitializeAsync() => _fx.ResetAsync();
     public Task DisposeAsync() => Task.CompletedTask;

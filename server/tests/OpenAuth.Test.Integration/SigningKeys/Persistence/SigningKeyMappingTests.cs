@@ -6,12 +6,12 @@ using Key = OpenAuth.Domain.SigningKeys.ValueObjects.Key;
 
 namespace OpenAuth.Test.Integration.SigningKeys.Persistence;
 
-[Collection("sqlserver")]
+[Collection("postgres")]
 public class SigningKeyMappingTests : IAsyncLifetime
 {
-    private readonly SqlServer _fx;
+    private readonly PostgresServer _fx;
     private readonly TimeProvider _time = new FakeTimeProvider();
-    public SigningKeyMappingTests(SqlServer fx) => _fx = fx;
+    public SigningKeyMappingTests(PostgresServer fx) => _fx = fx;
 
     public Task InitializeAsync() => _fx.ResetAsync();
     public Task DisposeAsync() => Task.CompletedTask;

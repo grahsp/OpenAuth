@@ -10,7 +10,7 @@ namespace OpenAuth.Test.Common.Fixtures;
 
 public sealed class TestFixture : IAsyncLifetime
 {
-	private readonly SqlServer _database = new SqlServer();
+	private readonly PostgresServer _database = new PostgresServer();
 
 	public async Task InitializeAsync()
 	{
@@ -21,7 +21,7 @@ public sealed class TestFixture : IAsyncLifetime
 	{
 		return TestHostFactory.Create(builder =>
 		{
-			builder.UseDatabase(options => options.UseSqlServer(_database.ConnectionString));
+			builder.UseDatabase(options => options.UseNpgsql(_database.ConnectionString));
 
 			builder.ConfigureServices(services =>
 			{

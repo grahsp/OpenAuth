@@ -1,5 +1,4 @@
 using Microsoft.Extensions.Time.Testing;
-using OpenAuth.Domain.Clients.ApplicationType;
 using OpenAuth.Domain.Clients.ValueObjects;
 using OpenAuth.Infrastructure.Clients.Persistence;
 using OpenAuth.Infrastructure.Persistence;
@@ -8,15 +7,15 @@ using OpenAuth.Test.Common.Infrastructure;
 
 namespace OpenAuth.Test.Integration.Clients.Infrastructure;
 
-[Collection("sqlserver")]
+[Collection("postgres")]
 public class ClientQueryServiceTests : IAsyncLifetime
 {
-    private SqlServer _fx;
+    private PostgresServer _fx;
     private AppDbContext _context;
     private FakeTimeProvider _time;
     private ClientQueryService _sut;
 
-    public ClientQueryServiceTests(SqlServer fx)
+    public ClientQueryServiceTests(PostgresServer fx)
     {
         _fx = fx;
         _context = _fx.CreateContext();
@@ -31,7 +30,7 @@ public class ClientQueryServiceTests : IAsyncLifetime
         => Task.CompletedTask;
 
     
-    public class GetByIdAsync(SqlServer fx) : ClientQueryServiceTests(fx)
+    public class GetByIdAsync(PostgresServer fx) : ClientQueryServiceTests(fx)
     {
         [Fact]
         public async Task ReturnsClientSummary_WhenClientExists()
@@ -64,7 +63,7 @@ public class ClientQueryServiceTests : IAsyncLifetime
         }
     }
     
-    public class GetByNameAsync(SqlServer fx) : ClientQueryServiceTests(fx)
+    public class GetByNameAsync(PostgresServer fx) : ClientQueryServiceTests(fx)
     {
         [Fact]
         public async Task ReturnsClientSummary_WhenClientExists()
@@ -97,7 +96,7 @@ public class ClientQueryServiceTests : IAsyncLifetime
         }
     }
 
-    public class GetPagedAsync(SqlServer fx) : ClientQueryServiceTests(fx)
+    public class GetPagedAsync(PostgresServer fx) : ClientQueryServiceTests(fx)
     {
         [Fact]
         public async Task ReturnsCorrectPage()
@@ -186,7 +185,7 @@ public class ClientQueryServiceTests : IAsyncLifetime
     // ExistsAsync
     // ============================================
     
-    public class ExistsAsync(SqlServer fx) : ClientQueryServiceTests(fx)
+    public class ExistsAsync(PostgresServer fx) : ClientQueryServiceTests(fx)
     {
         [Fact]
         public async Task ReturnsTrue_WhenClientExists()
@@ -234,7 +233,7 @@ public class ClientQueryServiceTests : IAsyncLifetime
         }
     }
     
-    public class NameExistsAsync(SqlServer fx) : ClientQueryServiceTests(fx)
+    public class NameExistsAsync(PostgresServer fx) : ClientQueryServiceTests(fx)
     {
         [Fact]
         public async Task ReturnsTrue_WhenNameExists()
